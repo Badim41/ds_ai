@@ -215,7 +215,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
 
     # chat GPT ВЕРНУТЬ
     print('generating answer')
-    model = GPT4All(model_name='nous-hermes-13b.ggmlv3.q4_0.bin',
+    model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin',
                     device="cpu",
                     allow_download=True)
     output = model.generate("Hello!", max_tokens=(prompt_length * 100))
