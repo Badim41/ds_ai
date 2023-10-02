@@ -1,2 +1,1 @@
-ai_cover_path
-ai_cover_path
+
