@@ -62,11 +62,8 @@ if __name__ == '__main__':
                         help="A decimal number e.g. 0.25. Control how much to use the original vocal's loudness (0) or a fixed loudness (1).")
     parser.add_argument('-pro', '--protect', type=float, default=0.33,
                         help='A decimal number e.g. 0.33. Protect voiceless consonants and breath sounds to prevent artifacts such as tearing in electronic music. Set to 0.5 to disable. Decrease the value to increase protection, but it may reduce indexing accuracy.')
-    parser.add_argument('-cuda', '--cuda-number', type=str, default='0',
-                        help='GPU index')
     args = parser.parse_args()
     # os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda_number
-    print("DEF_TEMP_CUDA_USED:", args.cuda_number)
     rvc_dirname = args.rvc_dirname
     if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
         raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')

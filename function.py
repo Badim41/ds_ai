@@ -872,8 +872,7 @@ async def text_to_speech(tts, write_in_memory, ctx):
             "-ir", "0.5",
             "-fr", "3",
             "-rms", "0.3",
-            "-pro", "0.15",
-            "-cuda", "1"
+            "-pro", "0.15"
         ]
         print("run RVC, AIName:", currentAIname)
         subprocess.run(command, check=True)
