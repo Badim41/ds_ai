@@ -207,11 +207,11 @@ async def translate(text):
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     # ru -> en
-    if language != "english":
-        translator = Translator(from_lang=language[:2].lower(), to_lang="en")
-        translated_text = translator.translate(prompt)
-    else:
-        translated_text = prompt
+    # if language != "english":
+    #     translator = Translator(from_lang=language[:2].lower(), to_lang="en")
+    #     translated_text = translator.translate(prompt)
+    # else:
+    #     translated_text = prompt
 
     # chat GPT ВЕРНУТЬ
     print('generating answer')
@@ -222,10 +222,12 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     embedder = Embed4All()
     output = embedder.embed("translated_text")
     print(output)
-    translator = Translator(from_lang="en", to_lang="ru")
-    translated_text = translator.translate(output)
+    # translator = Translator(from_lang="en", to_lang="ru")
+    # translated_text = translator.translate(output)
+    #
+    # print(translated_text)
+    translated_text = output
 
-    print(translated_text)
     if writeAnswer:
         from discord_bot import write_in_discord
         await write_in_discord(ctx, translated_text)
