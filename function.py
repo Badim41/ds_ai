@@ -215,13 +215,13 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
 
     # chat GPT ВЕРНУТЬ
     print('generating answer')
-    # model = GPT4All(model_name='nous-hermes-13b.ggmlv3.q4_0.bin',
-    #                 device="cpu",
-    #                 allow_download=True)
-    # output = model.generate(translated_text, max_tokens=(prompt_length * 100))
-    embedder = Embed4All()
-    output = embedder.embed("translated_text")
-    print(output)
+    model = GPT4All(model_name='nous-hermes-13b.ggmlv3.q4_0.bin',
+                    device="cpu",
+                    allow_download=True)
+    output = model.generate("Hello!", max_tokens=(prompt_length * 100))
+    # embedder = Embed4All()
+    # output = embedder.embed("translated_text")
+    print("DEV_TEMP_OUTPUT:", output)
     # translator = Translator(from_lang="en", to_lang="ru")
     # translated_text = translator.translate(output)
     #
