@@ -1,32 +1,6 @@
+from pathlib import Path
+from gpt4all import GPT4All
 
-# источник: https://matershinik.narod.ru/
-mat_massive = {
-    "апездал", "апездошенная", "блядь", "блядство", "выебон", "выебать", "вхуюжить", "гомосек", "долбоёб",
-    "ебло", "еблище", "ебать", "ебическая", "ебунок", "еблан", "ёбнуть", "ёболызнуть", "ебош", "заебал",
-    "заебатый", "злаебучий", "заёб", "хуй", "колдоебина", "манда", "мандовошка", "мокрощелка", "наебка",
-    "наебал", "наебаловка", "напиздеть", "отъебись", "охуеть", "отхуевертить", "опизденеть", "охуевший",
-    "отебукать", "пизда", "пидарас", "пиздатый", "пиздец", "пизданутый", "поебать", "поебустика", "проебать",
-    "подзалупный", "пизденыш", "припиздак", "разъебать", "распиздяй", "разъебанный", "сука", "трахать",
-    "уебок", "уебать", "угондошить", "уебан", "хитровыебанный", "хуйня", "хуета", "хуево", "хуесос",
-    "хуеть", "хуевертить", "хуеглот", "хуистика", "членосос", "членоплет", "шлюха", "fuck", "тест_мат"
-}
-
-def replace_mat_in_sentence(sentence):
-    words = sentence.lower().split(" ")
-    return_sentence = []
-
-    i = 0
-    while i < len(words):
-        current_word = words[i]
-        if current_word in mat_massive:
-            sensure = words[i].replace(current_word, ("*" * len(current_word)))
-            return_sentence.append(sensure)
-            i += 1
-        else:
-            return_sentence.append(current_word)
-            i += 1
-
-    return ' '.join(return_sentence).strip()
-
-
-print(replace_mat_in_sentence("тест_мат 123"))
+model_name = 'orca-mini-3b.ggmlv3.q4_0.bin'
+model_path = Path.home() / '.local' / 'share' / 'nomic.ai' / 'GPT4All'
+model = GPT4All(model_name, model_path)
