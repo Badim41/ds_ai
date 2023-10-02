@@ -321,6 +321,7 @@ async def voice_commands(sentence, ctx):
 
     # маты
     if mat_found:
+        mat_found = False
         if currentAIname == "Фарадей":
             await text_to_speech("Эээээээ, не выражаться!", False, ctx)
             return True
