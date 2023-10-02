@@ -67,7 +67,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     global robot_names
     robot_names = ["robot", "robots", "робот", "нейросеть", "hello", "роботы", "ропот"]
 
-    print("RowInput:" + spokenText)
+    print("RowInput:", spokenText)
     temp_spokenText = spokenText
 
     # while "стоп" in temp_spokenText:
