@@ -440,10 +440,10 @@ if __name__ == '__main__':
         print("DEV_TEMP: REMOVED")
     else:
         try:
-            with open("songs_exist_list.txt", 'r') as reader:
+            with open("songs_exist_list.txt", 'r', encoding='utf-8') as reader:
                 lines = reader.readlines()
                 lines.append(cover_path)
-            with open("songs_exist_list.txt", 'w') as writer:
+            with open("songs_exist_list.txt", 'w', encoding='utf-8') as writer:
                 writer.writelines(lines)
         except IOError as e:
             print(e)
