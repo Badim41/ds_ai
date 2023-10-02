@@ -3,11 +3,13 @@ import gc
 import os
 
 from src.rvc import Config, load_hubert, get_vc, rvc_infer
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
 
+
 def voice_change(voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
-                 rms_mix_rate, protect, crepe_hop_length):
+                 rms_mix_rate, protect):
     rvc_model_path, rvc_index_path = get_rvc_model(voice_model)
     # os.environ["CUDA_VISIBLE_DEVICES"] = str(cuda_number)
     print("voice_change")
@@ -18,9 +20,10 @@ def voice_change(voice_model, vocals_path, output_path, pitch_change, f0_method,
 
     # convert main vocals
     rvc_infer(rvc_index_path, index_rate, vocals_path, output_path, pitch_change, f0_method, cpt, version, net_g,
-              filter_radius, tgt_sr, rms_mix_rate, protect, crepe_hop_length, vc, hubert_model)
+              filter_radius, tgt_sr, rms_mix_rate, protect, 128, vc, hubert_model)
     del hubert_model, cpt
     gc.collect()
+
 
 def get_rvc_model(voice_model):
     rvc_model_filename, rvc_index_filename = None, None
@@ -38,6 +41,7 @@ def get_rvc_model(voice_model):
 
     return os.path.join(model_dir, rvc_model_filename), os.path.join(model_dir,
                                                                      rvc_index_filename) if rvc_index_filename else ''
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a AI cover song in the song_output/id directory.',
@@ -68,5 +72,5 @@ if __name__ == '__main__':
         raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
     # voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
     #                  rms_mix_rate, protect, crepe_hop_length
-    cover_path = voice_change(rvc_dirname, args.input, args.output, args.pitch_change, "rmvpe",
-                              args.index_rate, args.filter_radius, args.rms_mix_rate, args.protect)
+    voice_change(rvc_dirname, args.input, args.output, args.pitch_change, "rmvpe",
+                 args.index_rate, args.filter_radius, args.rms_mix_rate, args.protect)

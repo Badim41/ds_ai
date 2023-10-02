@@ -859,8 +859,20 @@ async def text_to_speech(tts, write_in_memory, ctx):
     if language == "русский":
         pitch += 1
     # используем RVC
-    # voice_change(0, currentAIname, "1.mp3", "2.mp3", pitch * 12, "rmvpe", 0.75,
-    #                    3, 0.3, 0.3, 0, 0)
+    command = [
+        "python",
+        "only_voice_change.py.py",
+        "-i", "1.mp3",
+        "-o", "2.mp3",
+        "-dir", currentAIname,
+        "-p", pitch,
+        "-ir", "0.5",
+        "-fr", "3",
+        "-rms", "0.3",
+        "-pro", "0.15",
+        "-cuda", "1"
+    ]
+    await console_command_runner(command, ctx)
     await playSoundFile("1.mp3", -1, 0, ctx)
     print(f"tts: {tts}")
 
