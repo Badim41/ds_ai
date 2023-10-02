@@ -207,25 +207,23 @@ async def translate(text):
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     # ru -> en
-    # if language != "english":
-    #     translator = Translator(from_lang=language[:2].lower(), to_lang="en")
-    #     translated_text = translator.translate(prompt)
-    # else:
-    #     translated_text = prompt
+    if language != "english":
+        translator = Translator(from_lang=language[:2].lower(), to_lang="en")
+        translated_text = translator.translate(prompt)
+    else:
+        translated_text = prompt
 
     # chat GPT ВЕРНУТЬ
     print('generating answer')
     model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin',
                     device="cpu",
                     allow_download=True)
-    output = model.generate("Hello!", max_tokens=(prompt_length * 100))
-    # embedder = Embed4All()
-    # output = embedder.embed("translated_text")
+    output = model.generate(prompt, max_tokens=(prompt_length * 100))
     print("DEV_TEMP_OUTPUT:", output)
-    # translator = Translator(from_lang="en", to_lang="ru")
-    # translated_text = translator.translate(output)
-    #
-    # print(translated_text)
+    translator = Translator(from_lang="en", to_lang="ru")
+    translated_text = translator.translate(output)
+
+    print(translated_text)
     translated_text = output
 
     if writeAnswer:
