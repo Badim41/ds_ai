@@ -530,7 +530,7 @@ async def createAICaver(ctx):
             writer.write(await utf_code(line + "\n"))
 
     await download_audio_process(ctx)
-    time.sleep(10)
+    time.sleep(0.5)
     await play_audio_process(ctx)
 
 
@@ -649,11 +649,8 @@ file_have_links = True
 
 async def download_audio_process(ctx):
     global file_have_links
-    audio_files_dir = "caversAI/audio_files"
     while file_have_links:
         try:
-            global files_was
-            files_was = await file_was_filler(audio_files_dir, files_was)
             with open("caversAI/audio_links.txt") as reader:
                 line = reader.readline()
                 if line:
