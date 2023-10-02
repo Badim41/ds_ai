@@ -216,7 +216,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     # chat GPT ВЕРНУТЬ
     print('1')
     model = GPT4All(model_name='nous-hermes-13b.ggmlv3.q4_0.bin',
-                    device="gpu",
+                    device="cuda:0",
                     allow_download=True)
     output = model.generate(translated_text, max_tokens=(prompt_length * 100))
     translator = Translator(from_lang="en", to_lang="ru")
