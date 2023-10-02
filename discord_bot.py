@@ -2,20 +2,10 @@ import time
 import configparser
 
 import pyaudio
-import vosk
 import discord
 from discord.ext import commands
 import asyncio
-
-# ВЕРНУТЬ
-# arguments = sys.argv
-discord_token = "MTE1MjczMTM2MzUwMjQ3NzM3NA.GdEK8T.bZdfhLkZbKkK3XOARxspUYaUfSsVjPxsR_jPsI"
-
-# if len(arguments) > 1:
-#     discord_token = arguments[1]
-# else:
-#     print("Укажите discord_TOKEN")
-#     exit(-1)
+import sys
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
@@ -29,7 +19,8 @@ default_settings = {
     "video_length": config.getint('Default', 'video_length'),
     "currentAIname": config.get('Default', 'currentAIname'),
     "currentAIinfo": config.get('Default', 'currentAIinfo'),
-    "currentAIpitch": config.getint('Default', 'currentAIpitch')
+    "currentAIpitch": config.getint('Default', 'currentAIpitch'),
+    "robotNameNeed": config.getboolean('Default', 'robotNameNeed')
 }
 
 bot = commands.AutoShardedBot(intents=discord.Intents.all(), command_prefix="/")
@@ -43,7 +34,7 @@ async def on_ready():
         type=discord.ActivityType.listening, name='AI-covers'))
 
 
-@bot.command(aliases=['j', 'J', 'Join', 'JOIN'], help=("присоединиться к голосовому каналу"))
+@bot.command(aliases=['j', 'J', 'Join', 'JOIN'], help="присоединиться к голосовому каналу")
 async def join(ctx):
     if ctx.message.author.voice:
         if not ctx.voice_client:
@@ -61,10 +52,16 @@ async def disconnect(ctx):
         await ctx.voice_client.disconnect()
 
 
-@bot.command(help=("сказать роботу текст"))
+@bot.command(help="сказать роботу текст")
 async def say(ctx, *args):
     message = " ".join(args)
-    print(message)
+    from function import replace_mat_in_sentence
+    if not default_settings.get("robot_name_need"):
+        print(message)
+        message = "робот " + message
+    else:
+        print(message)
+    message = replace_mat_in_sentence(message)
     # Проверяем, находится ли автор команды в войс-чате
     if ctx.author.voice:
         # Получаем войс-канал автора команды
@@ -81,7 +78,7 @@ async def say(ctx, *args):
         await ctx.send("Вы должны находиться в войс-чате, чтобы использовать эту команду.")
 
 
-@bot.command(help=("пауза"))
+@bot.command(help="пауза")
 async def pause(ctx):
     voice_client = ctx.voice_client
     if voice_client.is_playing():
@@ -94,7 +91,7 @@ async def pause(ctx):
         await ctx.send("Нет активного аудио для приостановки или продолжения.")
 
 
-@bot.command(help=("пропуск"))
+@bot.command(help="пропуск")
 async def skip(ctx):
     voice_client = ctx.voice_client
     if voice_client.is_playing():
@@ -108,6 +105,7 @@ stopRecognize = False
 
 
 async def recognize(ctx):
+    import vosk
     from function import setModelWithLanguage, replace_numbers_in_sentence
     languageWas = ""
     rec = ""
@@ -212,4 +210,11 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
 
 
 if __name__ == "__main__":
+    arguments = sys.argv
+
+    if len(arguments) > 1:
+        discord_token = arguments[1]
+    else:
+        print("Укажите discord_TOKEN")
+        exit(-1)
     bot.run(discord_token)

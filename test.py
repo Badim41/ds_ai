@@ -1,25 +1,32 @@
-import ffmpeg
-from pydub import AudioSegment
 
-# Загрузите ваши mp3 файлы
-audio1 = AudioSegment.from_mp3(r"C:\Users\as280\Downloads\rawData4 [vocals].wav")
-audio2 = AudioSegment.from_mp3(r"C:\Users\as280\Downloads\rawData4 [vocals].wav")
+# источник: https://matershinik.narod.ru/
+mat_massive = {
+    "апездал", "апездошенная", "блядь", "блядство", "выебон", "выебать", "вхуюжить", "гомосек", "долбоёб",
+    "ебло", "еблище", "ебать", "ебическая", "ебунок", "еблан", "ёбнуть", "ёболызнуть", "ебош", "заебал",
+    "заебатый", "злаебучий", "заёб", "хуй", "колдоебина", "манда", "мандовошка", "мокрощелка", "наебка",
+    "наебал", "наебаловка", "напиздеть", "отъебись", "охуеть", "отхуевертить", "опизденеть", "охуевший",
+    "отебукать", "пизда", "пидарас", "пиздатый", "пиздец", "пизданутый", "поебать", "поебустика", "проебать",
+    "подзалупный", "пизденыш", "припиздак", "разъебать", "распиздяй", "разъебанный", "сука", "трахать",
+    "уебок", "уебать", "угондошить", "уебан", "хитровыебанный", "хуйня", "хуета", "хуево", "хуесос",
+    "хуеть", "хуевертить", "хуеглот", "хуистика", "членосос", "членоплет", "шлюха", "fuck", "тест_мат"
+}
 
-# Объедините аудиофайлы
-combined_audio = audio1 + audio2
+def replace_mat_in_sentence(sentence):
+    words = sentence.lower().split(" ")
+    return_sentence = []
 
-# Экспортируйте объединенное аудио в формате M4A
-output_file = 'результирующий_файл.m4a'
+    i = 0
+    while i < len(words):
+        current_word = words[i]
+        if current_word in mat_massive:
+            sensure = words[i].replace(current_word, ("*" * len(current_word)))
+            return_sentence.append(sensure)
+            i += 1
+        else:
+            return_sentence.append(current_word)
+            i += 1
 
-# Преобразование AudioSegment в байты и сохранение во временный файл
-temp_wav_file = 'temp.wav'
-combined_audio.export(temp_wav_file, format='wav')
+    return ' '.join(return_sentence).strip()
 
-# Создание ffmpeg.Process для конвертации
-ffmpeg.input(temp_wav_file, format='wav').output(output_file, format='ipod', acodec='aac').run(overwrite_output=True)
 
-# Удаление временного WAV файла
-import os
-os.remove(temp_wav_file)
-
-print("Конвертация завершена успешно.")
+print(replace_mat_in_sentence("тест_мат 123"))
