@@ -196,7 +196,7 @@ async def write_in_discord(ctx, text):
 async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     # Проверяем, находится ли бот в голосовом канале
     if not ctx.voice_client:
-        await ctx.send("Бот не находится в голосовом канале. Используйте команду `!join`, чтобы присоединить его.")
+        await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
         return
 
     # Создаем аудиофайл для проигрывания
