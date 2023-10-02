@@ -1,0 +1,69 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="17">
+            <item index="0" class="java.lang.String" itemvalue="torch" />
+            <item index="1" class="java.lang.String" itemvalue="voice_recorder" />
+            <item index="2" class="java.lang.String" itemvalue="scipy" />
+            <item index="3" class="java.lang.String" itemvalue="lib" />
+            <item index="4" class="java.lang.String" itemvalue="fairseq" />
+            <item index="5" class="java.lang.String" itemvalue="faiss-cpu" />
+            <item index="6" class="java.lang.String" itemvalue="numpy" />
+            <item index="7" class="java.lang.String" itemvalue="torchcrepe" />
+            <item index="8" class="java.lang.String" itemvalue="yt_dlp" />
+            <item index="9" class="java.lang.String" itemvalue="praat-parselmouth" />
+            <item index="10" class="java.lang.String" itemvalue="tqdm" />
+            <item index="11" class="java.lang.String" itemvalue="soundfile" />
+            <item index="12" class="java.lang.String" itemvalue="librosa" />
+            <item index="13" class="java.lang.String" itemvalue="onnxruntime_gpu" />
+            <item index="14" class="java.lang.String" itemvalue="pedalboard" />
+            <item index="15" class="java.lang.String" itemvalue="pyworld" />
+            <item index="16" class="java.lang.String" itemvalue="sox" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8Inspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="E302" />
+          <option value="E501" />
+          <option value="E402" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="N803" />
+          <option value="N806" />
+          <option value="N802" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyShadowingBuiltinsInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredNames">
+        <list>
+          <option value="sum" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="src.rmvpe.*" />
+          <option value="int.sskip_audioleep" />
+          <option value="discord.voice_client.VoiceProtocol.is_playing" />
+          <option value="discord.voice_client.VoiceProtocol.pause" />
+          <option value="discord.voice_client.VoiceProtocol.*" />
+          <option value="bytes.read" />
+          <option value="bytes.__await__" />
+          <option value="gTTS" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
