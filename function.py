@@ -9,6 +9,8 @@ from gtts import gTTS
 from gpt4all import GPT4All
 from discord_bot import config
 from discord_bot import write_in_discord
+
+
 class Color:
     RESET = '\033[0m'
     RED = '\033[38;2;255;0;0m'  # Красный
@@ -38,12 +40,15 @@ currentAIinfo = ""
 currentAIpitch = 0
 robot_names = []
 
+
 async def set_config(key, value):
     config.read('config.ini')
     config.set('Default', key, value)
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
+
+
 async def start_bot(ctx, spokenTextArg, writeAnswer):
     # Добавление глобальных переменных
     global spokenText
@@ -157,6 +162,7 @@ async def replace_numbers_in_sentence(sentence):
 
     return ' '.join(return_sentence).strip()
 
+
 # источник: https://matershinik.narod.ru/
 mat_massive = {
     "апездал", "апездошенная", "блядь", "блядство", "выебон", "выебать", "вхуюжить", "гомосек", "долбоёб",
@@ -168,6 +174,7 @@ mat_massive = {
     "уебок", "уебать", "угондошить", "уебан", "хитровыебанный", "хуйня", "хуета", "хуево", "хуесос",
     "хуеть", "хуевертить", "хуеглот", "хуистика", "членосос", "членоплет", "шлюха", "fuck", "тест_мат"
 }
+
 
 async def replace_mat_in_sentence(sentence):
     words = sentence.lower().split(" ")
@@ -645,7 +652,6 @@ async def getCaverPrms(line, ctx):
 
     outputFormat = "mp3"
 
-
     return f"python src\\main.py -i {url} -dir modelsRVC\\{voice} -p {pitch} -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat}"
 
 
@@ -753,7 +759,7 @@ async def play_audio_process(ctx):
         while queue:
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
-                if line:
+                if not line is None:
                     print("Playing: " + line)
                     params = await getCaverPrms(line, ctx)
                     time = await extract_number_after_keyword(params, "-time")
