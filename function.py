@@ -217,7 +217,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     # chat GPT ВЕРНУТЬ
     print('generating answer')
     model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin',
-                    device="Tesla T4",
+                    device="cpu",
                     allow_download=True)
     output = model.generate(translated_text, max_tokens=(prompt_length * 100))
     print("DEV_TEMP_OUTPUT:", output)
