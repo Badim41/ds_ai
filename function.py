@@ -215,6 +215,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
 
     # chat GPT ВЕРНУТЬ
     print('1')
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     model = GPT4All(model_name='nous-hermes-13b.ggmlv3.q4_0.bin',
                     device="cuda:0",
                     allow_download=True)
