@@ -72,7 +72,6 @@ def yt_download(link):
     import datetime
     current_datetime = datetime.datetime.now()
     current_time = current_datetime.time()
-    print("Начало загрузки видео:", current_time)
     ydl_opts = {
         'format': 'bestaudio',
         'outtmpl': '%(title)s',
@@ -89,7 +88,6 @@ def yt_download(link):
 
     current_datetime = datetime.datetime.now()
     current_time = current_datetime.time()
-    print("Конец загрузки видео:", current_time)
     return download_path
 
 
