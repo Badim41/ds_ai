@@ -2,7 +2,7 @@ import argparse
 import gc
 import os
 
-from src.rvc import Config, load_hubert, get_vc, rvc_infer
+from rvc import Config, load_hubert, get_vc, rvc_infer
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 rvc_models_dir = os.path.join(BASE_DIR, '../rvc_models')
