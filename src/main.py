@@ -1,4 +1,4 @@
-import os2
+import os
 import configparser
 
 config = configparser.ConfigParser()
