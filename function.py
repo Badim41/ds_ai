@@ -162,6 +162,7 @@ async def replace_numbers_in_sentence(sentence):
 
     return ' '.join(return_sentence).strip()
 
+mat_found = False
 
 # источник: https://matershinik.narod.ru/
 mat_massive = {
@@ -184,6 +185,7 @@ async def replace_mat_in_sentence(sentence):
     while i < len(words):
         current_word = words[i]
         if current_word in mat_massive:
+            mat_found = True
             sensure = words[i].replace(current_word, ("*" * len(current_word)))
             return_sentence.append(sensure)
             i += 1
@@ -244,7 +246,7 @@ async def correct_number(number_input, operation_number):
 
 
 async def voice_commands(sentence, ctx):
-    global admin, all_admin, video_length, prompt_length, files_found, language
+    global admin, all_admin, video_length, prompt_length, files_found, language, mat_found
     # убрать ключевое слово
     sentence = sentence.split(' ', 1)[-1]
 
@@ -317,7 +319,7 @@ async def voice_commands(sentence, ctx):
         return True
 
     # маты
-    if "**" in sentence:
+    if mat_found:
         if currentAIname == "Фарадей":
             await text_to_speech("Эээээээ, не выражаться!", False, ctx)
             return True
@@ -332,7 +334,7 @@ async def voice_commands(sentence, ctx):
             await result_command_change(f"Протокол {protocol_number}", Color.GRAY)
         sentence = sentence[sentence.index(str(protocol_number) + "") + len(str(protocol_number)):]
         if protocol_number == 999:
-            with open(sentence, "r", encoding="utf-8") as reader:
+            with open(spokenText, "r", encoding="utf-8") as reader:
                 await write_in_discord(ctx, reader.readlines())
             return True
         # отчистить память
