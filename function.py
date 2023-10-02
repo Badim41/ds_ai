@@ -6,8 +6,9 @@ import time
 import threading
 import os
 from gtts import gTTS
-from gpt4all import GPT4All, Embed4All
+from gpt4all import GPT4All
 from discord_bot import config
+from discord_bot import write_in_discord
 class Color:
     RESET = '\033[0m'
     RED = '\033[38;2;255;0;0m'  # Красный
@@ -227,7 +228,6 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     translated_text = output
 
     if writeAnswer:
-        from discord_bot import write_in_discord
         await write_in_discord(ctx, translated_text)
     await text_to_speech(translated_text, write_in_memory, ctx)
 
@@ -324,8 +324,12 @@ async def voice_commands(sentence, ctx):
             print("Протокол", protocol_number)
             await result_command_change(f"Протокол {protocol_number}", Color.GRAY)
         sentence = sentence[sentence.index(str(protocol_number) + "") + len(str(protocol_number)):]
+        if protocol_number == 999:
+            with open(sentence, "r", encoding="utf-8") as reader:
+                await write_in_discord(ctx, reader.readlines())
+            return True
         # отчистить память
-        if protocol_number == 998:
+        elif protocol_number == 998:
             try:
                 with open(f"texts/memories/{await utf_code(currentAIname)}.txt", "w") as create_file:
                     create_file.write(
@@ -344,7 +348,16 @@ async def voice_commands(sentence, ctx):
             files_found = 0
             return True
         # последний звук
-        elif protocol_number == 33:
+        elif protocol_number == 32:
+            if not os.path.exists("2.mp3"):
+                await text_to_speech("не найден файл", False, ctx)
+                return True
+            await playSoundFile("2.mp3", -1, 0, ctx)
+            return True
+        elif protocol_number == 31:
+            if not os.path.exists("1.mp3"):
+                await text_to_speech("не найден файл", False, ctx)
+                return True
             await playSoundFile("1.mp3", -1, 0, ctx)
             return True
         # произнести текст
@@ -472,7 +485,6 @@ async def textInDiscord(message, ctx):
         message = await replaceWords(message, "пользовател", user)
         message = await removePunctuation(message, 3)
     print("writing " + message)
-    from discord_bot import write_in_discord
     await write_in_discord(ctx, message)
 
 
