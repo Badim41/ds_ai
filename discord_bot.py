@@ -23,7 +23,7 @@ default_settings = {
     "robotNameNeed": config.getboolean('Default', 'robotNameNeed')
 }
 
-bot = commands.AutoShardedBot(intents=discord.Intents.all(), command_prefix="/")
+bot = commands.AutoShardedBot(intents=discord.Intents.all(), command_prefix="\\")
 async def main():
     await bot.start(discord_token)
 
