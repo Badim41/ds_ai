@@ -1,0 +1,15 @@
+gpt4all
+urllib3
+charset_normalizer
+idna
+certifi
+vosk
+pyaudio~=0.2.13
+translate~=3.6.1
+cffi
+sounddevice~=0.4.6
+discord.py[voice]> 2
+discord > 2
+config
+gTTS
+IPython
