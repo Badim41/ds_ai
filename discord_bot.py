@@ -61,7 +61,7 @@ async def say(ctx, *args):
         message = "робот " + message
     else:
         print(message)
-    message = replace_mat_in_sentence(message)
+    message = await replace_mat_in_sentence(message)
     print(type(message))
     # Проверяем, находится ли автор команды в войс-чате
     if ctx.author.voice:
