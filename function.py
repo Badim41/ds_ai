@@ -185,6 +185,7 @@ async def replace_mat_in_sentence(sentence):
     while i < len(words):
         current_word = words[i]
         if current_word in mat_massive:
+            global mat_found
             mat_found = True
             sensure = words[i].replace(current_word, ("*" * len(current_word)))
             return_sentence.append(sensure)
