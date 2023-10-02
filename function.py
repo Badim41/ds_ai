@@ -345,7 +345,7 @@ async def voice_commands(sentence, ctx):
             return True
         # последний звук
         elif protocol_number == 33:
-            await playSoundFile("temp\\1.mp3", -1, 0, ctx)
+            await playSoundFile("1.mp3", -1, 0, ctx)
             return True
         # произнести текст
         elif protocol_number == 24:
