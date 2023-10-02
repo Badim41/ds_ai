@@ -169,7 +169,7 @@ mat_massive = {
 }
 
 async def replace_mat_in_sentence(sentence):
-    words = sentence.split(" ").lower()
+    words = sentence.lower().split(" ")
     return_sentence = []
 
     i = 0
