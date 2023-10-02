@@ -861,20 +861,25 @@ async def text_to_speech(tts, write_in_memory, ctx):
     if language == "русский":
         pitch += 1
     # используем RVC
-    command = [
-        "python",
-        "src/only_voice_change.py",
-        "-i", "1.mp3",
-        "-o", "2.mp3",
-        "-dir", "Фарадей",
-        "-p", "0",
-        "-ir", "0.5",
-        "-fr", "3",
-        "-rms", "0.3",
-        "-pro", "0.15",
-        "-cuda", "1"
-    ]
-    await console_command_runner(command, ctx)
+    try:
+        command = [
+            "python",
+            "src/only_voice_change.py",
+            "-i", "1.mp3",
+            "-o", "2.mp3",
+            "-dir", currentAIname,
+            "-p", pitch,
+            "-ir", "0.5",
+            "-fr", "3",
+            "-rms", "0.3",
+            "-pro", "0.15",
+            "-cuda", "1"
+        ]
+        print("run RVC")
+        subprocess.run(command, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Ошибка при выполнении команды: {e}")
+    print("done RVC")
     await playSoundFile("2.mp3", -1, 0, ctx)
     print(f"tts: {tts}")
 
