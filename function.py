@@ -428,11 +428,11 @@ async def voice_commands(sentence, ctx):
 
     if ("измени" in sentence or "смени" in sentence) and "язык на" in sentence:
         # выбираем слово после "язык"
-        language = sentence[sentence.index("язык на") + 8:]
+        language_input = sentence[sentence.index("язык на") + 8:]
         if " " in language:
-            language = language[:language.index(" ")]
-        if language in ["русский", "английский", "украинский", "татарский"]:
-            await text_to_speech(f"язык изменён на {language}", False, ctx)
+            language_input = language_input[:language_input.index(" ")]
+        if language_input in ["русский", "английский", "украинский", "татарский"]:
+            await text_to_speech(f"язык изменён на {language_input}", False, ctx)
             if language == "русский":
                 await set_config("language", "russian")
             elif language == "английский":
