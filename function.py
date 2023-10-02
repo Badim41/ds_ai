@@ -861,6 +861,7 @@ async def text_to_speech(tts, write_in_memory, ctx):
     if language == "русский":
         pitch += 1
     # используем RVC
+    successful = True
     try:
         command = [
             "python",
@@ -878,9 +879,11 @@ async def text_to_speech(tts, write_in_memory, ctx):
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
         print(f"Ошибка при выполнении команды: {e}")
-    print("done RVC")
-    await playSoundFile("2.mp3", -1, 0, ctx)
-    print(f"tts: {tts}")
+        successful = False
+    if successful:
+        print("done RVC")
+        await playSoundFile("2.mp3", -1, 0, ctx)
+        print(f"tts: {tts}")
 
 
 async def setModelWithLanguage(language, model_type):
