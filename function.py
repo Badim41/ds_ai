@@ -220,7 +220,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     #                 allow_download=True)
     # output = model.generate(translated_text, max_tokens=(prompt_length * 100))
     embedder = Embed4All()
-    output = embedder.embed(translated_text)
+    output = embedder.embed("translated_text")
     print(output)
     translator = Translator(from_lang="en", to_lang="ru")
     translated_text = translator.translate(output)
