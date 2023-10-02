@@ -677,7 +677,7 @@ async def download_audio_process(ctx):
                         break
 
                     print("Скачивание файла....")
-                    params = getCaverPrms(line, ctx)
+                    params = await getCaverPrms(line, ctx)
                     await console_command_runner(params, ctx)
                     time.sleep(0.5)
                     await remove_line_from_txt("caversAI/audio_links.txt", 1)
@@ -746,7 +746,7 @@ async def play_audio_process(ctx):
                 line = reader.readline()
                 if line:
                     print("Playing: " + line)
-                    params = getCaverPrms(line, ctx)
+                    params = await getCaverPrms(line, ctx)
                     time = await extract_number_after_keyword(params, "-time")
                     stop_milliseconds = await extract_number_after_keyword(params, "-start")
                     audio_path = line.split()[0]
