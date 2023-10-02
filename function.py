@@ -875,7 +875,7 @@ async def text_to_speech(tts, write_in_memory, ctx):
             "-pro", "0.15",
             "-cuda", "1"
         ]
-        print("run RVC")
+        print("run RVC, AIName:", currentAIname)
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
         print(f"Ошибка при выполнении команды: {e}")
