@@ -285,20 +285,36 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
                 print(error_msg, is_webui)
         song_dir = os.path.join(output_dir, song_id)
         # print("SONG_DIR:", song_dir)
+        # if not os.path.exists(song_dir):
+        #     if path_exist(song_dir):
+        #         print("DEV_TEMP: REMOVING " + os.path.join(output_dir, song_id))
+        #         shutil.rmtree(song_dir)
+        #         print("DEV_TEMP: REMOVED")
+        #     print("Not exist")
+        #     os.makedirs(song_dir)
+        #     orig_song_path, vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path = preprocess_song(
+        #         song_input, mdx_model_params, song_id, is_webui, input_type)
+        # else:
+        #     print("Exist")
+        #     vocals_path, main_vocals_path = None, None
+        #     paths = get_audio_paths(song_dir)
+        #     orig_song_path, instrumentals_path, main_vocals_dereverb_path, backup_vocals_path = paths
         if not os.path.exists(song_dir):
-            if path_exist(song_dir):
-                print("DEV_TEMP: REMOVING " + os.path.join(output_dir, song_id))
-                shutil.rmtree(song_dir)
-                print("DEV_TEMP: REMOVED")
-            print("Not exist")
             os.makedirs(song_dir)
             orig_song_path, vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path = preprocess_song(
                 song_input, mdx_model_params, song_id, is_webui, input_type)
+
         else:
-            print("Exist")
             vocals_path, main_vocals_path = None, None
             paths = get_audio_paths(song_dir)
-            orig_song_path, instrumentals_path, main_vocals_dereverb_path, backup_vocals_path = paths
+
+            # if any of the audio files aren't available or keep intermediate files, rerun preprocess
+            if any(path is None for path in paths) or keep_files:
+                orig_song_path, vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path = preprocess_song(
+                    song_input, mdx_model_params, song_id, is_webui, input_type)
+            else:
+                orig_song_path, instrumentals_path, main_vocals_dereverb_path, backup_vocals_path = paths
+
         pitch_change = pitch_change * 12 + pitch_change_all
         ai_vocals_path = os.path.join(song_dir,
                                       f'{os.path.splitext(os.path.basename(orig_song_path))[0]}_{voice_model}_p{pitch_change}_i{index_rate}_fr{filter_radius}_rms{rms_mix_rate}_pro{protect}_{f0_method}{"" if f0_method != "mangio-crepe" else f"_{crepe_hop_length}"}.wav')
@@ -331,19 +347,6 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
             for file in intermediate_files:
                 if file and os.path.exists(file):
                     os.remove(file)
-        # Записываем путь файла в очередь
-        file_path = os.path.join(BASE_DIR, "caversAI\\queue.txt")
-
-        if os.path.exists(file_path):
-            lines = []
-            with open(file_path, "r") as reader:
-                for line in reader:
-                    lines.append(line)
-            with open(file_path, "w") as writer:
-                writer.writelines(lines)
-                writer.write(f"{ai_cover_path}\n")
-        else:
-            print(f"The file {file_path} does not exist.")
 
         return ai_cover_path
 
@@ -351,16 +354,16 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
         print(str(e), is_webui)
 
 
-def path_exist(song_dir):
-    try:
-        with open("songs_exist_list.txt", 'r') as reader:
-            lines = reader.readlines()
-            for line in lines:
-                if line == song_dir:
-                    return True
-    except IOError as e:
-        print(e)
-    return False
+# def path_exist(song_dir):
+#     try:
+#         with open("songs_exist_list.txt", 'r') as reader:
+#             lines = reader.readlines()
+#             for line in lines:
+#                 if line == song_dir:
+#                     return True
+#     except IOError as e:
+#         print(e)
+#     return False
 
 
 if __name__ == '__main__':
@@ -440,10 +443,12 @@ if __name__ == '__main__':
         print("DEV_TEMP: REMOVED")
     else:
         try:
-            with open("songs_exist_list.txt", 'r', encoding='utf-8') as reader:
-                lines = reader.readlines()
-                lines.append(cover_path)
-            with open("songs_exist_list.txt", 'w', encoding='utf-8') as writer:
+            # Записываем путь файла в очередь
+            with open("caversAI\\queue.txt", "r", encoding='utf-8') as reader:
+                for line in reader:
+                    lines = reader.readlines()
+            with open("caversAI\\queue.txt", "w", encoding='utf-8') as writer:
                 writer.writelines(lines)
+                writer.write(f"{cover_path}\n")
         except IOError as e:
             print(e)
