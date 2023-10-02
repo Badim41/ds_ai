@@ -5,7 +5,7 @@ import os
 from src.rvc import Config, load_hubert, get_vc, rvc_infer
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
+rvc_models_dir = os.path.join(BASE_DIR, '../rvc_models')
 
 
 def voice_change(voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
