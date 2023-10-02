@@ -861,7 +861,7 @@ async def text_to_speech(tts, write_in_memory, ctx):
     # используем RVC
     command = [
         "python",
-        "only_voice_change.py.py",
+        "src/only_voice_change.py.py",
         "-i", "1.mp3",
         "-o", "2.mp3",
         "-dir", currentAIname,
