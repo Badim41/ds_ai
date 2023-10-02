@@ -1003,5 +1003,4 @@ async def utf_code(text):
     with open("temp1", "w", encoding="cp1251") as file_utf8:
         file_utf8.write(text)
     with open("temp1", "r", encoding="cp1251") as file:
-        text = file.read()
-    return text
+        return file.read()
