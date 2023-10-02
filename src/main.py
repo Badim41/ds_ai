@@ -363,17 +363,6 @@ def path_exist(song_dir):
     return False
 
 
-def utf_code(text):
-    if type(text) == list:
-        textNew = text
-    else:
-        textNew = [text]
-    with open("temp1", "w", encoding="cp1251") as file_utf8:
-        file_utf8.writelines(textNew)
-    with open("temp1", "r", encoding="cp1251") as file:
-        return file.readlines()
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a AI cover song in the song_output/id directory.',
                                      add_help=True)
@@ -455,6 +444,6 @@ if __name__ == '__main__':
                 lines = reader.readlines()
                 lines.append(cover_path)
             with open("songs_exist_list.txt", 'w') as writer:
-                writer.writelines(utf_code(lines))
+                writer.writelines(lines)
         except IOError as e:
             print(e)
