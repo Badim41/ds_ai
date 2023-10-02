@@ -364,11 +364,14 @@ def path_exist(song_dir):
 
 
 def utf_code(text):
+    if type(text) == list:
+        textNew = text
+    else:
+        textNew = [text]
     with open("temp1", "w", encoding="cp1251") as file_utf8:
-        file_utf8.writelines(text)
+        file_utf8.writelines(textNew)
     with open("temp1", "r", encoding="cp1251") as file:
-        text = file.readlines()
-    return text
+        return file.readlines()
 
 
 if __name__ == '__main__':

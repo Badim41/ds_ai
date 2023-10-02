@@ -629,7 +629,7 @@ async def getCaverPrms(line, ctx):
     outputFormat = "mp3"
 
 
-    return f"python ..\\AICoverGen\\src\\main.py -i {url} -dir modelsRVC\\{voice} -p {pitch} -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat}"
+    return f"python src\\main.py -i {url} -dir modelsRVC\\{voice} -p {pitch} -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat}"
 
 
 # async def defaultRVCParams(filePath, pitch):
