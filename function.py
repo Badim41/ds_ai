@@ -363,6 +363,8 @@ async def voice_commands(sentence, ctx):
             if not admin:
                 await text_to_speech("нужны права администратора", False, ctx)
                 return True
+            if sentence is None:
+                sentence = spokenText
             await textInDiscord(sentence, ctx)
             return True
         # AICoverGen
