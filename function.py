@@ -220,14 +220,14 @@ async def translate(text):
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     print('generating answer')
-    with open("nomic/gpt_prompt.txt", "w", encoding="utf-8") as writer:
+    with open("gpt_prompt.txt", "w", encoding="utf-8") as writer:
         writer.write(prompt)
     while True:
-        with open("nomic/gpt_result.txt", "r", encoding="utf-8") as reader:
+        with open("gpt_result.txt", "r", encoding="utf-8") as reader:
             result = reader.readlines()
         if not result == "None":
             break
-    with open("nomic/gpt_result.txt", "w", encoding="utf-8") as writer:
+    with open("gpt_result.txt", "w", encoding="utf-8") as writer:
         writer.write("None")
     if not language == "english":
         translator = Translator(from_lang="en", to_lang=language[:2].lower())

@@ -18,13 +18,13 @@ def run():
                                                quantize_config=None)
     model_loaded = True
     while True:
-        with open("nomic/gpt_prompt.txt", "r", encoding="utf-8") as reader:
+        with open("gpt_prompt.txt", "r", encoding="utf-8") as reader:
             lines = reader.readlines()
             if lines[0] == "enter prompt":
                 time.sleep(0.25)
                 continue
             else:
-                with open("nomic/gpt_prompt.txt", "w", encoding="utf-8") as writer:
+                with open("gpt_prompt.txt", "w", encoding="utf-8") as writer:
                     writer.write("enter prompt")
                 prompt = ''.join(lines)
                 config.read('config.ini')
@@ -45,6 +45,6 @@ def run():
                 #               'max_length': tokens * 12,
                 #               'repetition_penalty': 2.0}
                 # out = model.generate(prompt, config_gpt)
-                with open("nomic/gpt_result.txt", "w", encoding="utf-8") as writer:
+                with open("gpt_result.txt", "w", encoding="utf-8") as writer:
                     writer.writelines(out)
                 print("DEV_TEMP_OUTPUT:", out)
