@@ -93,25 +93,23 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             raise ex
 
         try:
-            file_path = "texts\\memories\\" + str(await utf_code(currentAIname)) + ".txt"
-            if not os.path.exists(file_path):
-                print("File doesn't exist, creating a new one.")
-                with open(file_path, "w", encoding="utf-8") as create_file:
-                    create_file.write(
-                        await utf_code("Человек: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n"))
+            # file_path = "texts\\memories\\" + str(await utf_code(currentAIname)) + ".txt"
+            # if not os.path.exists(file_path):
+            #     print("File doesn't exist, creating a new one.")
+            #     with open(file_path, "w", encoding="utf-8") as create_file:
+            #         create_file.write(
+            #             await utf_code("Человек: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n"))
             # Open the file
-            with open(file_path, "r", encoding="cp1251") as file:
-                file_content = file.read()
-                prompt = f"Представь, что тебя зовут {await utf_code(currentAIname)}. {currentAIinfo}." \
-                         f"Тебе нужно вести диалог. Ты не говоришь, что какую-либо выполняешь роль (Например: " \
-                         f"я не могу выполнить такие действия, так как это нарушает мою роль). " \
-                         f"Отвечай как можно короче. " \
-                         f"У тебя ({await utf_code(currentAIname)}) есть воспоминания:\"{file_content}\". " \
-                         f"Напиши ответ человеку, он говорит:\""
-                index_of_space = temp_spokenText.find(" ")
-                if index_of_space != -1:
-                    temp_spokenText = temp_spokenText[index_of_space + 1:]
-                prompt += temp_spokenText + "\"."
+            # with open(file_path, "r", encoding="cp1251") as file:
+            #     file_content = file.read()
+            prompt = temp_spokenText
+            # prompt = f"Представь, что тебя зовут {await utf_code(currentAIname)}. {currentAIinfo}." \
+            #          f"Тебе нужно вести диалог. Ты не говоришь, что какую-либо выполняешь роль (Например: " \
+            #          f"я не могу выполнить такие действия, так как это нарушает мою роль). " \
+            #          f"Отвечай как можно короче. " \
+            #          f"У тебя ({await utf_code(currentAIname)}) есть воспоминания:\"{file_content}\". " \
+            #          f"Напиши ответ человеку, он говорит:\""
+            # prompt += temp_spokenText + "\"."
         except Exception as ex:
             raise ex
 
