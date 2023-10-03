@@ -14,7 +14,6 @@ def run():
                                                use_safetensors=True,
                                                trust_remote_code=True,
                                                device="cuda:0",
-                                               device_map="auto",
                                                use_triton=True,
                                                quantize_config=None)
     model_loaded = True
