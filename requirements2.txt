@@ -12,6 +12,7 @@ discord > 2
 config
 gTTS
 IPython
-transformers
 auto-gptq
 transformers
+accelerate
+PIL
