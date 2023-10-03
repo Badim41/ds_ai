@@ -249,5 +249,7 @@ if __name__ == "__main__":
     pool = multiprocessing.Pool(processes=1)
     pool.apply_async(run)
     pool.close()
-    time.sleep(150)
+    while not model_loaded:
+        time.sleep(1)
+        global model_loaded
     bot.run(discord_token)
