@@ -38,7 +38,7 @@ async def on_ready():
     pool.apply_async(run)
     pool.close()
     while not model_loaded:
-        time.sleep(1)
+        await asyncio.sleep(1)
     print('Status: online')
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
