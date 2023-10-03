@@ -12,12 +12,5 @@ discord > 2
 config
 gTTS
 IPython
-GPT4All
-rich
-pandas
-pyarrow
-loguru
-pydantic
-peft
-wonderwords
-cohere
+transformers
+auto-gptq
