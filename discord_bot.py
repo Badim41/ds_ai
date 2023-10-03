@@ -1,3 +1,4 @@
+import multiprocessing
 import time
 import configparser
 
@@ -24,8 +25,11 @@ default_settings = {
 }
 
 bot = commands.AutoShardedBot(intents=discord.Intents.all(), command_prefix="\\")
+
+
 async def main():
     await bot.start(discord_token)
+
 
 @bot.event
 async def on_ready():
@@ -78,6 +82,9 @@ async def say(ctx, *args):
         await ctx.send("Вы должны находиться в войс-чате, чтобы использовать эту команду.")
 
 
+stop_milliseconds = 0
+
+
 @bot.command(help="пауза")
 async def pause(ctx):
     voice_client = ctx.voice_client
@@ -97,6 +104,7 @@ async def skip(ctx):
     if voice_client.is_playing():
         voice_client.stop()
         await ctx.send("Текущий трек пропущен ⏭️")
+        stop_milliseconds = 0
     else:
         await ctx.send("Нет активного аудио для пропуска.")
 
@@ -199,14 +207,17 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
         return
 
     # Создаем аудиофайл для проигрывания
+
     source = discord.FFmpegPCMAudio(audio_file_path, options=f"-ss {start_seconds} -t {duration}")
 
     # Проигрываем аудиофайл
     ctx.voice_client.play(source)
 
     # Ожидаем окончания проигрывания
+    global stop_milliseconds
     while ctx.voice_client.is_playing():
         await asyncio.sleep(1)
+        stop_milliseconds += 1000
 
 
 if __name__ == "__main__":

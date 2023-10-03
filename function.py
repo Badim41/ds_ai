@@ -1,3 +1,4 @@
+import multiprocessing
 import sys
 from translate import Translator
 import subprocess
@@ -162,6 +163,7 @@ async def replace_numbers_in_sentence(sentence):
 
     return ' '.join(return_sentence).strip()
 
+
 mat_found = False
 
 # источник: https://matershinik.narod.ru/
@@ -217,7 +219,6 @@ async def translate(text):
 
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
-
     print('generating answer')
     with open("nomic/gpt_prompt.txt", "w", encoding="utf-8") as writer:
         writer.write(prompt)
@@ -545,10 +546,14 @@ async def createAICaver(ctx):
     with open("caversAI\\audio_links.txt", "a") as writer:
         for line in lines:
             writer.write(await utf_code(line + "\n"))
-
-    await download_audio_process(ctx)
-    time.sleep(0.5)
-    await play_audio_process(ctx)
+    pool = multiprocessing.Pool(processes=3)
+    pool.apply_async(prepare_audio_process_cuda_0, (ctx,))
+    time.sleep(0.05)
+    pool.apply_async(prepare_audio_process_cuda_1, (ctx,))
+    time.sleep(0.05)
+    pool.apply_async(play_audio_process, (ctx,))
+    pool.close()
+    pool.join()
 
 
 async def getCaverPrms(line, ctx):
@@ -662,53 +667,83 @@ queue = True
 files_was = []
 file_have_links = True
 
-
-async def download_audio_process(ctx):
+cuda_is_busy = [False, False]
+async def prepare_audio_process_cuda_0(ctx):
     global file_have_links
     while file_have_links:
         try:
             with open("caversAI/audio_links.txt") as reader:
                 line = reader.readline()
-                if line:
-                    youtube_dl_path = "youtube-dl.exe"
+                if not line == "" and not line is None:
+                    # youtube_dl_path = "youtube-dl.exe"
                     if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
                         await text_to_speech("Видео должно быть с ютуба", False, ctx)
                         await result_command_change("Ссылка не с YT", Color.RED)
                         await remove_line_from_txt("caversAI/audio_links.txt", 1)
                         break
 
-                    url = line[line.index("https://"):].split()[0]
-                    if " " in url:
-                        url = url[:url.index(" ")]
+                    # url = line[line.index("https://"):].split()[0]
+                    # if " " in url:
+                    #     url = url[:url.index(" ")]
 
-                    command = f"{youtube_dl_path} {url} --max-filesize {video_length * 2 + 2}m --min-views 50000 --no-playlist --buffer-size 8K"
-                    if console_command_runner(command, ctx):
-                        print("Условия выполнены")
-                    else:
-                        print("Условия не выполнены")
+                    # command = f"{youtube_dl_path} {url} --max-filesize {video_length * 2 + 2}m --min-views 50000 --no-playlist --buffer-size 8K"
+                    # if console_command_runner(command, ctx):
+                    #     print("Условия выполнены")
+                    # else:
+                    #     print("Условия не выполнены")
+                    #     await remove_line_from_txt("caversAI/audio_links.txt", 1)
+                    #     break
+
+                    params = await getCaverPrms(line, ctx)
+                    params += " -cuda 0"
+                    cuda_is_busy[0] = True
+                    await remove_line_from_txt("caversAI/audio_links.txt", 1)
+                    print("запуск AICoverGen")
+                    await console_command_runner(params, ctx)
+                    time.sleep(0.05)
+
+                else:
+                    print("Больше нет ссылок")
+                    file_have_links = False
+        except (IOError, KeyboardInterrupt):
+            pass
+
+
+async def prepare_audio_process_cuda_1(ctx):
+    global file_have_links
+    while file_have_links:
+        try:
+            with open("caversAI/audio_links.txt") as reader:
+                while not cuda_is_busy[0]:
+                    time.sleep(0.1)
+                line = reader.readline()
+                if not line == "" and not line is None:
+                    # youtube_dl_path = "youtube-dl.exe"
+                    if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
+                        await text_to_speech("Видео должно быть с ютуба", False, ctx)
+                        await result_command_change("Ссылка не с YT", Color.RED)
                         await remove_line_from_txt("caversAI/audio_links.txt", 1)
                         break
 
-                    print("Скачивание файла....")
+                    # url = line[line.index("https://"):].split()[0]
+                    # if " " in url:
+                    #     url = url[:url.index(" ")]
+
+                    # command = f"{youtube_dl_path} {url} --max-filesize {video_length * 2 + 2}m --min-views 50000 --no-playlist --buffer-size 8K"
+                    # if console_command_runner(command, ctx):
+                    #     print("Условия выполнены")
+                    # else:
+                    #     print("Условия не выполнены")
+                    #     await remove_line_from_txt("caversAI/audio_links.txt", 1)
+                    #     break
+
                     params = await getCaverPrms(line, ctx)
-                    await console_command_runner(params, ctx)
-                    time.sleep(0.5)
+                    params += " -cuda 1"
+                    cuda_is_busy[1] = True
                     await remove_line_from_txt("caversAI/audio_links.txt", 1)
-                    # вместо этого записываем путь файла в main.py в AICoverGen
-                    # with queue_lock:
-                    #     with open("caversAI/queue.txt", "a") as fw:
-                    #         files_new = []
-                    #         await file_was_filler(audio_files_dir, files_new)
-                    #         for file_path in files_new:
-                    #             file_exist = False
-                    #             for files_was2 in files_was:
-                    #                 if file_path == files_was2:
-                    #                     file_exist = True
-                    #             if not file_exist and file_path.endswith("ver.wav"):
-                    #                 print("Новый файл: " + file_path)
-                    #                 fw.write(
-                    #                     f"{await utf_code(file_path)} {await utf_code(line[line.index('https'):].split()[0])}\n")
-                    #                 break
+                    print("запуск AICoverGen")
+                    await console_command_runner(params, ctx)
+                    time.sleep(0.05)
 
                 else:
                     print("Больше нет ссылок")
@@ -753,7 +788,8 @@ async def file_was_filler(folder, file_list):
 
 async def play_audio_process(ctx):
     try:
-        global queue, stop_milliseconds
+        global queue
+        from discord_bot import stop_milliseconds
         while queue:
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
@@ -764,8 +800,8 @@ async def play_audio_process(ctx):
                     stop_milliseconds = await extract_number_after_keyword(params, "-start")
                     audio_path = line.split()[0]
 
-                    await playSoundFile(audio_path, time, stop_milliseconds, ctx)
                     await result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
+                    await playSoundFile(audio_path, time, stop_milliseconds, ctx)
                     await remove_line_from_txt("caversAI/queue.txt", 1)
                 else:
                     time.sskip_audioleep(1)
