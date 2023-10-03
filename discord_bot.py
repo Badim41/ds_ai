@@ -33,12 +33,6 @@ async def main():
 
 @bot.event
 async def on_ready():
-    from GPT_runner import run, model_loaded
-    pool = multiprocessing.Pool(processes=1)
-    pool.apply_async(run)
-    pool.close()
-    while not model_loaded:
-        await asyncio.sleep(1)
     print('Status: online')
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
@@ -234,4 +228,10 @@ if __name__ == "__main__":
     else:
         print("Укажите discord_TOKEN")
         exit(-1)
+    from GPT_runner import run, model_loaded
+    pool = multiprocessing.Pool(processes=1)
+    pool.apply_async(run)
+    pool.close()
+    while not model_loaded:
+        time.sleep(1)
     bot.run(discord_token)
