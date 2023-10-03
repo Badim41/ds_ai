@@ -925,11 +925,7 @@ async def setModelWithLanguage(language, model_type):
     return None
 
 
-audio_playing = False
-
-
 async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
-    global audio_playing
     from pydub import AudioSegment
     from discord_bot import playSoundFileDiscord
 
@@ -938,16 +934,15 @@ async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
         return
 
     # Проверяем, чтобы ничего не играло
-    while audio_playing:
+    voice_client = ctx.voice_client
+    if voice_client.is_playing():
         print("already playing smth")
         time.sleep(0.1)
 
     if duration <= 0:
         duration = len(AudioSegment.from_file(audio_file_path)) / 1000
 
-    audio_playing = True
     await playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds)
-    audio_playing = False
     print("Аудио закончилось")
 
 
