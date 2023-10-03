@@ -1,4 +1,5 @@
 import multiprocessing
+import subprocess
 import time
 import configparser
 
@@ -85,7 +86,7 @@ async def say(ctx, *args):
 stop_milliseconds = 0
 
 
-@bot.command(help="пауза")
+@bot.command(aliases=['пауза'], help="пауза")
 async def pause(ctx):
     voice_client = ctx.voice_client
     if voice_client.is_playing():
@@ -98,7 +99,7 @@ async def pause(ctx):
         await ctx.send("Нет активного аудио для приостановки или продолжения.")
 
 
-@bot.command(help="пропуск")
+@bot.command(aliases=['скип'], help="пропуск")
 async def skip(ctx):
     voice_client = ctx.voice_client
     if voice_client.is_playing():
@@ -107,6 +108,22 @@ async def skip(ctx):
         stop_milliseconds = 0
     else:
         await ctx.send("Нет активного аудио для пропуска.")
+
+
+@bot.command(aliases=['cmd'], help="командная строка")
+async def command_line(ctx, *args):
+    text = " ".join(args)
+    try:
+        process = subprocess.Popen(text, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        stdout, stderr = process.communicate()
+
+        for line in stdout.decode().split('\n'):
+            await ctx.send(line)
+        for line in stderr.decode().split('\n'):
+            await ctx.send(line)
+
+    except (subprocess.CalledProcessError, IOError, Exception):
+        pass
 
 
 stopRecognize = False
