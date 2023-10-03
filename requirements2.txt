@@ -1,4 +1,3 @@
-gpt4all
 urllib3
 charset_normalizer
 idna
@@ -13,3 +12,12 @@ discord > 2
 config
 gTTS
 IPython
+GPT4All
+rich
+pandas
+pyarrow
+loguru
+pydantic
+peft
+wonderwords
+cohere

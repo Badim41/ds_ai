@@ -33,10 +33,12 @@ async def main():
 
 @bot.event
 async def on_ready():
-    from GPT_runner import run
+    from GPT_runner import run, model_loaded
     pool = multiprocessing.Pool(processes=1)
     pool.apply_async(run)
     pool.close()
+    while not model_loaded:
+        time.sleep(1)
     print('Status: online')
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
