@@ -222,8 +222,8 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     while True:
         with open("gpt_result.txt", "r", encoding="utf-8") as reader:
             result = reader.readlines()
-            result = '\n'.join(result)
         if not result == "None":
+            result = '\n'.join(result)
             break
     with open("gpt_result.txt", "w", encoding="utf-8") as writer:
         writer.write("None")
