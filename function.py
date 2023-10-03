@@ -218,7 +218,6 @@ async def translate(text):
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
 
-    # chat GPT ВЕРНУТЬ
     print('generating answer')
     with open("nomic/gpt_prompt.txt", "w", encoding="utf-8") as writer:
         writer.write(prompt)
@@ -229,7 +228,9 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
             break
     with open("nomic/gpt_result.txt", "w", encoding="utf-8") as writer:
         writer.write("None")
-
+    if not language == "english":
+        translator = Translator(from_lang="en", to_lang=language[:2].lower())
+        result = translator.translate(result)
     if writeAnswer:
         await write_in_discord(ctx, result)
     await text_to_speech(result, write_in_memory, ctx)
@@ -413,8 +414,8 @@ async def voice_commands(sentence, ctx):
     if "длина запроса" in sentence:
         if sentence != "длина запроса":
             number = await extract_number_after_keyword(sentence, "длина запроса")
-            if number > 40:
-                await set_config("prompt_length", 40)
+            if number > 4000:
+                await set_config("prompt_length", 4000)
                 await text_to_speech(f"Слишком большое число. Длина запроса: {prompt_length}", False, ctx)
                 return True
             if number != -1:
