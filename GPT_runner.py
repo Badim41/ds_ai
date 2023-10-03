@@ -4,9 +4,10 @@ import textwrap
 import time
 model_loaded = False
 def run():
+    global model_loaded
+    model = GPT4AllGPU("decapoda-research/llama-7b-hf")
+    model_loaded = True
     while True:
-        model = GPT4AllGPU("decapoda-research/llama-7b-hf")
-        model_loaded = True
         with open("nomic/gpt_prompt.txt", "r", encoding="utf-8") as reader:
             lines = reader.readlines()
             if lines[0] == "enter prompt":
