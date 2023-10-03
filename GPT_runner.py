@@ -5,7 +5,7 @@ import time
 model_loaded = False
 def run():
     global model_loaded
-    model = GPT4AllGPU("ai-forever/ruGPT-3.5-13B")
+    model = GPT4AllGPU("decapoda-research/llama-7b-hf")
     model_loaded = True
     while True:
         with open("nomic/gpt_prompt.txt", "r", encoding="utf-8") as reader:
