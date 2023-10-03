@@ -217,29 +217,22 @@ async def translate(text):
 
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
-    # ru -> en
-    if language != "english":
-        translator = Translator(from_lang=language[:2].lower(), to_lang="en")
-        translated_text = translator.translate(prompt)
-    else:
-        translated_text = prompt
 
     # chat GPT ВЕРНУТЬ
     print('generating answer')
-    model = GPT4All(model_name='orca-mini-3b.ggmlv3.q4_0.bin',
-                    device="cpu",
-                    allow_download=True)
-    output = model.generate(translated_text, max_tokens=(prompt_length * 100))
-    print("DEV_TEMP_OUTPUT:", output)
-    translator = Translator(from_lang="en", to_lang="ru")
-    translated_text = translator.translate(output)
-
-    print(translated_text)
-    translated_text = output
+    with open("nomic/gpt_prompt.txt", "w", encoding="utf-8") as writer:
+        writer.write(prompt)
+    while True:
+        with open("nomic/gpt_result.txt", "r", encoding="utf-8") as reader:
+            result = reader.readlines()
+        if not result == "None":
+            break
+    with open("nomic/gpt_result.txt", "w", encoding="utf-8") as writer:
+        writer.write("None")
 
     if writeAnswer:
-        await write_in_discord(ctx, translated_text)
-    await text_to_speech(translated_text, write_in_memory, ctx)
+        await write_in_discord(ctx, result)
+    await text_to_speech(result, write_in_memory, ctx)
 
 
 async def correct_number(number_input, operation_number):
