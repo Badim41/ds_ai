@@ -245,11 +245,14 @@ if __name__ == "__main__":
     else:
         print("Укажите discord_TOKEN")
         exit(-1)
-    from GPT_runner import run, model_loaded
+    from GPT_runner import run
     pool = multiprocessing.Pool(processes=1)
     pool.apply_async(run)
     pool.close()
-    while not model_loaded:
+    while True:
+        from GPT_runner import model_loaded
+        if model_loaded:
+            break
         time.sleep(1)
-        global model_loaded
+
     bot.run(discord_token)
