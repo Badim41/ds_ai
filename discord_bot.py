@@ -232,5 +232,5 @@ if __name__ == "__main__":
     pool = multiprocessing.Pool(processes=1)
     pool.apply_async(run)
     pool.close()
-    time.sleep(60)
+    time.sleep(150)
     bot.run(discord_token)
