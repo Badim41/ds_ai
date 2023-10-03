@@ -7,7 +7,6 @@ import time
 import threading
 import os
 from gtts import gTTS
-from gpt4all import GPT4All
 from discord_bot import config
 from discord_bot import write_in_discord
 
@@ -229,8 +228,8 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
             break
     with open("gpt_result.txt", "w", encoding="utf-8") as writer:
         writer.write("None")
-    if not language == "english":
-        translator = Translator(from_lang="en", to_lang=language[:2].lower())
+    if not language == "russian":
+        translator = Translator(from_lang="ru", to_lang=language[:2].lower())
         result = translator.translate(result)
     if writeAnswer:
         await write_in_discord(ctx, result)
