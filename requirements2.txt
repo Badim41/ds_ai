@@ -14,4 +14,4 @@ gTTS
 IPython
 transformers
 auto-gptq
-auto-gptq[triton]
+transformers
