@@ -1,29 +1,28 @@
-from transformers import AutoTokenizer
-from auto_gptq import AutoGPTQForCausalLM
+# nums = []
+#
+#
+# def count_variants(len):
+#     number_variants = 1
+#     for i in range(1 + len):
+#         if i < 1:
+#             continue
+#         number_variants *= i
+#         # print(number_variants)
+#     return number_variants
+#
+#
+# print(count_variants(16) * (8*12+5))
 
+print(124 / 36**6)
+print(1 / 17554695.96774194)
+num = int("1" + ("0" * 24))
+print(len(str(num)))
 
-model_name = 'fffrrt/ruGPT-3.5-13B-GPTQ'
-model_basename = 'gptq_model-4bit-128g'
-
-tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
-model = AutoGPTQForCausalLM.from_quantized(model_name,
-        model_basename = model_basename,
-        use_safetensors=True,
-        trust_remote_code=True,
-        device="cuda:0",
-        use_triton=False,
-        quantize_config=None)
-
-text = "Чтобы подружиться с осьминогом, нужно: \n1."
-
-encoded_input = tokenizer(text, return_tensors='pt').to('cuda:0')
-output = model.generate(
-    **encoded_input,
-    num_beams=4,
-    max_new_tokens=160,
-    no_repeat_ngram_size=2,
-    # num_return_sequences=5,
-    # do_sample=True
-)
-
-print(tokenizer.decode(output[0], skip_special_tokens=True))
+num_result = []
+while num / 16 >= 1:
+    num_result.append(str(int(num / 16)))
+    num -= 16 * int(num / 16)
+num_result.append(str(num))
+num = ''.join(num_result)
+print(num)
+print(len(num))
