@@ -14,5 +14,3 @@ gTTS
 IPython
 auto-gptq
 transformers
-accelerate
-PIL
