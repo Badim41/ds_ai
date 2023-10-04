@@ -70,14 +70,14 @@ async def say(ctx, *args):
     # Проверяем, находится ли автор команды в войс-чате
     if ctx.author.voice:
         # Получаем войс-канал автора команды
-        voice_channel = ctx.author.voice.channel
-        # Проверяем, находится ли бот уже в каком-либо войс-чате
-        if ctx.voice_client is None:
-            # Если бот не находится в войс-чате, подключаем его
-            await voice_channel.connect()
-        else:
-            # Если бот уже находится в войс-чате, перемещаем его в новый войс-канал
-            await ctx.voice_client.move_to(voice_channel)
+        # voice_channel = ctx.author.voice.channel
+        # # Проверяем, находится ли бот уже в каком-либо войс-чате
+        # if ctx.voice_client is None:
+        #     # Если бот не находится в войс-чате, подключаем его
+        #     await voice_channel.connect()
+        # else:
+        #     # Если бот уже находится в войс-чате, перемещаем его в новый войс-канал
+        #     await ctx.voice_client.move_to(voice_channel)
         await run_main_with_settings(ctx, message, True)
     else:
         await ctx.send("Вы должны находиться в войс-чате, чтобы использовать эту команду.")
