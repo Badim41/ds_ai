@@ -47,6 +47,13 @@ async def set_config(key, value):
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
+        
+def set_config_static_values(key, value):
+    config.read('config.ini')
+    config.set('Values', key, value)
+    # Сохранение
+    with open('config.ini', 'w') as configfile:
+        config.write(configfile)
 
 
 async def start_bot(ctx, spokenTextArg, writeAnswer):
@@ -544,15 +551,18 @@ async def createAICaver(ctx):
 
     with open("caversAI/audio_links.txt", "a") as writer:
         for line in lines:
-            writer.write(await utf_code(line + "\n"))
-    pool = multiprocessing.Pool(processes=3)
-    pool.apply_async(prepare_audio_process_cuda_0, (ctx,))
-    time.sleep(0.05)
-    pool.apply_async(prepare_audio_process_cuda_1, (ctx,))
-    time.sleep(0.05)
-    pool.apply_async(play_audio_process, (ctx,))
-    pool.close()
-    pool.join()
+            writer.write(line + "\n")
+    config.read('config.ini')
+    continue_process = config.getboolean('Values', 'queue')
+    if not continue_process:
+        pool = multiprocessing.Pool(processes=3)
+        pool.apply_async(prepare_audio_process_cuda_0, (ctx,))
+        time.sleep(0.05)
+        pool.apply_async(prepare_audio_process_cuda_1, (ctx,))
+        time.sleep(0.05)
+        pool.apply_async(play_audio_process, (ctx,))
+        pool.close()
+        pool.join()
 
 
 async def getCaverPrms(line, ctx):
@@ -660,20 +670,13 @@ async def getCaverPrms(line, ctx):
 # async def defaultRVCParams(filePath, pitch):
 #     return f"python ../AICoverGen/src/main.py -i {filePath} -dir modelsRVC/{await utf_code(currentAIname)} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
-
-queue_lock = threading.Lock()
-queue = True
-files_was = []
-file_have_links = True
-
-cuda_is_busy = [False, False]
 async def prepare_audio_process_cuda_0(ctx):
-    global file_have_links
-    while file_have_links:
+    while True:
         try:
             with open("caversAI/audio_links.txt") as reader:
                 line = reader.readline()
                 if not line == "" and not line is None:
+                    set_config_static_values("cuda0_is_busy", "True")
                     # youtube_dl_path = "youtube-dl.exe"
                     if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
                         await text_to_speech("Видео должно быть с ютуба", False, ctx)
@@ -695,28 +698,29 @@ async def prepare_audio_process_cuda_0(ctx):
 
                     params = await getCaverPrms(line, ctx)
                     params += " -cuda 0"
-                    cuda_is_busy[0] = True
                     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     print("запуск AICoverGen")
                     await console_command_runner(params, ctx)
                     time.sleep(0.05)
-
                 else:
-                    print("Больше нет ссылок")
-                    file_have_links = False
+                    config.read('config.ini')
+                    continue_process = config.getboolean('Values', 'cuda1_is_busy')
+                    if not continue_process:
+                        print("Больше нет ссылок")
+                        set_config_static_values("queue", "False")
+                        set_config_static_values("cuda0_is_busy", "False")
+                        break
         except (IOError, KeyboardInterrupt):
             pass
 
 
 async def prepare_audio_process_cuda_1(ctx):
-    global file_have_links
-    while file_have_links:
+    while True:
         try:
             with open("caversAI/audio_links.txt") as reader:
-                while not cuda_is_busy[0]:
-                    time.sleep(0.1)
                 line = reader.readline()
                 if not line == "" and not line is None:
+                    set_config_static_values("cuda1_is_busy", "True")
                     # youtube_dl_path = "youtube-dl.exe"
                     if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
                         await text_to_speech("Видео должно быть с ютуба", False, ctx)
@@ -738,15 +742,18 @@ async def prepare_audio_process_cuda_1(ctx):
 
                     params = await getCaverPrms(line, ctx)
                     params += " -cuda 1"
-                    cuda_is_busy[1] = True
                     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     print("запуск AICoverGen")
                     await console_command_runner(params, ctx)
                     time.sleep(0.05)
-
                 else:
-                    print("Больше нет ссылок")
-                    file_have_links = False
+                    config.read('config.ini')
+                    continue_process = config.getboolean('Values', 'cuda0_is_busy')
+                    if not continue_process:
+                        print("Больше нет ссылок")
+                        set_config_static_values("queue", "False")
+                        set_config_static_values("cuda1_is_busy", "False")
+                        break
         except (IOError, KeyboardInterrupt):
             pass
 
@@ -787,9 +794,9 @@ async def file_was_filler(folder, file_list):
 
 async def play_audio_process(ctx):
     try:
-        global queue
+        set_config_static_values("queue", "True")
         from discord_bot import stop_milliseconds
-        while queue:
+        while True:
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
                 if not line is None:
@@ -803,9 +810,11 @@ async def play_audio_process(ctx):
                     await playSoundFile(audio_path, time, stop_milliseconds, ctx)
                     await remove_line_from_txt("caversAI/queue.txt", 1)
                 else:
-                    time.sskip_audioleep(1)
-                    if not file_have_links:
-                        queue = False
+                    config.read('config.ini')
+                    continue_process = config.getboolean('Values', 'queue')
+                    if not continue_process:
+                        print("file_have_links - False")
+                        break
     except (IOError, KeyboardInterrupt):
         pass
 

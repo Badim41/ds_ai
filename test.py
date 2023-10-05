@@ -32,15 +32,16 @@ import time
 # print(len(num))
 spokenText = "протокол 13 -url https://www.youtube.com/watch?v=TFtjM6piFPY \nпротокол 13 -url https://www.youtube.com/watch?v=TFtjM6piFPY \nпротокол 13 -url https://www.youtube.com/watch?v=TFtjM6piFPY \nпротокол 13 -url https://www.youtube.com/watch?v=TFtjM6piFPY"
 
-static_values = configparser.ConfigParser()
+config = configparser.ConfigParser()
 
 
-def set_config_values(key, value):
-    static_values.read('config_values.ini')
-    static_values.set('Default', key, value)
+def set_config_static_values(key, value):
+    config.read('config.ini')
+    config.set('Values', key, value)
     # Сохранение
-    with open('config_values.ini', 'w') as configfile:
-        static_values.write(configfile)
+    with open('config.ini', 'w') as configfile:
+        config.write(configfile)
+
 
 
 def createAICaver(ctx):
@@ -54,15 +55,11 @@ def createAICaver(ctx):
     with open("caversAI/audio_links.txt", "a") as writer:
         for line in lines:
             writer.write(line + "\n")
-    pool = multiprocessing.Pool(processes=1)
-    pool2 = multiprocessing.Pool(processes=1)
+    pool = multiprocessing.Pool(processes=2)
     pool.apply_async(prepare_audio_process_cuda_0, (ctx,))
-    time.sleep(0.05)
-    pool2.apply_async(play_audio_process, (ctx,))
+    pool.apply_async(play_audio_process, (ctx,))
     pool.close()
-    pool2.close()
     pool.join()
-    pool2.join()
 
 
 def prepare_audio_process_cuda_0(ctx):
@@ -95,11 +92,15 @@ def prepare_audio_process_cuda_0(ctx):
                     print("запуск AICoverGen")
                     print(params, ctx)
                     time.sleep(5)
-                    with open("caversAI/queue.txt", "r") as writer:
-                        writer.write("path/path/file.mp3 -start 0 -time -1\n")
+                    lines = []
+                    with open("caversAI/queue.txt", "r") as reader:
+                        lines = reader.readlines()
+                    lines.append("path/path/file.mp3 -start 0 -time -1\n")
+                    with open("caversAI/queue.txt", "w") as writer:
+                        writer.writelines(lines)
                 else:
                     print("Больше нет ссылок")
-                    set_config_values("queue", "False")
+                    set_config_static_values("queue", "False")
                     break
         except (IOError, KeyboardInterrupt):
             pass
@@ -222,7 +223,7 @@ def getCaverPrms(line, ctx):
 
 
 def play_audio_process(ctx):
-    set_config_values("queue", "True")
+    set_config_static_values("queue", "True")
     while True:
         with open("caversAI/queue.txt", "r") as reader:
             line = reader.readline()
@@ -236,10 +237,10 @@ def play_audio_process(ctx):
                 playSoundFile(audio_path, time, stop_milliseconds, ctx)
                 remove_line_from_txt("caversAI/queue.txt", 1)
             else:
-                static_values.read('config_values.ini')
-                continue_process = static_values.getboolean('Default', 'queue')
+                config.read('config.ini')
+                continue_process = config.getboolean('Values', 'queue')
                 if not continue_process:
-                    print("file_have_links - False")
+                    print("==============================================")
                     break
 
 
@@ -282,6 +283,4 @@ def playSoundFile(audio_file_path, duration, start_seconds, ctx):
 
 
 if __name__ == "__main__":
-    with open("B:\ds_ai\caversAI\queue.txt", "r") as writer:
-        writer.write("path/path/file.mp3 -start 0 -time -1\n")
-    # createAICaver("context")
+    createAICaver("context")

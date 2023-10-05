@@ -2,8 +2,8 @@ import os
 import configparser
 
 config = configparser.ConfigParser()
-config.read('config_values.ini')
-os.environ["CUDA_VISIBLE_DEVICES"] = config.get('Default', 'device')
+config.read('config.ini')
+os.environ["CUDA_VISIBLE_DEVICES"] = config.get('Values', 'device')
 import torch
 import argparse
 
