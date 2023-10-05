@@ -93,7 +93,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             raise ex
 
         try:
-            # file_path = "texts\\memories\\" + str(await utf_code(currentAIname)) + ".txt"
+            # file_path = "texts/memories/" + str(await utf_code(currentAIname)) + ".txt"
             # if not os.path.exists(file_path):
             #     print("File doesn't exist, creating a new one.")
             #     with open(file_path, "w", encoding="utf-8") as create_file:
@@ -467,11 +467,11 @@ async def voice_commands(sentence, ctx):
 
 async def setAIvoice(name, ttsNeed, ctx):
     global currentAIname, currentAIinfo, currentAIpitch
-    if os.path.exists(f"rvc_models\\{name}"):
-        with open(os.path.join(f"rvc_models\\{name}\\info.txt"), 'r', encoding='UTF-8') as file:
+    if os.path.exists(f"rvc_models/{name}"):
+        with open(os.path.join(f"rvc_models/{name}/info.txt"), 'r', encoding='UTF-8') as file:
             await set_config(currentAIinfo, file.read())
         await set_config("currentAIName", name)
-        with open(os.path.join(f"rvc_models\\{name}\\gender.txt"), 'r', encoding='UTF-8') as file:
+        with open(os.path.join(f"rvc_models/{name}/gender.txt"), 'r', encoding='UTF-8') as file:
             if file.read().lower() == "female":
                 await set_config("currentAIpitch", 0)
             else:
@@ -536,12 +536,13 @@ async def removePunctuation(input, chars):
 async def createAICaver(ctx):
     global spokenText
     message = spokenText
+    print("DEV_TEMP_SPOKEN_TEXT:", spokenText)
     lines = message.split("\n")
-    if not os.path.exists("caversAI\\audio_links.txt"):
-        with open("caversAI\\audio_links.txt", "w"):
+    if not os.path.exists("caversAI/audio_links.txt"):
+        with open("caversAI/audio_links.txt", "w"):
             pass
 
-    with open("caversAI\\audio_links.txt", "a") as writer:
+    with open("caversAI/audio_links.txt", "a") as writer:
         for line in lines:
             writer.write(await utf_code(line + "\n"))
     pool = multiprocessing.Pool(processes=3)
@@ -653,11 +654,11 @@ async def getCaverPrms(line, ctx):
 
     outputFormat = "mp3"
 
-    return f"python src\\main.py -i {url} -dir modelsRVC\\{voice} -p {pitch} -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat}"
+    return f"python src/main.py -i {url} -dir modelsRVC/{voice} -p {pitch} -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat}"
 
 
 # async def defaultRVCParams(filePath, pitch):
-#     return f"python ..\\AICoverGen\\src\\main.py -i {filePath} -dir modelsRVC\\{await utf_code(currentAIname)} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
+#     return f"python ../AICoverGen/src/main.py -i {filePath} -dir modelsRVC/{await utf_code(currentAIname)} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
 
 queue_lock = threading.Lock()
@@ -868,17 +869,17 @@ async def text_to_speech(tts, write_in_memory, ctx):
 
     if write_in_memory:
         try:
-            with open(f"texts\\memories\\{await utf_code(currentAIname)}.txt", 'a') as writer2:
+            with open(f"texts/memories/{await utf_code(currentAIname)}.txt", 'a') as writer2:
                 writer2.write(f"{await utf_code(currentAIname)}: {tts}\n")
         except IOError as ex:
             raise RuntimeError(ex)
 
-        while os.path.getsize(f"texts\\memories\\{await utf_code(currentAIname)}.txt") > 500:
+        while os.path.getsize(f"texts/memories/{await utf_code(currentAIname)}.txt") > 500:
             try:
-                with open(f"texts\\memories\\{await utf_code(currentAIname)}.txt", 'r') as reader:
+                with open(f"texts/memories/{await utf_code(currentAIname)}.txt", 'r') as reader:
                     lines = reader.readlines()
                 lines = lines[2:]
-                with open(f"texts\\memories\\{await utf_code(currentAIname)}.txt", 'w') as writer:
+                with open(f"texts/memories/{await utf_code(currentAIname)}.txt", 'w') as writer:
                     writer.writelines(await utf_code(lines))
             except IOError as e:
                 print(e)

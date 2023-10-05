@@ -2,7 +2,7 @@ import os
 import configparser
 
 config = configparser.ConfigParser()
-config.read('config_device.ini')
+config.read('config_values.ini')
 os.environ["CUDA_VISIBLE_DEVICES"] = config.get('Default', 'device')
 import torch
 import argparse
@@ -408,6 +408,10 @@ if __name__ == '__main__':
                         help='Output format of audio file. mp3 for smaller file size, wav for best quality')
     parser.add_argument('-cuda', '--cuda-number', type=str, default='0',
                         help='GPU index')
+    parser.add_argument('-start', '--start', type=str, default='0',
+                        help='start song with (seconds)')
+    parser.add_argument('-time', '--time', type=str, default='-1',
+                        help='song duration')
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda_number
     rvc_dirname = args.rvc_dirname
@@ -454,6 +458,6 @@ if __name__ == '__main__':
                     lines = reader.readlines()
             with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "w", encoding='utf-8') as writer:
                 writer.writelines(lines)
-                writer.write(f"{cover_path}\n")
+                writer.write(f"{cover_path} -time {args.time} -start {args.start}\n")
         except IOError as e:
             print(e)
