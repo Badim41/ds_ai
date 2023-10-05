@@ -565,12 +565,11 @@ async def createAICaver(ctx):
     if not continue_process:
         await write_in_discord(ctx, "Начинаю обработку видео")
         pool = multiprocessing.Pool(processes=3)
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, pool.apply_async, prepare_audio_process_cuda_0, (ctx,))
-        await asyncio.sleep(0.05)
-        await loop.run_in_executor(None, pool.apply_async, prepare_audio_process_cuda_1, (ctx,))
-        await asyncio.sleep(0.05)
-        await loop.run_in_executor(None, pool.apply_async, play_audio_process, (ctx,))
+        pool.apply_async(prepare_audio_process_cuda_0, (ctx,))
+        time.sleep(0.05)
+        pool.apply_async(prepare_audio_process_cuda_1, (ctx,))
+        time.sleep(0.05)
+        pool.apply_async(play_audio_process, (ctx,))
         pool.close()
         pool.join()
     else:
@@ -693,19 +692,18 @@ async def getCaverPrms(line, ctx):
 # async def defaultRVCParams(filePath, pitch):
 #     return f"python ../AICoverGen/src/main.py -i {filePath} -dir modelsRVC/{await utf_code(currentAIname)} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
-async def prepare_audio_process_cuda_0(ctx):
+def prepare_audio_process_cuda_0(ctx):
     print("DEV_START_CUDA_0")
     while True:
         try:
             with open("caversAI/audio_links.txt") as reader:
                 line = reader.readline()
                 if not line == "" and not line is None:
-                    await set_config_static_values("cuda0_is_busy", "True")
-                    # youtube_dl_path = "youtube-dl.exe"
+                    asyncio.run(set_config_static_values("cuda0_is_busy", "True"))
                     if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
-                        await text_to_speech("Видео должно быть с ютуба", False, ctx)
-                        await result_command_change("Ссылка не с YT", Color.RED)
-                        await remove_line_from_txt("caversAI/audio_links.txt", 1)
+                        asyncio.run(text_to_speech("Видео должно быть с ютуба", False, ctx))
+                        asyncio.run(result_command_change("Ссылка не с YT", Color.RED))
+                        asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
                         break
 
                     # url = line[line.index("https://"):].split()[0]
@@ -720,37 +718,36 @@ async def prepare_audio_process_cuda_0(ctx):
                     #     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     #     break
 
-                    params = await getCaverPrms(line, ctx)
+                    params = asyncio.run(getCaverPrms(line, ctx))
                     params += " -cuda 0"
-                    await remove_line_from_txt("caversAI/audio_links.txt", 1)
+                    asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
                     print("запуск AICoverGen")
-                    await console_command_runner(params, ctx)
+                    asyncio.run(console_command_runner(params, ctx))
                     time.sleep(0.05)
                 else:
                     config.read('config.ini')
+                    asyncio.run(set_config_static_values("cuda0_is_busy", "False"))
                     continue_process = config.getboolean('Values', 'cuda1_is_busy')
                     if not continue_process:
                         print("Больше нет ссылок")
-                        await set_config_static_values("queue", "False")
-                        await set_config_static_values("cuda0_is_busy", "False")
+                        asyncio.run(set_config_static_values("queue", "False"))
                         break
         except (IOError, KeyboardInterrupt):
             pass
 
 
-async def prepare_audio_process_cuda_1(ctx):
+def prepare_audio_process_cuda_1(ctx):
     print("DEV_START_CUDA_1")
     while True:
         try:
             with open("caversAI/audio_links.txt") as reader:
                 line = reader.readline()
                 if not line == "" and not line is None:
-                    await set_config_static_values("cuda1_is_busy", "True")
-                    # youtube_dl_path = "youtube-dl.exe"
+                    asyncio.run(set_config_static_values("cuda1_is_busy", "True"))
                     if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
-                        await text_to_speech("Видео должно быть с ютуба", False, ctx)
-                        await result_command_change("Ссылка не с YT", Color.RED)
-                        await remove_line_from_txt("caversAI/audio_links.txt", 1)
+                        asyncio.run(text_to_speech("Видео должно быть с ютуба", False, ctx))
+                        asyncio.run(result_command_change("Ссылка не с YT", Color.RED))
+                        asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
                         break
 
                     # url = line[line.index("https://"):].split()[0]
@@ -765,19 +762,19 @@ async def prepare_audio_process_cuda_1(ctx):
                     #     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     #     break
 
-                    params = await getCaverPrms(line, ctx)
+                    params = asyncio.run(getCaverPrms(line, ctx))
                     params += " -cuda 1"
-                    await remove_line_from_txt("caversAI/audio_links.txt", 1)
+                    asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
                     print("запуск AICoverGen")
-                    await console_command_runner(params, ctx)
+                    asyncio.run(console_command_runner(params, ctx))
                     time.sleep(0.05)
                 else:
                     config.read('config.ini')
+                    asyncio.run(set_config_static_values("cuda1_is_busy", "False"))
                     continue_process = config.getboolean('Values', 'cuda0_is_busy')
                     if not continue_process:
                         print("Больше нет ссылок")
-                        await set_config_static_values("queue", "False")
-                        await set_config_static_values("cuda1_is_busy", "False")
+                        asyncio.run(set_config_static_values("queue", "False"))
                         break
         except (IOError, KeyboardInterrupt):
             pass
@@ -817,23 +814,23 @@ async def file_was_filler(folder, file_list):
         print(e)
 
 
-async def play_audio_process(ctx):
+def play_audio_process(ctx):
     try:
-        await set_config_static_values("queue", "True")
+        asyncio.run(set_config_static_values("queue", "True"))
         from discord_bot import stop_milliseconds
         while True:
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
                 if not line is None:
                     print("Playing: " + line)
-                    params = await getCaverPrms(line, ctx)
-                    time = await extract_number_after_keyword(params, "-time")
-                    stop_milliseconds = await extract_number_after_keyword(params, "-start")
+                    params = asyncio.run(getCaverPrms(line, ctx))
+                    time = asyncio.run(extract_number_after_keyword(params, "-time"))
+                    stop_milliseconds = asyncio.run(extract_number_after_keyword(params, "-start"))
                     audio_path = line.split()[0]
 
-                    await result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
-                    await playSoundFile(audio_path, time, stop_milliseconds, ctx)
-                    await remove_line_from_txt("caversAI/queue.txt", 1)
+                    asyncio.run(result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN))
+                    asyncio.run(playSoundFile(audio_path, time, stop_milliseconds, ctx))
+                    asyncio.run(remove_line_from_txt("caversAI/queue.txt", 1))
                 else:
                     config.read('config.ini')
                     continue_process = config.getboolean('Values', 'queue')

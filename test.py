@@ -1,7 +1,7 @@
 # nums = []
 #
 #
-# def count_variants(len):
+# async def count_variants(len):
 #     number_variants = 1
 #     for i in range(1 + len):
 #         if i < 1:
@@ -12,6 +12,7 @@
 #
 #
 # print(count_variants(16) * (8*12+5))
+import asyncio
 import configparser
 import multiprocessing
 import os
@@ -30,12 +31,11 @@ import time
 # num = ''.join(num_result)
 # print(num)
 # print(len(num))
-spokenText = "протокол 13 -url https://www.youtube.com/watch?v=TFtjM6piFPY \nпротокол 13 -url https://www.youtube.com/watch?v=TFtjM6piFPY \nпротокол 13 -url https://www.youtube.com/watch?v=TFtjM6piFPY \nпротокол 13 -url https://www.youtube.com/watch?v=TFtjM6piFPY"
-
+spokenText = "протокол 13 -url https://www.youtube.com/watch?v=TFtjM6piFPY"
 config = configparser.ConfigParser()
 
 
-def set_config_static_values(key, value):
+async def set_config_static_values(key, value):
     config.read('config.ini')
     config.set('Values', key, value)
     # Сохранение
@@ -43,8 +43,7 @@ def set_config_static_values(key, value):
         config.write(configfile)
 
 
-
-def createAICaver(ctx):
+async def createAICaver(ctx):
     global spokenText
     message = spokenText
     lines = message.split("\n")
@@ -55,17 +54,15 @@ def createAICaver(ctx):
     with open("caversAI/audio_links.txt", "a") as writer:
         for line in lines:
             writer.write(line + "\n")
-    pool = multiprocessing.Pool(processes=1)
-    pool2 = multiprocessing.Pool(processes=1)
-    pool.apply_async(prepare_audio_process_cuda_0, (ctx,))
-    pool2.apply_async(play_audio_process, (ctx,))
-    pool.close()
-    pool2.close()
-    pool.join()
-    pool2.join()
+        task1 = asyncio.create_task(prepare_audio_process_cuda_0(ctx))
+        task2 = asyncio.create_task(play_audio_process(ctx))
+
+        # Ждем завершения обоих задач
+        await task1
+        await task2
 
 
-def prepare_audio_process_cuda_0(ctx):
+async def prepare_audio_process_cuda_0(ctx):
     while True:
         try:
             with open("caversAI/audio_links.txt") as reader:
@@ -74,7 +71,7 @@ def prepare_audio_process_cuda_0(ctx):
                     # youtube_dl_path = "youtube-dl.exe"
                     if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
                         print("Ссылка не с YT")
-                        remove_line_from_txt("caversAI/audio_links.txt", 1)
+                        await remove_line_from_txt("caversAI/audio_links.txt", 1)
                         break
 
                     # url = line[line.index("https://"):].split()[0]
@@ -86,12 +83,12 @@ def prepare_audio_process_cuda_0(ctx):
                     #     print("Условия выполнены")
                     # else:
                     #     print("Условия не выполнены")
-                    #     remove_line_from_txt("caversAI/audio_links.txt", 1)
+                    #     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     #     break
 
-                    params = getCaverPrms(line, ctx)
+                    params = await getCaverPrms(line, ctx)
                     params += " -cuda 0"
-                    remove_line_from_txt("caversAI/audio_links.txt", 1)
+                    await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     print("запуск AICoverGen")
                     print(params, ctx)
                     time.sleep(5)
@@ -103,13 +100,13 @@ def prepare_audio_process_cuda_0(ctx):
                         writer.writelines(lines)
                 else:
                     print("Больше нет ссылок")
-                    set_config_static_values("queue", "False")
+                    await set_config_static_values("queue", "False")
                     break
         except (IOError, KeyboardInterrupt):
             pass
 
 
-def remove_line_from_txt(file_path, delete_line):
+async def remove_line_from_txt(file_path, delete_line):
     try:
         if not os.path.exists(file_path):
             print(f"File not found: {file_path}")
@@ -132,7 +129,7 @@ def remove_line_from_txt(file_path, delete_line):
         print(e)
 
 
-def getCaverPrms(line, ctx):
+async def getCaverPrms(line, ctx):
     # SONG_INPUT
     url = "."
     if "-url" in line:
@@ -146,77 +143,77 @@ def getCaverPrms(line, ctx):
     # PITCH_CHANGE
     pitch = 0
     if "-pitch" in line:
-        pitch = extract_number_after_keyword(line, "-pitch")
+        pitch = await extract_number_after_keyword(line, "-pitch")
         if pitch < -2 or pitch > 2:
             pitch = 0
 
     # время (не является аргументом для RVC)
     time = -1
     if "-time" in line:
-        time = extract_number_after_keyword(line, "-time")
+        time = await extract_number_after_keyword(line, "-time")
         if time < 0:
             time = -1
 
     # INDEX_RATE
     indexrate = 0.5
     if "-indexrate" in line:
-        indexrate = extract_double_after_keyword(line, "-indexrate")
+        indexrate = await extract_double_after_keyword(line, "-indexrate")
         if indexrate < 0 or indexrate > 1:
             indexrate = 0.5
 
     # RMS_MIX_RATE
     loudness = 0.2
     if "-loudness" in line:
-        loudness = extract_double_after_keyword(line, "-loudness")
+        loudness = await extract_double_after_keyword(line, "-loudness")
         if loudness < 0 or loudness > 1:
             loudness = 0.5
 
     # MAIN_VOCALS_VOLUME_CHANGE
     mainVocal = 0
     if "-vocal" in line:
-        mainVocal = extract_number_after_keyword(line, "-vocal")
+        mainVocal = await extract_number_after_keyword(line, "-vocal")
         if mainVocal < -20 or mainVocal > 0:
             mainVocal = 0
 
     # BACKUP_VOCALS_VOLUME_CHANGE
     backVocal = 0
     if "-bvocal" in line:
-        backVocal = extract_number_after_keyword(line, "-bvocal")
+        backVocal = await extract_number_after_keyword(line, "-bvocal")
         if backVocal < -20 or backVocal > 0:
             backVocal = 0
 
     # INSTRUMENTAL_VOLUME_CHANGE
     music = 0
     if "-music" in line:
-        music = extract_number_after_keyword(line, "-music")
+        music = await extract_number_after_keyword(line, "-music")
         if music < -20 or music > 0:
             music = 0
 
     # REVERB_SIZE
     roomsize = 0.2
     if "-roomsize" in line:
-        roomsize = extract_double_after_keyword(line, "-roomsize")
+        roomsize = await extract_double_after_keyword(line, "-roomsize")
         if roomsize < 0 or roomsize > 1:
             roomsize = 0.2
 
     # REVERB_WETNESS
     wetness = 0.1
     if "-wetness" in line:
-        wetness = extract_double_after_keyword(line, "-wetness")
+        wetness = await extract_double_after_keyword(line, "-wetness")
         if wetness < 0 or wetness > 1:
             wetness = 0.1
 
     # REVERB_DRYNESS
     dryness = 0.85
     if "-dryness" in line:
-        dryness = extract_double_after_keyword(line, "-dryness")
+        dryness = await extract_double_after_keyword(line, "-dryness")
         if dryness < 0 or dryness > 1:
             dryness = 0.85
 
     # начало
     start = 0
     if "-start" in line:
-        start = extract_number_after_keyword(line, "-start")
+        start = await extract_number_after_keyword(line, "-start")
         if start < 0:
             start = 0
 
@@ -225,20 +222,20 @@ def getCaverPrms(line, ctx):
     return f"python src/main.py -i {url} -dir modelsRVC/voice -p {pitch} -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat}"
 
 
-def play_audio_process(ctx):
-    set_config_static_values("queue", "True")
+async def play_audio_process(ctx):
+    await set_config_static_values("queue", "True")
     while True:
         with open("caversAI/queue.txt", "r") as reader:
             line = reader.readline()
             if not line == "" and not line is None:
                 print("Playing: " + line)
                 print("2")
-                params = getCaverPrms(line, ctx)
-                time = extract_number_after_keyword(params, "-time")
-                stop_milliseconds = extract_number_after_keyword(params, "-start")
+                params = await getCaverPrms(line, ctx)
+                time = await extract_number_after_keyword(params, "-time")
+                stop_milliseconds = await extract_number_after_keyword(params, "-start")
                 audio_path = line.split()[0]
-                playSoundFile(audio_path, time, stop_milliseconds, ctx)
-                remove_line_from_txt("caversAI/queue.txt", 1)
+                await playSoundFile(audio_path, time, stop_milliseconds, ctx)
+                await remove_line_from_txt("caversAI/queue.txt", 1)
             else:
                 config.read('config.ini')
                 continue_process = config.getboolean('Values', 'queue')
@@ -247,7 +244,7 @@ def play_audio_process(ctx):
                     break
 
 
-def extract_number_after_keyword(input, keyword):
+async def extract_number_after_keyword(input, keyword):
     input = ''.join(char if char.isalnum() or char.isspace() else ' ' for char in input)
     index = input.find(keyword)
 
@@ -262,7 +259,7 @@ def extract_number_after_keyword(input, keyword):
     return -1
 
 
-def extract_double_after_keyword(input, keyword):
+async def extract_double_after_keyword(input, keyword):
     input = ''.join(char if char.isalnum() or char.isspace() else ' ' for char in input)
     index = input.find(keyword)
 
@@ -280,10 +277,10 @@ def extract_double_after_keyword(input, keyword):
     return -1
 
 
-def playSoundFile(audio_file_path, duration, start_seconds, ctx):
+async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
     print("PLAYING:", ctx, audio_file_path, duration, start_seconds)
     print("Аудио закончилось")
 
 
 if __name__ == "__main__":
-    createAICaver("context")
+    asyncio.run(createAICaver("..."))
