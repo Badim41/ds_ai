@@ -131,55 +131,6 @@ async def command_line(ctx, *args):
 stopRecognize = False
 
 
-@bot.command()
-async def start_recording(ctx):
-    # Проверяем, что участник находится в голосовом канале
-    if ctx.author.voice is None:
-        await ctx.send("Вы должны находиться в голосовом канале, чтобы начать запись.")
-        return
-
-    voice_channel = ctx.author.voice.channel
-    await ctx.send(f'Слушаем голос в **{voice_channel.name}**!')
-
-    # Создаем директорию для записей, если её нет
-    recordings_path = os.path.join('.', 'recordings')
-    os.makedirs(recordings_path, exist_ok=True)
-
-    # Подключаемся к голосовому каналу
-    voice_client = await voice_channel.connect()
-
-    # Создаем функцию обратного вызова для обработки аудиоданных
-    def on_receive(opus_data):
-        user_id = ctx.author.id
-        hex_string = opus_data.hex()
-
-        stream = listen_streams.get(user_id)
-        if not stream:
-            if hex_string == 'f8fffe':
-                return
-            output_path = os.path.join(recordings_path, f'{user_id}-{int(time.time())}.opus_string')
-            stream = open(output_path, 'wb')
-            listen_streams[user_id] = stream
-
-        stream.write(bytes.fromhex(hex_string))
-
-    # Создаем приемник аудио
-    receiver = voice_client.receiver
-    receiver.on('opus', on_receive)
-
-    # Ожидаем завершения записи
-    await asyncio.sleep(3)  # Запись продолжится в течение 60 секунд
-
-    # Завершаем запись и чистим ресурсы
-    voice_client.stop()
-    receiver.cleanup()
-
-    await ctx.send("Запись завершена!")
-
-# Глобальные переменные для хранения данных
-listen_streams = {}
-
-
 async def recognize(ctx):
     import vosk
     from function import setModelWithLanguage, replace_numbers_in_sentence
