@@ -1,3 +1,4 @@
+import asyncio
 import multiprocessing
 import sys
 from translate import Translator
@@ -564,11 +565,12 @@ async def createAICaver(ctx):
     if not continue_process:
         await write_in_discord(ctx, "Начинаю обработку видео")
         pool = multiprocessing.Pool(processes=3)
-        pool.apply_async(prepare_audio_process_cuda_0, (ctx,))
-        time.sleep(0.05)
-        pool.apply_async(prepare_audio_process_cuda_1, (ctx,))
-        time.sleep(0.05)
-        pool.apply_async(play_audio_process, (ctx,))
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, pool.apply_async, prepare_audio_process_cuda_0, (ctx,))
+        await asyncio.sleep(0.05)
+        await loop.run_in_executor(None, pool.apply_async, prepare_audio_process_cuda_1, (ctx,))
+        await asyncio.sleep(0.05)
+        await loop.run_in_executor(None, pool.apply_async, play_audio_process, (ctx,))
         pool.close()
         pool.join()
     else:
@@ -692,6 +694,7 @@ async def getCaverPrms(line, ctx):
 #     return f"python ../AICoverGen/src/main.py -i {filePath} -dir modelsRVC/{await utf_code(currentAIname)} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
 async def prepare_audio_process_cuda_0(ctx):
+    print("DEV_START_CUDA_0")
     while True:
         try:
             with open("caversAI/audio_links.txt") as reader:
@@ -736,6 +739,7 @@ async def prepare_audio_process_cuda_0(ctx):
 
 
 async def prepare_audio_process_cuda_1(ctx):
+    print("DEV_START_CUDA_1")
     while True:
         try:
             with open("caversAI/audio_links.txt") as reader:
