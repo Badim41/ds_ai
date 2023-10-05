@@ -3,7 +3,7 @@ from auto_gptq import AutoGPTQForCausalLM
 from discord_bot import config
 import time
 
-async def set_config(key, value):
+def set_config(key, value):
     config.read('config.ini')
     config.set('Loaded', key, value)
     # Сохранение
