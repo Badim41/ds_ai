@@ -499,7 +499,7 @@ async def textInDiscord(message, ctx):
         message = re.sub(r'\s+', ' ', message)
         if message.endswith(' '):
             message = message[:-1]
-        user = getUserName(message, "пользовател")
+        user = await getUserName(message, "пользовател")
         message = await replaceWords(message, "пользовател", user)
         message = await removePunctuation(message, 3)
     print("writing " + message)
@@ -514,7 +514,7 @@ async def getUserName(text, word):
                 return "``<неизвестный>``"
             with open("texts/user_names.txt", "r") as reader:
                 for line in reader:
-                    if line.startswith(words[i + 1].lower()):
+                    if line.startswith(words[i + 1].lower().strip("0-9a-zA-Zа-яА-ЯёЁ- ")):
                         index = line.index("<")
                         return line[index:]
     return "``<неизвестный>``"
