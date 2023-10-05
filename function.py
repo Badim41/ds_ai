@@ -225,7 +225,7 @@ async def translate(text):
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     config.read('config.ini')
-    gpt_loaded = config.get('Loaded', 'gpt')
+    gpt_loaded = config.getboolean('Loaded', 'gpt')
     print("DEV_TEMP_gpt_loaded:", gpt_loaded)
     if not gpt_loaded:
         print("DEV_TEMP_RETURN")
