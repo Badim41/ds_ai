@@ -258,6 +258,7 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
 
 
 if __name__ == "__main__":
+    print("update 1")
     arguments = sys.argv
 
     if len(arguments) > 1:
