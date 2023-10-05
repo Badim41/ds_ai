@@ -556,7 +556,7 @@ async def createAICaver(ctx):
         with open("caversAI/audio_links.txt", "w"):
             pass
 
-    with open("caversAI/audio_links.txt", "a") as writer:
+    with open("caversAI/audio_links.txt", "a", encoding="UTF-8") as writer:
         for line in lines:
             writer.write(line + "\n")
     config.read('config.ini')
@@ -577,10 +577,10 @@ async def createAICaver(ctx):
             queue_position += 1
         if config.getboolean('Values', 'cuda1_is_busy'):
             queue_position += 1
-        with open("caversAI/audio_links.txt", "r", encoding="UTF-8") as reader:
+        with open("caversAI/audio_links.txt", "r") as reader:
             lines = reader.readlines()
             queue_position += len(lines)
-        with open("caversAI/queue.txt", "r", encoding="UTF-8") as reader:
+        with open("caversAI/queue.txt", "r") as reader:
             lines = reader.readlines()
             queue_position += len(lines)
         await write_in_discord(ctx, "Видео добавлено в очередь. Место в очереди: " + str(queue_position))
