@@ -256,13 +256,13 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
 if __name__ == "__main__":
     arguments = sys.argv
 
-    # if len(arguments) > 1:
-    discord_token = "MTE1MjczMTM2MzUwMjQ3NzM3NA.G_zr_q.TwrXiP-qQQcf0bL1LsSXRxDhrvIZOPcdEU3Z3w"
-    # else:
-    #     print("Укажите discord_TOKEN")
-    #     exit(-1)
-    # from GPT_runner import run
-    # pool = multiprocessing.Pool(processes=1)
-    # pool.apply_async(run)
-    # pool.close()
+    if len(arguments) > 1:
+        discord_token = arguments[1]
+    else:
+        print("Укажите discord_TOKEN")
+        exit(-1)
+    from GPT_runner import run
+    pool = multiprocessing.Pool(processes=1)
+    pool.apply_async(run)
+    pool.close()
     bot.run(discord_token)
