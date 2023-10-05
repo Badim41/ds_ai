@@ -228,8 +228,10 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     gpt_loaded = config.get('Loaded', 'gpt')
     print("DEV_TEMP_gpt_loaded:", gpt_loaded)
     if not gpt_loaded:
+        print("DEV_TEMP_RETURN")
         await write_in_discord(ctx, "модель чат-бота не загрузилась, подождите пару минут")
-        return 
+        print("DEV_TEMP_RETURN2")
+        return
     print('generating answer')
     with open("gpt_prompt.txt", "w", encoding="utf-8") as writer:
         writer.write(prompt)
