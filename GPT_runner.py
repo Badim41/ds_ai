@@ -2,9 +2,14 @@ from transformers import AutoTokenizer
 from auto_gptq import AutoGPTQForCausalLM
 from discord_bot import config
 import time
-model_loaded = False
+
+async def set_config(key, value):
+    config.read('config.ini')
+    config.set('Loaded', key, value)
+    # Сохранение
+    with open('config.ini', 'w') as configfile:
+        config.write(configfile)
 def run():
-    global model_loaded
     model_name = 'fffrrt/ruGPT-3.5-13B-GPTQ'
     model_basename = 'gptq_model-4bit-128g'
     print("loading model")
@@ -16,7 +21,7 @@ def run():
                                                device="cuda:0",
                                                use_triton=False,
                                                quantize_config=None)
-    model_loaded = True
+    set_config("gpt", "True")
     while True:
         with open("gpt_prompt.txt", "r", encoding="utf-8") as reader:
             lines = reader.readlines()

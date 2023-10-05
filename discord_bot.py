@@ -249,10 +249,4 @@ if __name__ == "__main__":
     pool = multiprocessing.Pool(processes=1)
     pool.apply_async(run)
     pool.close()
-    # while True:
-    #     from GPT_runner import model_loaded
-    #     if model_loaded:
-    #         break
-    #     time.sleep(1)
-    time.sleep(240)
     bot.run(discord_token)

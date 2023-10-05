@@ -224,6 +224,11 @@ async def translate(text):
 
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
+    config.read('config.ini')
+    gpt_loaded = config.get('Loaded', 'gpt')
+    if not gpt_loaded:
+        await write_in_discord(ctx, "модель чат-бота не загрузилась, подождите пару минут")
+        return 
     print('generating answer')
     with open("gpt_prompt.txt", "w", encoding="utf-8") as writer:
         writer.write(prompt)
@@ -442,7 +447,7 @@ async def voice_commands(sentence, ctx):
             if number != -1:
                 await set_config(video_length, number)
                 return True
-        config.read()
+        config.read('config.ini')
         await text_to_speech("Длина видео: " + str(config.get('Default', 'video_length')), False, ctx)
         return True
 
@@ -890,7 +895,8 @@ async def console_command_runner(command, ctx):
 
 async def text_to_speech(tts, write_in_memory, ctx):
     await result_command_change(tts, Color.GRAY)
-
+    if not ctx.voice_client:
+        return
     if write_in_memory:
         try:
             with open(f"texts/memories/{await utf_code(currentAIname)}.txt", 'a') as writer2:
