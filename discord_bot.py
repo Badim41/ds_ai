@@ -1,4 +1,5 @@
 import multiprocessing
+import os
 import subprocess
 import time
 import configparser
@@ -131,22 +132,52 @@ stopRecognize = False
 
 
 @bot.command()
-async def record(ctx):
+async def start_recording(ctx):
+    # Проверяем, что участник находится в голосовом канале
     if ctx.author.voice is None:
-        await ctx.send('Вы не подключены к голосовому каналу')
+        await ctx.send("Вы должны находиться в голосовом канале, чтобы начать запись.")
         return
 
     voice_channel = ctx.author.voice.channel
+    await ctx.send(f'Слушаем голос в **{voice_channel.name}**!')
+
+    # Создаем директорию для записей, если её нет
+    recordings_path = os.path.join('.', 'recordings')
+    os.makedirs(recordings_path, exist_ok=True)
+
+    # Подключаемся к голосовому каналу
     voice_client = await voice_channel.connect()
 
-    audio_source = PCMAudio(voice_client.source)
-    audio_data = audio_source.read()
+    # Создаем функцию обратного вызова для обработки аудиоданных
+    def on_receive(opus_data):
+        user_id = ctx.author.id
+        hex_string = opus_data.hex()
 
-    with open('audio.wav', 'wb') as file:
-        file.write(audio_data)
+        stream = listen_streams.get(user_id)
+        if not stream:
+            if hex_string == 'f8fffe':
+                return
+            output_path = os.path.join(recordings_path, f'{user_id}-{int(time.time())}.opus_string')
+            stream = open(output_path, 'wb')
+            listen_streams[user_id] = stream
 
-    await voice_client.disconnect()
-    await ctx.send('Запись завершена и сохранена в файл audio.wav')
+        stream.write(bytes.fromhex(hex_string))
+
+    # Создаем приемник аудио
+    receiver = voice_client.receiver
+    receiver.on('opus', on_receive)
+
+    # Ожидаем завершения записи
+    await asyncio.sleep(3)  # Запись продолжится в течение 60 секунд
+
+    # Завершаем запись и чистим ресурсы
+    voice_client.stop()
+    receiver.cleanup()
+
+    await ctx.send("Запись завершена!")
+
+# Глобальные переменные для хранения данных
+listen_streams = {}
 
 
 async def recognize(ctx):
