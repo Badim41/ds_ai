@@ -47,7 +47,8 @@ async def set_config(key, value):
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
-        
+
+
 def set_config_static_values(key, value):
     config.read('config.ini')
     config.set('Values', key, value)
@@ -555,6 +556,7 @@ async def createAICaver(ctx):
     config.read('config.ini')
     continue_process = config.getboolean('Values', 'queue')
     if not continue_process:
+        await write_in_discord(ctx, "Начинаю обработку видео")
         pool = multiprocessing.Pool(processes=3)
         pool.apply_async(prepare_audio_process_cuda_0, (ctx,))
         time.sleep(0.05)
@@ -563,6 +565,19 @@ async def createAICaver(ctx):
         pool.apply_async(play_audio_process, (ctx,))
         pool.close()
         pool.join()
+    else:
+        queue_position = 0
+        if config.getboolean('Values', 'cuda0_is_busy'):
+            queue_position += 1
+        if config.getboolean('Values', 'cuda1_is_busy'):
+            queue_position += 1
+        with open("caversAI/audio_links.txt", "r") as reader:
+            lines = reader.readlines()
+            queue_position += len(lines)
+        with open("caversAI/queue.txt", "r") as reader:
+            lines = reader.readlines()
+            queue_position += len(lines)
+        await write_in_discord(ctx, "Видео добавлено в очередь. Место в очереди: " + str(queue_position))
 
 
 async def getCaverPrms(line, ctx):
