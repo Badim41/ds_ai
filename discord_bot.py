@@ -5,6 +5,7 @@ import configparser
 
 import pyaudio
 import discord
+from discord import PCMAudio
 from discord.ext import commands
 import asyncio
 import sys
@@ -138,8 +139,11 @@ async def record(ctx):
     voice_channel = ctx.author.voice.channel
     voice_client = await voice_channel.connect()
 
-    audio_source = voice_client.listen(voice_channel)
-    audio_source.save('audio.wav')
+    audio_source = PCMAudio(voice_client.source)
+    audio_data = audio_source.read()
+
+    with open('audio.wav', 'wb') as file:
+        file.write(audio_data)
 
     await voice_client.disconnect()
     await ctx.send('Запись завершена и сохранена в файл audio.wav')
