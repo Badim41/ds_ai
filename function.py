@@ -63,21 +63,21 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     spokenText = spokenTextArg
     global language
     config.read('config.ini')
-    language = await config.get('Default', 'language')
+    language = config.get('Default', 'language')
     global prompt_length
-    prompt_length = await config.getint('Default', 'prompt_length')
+    prompt_length = config.getint('Default', 'prompt_length')
     global admin
-    admin = await config.getboolean('Default', 'admin')
+    admin = config.getboolean('Default', 'admin')
     global all_admin
-    all_admin = await config.getboolean('Default', 'all_admin')
+    all_admin = config.getboolean('Default', 'all_admin')
     global video_length
-    video_length = await config.getint('Default', 'video_length')
+    video_length = config.getint('Default', 'video_length')
     global currentAIname
-    currentAIname = await config.get('Default', 'currentAIname')
+    currentAIname = config.get('Default', 'currentAIname')
     global currentAIinfo
-    currentAIinfo = await config.get('Default', 'currentAIinfo')
+    currentAIinfo = config.get('Default', 'currentAIinfo')
     global currentAIpitch
-    currentAIpitch = await config.getint('Default', 'currentAIpitch')
+    currentAIpitch = config.getint('Default', 'currentAIpitch')
     global robot_names
     robot_names = ["robot", "robots", "робот", "нейросеть", "hello", "роботы", "ропот"]
 
@@ -225,7 +225,8 @@ async def translate(text):
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     config.read('config.ini')
-    gpt_loaded = await config.get('Loaded', 'gpt')
+    gpt_loaded = config.get('Loaded', 'gpt')
+    print("DEV_TEMP_gpt_loaded:", gpt_loaded)
     if not gpt_loaded:
         await write_in_discord(ctx, "модель чат-бота не загрузилась, подождите пару минут")
         return 
@@ -448,7 +449,7 @@ async def voice_commands(sentence, ctx):
                 await set_config(video_length, number)
                 return True
         config.read('config.ini')
-        await text_to_speech("Длина видео: " + str(await config.get('Default', 'video_length')), False, ctx)
+        await text_to_speech("Длина видео: " + str(config.get('Default', 'video_length')), False, ctx)
         return True
 
     if "измени" in sentence and "голос на" in sentence:
@@ -559,7 +560,7 @@ async def createAICaver(ctx):
         for line in lines:
             writer.write(line + "\n")
     config.read('config.ini')
-    continue_process = await config.getboolean('Values', 'queue')
+    continue_process = config.getboolean('Values', 'queue')
     if not continue_process:
         await write_in_discord(ctx, "Начинаю обработку видео")
         pool = multiprocessing.Pool(processes=3)
@@ -572,9 +573,9 @@ async def createAICaver(ctx):
         pool.join()
     else:
         queue_position = 0
-        if await config.getboolean('Values', 'cuda0_is_busy'):
+        if config.getboolean('Values', 'cuda0_is_busy'):
             queue_position += 1
-        if await config.getboolean('Values', 'cuda1_is_busy'):
+        if config.getboolean('Values', 'cuda1_is_busy'):
             queue_position += 1
         with open("caversAI/audio_links.txt", "r") as reader:
             lines = reader.readlines()
@@ -724,7 +725,7 @@ async def prepare_audio_process_cuda_0(ctx):
                     time.sleep(0.05)
                 else:
                     config.read('config.ini')
-                    continue_process = await config.getboolean('Values', 'cuda1_is_busy')
+                    continue_process = config.getboolean('Values', 'cuda1_is_busy')
                     if not continue_process:
                         print("Больше нет ссылок")
                         await set_config_static_values("queue", "False")
@@ -768,7 +769,7 @@ async def prepare_audio_process_cuda_1(ctx):
                     time.sleep(0.05)
                 else:
                     config.read('config.ini')
-                    continue_process = await config.getboolean('Values', 'cuda0_is_busy')
+                    continue_process = config.getboolean('Values', 'cuda0_is_busy')
                     if not continue_process:
                         print("Больше нет ссылок")
                         await set_config_static_values("queue", "False")
@@ -831,7 +832,7 @@ async def play_audio_process(ctx):
                     await remove_line_from_txt("caversAI/queue.txt", 1)
                 else:
                     config.read('config.ini')
-                    continue_process = await config.getboolean('Values', 'queue')
+                    continue_process = config.getboolean('Values', 'queue')
                     if not continue_process:
                         print("file_have_links - False")
                         break
