@@ -228,9 +228,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     gpt_loaded = config.getboolean('Loaded', 'gpt')
     print("DEV_TEMP_gpt_loaded:", gpt_loaded)
     if not gpt_loaded:
-        print("DEV_TEMP_RETURN")
         await write_in_discord(ctx, "модель чат-бота не загрузилась, подождите пару минут")
-        print("DEV_TEMP_RETURN2")
         return
     print('generating answer')
     with open("gpt_prompt.txt", "w", encoding="utf-8") as writer:
@@ -241,7 +239,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
         if not result == "None":
             result = '\n'.join(result)
             break
-    with open("gpt_result.txt", "w", encoding="utf-8") as writer:
+    with open("gpt_result.txt", "w", encoding="UTF-8") as writer:
         writer.write("None")
     if not language == "russian":
         translator = Translator(from_lang="ru", to_lang=language[:2].lower())
@@ -516,7 +514,7 @@ async def getUserName(text, word):
                 return "``<неизвестный>``"
             with open("texts/user_names.txt", "r") as reader:
                 for line in reader:
-                    if line.startswith(words[i + 1].lower().strip("0-9a-zA-Zа-яА-ЯёЁ- ")):
+                    if line.startswith(words[i + 1].lower()):
                         index = line.index("<")
                         return line[index:]
     return "``<неизвестный>``"
@@ -579,10 +577,10 @@ async def createAICaver(ctx):
             queue_position += 1
         if config.getboolean('Values', 'cuda1_is_busy'):
             queue_position += 1
-        with open("caversAI/audio_links.txt", "r") as reader:
+        with open("caversAI/audio_links.txt", "r", encoding="UTF-8") as reader:
             lines = reader.readlines()
             queue_position += len(lines)
-        with open("caversAI/queue.txt", "r") as reader:
+        with open("caversAI/queue.txt", "r", encoding="UTF-8") as reader:
             lines = reader.readlines()
             queue_position += len(lines)
         await write_in_discord(ctx, "Видео добавлено в очередь. Место в очереди: " + str(queue_position))
