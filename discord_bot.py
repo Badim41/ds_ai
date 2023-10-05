@@ -1,12 +1,10 @@
 import multiprocessing
-import os
 import subprocess
 import time
 import configparser
 
 import pyaudio
 import discord
-from discord import PCMAudio
 from discord.ext import commands
 import asyncio
 import sys
