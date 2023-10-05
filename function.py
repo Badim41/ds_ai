@@ -49,7 +49,7 @@ async def set_config(key, value):
         config.write(configfile)
 
 
-def set_config_static_values(key, value):
+async def set_config_static_values(key, value):
     config.read('config.ini')
     config.set('Values', key, value)
     # Сохранение
@@ -696,7 +696,7 @@ async def prepare_audio_process_cuda_0(ctx):
             with open("caversAI/audio_links.txt") as reader:
                 line = reader.readline()
                 if not line == "" and not line is None:
-                    set_config_static_values("cuda0_is_busy", "True")
+                    await set_config_static_values("cuda0_is_busy", "True")
                     # youtube_dl_path = "youtube-dl.exe"
                     if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
                         await text_to_speech("Видео должно быть с ютуба", False, ctx)
@@ -727,8 +727,8 @@ async def prepare_audio_process_cuda_0(ctx):
                     continue_process = config.getboolean('Values', 'cuda1_is_busy')
                     if not continue_process:
                         print("Больше нет ссылок")
-                        set_config_static_values("queue", "False")
-                        set_config_static_values("cuda0_is_busy", "False")
+                        await set_config_static_values("queue", "False")
+                        await set_config_static_values("cuda0_is_busy", "False")
                         break
         except (IOError, KeyboardInterrupt):
             pass
@@ -740,7 +740,7 @@ async def prepare_audio_process_cuda_1(ctx):
             with open("caversAI/audio_links.txt") as reader:
                 line = reader.readline()
                 if not line == "" and not line is None:
-                    set_config_static_values("cuda1_is_busy", "True")
+                    await set_config_static_values("cuda1_is_busy", "True")
                     # youtube_dl_path = "youtube-dl.exe"
                     if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
                         await text_to_speech("Видео должно быть с ютуба", False, ctx)
@@ -771,8 +771,8 @@ async def prepare_audio_process_cuda_1(ctx):
                     continue_process = config.getboolean('Values', 'cuda0_is_busy')
                     if not continue_process:
                         print("Больше нет ссылок")
-                        set_config_static_values("queue", "False")
-                        set_config_static_values("cuda1_is_busy", "False")
+                        await set_config_static_values("queue", "False")
+                        await set_config_static_values("cuda1_is_busy", "False")
                         break
         except (IOError, KeyboardInterrupt):
             pass
@@ -814,7 +814,7 @@ async def file_was_filler(folder, file_list):
 
 async def play_audio_process(ctx):
     try:
-        set_config_static_values("queue", "True")
+        await set_config_static_values("queue", "True")
         from discord_bot import stop_milliseconds
         while True:
             with open("caversAI/queue.txt") as reader:
