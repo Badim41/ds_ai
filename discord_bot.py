@@ -129,6 +129,22 @@ async def command_line(ctx, *args):
 stopRecognize = False
 
 
+@bot.command()
+async def record(ctx):
+    if ctx.author.voice is None:
+        await ctx.send('Вы не подключены к голосовому каналу')
+        return
+
+    voice_channel = ctx.author.voice.channel
+    voice_client = await voice_channel.connect()
+
+    audio_source = voice_client.listen(voice_channel)
+    audio_source.save('audio.wav')
+
+    await voice_client.disconnect()
+    await ctx.send('Запись завершена и сохранена в файл audio.wav')
+
+
 async def recognize(ctx):
     import vosk
     from function import setModelWithLanguage, replace_numbers_in_sentence
@@ -240,13 +256,13 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
 if __name__ == "__main__":
     arguments = sys.argv
 
-    if len(arguments) > 1:
-        discord_token = arguments[1]
-    else:
-        print("Укажите discord_TOKEN")
-        exit(-1)
-    from GPT_runner import run
-    pool = multiprocessing.Pool(processes=1)
-    pool.apply_async(run)
-    pool.close()
+    # if len(arguments) > 1:
+    discord_token = "MTE1MjczMTM2MzUwMjQ3NzM3NA.G_zr_q.TwrXiP-qQQcf0bL1LsSXRxDhrvIZOPcdEU3Z3w"
+    # else:
+    #     print("Укажите discord_TOKEN")
+    #     exit(-1)
+    # from GPT_runner import run
+    # pool = multiprocessing.Pool(processes=1)
+    # pool.apply_async(run)
+    # pool.close()
     bot.run(discord_token)
