@@ -895,8 +895,6 @@ async def console_command_runner(command, ctx):
 
 async def text_to_speech(tts, write_in_memory, ctx):
     await result_command_change(tts, Color.GRAY)
-    if not ctx.voice_client:
-        return
     if write_in_memory:
         try:
             with open(f"texts/memories/{await utf_code(currentAIname)}.txt", 'a') as writer2:
@@ -913,7 +911,9 @@ async def text_to_speech(tts, write_in_memory, ctx):
                     writer.writelines(await utf_code(lines))
             except IOError as e:
                 print(e)
-
+    if not ctx.voice_client:
+        print(f"skip_tts: {tts}")
+        return
     file_name = "1.mp3"
 
     if os.path.exists(file_name):
