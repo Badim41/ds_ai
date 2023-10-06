@@ -293,8 +293,8 @@ if __name__ == "__main__":
     else:
         print("Укажите discord_TOKEN")
         exit(-1)
-    from GPT_runner import run
-    pool = multiprocessing.Pool(processes=1)
-    pool.apply_async(run)
-    pool.close()
+    # from GPT_runner import run
+    # pool = multiprocessing.Pool(processes=1)
+    # pool.apply_async(run)
+    # pool.close()
     bot.run(discord_token)

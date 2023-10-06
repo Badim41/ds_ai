@@ -4,7 +4,6 @@ import random
 import sys
 from diffusers import KandinskyV22Pipeline, KandinskyV22PriorPipeline
 import torch
-import PIL
 import torch
 from diffusers.utils import load_image
 from torchvision import transforms
