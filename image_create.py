@@ -3,8 +3,6 @@ import argparse
 import random
 from diffusers import KandinskyV22Pipeline, KandinskyV22PriorPipeline
 import torch
-from diffusers.utils import load_image
-from torchvision import transforms
 from transformers import CLIPVisionModelWithProjection
 from diffusers.models import UNet2DConditionModel
 import cv2
