@@ -87,6 +87,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
     )
     await set_get_config(value=True)
     await ctx.reply("Started listening.")
+    print("rec1")
     await recognize(ctx)
 
 
@@ -101,22 +102,29 @@ recognized_text = ""
 WAIT_FOR_ANSWER_IN_SECONDS = 3
 
 async def recognize(ctx):
+    print("rec2")
     global file_not_found_in_raw, recognized_text, WAIT_FOR_ANSWER_IN_SECONDS
     recognizer = sr.Recognizer()
+    print("rec3")
     while True:
+        print("rec4")
         if not await set_get_config():
             print("Stopped listening2.")
             return
         file_found = None
+        print("rec5")
         for filename in os.listdir():
+            print("rec6")
             if filename.startswith("output") and filename.endswith(".wav"):
                 file_found = filename
                 break
         if file_found is None:
+            print("rec7")
             await asyncio.sleep(0.1)
             file_not_found_in_raw += 1
 
             if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS*10:
+                print("rec8")
                 stream_sink.cleanup()
                 if not recognized_text == "":
                     from function import replace_mat_in_sentence, replace_numbers_in_sentence
