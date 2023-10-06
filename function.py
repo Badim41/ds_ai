@@ -436,9 +436,9 @@ async def voice_commands(sentence, ctx):
     if "длина запроса" in sentence:
         if sentence != "длина запроса":
             number = await extract_number_after_keyword(sentence, "длина запроса")
-            if number > 4000:
-                await set_config("prompt_length", 4000)
-                await text_to_speech(f"Слишком большое число. Длина запроса: {prompt_length}", False, ctx)
+            if number > 500:
+                await set_config("prompt_length", 500)
+                await text_to_speech(f"Слишком большое число. Длина запроса: 500", False, ctx)
                 return True
             if number != -1:
                 await set_config("prompt_length", number)
