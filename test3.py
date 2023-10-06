@@ -69,7 +69,7 @@ async def recognize(ctx):
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     language = "тест_язык"
     await ctx.reply(f"Загрузка модели для языка \"{language}\"")
-    recognizer = sr.Recognizer()
+    recognizer = sr.Recognizer(language="ru-RU")
     await ctx.reply("Модель загружена")
     while True:
         config.read('config.ini')
@@ -89,7 +89,7 @@ async def recognize(ctx):
             audio_data = recognizer.record(source)
 
             try:
-                text = recognizer.recognize_google(audio_data)
+                text = recognizer.recognize_google(audio_data, language="ru-RU")
                 print(text)
                 await ctx.reply(text)
             except sr.UnknownValueError:
