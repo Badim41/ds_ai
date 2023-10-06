@@ -1,3 +1,4 @@
+import asyncio
 import multiprocessing
 import os
 import time
@@ -22,10 +23,10 @@ stream_sink = StreamSink()
 
 
 async def is_record(value=None):
+    config.read('config.ini')
     if value is None:
         config.read('config.ini')
         return config.getboolean("Sound", "record")
-    config.read('config.ini')
     config.set('Sound', "record", str(value))
     # Сохранение
     with open('config.ini', 'w') as configfile:
@@ -65,9 +66,12 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
     await sink.vc.disconnect()  # disconnect from the voice channel.
     print("Stopped listening.")
 
-async def recognize(ctx):
+def recognize(ctx):
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    while await is_record():
+    while True:
+        config.read('config.ini')
+        if not config.getboolean("Sound", "record"):
+            return
         file_found = None
         for filename in project_dir:
             if filename.startswith("output") and filename.endswith(".wav"):
@@ -89,7 +93,7 @@ async def recognize(ctx):
                 break
             if rec.AcceptWaveform(data):
                 print(rec.Result())
-                await ctx.reply(rec.Result())
+                asyncio.run(ctx.reply(rec.Result()))
         Path(file_found).unlink()
         print(f'Файл {Path(file_found)} удален')
 
