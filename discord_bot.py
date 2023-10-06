@@ -102,14 +102,13 @@ WAIT_FOR_ANSWER_IN_SECONDS = 3
 
 async def recognize(ctx):
     global file_not_found_in_raw, recognized_text, WAIT_FOR_ANSWER_IN_SECONDS
-    project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     recognizer = sr.Recognizer()
     while True:
         if not await set_get_config():
             print("Stopped listening2.")
             return
         file_found = None
-        for filename in os.listdir(project_dir):
+        for filename in os.listdir(os.getcwd()):
             if filename.startswith("output") and filename.endswith(".wav"):
                 file_found = filename
                 break
