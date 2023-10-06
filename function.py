@@ -111,15 +111,15 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             # Open the file
             # with open(file_path, "r", encoding="cp1251") as file:
             #     file_content = file.read()
-            prompt = f"Напиши ответ человеку, он говорит:\""
-            # prompt = temp_spokenText
+            # prompt = f"Напиши ответ человеку, он говорит:\""
+            prompt = temp_spokenText
             # prompt = f"Представь, что тебя зовут {await utf_code(currentAIname)}. {currentAIinfo}." \
             #          f"Тебе нужно вести диалог. Ты не говоришь, что какую-либо выполняешь роль (Например: " \
             #          f"я не могу выполнить такие действия, так как это нарушает мою роль). " \
             #          f"Отвечай как можно короче. " \
             #          f"У тебя ({await utf_code(currentAIname)}) есть воспоминания:\"{file_content}\". " \
             #          f"Напиши ответ человеку, он говорит:\""
-            prompt += temp_spokenText + "\". Ответ: "
+            # prompt += temp_spokenText + "\". Ответ: "
         except Exception as ex:
             raise ex
 
@@ -288,7 +288,7 @@ async def voice_commands(sentence, ctx):
             await result_command_change("Завершение кода", Color.RED)
             print("Завершение кода по протоколу")
             await exit_from_voice(ctx)
-            await textInDiscord("*выключение*", ctx)
+            await write_in_discord(ctx, "*выключение*")
             from discord_bot import disconnect
             await disconnect(ctx)
             sys.exit(0)
