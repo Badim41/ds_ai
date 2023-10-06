@@ -16,7 +16,7 @@ def run():
     tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
     model = AutoGPTQForCausalLM.from_quantized(model_name,
                                                model_basename=model_basename,
-                                               use_safetensors=True,
+                                               use_safetensors=False,
                                                trust_remote_code=True,
                                                device="cuda:0",
                                                use_triton=False,
