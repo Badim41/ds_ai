@@ -66,7 +66,7 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
     await sink.vc.disconnect()  # disconnect from the voice channel.
     print("Stopped listening.")
 
-async def recognize(ctx):
+def recognize(ctx):
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     while True:
         config.read('config.ini')
@@ -78,9 +78,10 @@ async def recognize(ctx):
                 file_found = filename
                 break
         if file_found is None:
+            print("file not found")
             time.sleep(0.01)
             continue
-
+        print("file found")
         model = Model(lang="ru")
         wf = wave.open(file_found, "rb")
         rec = KaldiRecognizer(model, wf.getframerate())
