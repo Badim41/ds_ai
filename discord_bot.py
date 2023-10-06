@@ -62,7 +62,7 @@ async def join(ctx):
         else:
             await ctx.voice_client.move_to(ctx.message.author.voice.channel)
     else:
-        await ctx.message.reply(voiceChannelErrorText)
+        await ctx.message.send(voiceChannelErrorText)
 
 
 
@@ -81,7 +81,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
 
     if not voice:
         # hehe
-        await ctx.reply("You aren't in a voice channel, get your life together lmao")
+        await ctx.send("You aren't in a voice channel, get your life together lmao")
 
     vc = None  # Инициализируем переменную для хранения подключения к войс-чату.
 
@@ -103,7 +103,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         ctx.channel  # the channel to disconnect from.
     )
     await set_get_config(value=True)
-    await ctx.reply("Started listening.")
+    await ctx.send("Started listening.")
     await recognize(ctx)
 
 
@@ -169,7 +169,7 @@ async def stop_recording(ctx):
         vc.stop_recording()
         del connections[ctx.guild.id]  # remove the guild from the cache.
     else:
-        await ctx.reply("Я и так тебя не слушал ._.")
+        await ctx.send("Я и так тебя не слушал ._.")
 
 
 @bot.command(aliases=['Disconnect', 'DISCONNECT', 'DC', 'dc', 'Dc'])
@@ -248,84 +248,6 @@ async def command_line(ctx, *args):
         pass
 
 
-# async def recognize(ctx):
-#     import vosk
-#     from function import setModelWithLanguage, replace_numbers_in_sentence
-#     languageWas = ""
-#     rec = ""
-#     vosk.SetLogLevel(0)
-#
-#     while True:
-#         if True:
-#             time.sleep(0.1)
-#             continue
-#
-#         # Изменяем модель, если необходимо (+ в начале)
-#         language = default_settings.get("language")
-#         if languageWas != language:
-#             languageWas = language
-#             print(language)
-#             model_path = setModelWithLanguage(language, "stt")
-#             print(model_path, "- Model")
-#             model = vosk.Model(model_path)
-#             rec = vosk.KaldiRecognizer(model, 16000)
-#             rec.SetWords(True)
-#             rec.SetPartialWords(True)
-#
-#         p = pyaudio.PyAudio()
-#         stream = await get_microphone_stream("стерео")
-#
-#         while True:
-#             data = stream.read(4096)
-#             if len(data) == 0:
-#                 break
-#             if rec.AcceptWaveform(data):
-#                 spokenText = rec.Result()
-#                 spokenText = spokenText[spokenText.find(":") + 3:spokenText.find("\"", spokenText.find(":") + 3)]
-#                 spokenText = replace_numbers_in_sentence(spokenText)
-#                 if spokenText:
-#                     print(spokenText)
-#                     await run_main_with_settings(ctx, spokenText)
-#                     pass
-#             else:
-#                 print(rec.PartialResult())
-#         stream.stop_stream()
-#         stream.close()
-#         p.terminate()
-
-
-async def get_microphone_stream(microphone_name):
-    frames_per_buffer = 4096
-    sample_rate = 16000
-    p = pyaudio.PyAudio()
-
-    # получить микрофоны
-    input_devices = []
-    for i in range(p.get_device_count()):
-        device_info = p.get_device_info_by_index(i)
-        if device_info['maxInputChannels'] > 0:
-            input_devices.append(device_info)
-
-    # Поиск микрофона
-    selected_microphone = None
-    for device_info in input_devices:
-        if microphone_name in device_info['name'].lower():
-            selected_microphone = device_info
-            break
-
-    if selected_microphone:
-        stream = p.open(
-            format=pyaudio.paInt16,
-            channels=1,
-            rate=sample_rate,
-            input=True,
-            input_device_index=int(selected_microphone['index']),
-            frames_per_buffer=frames_per_buffer
-        )
-        return stream
-    else:
-        raise Exception("нет такого микрофона")
-
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
     from function import start_bot
@@ -333,6 +255,7 @@ async def run_main_with_settings(ctx, spokenText, writeAnswer):
 
 
 async def write_in_discord(ctx, text):
+    text = "\\say " + text
     await ctx.send(text)
 
 
