@@ -330,7 +330,7 @@ async def voice_commands(sentence, ctx):
             await text_to_speech("нужны права администратора", False, ctx)
             return True
         try:
-            await chatgpt_get_result(False, sentence[sentence.index("gpt") + 3:], ctx)
+            await chatgpt_get_result(False, sentence[sentence.index("gpt") + 3:], ctx, True)
         except Exception as e:
             raise RuntimeError(e)
         return True
