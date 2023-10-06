@@ -242,7 +242,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
                     result = '\n'.join(result)[:-2]
                     index_answer = result.index("Ответ:")
                     if not index_answer == -1:
-                        result = result[index_answer + 3:]
+                        result = result[index_answer + 6:]
                     break
                 else:
                     await asyncio.sleep(0.05)
