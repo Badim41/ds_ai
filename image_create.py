@@ -59,6 +59,7 @@ def generate_picture(prompt, negative_prompt, x, y, steps, seed):
 
 
 if __name__ == '__main__':
+    print("image0")
     parser = argparse.ArgumentParser(description='Generate a AI cover song in the song_output/id directory.',
                                      add_help=True)
     parser.add_argument('-prompt', '--prompt', type=str, default='HD image',
