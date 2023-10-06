@@ -13,10 +13,10 @@ def run():
     model_name = 'fffrrt/ruGPT-3.5-13B-GPTQ'
     model_basename = 'gptq_model-4bit-128g'
     print("loading model")
-    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
     model = AutoGPTQForCausalLM.from_quantized(model_name,
                                                model_basename=model_basename,
-                                               use_safetensors=False,
+                                               use_safetensors=True,
                                                trust_remote_code=True,
                                                device="cuda:0",
                                                use_triton=False,
