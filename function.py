@@ -1105,6 +1105,8 @@ async def remove_before_stop(input_str, target_word):
 
 
 async def utf_code(text):
+    if type(text) == "list":
+        text = ' '.join(text)
     with open("temp1", "w", encoding="cp1251") as file_utf8:
         file_utf8.write(text)
     with open("temp1", "r", encoding="cp1251") as file:
