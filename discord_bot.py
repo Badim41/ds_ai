@@ -126,7 +126,7 @@ async def recognize(ctx):
                     await run_main_with_settings(ctx, recognized_text, True)
                     recognized_text = ""
             continue
-        print("file found")
+        # print("file found")
         file_not_found_in_raw = 0
 
         with sr.AudioFile(file_found) as source:
@@ -140,7 +140,7 @@ async def recognize(ctx):
             except sr.RequestError as e:
                 print(f"Ошибка: {e}")
         Path(file_found).unlink()
-        print(f'Файл {Path(file_found)} удален')
+        # print(f'Файл {Path(file_found)} удален')
 
     print("Stop_Recording")
 
