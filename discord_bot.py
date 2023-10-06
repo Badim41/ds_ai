@@ -53,12 +53,8 @@ async def join(ctx):
 @bot.command(aliases=['rec', 'REC'], help="воспринимать команды из своего микрофона")
 async def record(ctx):
     if ctx.message.author.voice:
-        if not ctx.voice_client:
-            await ctx.message.author.voice.channel.connect(reconnect=True)
-        else:
-            await ctx.voice_client.move_to(ctx.message.author.voice.channel)
-            from recognizer import record
-            await record(ctx)
+        from recognizer import record
+        await record(ctx)
     else:
         await ctx.message.reply(voiceChannelErrorText)
 
