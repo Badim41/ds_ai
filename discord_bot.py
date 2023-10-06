@@ -87,7 +87,6 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
     )
     await set_get_config(value=True)
     await ctx.reply("Started listening.")
-    print("rec1")
     await recognize(ctx)
 
 
@@ -102,17 +101,15 @@ recognized_text = ""
 WAIT_FOR_ANSWER_IN_SECONDS = 3
 
 async def recognize(ctx):
-    print("rec2")
     global file_not_found_in_raw, recognized_text, WAIT_FOR_ANSWER_IN_SECONDS
+    project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     recognizer = sr.Recognizer()
-    print("rec3")
     while True:
-        print("rec4")
         if not await set_get_config():
             print("Stopped listening2.")
             return
         file_found = None
-        for filename in os.listdir():
+        for filename in os.listdir(project_dir):
             if filename.startswith("output") and filename.endswith(".wav"):
                 file_found = filename
                 break
