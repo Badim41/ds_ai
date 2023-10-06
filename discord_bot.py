@@ -189,6 +189,7 @@ async def say(ctx, *args):
         print(message)
     message = await replace_mat_in_sentence(message)
     # Проверяем, находится ли автор команды в войс-чате
+    # if ctx.author.voice:
     if True:
         # Получаем войс-канал автора команды
         # voice_channel = ctx.author.voice.channel
@@ -280,7 +281,7 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
 
 
 if __name__ == "__main__":
-    print("update 2")
+    print("update 3")
     arguments = sys.argv
 
     if len(arguments) > 1:
