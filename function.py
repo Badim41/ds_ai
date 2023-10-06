@@ -160,7 +160,7 @@ async def replace_numbers_in_sentence(sentence):
     while i < len(words):
         current_word = words[i]
         if current_word in number_map:
-            number = [words[i].replace(current_word, number_map)]
+            number = words[i].replace(current_word, number_map[current_word])
             return_sentence.append(number)
             i += 1
         else:
