@@ -141,13 +141,17 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
 
 
 async def is_robot_name(text, ctx):
+    print("Robot name1")
     if text.startswith(currentAIname.lower()[:-1]):
+        print("Robot name2")
         if text == currentAIname:
             await text_to_speech("да?", False, ctx)
             return False
         return True
+    print("Robot name3")
     global robot_names
     for name in robot_names:
+        print("Robot name4")
         if text.startswith(name):
             print("TRUE!!")
             return True
