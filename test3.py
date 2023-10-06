@@ -49,6 +49,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         once_done,  # what to do once done.
         ctx.channel  # the channel to disconnect from.
     )
+    await is_record(value=True)
     pool = multiprocessing.Pool(processes=1)
     pool.apply_async(recognize)
     pool.close()
@@ -57,6 +58,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
 
 # our voice client already passes these in.
 async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
+    await is_record(value=False)
     await sink.vc.disconnect()  # disconnect from the voice channel.
     print("Stopped listening.")
 
@@ -78,6 +80,7 @@ def recognize():
                     pass
             else:
                 print(rec.PartialResult())
+    print("Stop_Recording")
 
 
 @bot.command()
