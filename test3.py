@@ -53,11 +53,8 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         ctx.channel  # the channel to disconnect from.
     )
     await is_record(value=True)
-    time.sleep(0.5)
-    pool = multiprocessing.Pool(processes=1)
-    pool.apply_async(recognize(ctx,))
-    pool.close()
     await ctx.reply("Started listening.")
+    await recognize(ctx)
 
 
 # our voice client already passes these in.
