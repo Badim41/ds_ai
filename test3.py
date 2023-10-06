@@ -98,6 +98,8 @@ async def recognize(ctx):
             try:
                 text = recognizer.recognize_google(audio_data, language="ru-RU")
                 recognized_text += text
+            except sr.UnknownValueError:
+                pass
             except sr.RequestError as e:
                 print(f"Ошибка: {e}")
         Path(file_found).unlink()
