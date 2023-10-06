@@ -231,50 +231,50 @@ async def command_line(ctx, *args):
         pass
 
 
-async def recognize(ctx):
-    import vosk
-    from function import setModelWithLanguage, replace_numbers_in_sentence
-    languageWas = ""
-    rec = ""
-    vosk.SetLogLevel(0)
-
-    while True:
-        if True:
-            time.sleep(0.1)
-            continue
-
-        # Изменяем модель, если необходимо (+ в начале)
-        language = default_settings.get("language")
-        if languageWas != language:
-            languageWas = language
-            print(language)
-            model_path = setModelWithLanguage(language, "stt")
-            print(model_path, "- Model")
-            model = vosk.Model(model_path)
-            rec = vosk.KaldiRecognizer(model, 16000)
-            rec.SetWords(True)
-            rec.SetPartialWords(True)
-
-        p = pyaudio.PyAudio()
-        stream = await get_microphone_stream("стерео")
-
-        while True:
-            data = stream.read(4096)
-            if len(data) == 0:
-                break
-            if rec.AcceptWaveform(data):
-                spokenText = rec.Result()
-                spokenText = spokenText[spokenText.find(":") + 3:spokenText.find("\"", spokenText.find(":") + 3)]
-                spokenText = replace_numbers_in_sentence(spokenText)
-                if spokenText:
-                    print(spokenText)
-                    await run_main_with_settings(ctx, spokenText)
-                    pass
-            else:
-                print(rec.PartialResult())
-        stream.stop_stream()
-        stream.close()
-        p.terminate()
+# async def recognize(ctx):
+#     import vosk
+#     from function import setModelWithLanguage, replace_numbers_in_sentence
+#     languageWas = ""
+#     rec = ""
+#     vosk.SetLogLevel(0)
+#
+#     while True:
+#         if True:
+#             time.sleep(0.1)
+#             continue
+#
+#         # Изменяем модель, если необходимо (+ в начале)
+#         language = default_settings.get("language")
+#         if languageWas != language:
+#             languageWas = language
+#             print(language)
+#             model_path = setModelWithLanguage(language, "stt")
+#             print(model_path, "- Model")
+#             model = vosk.Model(model_path)
+#             rec = vosk.KaldiRecognizer(model, 16000)
+#             rec.SetWords(True)
+#             rec.SetPartialWords(True)
+#
+#         p = pyaudio.PyAudio()
+#         stream = await get_microphone_stream("стерео")
+#
+#         while True:
+#             data = stream.read(4096)
+#             if len(data) == 0:
+#                 break
+#             if rec.AcceptWaveform(data):
+#                 spokenText = rec.Result()
+#                 spokenText = spokenText[spokenText.find(":") + 3:spokenText.find("\"", spokenText.find(":") + 3)]
+#                 spokenText = replace_numbers_in_sentence(spokenText)
+#                 if spokenText:
+#                     print(spokenText)
+#                     await run_main_with_settings(ctx, spokenText)
+#                     pass
+#             else:
+#                 print(rec.PartialResult())
+#         stream.stop_stream()
+#         stream.close()
+#         p.terminate()
 
 
 async def get_microphone_stream(microphone_name):
