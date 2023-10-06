@@ -237,10 +237,12 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     while True:
         with open("gpt_result.txt", "r", encoding="utf-8") as reader:
             result = reader.readlines()
-        if result[len(result) - 1].endswith('$$'):
-            result[len(result) - 1] = result[len(result) - 1][:-2]
-            result = '\n'.join(result)
-            break
+        if result:
+            if result[-1].endswith('$$'):
+                result = '\n'.join(reader.readlines())[:-2]
+                break
+            else:
+                continue
     with open("gpt_result.txt", "w", encoding="UTF-8") as writer:
         writer.write("None")
     if not language == "russian":
