@@ -9,7 +9,6 @@ from modifed_sinks import StreamSink
 import speech_recognition as sr
 from pathlib import Path
 import sys
-sys.path.insert(0, 'discord.py')
 import discord
 from discord.ext import commands
 
