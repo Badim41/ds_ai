@@ -23,12 +23,12 @@ connections = {}
 stream_sink = StreamSink()
 
 
-async def is_record(value=None):
+async def set_get_config(key="record", value=None):
     config.read('config.ini')
     if value is None:
         config.read('config.ini')
-        return config.getboolean("Sound", "record")
-    config.set('Sound', "record", str(value))
+        return config.getboolean("Sound", key)
+    config.set('Sound', key, str(value))
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
@@ -53,27 +53,28 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         once_done,  # what to do once done.
         ctx.channel  # the channel to disconnect from.
     )
-    await is_record(value=True)
+    await set_get_config(value=True)
     await ctx.reply("Started listening.")
     await recognize(ctx)
 
 
 # our voice client already passes these in.
 async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
-    await is_record(value=False)
+    await set_get_config(value=False)
     await sink.vc.disconnect()  # disconnect from the voice channel.
     print("Stopped listening.")
 
 
+file_not_found_in_raw = 0
+recognized_text = ""
+
+
 async def recognize(ctx):
+    global file_not_found_in_raw, recognized_text
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    language = "тест_язык"
-    await ctx.reply(f"Загрузка модели для языка \"{language}\"")
     recognizer = sr.Recognizer()
-    await ctx.reply("Модель загружена")
     while True:
-        config.read('config.ini')
-        if not config.getboolean("Sound", "record"):
+        if not set_get_config():
             return
         file_found = None
         for filename in os.listdir(project_dir):
@@ -82,16 +83,21 @@ async def recognize(ctx):
                 break
         if file_found is None:
             await asyncio.sleep(0.1)
+            file_not_found_in_raw += 1
+            if file_not_found_in_raw > 5 and not recognized_text == "":
+                print(recognized_text)
+                await ctx.reply(recognized_text)
+                recognized_text = ""
             continue
         print("file found")
+        file_not_found_in_raw = 0
 
         with sr.AudioFile(file_found) as source:
             audio_data = recognizer.record(source)
 
             try:
                 text = recognizer.recognize_google(audio_data, language="ru-RU")
-                print(text)
-                await ctx.reply(text)
+                recognized_text += text
             except sr.UnknownValueError:
                 print("-")
             except sr.RequestError as e:
