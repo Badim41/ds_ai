@@ -75,7 +75,7 @@ async def recognize(ctx):
                 file_found = filename
                 break
         if file_found is None:
-            time.sleep(0.01)
+            await asyncio.sleep(0.1)
             continue
         print("file found")
         model = Model(lang="ru")
