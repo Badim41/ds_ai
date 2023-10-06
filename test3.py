@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from test2 import StreamSink
+import sys
 
 
 intents = discord.Intents.all()

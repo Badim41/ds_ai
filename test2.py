@@ -1,6 +1,7 @@
 from discord.sinks.core import Filters, Sink, default_filters
 from pydub import AudioSegment
 from queue import Queue
+import sys
 
 
 class StreamSink(Sink):
