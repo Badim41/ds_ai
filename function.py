@@ -95,8 +95,14 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     print(number);
     number += 1
     if await is_robot_name(temp_spokenText, ctx):
+        print(number);
+        number += 1
         await result_command_change("Обработка...", Color.BLACK)
+        print(number);
+        number += 1
         try:
+            print(number);
+            number += 1
             print("check... Голосовая команда")
             if await voice_commands(temp_spokenText.lower(), ctx):
                 print("Голосовая команда")
