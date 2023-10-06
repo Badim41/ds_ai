@@ -7,7 +7,7 @@ import asyncio
 import os
 from pathlib import Path
 sys.path.insert(0, 'discord.py')
-import discord
+import discord_record
 
 
 config = configparser.ConfigParser()
