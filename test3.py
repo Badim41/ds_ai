@@ -1,4 +1,3 @@
-import asyncio
 import multiprocessing
 import os
 import time
@@ -66,9 +65,9 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
     await sink.vc.disconnect()  # disconnect from the voice channel.
     print("Stopped listening.")
 
-def recognize(ctx):
+async def recognize(ctx):
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    while asyncio.run(is_record()):
+    while await is_record():
         file_found = None
         for filename in project_dir:
             if filename.startswith("output") and filename.endswith(".wav"):
@@ -90,7 +89,7 @@ def recognize(ctx):
                 break
             if rec.AcceptWaveform(data):
                 print(rec.Result())
-                asyncio.run(ctx.reply(rec.Result()))
+                await ctx.reply(rec.Result())
         Path(file_found).unlink()
         print(f'Файл {Path(file_found)} удален')
 
