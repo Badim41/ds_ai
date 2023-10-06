@@ -10,7 +10,8 @@ from discord.ext import commands
 from test2 import StreamSink
 import sys
 import configparser
-from vosk import Model, KaldiRecognizer
+import speech_recognition as sr
+
 config = configparser.ConfigParser()
 config.read('config.ini')
 
@@ -63,11 +64,12 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
     await sink.vc.disconnect()  # disconnect from the voice channel.
     print("Stopped listening.")
 
+
 async def recognize(ctx):
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     language = "тест_язык"
     await ctx.reply(f"Загрузка модели для языка \"{language}\"")
-    model = Model(lang="ru")
+    recognizer = sr.Recognizer()
     await ctx.reply("Модель загружена")
     while True:
         config.read('config.ini')
@@ -82,18 +84,18 @@ async def recognize(ctx):
             await asyncio.sleep(0.1)
             continue
         print("file found")
-        wf = wave.open(file_found, "rb")
-        rec = KaldiRecognizer(model, wf.getframerate())
-        rec.SetWords(True)
-        rec.SetPartialWords(True)
 
-        while True:
-            data = wf.readframes(4000)
-            if len(data) == 0:
-                break
-            if rec.AcceptWaveform(data):
-                print(rec.Result())
-                await ctx.reply(rec.Result())
+        with sr.AudioFile(file_found) as source:
+            audio_data = recognizer.record(source)
+
+            try:
+                text = recognizer.recognize_google(audio_data)
+                print(text)
+                await ctx.reply(text)
+            except sr.UnknownValueError:
+                print("-")
+            except sr.RequestError as e:
+                print(f"Ошибка: {e}")
         Path(file_found).unlink()
         print(f'Файл {Path(file_found)} удален')
 
@@ -110,6 +112,7 @@ async def stop_recording(ctx):
     else:
         # respond with this if we aren't listening
         await ctx.reply("I am currently not listening here.")
+
 
 if __name__ == "__main__":
     print("update 3")
