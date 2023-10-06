@@ -235,24 +235,20 @@ async def skip(ctx):
 
 @bot.command(aliases=['cmd'], help="командная строка")
 async def command_line(ctx, *args):
-    print("cmd1")
     text = " ".join(args)
-    print("cmd2", text)
+    print("cmd", text)
     try:
-        print("cmd3")
         process = subprocess.Popen(text, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        print("cmd4")
         stdout, stderr = process.communicate()
-        print("cmd5")
         for line in stdout.decode().split('\n'):
             await ctx.send(line)
-        print("cmd6")
         for line in stderr.decode().split('\n'):
             await ctx.send(line)
-        print("cmd7")
 
-    except (subprocess.CalledProcessError, IOError, Exception):
-        pass
+    except subprocess.CalledProcessError as e:
+        await ctx.send(f"Ошибка выполнения команды: {e}")
+    except Exception as e:
+        await ctx.send(f"Произошла неизвестная ошибка: {e}")
 
 
 
