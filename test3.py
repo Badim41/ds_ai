@@ -53,7 +53,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         ctx.channel  # the channel to disconnect from.
     )
     await is_record(value=True)
-    time.sleep(3)
+    time.sleep(0.5)
     pool = multiprocessing.Pool(processes=1)
     pool.apply_async(recognize(ctx,))
     pool.close()
@@ -112,7 +112,7 @@ async def stop_recording(ctx):
         await ctx.reply("I am currently not listening here.")
 
 if __name__ == "__main__":
-    print("update 1")
+    print("update 2")
     arguments = sys.argv
 
     if len(arguments) > 1:
