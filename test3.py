@@ -70,7 +70,7 @@ async def recognize(ctx):
         if not config.getboolean("Sound", "record"):
             return
         file_found = None
-        for filename in project_dir:
+        for filename in os.listdir(project_dir):
             if filename.startswith("output") and filename.endswith(".wav"):
                 file_found = filename
                 break
