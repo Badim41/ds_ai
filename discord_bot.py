@@ -32,7 +32,8 @@ connections = {}
 
 stream_sink = StreamSink()
 
-bot = commands.AutoShardedBot(intents=discord.Intents.all(), command_prefix="\\")
+intents = discord.Intents.all()
+bot = commands.Bot(command_prefix='\\', intents=intents)
 
 
 async def set_get_config(key="record", value=None):
