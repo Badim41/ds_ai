@@ -112,7 +112,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             # with open(file_path, "r", encoding="cp1251") as file:
             #     file_content = file.read()
             # prompt = f"Напиши ответ человеку, он говорит:\""
-            prompt = temp_spokenText
+            prompt = f"Представь, что тебя зовут {currentAIname}. Тебе пишут: {temp_spokenText}. Ответ:"
             # prompt = f"Представь, что тебя зовут {await utf_code(currentAIname)}. {currentAIinfo}." \
             #          f"Тебе нужно вести диалог. Ты не говоришь, что какую-либо выполняешь роль (Например: " \
             #          f"я не могу выполнить такие действия, так как это нарушает мою роль). " \
