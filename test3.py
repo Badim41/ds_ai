@@ -69,7 +69,7 @@ async def recognize(ctx):
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     language = "тест_язык"
     await ctx.reply(f"Загрузка модели для языка \"{language}\"")
-    recognizer = sr.Recognizer(language="ru-RU")
+    recognizer = sr.Recognizer()
     await ctx.reply("Модель загружена")
     while True:
         config.read('config.ini')
