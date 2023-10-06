@@ -44,7 +44,7 @@ robot_names = []
 
 async def set_config(key, value):
     config.read('config.ini')
-    config.set('Default', key, value)
+    config.set('Default', key, str(value))
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
