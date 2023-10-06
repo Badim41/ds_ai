@@ -46,9 +46,37 @@ async def join(ctx):
             await ctx.message.author.voice.channel.connect(reconnect=True)
         else:
             await ctx.voice_client.move_to(ctx.message.author.voice.channel)
-        # await recognize(ctx) - звук из микрофона! (локально)
     else:
         await ctx.message.reply(voiceChannelErrorText)
+
+
+@bot.command(aliases=['rec', 'REC'], help="воспринимать команды из своего микрофона")
+async def record(ctx):
+    if ctx.message.author.voice:
+        if not ctx.voice_client:
+            await ctx.message.author.voice.channel.connect(reconnect=True)
+        else:
+            await ctx.voice_client.move_to(ctx.message.author.voice.channel)
+            from recognizer import record
+            await record(ctx)
+    else:
+        await ctx.message.reply(voiceChannelErrorText)
+
+
+@bot.command(aliases=['srec', 'SREC'], help="перестать воспринимать команды из своего микрофона")
+async def stop_record(ctx):
+    from recognizer import stop_recording
+    await stop_recording(ctx)
+
+# def run_async_function(ctx):
+#     from recognizer import record
+#     loop = asyncio.new_event_loop()
+#     asyncio.set_event_loop(loop)
+#     loop.run_until_complete(record(ctx))
+#
+# thread = threading.Thread(target=run_async_function, args=(ctx,))
+# thread.start()
+# thread.join()
 
 
 @bot.command(aliases=['Disconnect', 'DISCONNECT', 'DC', 'dc', 'Dc'])
@@ -101,6 +129,7 @@ async def pause(ctx):
 
 @bot.command(aliases=['скип'], help="пропуск")
 async def skip(ctx):
+    global stop_milliseconds
     voice_client = ctx.voice_client
     if voice_client.is_playing():
         voice_client.stop()
@@ -126,9 +155,6 @@ async def command_line(ctx, *args):
         pass
 
 
-stopRecognize = False
-
-
 async def recognize(ctx):
     import vosk
     from function import setModelWithLanguage, replace_numbers_in_sentence
@@ -137,7 +163,7 @@ async def recognize(ctx):
     vosk.SetLogLevel(0)
 
     while True:
-        if stopRecognize:
+        if True:
             time.sleep(0.1)
             continue
 
