@@ -86,10 +86,10 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     temp_spokenText = spokenText
 
     while "стоп" in temp_spokenText:
-        temp_spokenText = remove_before_stop(temp_spokenText, "стоп")
+        temp_spokenText = await remove_before_stop(temp_spokenText, "стоп")
 
     while "Стоп" in temp_spokenText:
-        temp_spokenText = remove_before_stop(temp_spokenText, "Стоп")
+        temp_spokenText = await remove_before_stop(temp_spokenText, "Стоп")
 
     if await is_robot_name(temp_spokenText, ctx):
         await result_command_change("Обработка...", Color.BLACK)
