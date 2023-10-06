@@ -90,7 +90,7 @@ async def recognize(ctx):
                 break
             if rec.AcceptWaveform(data):
                 print(rec.Result())
-                asyncio.run(ctx.reply(rec.Result()))
+                await ctx.reply(rec.Result())
         Path(file_found).unlink()
         print(f'Файл {Path(file_found)} удален')
 
