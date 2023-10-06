@@ -404,9 +404,9 @@ async def voice_commands(sentence, ctx):
             if not admin:
                 await text_to_speech("нужны права администратора", False, ctx)
                 return True
-            if sentence is None:
-                sentence = spoken_text_temp
-            await textInDiscord(sentence, ctx)
+            if spoken_text_temp is None:
+                spoken_text_temp = "вы ничего не сказали"
+            await textInDiscord(spoken_text_temp, ctx)
             return True
         # AICoverGen
         elif protocol_number == 13:
