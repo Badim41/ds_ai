@@ -84,25 +84,15 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
 
     print("RowInput:", spokenText)
     temp_spokenText = spokenText
-    number = 0
-    print(number); number+=1
 
     while "стоп" in temp_spokenText:
         temp_spokenText = await remove_before_stop(temp_spokenText, "стоп")
 
     while "Стоп" in temp_spokenText:
         temp_spokenText = await remove_before_stop(temp_spokenText, "Стоп")
-    print(number);
-    number += 1
     if await is_robot_name(temp_spokenText, ctx):
-        print(number);
-        number += 1
         await result_command_change("Обработка...", Color.BLACK)
-        print(number);
-        number += 1
         try:
-            print(number);
-            number += 1
             print("check... Голосовая команда")
             if await voice_commands(temp_spokenText.lower(), ctx):
                 print("Голосовая команда")
@@ -122,8 +112,6 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             #     file_content = file.read()
             # prompt = f"Напиши ответ человеку, он говорит:\""
             prompt = f"Представь, что тебя зовут {currentAIname}. Тебе пишут: {temp_spokenText}. Ответ:"
-            print(number);
-            number += 1
             # prompt = f"Представь, что тебя зовут {await utf_code(currentAIname)}. {currentAIinfo}." \
             #          f"Тебе нужно вести диалог. Ты не говоришь, что какую-либо выполняешь роль (Например: " \
             #          f"я не могу выполнить такие действия, так как это нарушает мою роль). " \
