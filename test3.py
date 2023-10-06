@@ -67,10 +67,10 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
 
 file_not_found_in_raw = 0
 recognized_text = ""
-
+WAIT_FOR_ANSWER_IN_SECONDS = 3
 
 async def recognize(ctx):
-    global file_not_found_in_raw, recognized_text
+    global file_not_found_in_raw, recognized_text, WAIT_FOR_ANSWER_IN_SECONDS
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     recognizer = sr.Recognizer()
     while True:
@@ -82,9 +82,9 @@ async def recognize(ctx):
                 file_found = filename
                 break
         if file_found is None:
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.1)
             file_not_found_in_raw += 1
-            if file_not_found_in_raw > 5 and not recognized_text == "":
+            if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS*10 and not recognized_text == "":
                 print(recognized_text)
                 await ctx.reply(recognized_text)
                 recognized_text = ""
