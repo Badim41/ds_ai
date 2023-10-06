@@ -22,6 +22,7 @@ def run():
                                                use_triton=False,
                                                quantize_config=None)
     set_config("gpt", "True")
+    print("==========Model Loaded!==========")
     while True:
         with open("gpt_prompt.txt", "r", encoding="utf-8") as reader:
             lines = reader.readlines()
