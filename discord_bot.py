@@ -189,7 +189,7 @@ async def say(ctx, *args):
         print(message)
     message = await replace_mat_in_sentence(message)
     # Проверяем, находится ли автор команды в войс-чате
-    if ctx.author.voice:
+    if True:
         # Получаем войс-канал автора команды
         # voice_channel = ctx.author.voice.channel
         # # Проверяем, находится ли бот уже в каком-либо войс-чате
