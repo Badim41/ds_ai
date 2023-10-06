@@ -82,7 +82,7 @@ async def recognize(ctx):
                 file_found = filename
                 break
         if file_found is None:
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.5)
             file_not_found_in_raw += 1
             if file_not_found_in_raw > 5 and not recognized_text == "":
                 print(recognized_text)
@@ -98,8 +98,6 @@ async def recognize(ctx):
             try:
                 text = recognizer.recognize_google(audio_data, language="ru-RU")
                 recognized_text += text
-            except sr.UnknownValueError:
-                print("-")
             except sr.RequestError as e:
                 print(f"Ошибка: {e}")
         Path(file_found).unlink()
