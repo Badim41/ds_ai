@@ -237,7 +237,8 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     while True:
         with open("gpt_result.txt", "r", encoding="utf-8") as reader:
             result = reader.readlines()
-        if not result == "None":
+        if result[len(result)].endswith('$$'):
+            result[len(result)] = result[len(result)][:-2]
             result = '\n'.join(result)
             break
     with open("gpt_result.txt", "w", encoding="UTF-8") as writer:
@@ -342,7 +343,7 @@ async def voice_commands(sentence, ctx):
         if protocol_number != -1:
             print("Протокол", protocol_number)
             await result_command_change(f"Протокол {protocol_number}", Color.GRAY)
-        sentence = sentence[sentence.index(str(protocol_number) + "") + len(str(protocol_number)):]
+        sentence = sentence[sentence.index(str(protocol_number)) + len(str(protocol_number)):]
         if protocol_number == 999:
             with open(spokenText, "r", encoding="utf-8") as reader:
                 await write_in_discord(ctx, reader.readlines())

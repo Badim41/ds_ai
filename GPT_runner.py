@@ -31,7 +31,7 @@ def run():
             else:
                 with open("gpt_prompt.txt", "w", encoding="utf-8") as writer:
                     writer.write("enter prompt")
-                prompt = ''.join(lines)
+                prompt = '\n'.join(lines)
                 config.read('config.ini')
                 tokens = config.getint('Default', 'prompt_length')
                 encoded_input = tokenizer(prompt, return_tensors='pt').to('cuda:0')
@@ -52,4 +52,5 @@ def run():
                 # out = model.generate(prompt, config_gpt)
                 with open("gpt_result.txt", "w", encoding="utf-8") as writer:
                     writer.writelines(out)
+                    writer.write("$$")
                 print("DEV_TEMP_OUTPUT:", out)
