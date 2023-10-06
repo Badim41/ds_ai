@@ -66,7 +66,7 @@ async def join(ctx):
 
 
 
-@bot.command(aliases=['прослушай кеклола'], help="ХАВХВАХВАХВАХВАХ")
+@bot.command(aliases=['прослушай_кеклола'], help="ХАВХВАХВАХВАХВАХ")
 async def i_hear_you(ctx):  # if you're using commands.Bot, this will also work.
     await ctx.send("Получаю базу данных пользователей")
     await asyncio.sleep(1)
