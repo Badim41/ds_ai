@@ -17,3 +17,4 @@ pydub
 py-cord[speed]
 py-cord[voice]
 py-cord
+opencv-python

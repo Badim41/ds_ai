@@ -1,15 +1,14 @@
 import sys;
 import time
-
-sys.path.insert(0, 'discord.py')
-import asyncio
-import os
-from pathlib import Path
-
-import discord
 from modifed_sinks import StreamSink
 import configparser
 import speech_recognition as sr
+import asyncio
+import os
+from pathlib import Path
+sys.path.insert(0, 'discord.py')
+import discord
+
 
 config = configparser.ConfigParser()
 config.read('config.ini')

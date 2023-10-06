@@ -11,7 +11,7 @@ from torchvision import transforms
 from transformers import CLIPVisionModelWithProjection
 from diffusers.models import UNet2DConditionModel
 import numpy as np
-from PIL import Image
+import cv2
 
 def generate_picture(prompt, negative_prompt, x, y, steps, seed):
     image_encoder = CLIPVisionModelWithProjection.from_pretrained(
@@ -53,8 +53,7 @@ def generate_picture(prompt, negative_prompt, x, y, steps, seed):
         num_inference_steps=75,
         height=y,
         width=x)
-    image_pil = Image.fromarray(np.uint8(images.images[0]))
-    image_pil.save("picture.png")
+    cv2.imwrite("picture.png", images.images[0])
     print("Изображение сохранено как picture.png")
 
 
