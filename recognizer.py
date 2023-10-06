@@ -60,7 +60,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
     await recognize(ctx)
 
 
-async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
+async def once_done(sink: discord_record.sinks, channel: discord_record.TextChannel, *args):
     await set_get_config(value=False)
     await sink.vc.disconnect()  # disconnect from the voice channel.
     print("Stopped listening.")
