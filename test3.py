@@ -66,7 +66,7 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
 async def recognize(ctx):
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     language = "тест_язык"
-    await ctx.reply("Загрузка модели для языка \"", language, "\"", sep="")
+    await ctx.reply(f"Загрузка модели для языка \"{language}\"")
     model = Model(model_name="vosk-model-ru-0.42")
     await ctx.reply("Модель загружена")
     while True:
