@@ -240,6 +240,13 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
         if result:
             if result[-1].endswith('$$'):
                 result = '\n'.join(result)[:-2]
+                index_answer = result.index("ответ:")
+                if index_answer == -1:
+                    index_answer = result.index("Ответ:")
+                    if not index_answer == -1:
+                        result = result[index_answer + 3:]
+
+
                 break
             else:
                 continue

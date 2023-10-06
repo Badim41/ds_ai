@@ -252,6 +252,7 @@ async def command_line(ctx, *args):
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
     from function import start_bot
+    spokenText += "Ответ: "
     await start_bot(ctx, spokenText, writeAnswer)
 
 
