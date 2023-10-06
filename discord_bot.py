@@ -70,21 +70,14 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
     voice = ctx.author.voice
 
     if not voice:
+        # hehe
         await ctx.reply("You aren't in a voice channel, get your life together lmao")
-        return
 
-    vc = None
-
-    # если бот УЖЕ в войс-чате
-    if ctx.guild.id in connections:
-        vc = connections[ctx.guild.id]
-        if vc.channel != voice.channel:
-            await vc.move_to(voice.channel)
-    # если бот НЕ в войс-чате
-    if not vc:
-        stream_sink.set_user(ctx.author.id)
-        vc = await voice.channel.connect()
-        connections[ctx.guild.id] = vc
+    # connect to the voice channel the author is in.
+    stream_sink.set_user(ctx.author.id)
+    vc = await voice.channel.connect()
+    # updating the cache with the guild and channel.
+    connections.update({ctx.guild.id: vc})
 
     # Начинаем запись
     voice.start_recording(
