@@ -65,7 +65,7 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
 
 async def recognize(ctx):
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    model = Model(lang="ru")
+    model = Model(model_name="vosk-model-ru-0.42")
     while True:
         config.read('config.ini')
         if not config.getboolean("Sound", "record"):
