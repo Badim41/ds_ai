@@ -24,7 +24,7 @@ async def is_record(value=None):
         config.read('config.ini')
         return config.getboolean("Sound", "record")
     config.read('config.ini')
-    config.set('Sound', "record", value)
+    config.set('Sound', "record", str(value))
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
