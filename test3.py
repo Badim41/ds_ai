@@ -65,6 +65,7 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
 
 async def recognize(ctx):
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    model = Model(lang="ru")
     while True:
         config.read('config.ini')
         if not config.getboolean("Sound", "record"):
@@ -78,7 +79,6 @@ async def recognize(ctx):
             await asyncio.sleep(0.1)
             continue
         print("file found")
-        model = Model(lang="ru")
         wf = wave.open(file_found, "rb")
         rec = KaldiRecognizer(model, wf.getframerate())
         rec.SetWords(True)
