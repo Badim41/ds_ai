@@ -144,7 +144,7 @@ async def recognize(ctx):
 
     print("Stop_Recording")
 
-
+@bot.command(aliases=['srec', 'SREC'], help="перестать воспринимать команды из своего микрофона")
 async def stop_recording(ctx):
     if ctx.guild.id in connections:  # check if the guild is in the cache.
         vc = connections[ctx.guild.id]
