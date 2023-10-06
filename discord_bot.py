@@ -112,19 +112,15 @@ async def recognize(ctx):
             print("Stopped listening2.")
             return
         file_found = None
-        print("rec5")
         for filename in os.listdir():
-            print("rec6")
             if filename.startswith("output") and filename.endswith(".wav"):
                 file_found = filename
                 break
         if file_found is None:
-            print("rec7")
             await asyncio.sleep(0.1)
             file_not_found_in_raw += 1
 
             if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS*10:
-                print("rec8")
                 stream_sink.cleanup()
                 if not recognized_text == "":
                     from function import replace_mat_in_sentence, replace_numbers_in_sentence
