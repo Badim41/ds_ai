@@ -66,23 +66,8 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
 
 def recognize():
     while asyncio.run(is_record()):
-        model = Model(lang="en-us")
-        rec = vosk.KaldiRecognizer(model, 16000)
-        rec.SetWords(True)
-        rec.SetPartialWords(True)
-        while True:
-            data = stream_sink.buffer
-            if len(data) == 0:
-                break
-            if rec.AcceptWaveform(data):
-                spokenText = rec.Result()
-                spokenText = spokenText[spokenText.find(":") + 3:spokenText.find("\"", spokenText.find(":") + 3)]
-                if spokenText:
-                    print(spokenText)
-                    pass
-            else:
-                print(rec.PartialResult())
-    print("Stop_Recording")
+        print("rec")
+        time.sleep(0.1)
 
 
 @bot.command()
