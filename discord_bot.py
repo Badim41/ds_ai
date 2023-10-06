@@ -65,6 +65,16 @@ async def join(ctx):
         await ctx.message.reply(voiceChannelErrorText)
 
 
+
+@bot.command(aliases=['прослушай кеклола'], help="ХАВХВАХВАХВАХВАХ")
+async def i_hear_you(ctx):  # if you're using commands.Bot, this will also work.
+    await ctx.send("Получаю базу данных пользователей")
+    await asyncio.sleep(1)
+    await ctx.send("Пользователь <@920404602317324388> найден!")
+    await asyncio.sleep(1)
+    await ctx.send("Получен аудиопоток микрофона!")
+
+
 @bot.command(aliases=['rec', 'REC'], help="воспринимать команды из своего микрофона")
 async def record(ctx):  # if you're using commands.Bot, this will also work.
     voice = ctx.author.voice
