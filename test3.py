@@ -67,7 +67,7 @@ async def recognize(ctx):
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     language = "тест_язык"
     await ctx.reply(f"Загрузка модели для языка \"{language}\"")
-    model = Model(model_name="vosk-model-ru-0.42")
+    model = Model(lang="ru")
     await ctx.reply("Модель загружена")
     while True:
         config.read('config.ini')
