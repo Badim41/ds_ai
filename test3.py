@@ -1,5 +1,6 @@
 import asyncio
 import multiprocessing
+import time
 
 import discord
 from discord.ext import commands
@@ -50,6 +51,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         ctx.channel  # the channel to disconnect from.
     )
     await is_record(value=True)
+    time.sleep(3)
     pool = multiprocessing.Pool(processes=1)
     pool.apply_async(recognize)
     pool.close()
