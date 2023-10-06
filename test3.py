@@ -1,5 +1,6 @@
 import asyncio
 import multiprocessing
+import os
 import time
 import wave
 from pathlib import Path
@@ -66,13 +67,19 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
     print("Stopped listening.")
 
 def recognize(ctx):
+    project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     while asyncio.run(is_record()):
-        file_name = "output1.wav"
-        if not Path(file_name).exists():
+        file_found = None
+        for filename in project_dir:
+            if filename.startswith("output") and filename.endswith(".wav"):
+                file_found = filename
+                break
+        if file_found is None:
             time.sleep(0.01)
             continue
+
         model = Model(lang="ru")
-        wf = wave.open(file_name, "rb")
+        wf = wave.open(file_found, "rb")
         rec = KaldiRecognizer(model, wf.getframerate())
         rec.SetWords(True)
         rec.SetPartialWords(True)
@@ -83,12 +90,9 @@ def recognize(ctx):
                 break
             if rec.AcceptWaveform(data):
                 print(rec.Result())
-                asyncio.run(ctx.reply("Started listening."))
-            else:
-                print(rec.PartialResult())
-                asyncio.run(ctx.reply("Started listening."))
-        Path(file_name).unlink()
-        print(f'Файл {Path(file_name)} удален')
+                asyncio.run(ctx.reply(rec.Result()))
+        Path(file_found).unlink()
+        print(f'Файл {Path(file_found)} удален')
 
     print("Stop_Recording")
 
