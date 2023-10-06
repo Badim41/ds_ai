@@ -80,7 +80,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
     connections.update({ctx.guild.id: vc})
 
     # Начинаем запись
-    voice.start_recording(
+    vc.start_recording(
         stream_sink,  # the sink type to use.
         once_done,  # what to do once done.
         ctx.channel  # the channel to disconnect from.
