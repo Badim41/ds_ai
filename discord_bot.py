@@ -255,7 +255,7 @@ async def run_main_with_settings(ctx, spokenText, writeAnswer):
 
 
 async def write_in_discord(ctx, text):
-    await run_main_with_settings(ctx, text, True)
+    # await run_main_with_settings(ctx, text, True)
     await ctx.send(text)
 
 
