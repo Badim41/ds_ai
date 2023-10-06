@@ -106,6 +106,7 @@ async def recognize(ctx):
     recognizer = sr.Recognizer()
     while True:
         if not await set_get_config():
+            print("Stopped listening2.")
             return
         file_found = None
         for filename in os.listdir(project_dir):
