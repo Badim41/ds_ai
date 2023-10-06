@@ -74,7 +74,7 @@ async def recognize(ctx):
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     recognizer = sr.Recognizer()
     while True:
-        if not set_get_config():
+        if not await set_get_config():
             return
         file_found = None
         for filename in os.listdir(project_dir):
