@@ -241,14 +241,16 @@ async def command_line(ctx, *args):
         process = subprocess.Popen(text, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         stdout, stderr = process.communicate()
         for line in stdout.decode().split('\n'):
-            await ctx.send(line)
+            if line.strip():
+                await ctx.send(line)
         for line in stderr.decode().split('\n'):
-            await ctx.send(line)
-
+            if line.strip():
+                await ctx.send(line)
     except subprocess.CalledProcessError as e:
         await ctx.send(f"Ошибка выполнения команды: {e}")
     except Exception as e:
         await ctx.send(f"Произошла неизвестная ошибка: {e}")
+
 
 
 
