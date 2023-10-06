@@ -1,14 +1,15 @@
 import asyncio
 import multiprocessing
 import time
+import wave
+from pathlib import Path
 
 import discord
 from discord.ext import commands
 from test2 import StreamSink
 import sys
 import configparser
-import vosk
-from vosk import Model
+from vosk import Model, KaldiRecognizer
 config = configparser.ConfigParser()
 config.read('config.ini')
 
@@ -66,8 +67,28 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
 
 def recognize():
     while asyncio.run(is_record()):
-        print("rec")
-        time.sleep(0.1)
+        file_name = "output1.wav"
+        if not Path(file_name).exists():
+            time.sleep(0.01)
+            continue
+        model = Model(lang="ru")
+        wf = wave.open(file_name, "rb")
+        rec = KaldiRecognizer(model, wf.getframerate())
+        rec.SetWords(True)
+        rec.SetPartialWords(True)
+
+        while True:
+            data = wf.readframes(4000)
+            if len(data) == 0:
+                break
+            if rec.AcceptWaveform(data):
+                print(rec.Result())
+            else:
+                print(rec.PartialResult())
+        Path(file_name).unlink()
+        print(f'Файл {Path(file_name)} удален')
+
+    print("Stop_Recording")
 
 
 @bot.command()

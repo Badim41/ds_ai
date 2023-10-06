@@ -81,5 +81,5 @@ class StreamBuffer:
             self.segment_buffer.put(audio_segment)
 
             # temporary for validating process
-            audio_segment.export(f"output{self.ct}.mp3", format="mp3")
+            audio_segment.export(f"output{self.ct}.wav", format="wav")
             self.ct += 1
