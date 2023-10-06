@@ -2,7 +2,6 @@ urllib3
 charset_normalizer
 idna
 certifi
-vosk
 pyaudio~=0.2.13
 translate~=3.6.1
 cffi
@@ -14,3 +13,7 @@ gTTS
 IPython
 auto-gptq
 transformers
+pydub
+py-cord[speed]
+py-cord[voice]
+py-cord
