@@ -239,7 +239,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
             result = reader.readlines()
         if result:
             if result[-1].endswith('$$'):
-                result = '\n'.join(reader.readlines())[:-2]
+                result = '\n'.join(result)[:-2]
                 break
             else:
                 continue
