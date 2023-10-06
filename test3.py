@@ -84,10 +84,13 @@ async def recognize(ctx):
         if file_found is None:
             await asyncio.sleep(0.1)
             file_not_found_in_raw += 1
-            if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS*10 and not recognized_text == "":
-                print(recognized_text)
-                await ctx.reply(recognized_text)
-                recognized_text = ""
+
+            if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS*10:
+                stream_sink.cleanup()
+                if not recognized_text == "":
+                    print(recognized_text)
+                    await ctx.reply(recognized_text)
+                    recognized_text = ""
             continue
         print("file found")
         file_not_found_in_raw = 0
