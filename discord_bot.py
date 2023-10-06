@@ -2,12 +2,13 @@ import multiprocessing
 import subprocess
 import time
 import configparser
-
 import pyaudio
-import discord
-from discord.ext import commands
 import asyncio
 import sys
+sys.path.insert(0, 'discord.py')
+import discord
+from discord.ext import commands
+
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'

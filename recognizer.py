@@ -1,5 +1,4 @@
-import sys;
-import time
+import sys
 from modifed_sinks import StreamSink
 import configparser
 import speech_recognition as sr
@@ -7,7 +6,7 @@ import asyncio
 import os
 from pathlib import Path
 sys.path.insert(0, 'discord.py')
-import discord_record
+import discord
 
 
 config = configparser.ConfigParser()
@@ -60,7 +59,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
     await recognize(ctx)
 
 
-async def once_done(sink: discord_record.sinks, channel: discord_record.TextChannel, *args):
+async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
     await set_get_config(value=False)
     await sink.vc.disconnect()  # disconnect from the voice channel.
     print("Stopped listening.")
