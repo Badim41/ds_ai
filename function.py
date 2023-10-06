@@ -246,6 +246,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
                         result = result[index_answer + 3:]
                     break
                 else:
+                    await asyncio.sleep(0.05)
                     continue
     with open("gpt_result.txt", "w", encoding="UTF-8") as writer:
         writer.write("None")
