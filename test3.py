@@ -54,7 +54,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
     await is_record(value=True)
     time.sleep(3)
     pool = multiprocessing.Pool(processes=1)
-    pool.apply_async(recognize)
+    pool.apply_async(recognize(ctx,))
     pool.close()
     await ctx.reply("Started listening.")
 
@@ -65,7 +65,7 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
     await sink.vc.disconnect()  # disconnect from the voice channel.
     print("Stopped listening.")
 
-def recognize():
+def recognize(ctx):
     while asyncio.run(is_record()):
         file_name = "output1.wav"
         if not Path(file_name).exists():
@@ -83,8 +83,10 @@ def recognize():
                 break
             if rec.AcceptWaveform(data):
                 print(rec.Result())
+                asyncio.run(ctx.reply("Started listening."))
             else:
                 print(rec.PartialResult())
+                asyncio.run(ctx.reply("Started listening."))
         Path(file_name).unlink()
         print(f'Файл {Path(file_name)} удален')
 
