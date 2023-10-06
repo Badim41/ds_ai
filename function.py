@@ -263,7 +263,7 @@ async def correct_number(number_input, operation_number):
 
 
 async def voice_commands(sentence, ctx):
-    global admin, all_admin, video_length, prompt_length, files_found, language, mat_found
+    global admin, all_admin, video_length, prompt_length, files_found, language, mat_found, spokenText
     # убрать ключевое слово
     sentence = sentence.split(' ', 1)[-1]
 
@@ -351,8 +351,9 @@ async def voice_commands(sentence, ctx):
             print("Протокол", protocol_number)
             await result_command_change(f"Протокол {protocol_number}", Color.GRAY)
         sentence = sentence[sentence.index(str(protocol_number)) + len(str(protocol_number)):]
+        spoken_text_temp = spokenText[spokenText.index(str(protocol_number)) + len(str(protocol_number)):]
         if protocol_number == 999:
-            with open(spokenText, "r", encoding="utf-8") as reader:
+            with open(spoken_text_temp, "r", encoding="utf-8") as reader:
                 await write_in_discord(ctx, reader.readlines())
             return True
         # отчистить память
@@ -404,7 +405,7 @@ async def voice_commands(sentence, ctx):
                 await text_to_speech("нужны права администратора", False, ctx)
                 return True
             if sentence is None:
-                sentence = spokenText
+                sentence = spoken_text_temp
             await textInDiscord(sentence, ctx)
             return True
         # AICoverGen
