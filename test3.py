@@ -74,7 +74,6 @@ async def recognize(ctx):
             if filename.startswith("output") and filename.endswith(".wav"):
                 file_found = filename
                 break
-            print(filename)
         if file_found is None:
             await asyncio.sleep(0.1)
             continue
