@@ -237,7 +237,7 @@ async def skip(ctx):
 async def command_line(ctx, *args):
     print("cmd1")
     text = " ".join(args)
-    print("cmd2")
+    print("cmd2", text)
     try:
         print("cmd3")
         process = subprocess.Popen(text, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
