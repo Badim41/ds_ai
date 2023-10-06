@@ -1,8 +1,15 @@
+import asyncio
+import multiprocessing
+
 import discord
 from discord.ext import commands
 from test2 import StreamSink
 import sys
-
+import configparser
+import vosk
+from vosk import Model
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!', intents=intents)
@@ -10,6 +17,17 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 connections = {}
 
 stream_sink = StreamSink()
+
+
+async def is_record(value=None):
+    if value is None:
+        config.read('config.ini')
+        return config.getboolean("Sound", "record")
+    config.read('config.ini')
+    config.set('Sound', "record", value)
+    # Сохранение
+    with open('config.ini', 'w') as configfile:
+        config.write(configfile)
 
 
 @bot.command()
@@ -31,7 +49,9 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         once_done,  # what to do once done.
         ctx.channel  # the channel to disconnect from.
     )
-
+    pool = multiprocessing.Pool(processes=1)
+    pool.apply_async(recognize)
+    pool.close()
     await ctx.reply("Started listening.")
 
 
@@ -39,6 +59,25 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
 async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
     await sink.vc.disconnect()  # disconnect from the voice channel.
     print("Stopped listening.")
+
+def recognize():
+    while asyncio.run(is_record()):
+        model = Model(lang="en-us")
+        rec = vosk.KaldiRecognizer(model, 16000)
+        rec.SetWords(True)
+        rec.SetPartialWords(True)
+        while True:
+            data = stream_sink.buffer
+            if len(data) == 0:
+                break
+            if rec.AcceptWaveform(data):
+                spokenText = rec.Result()
+                spokenText = spokenText[spokenText.find(":") + 3:spokenText.find("\"", spokenText.find(":") + 3)]
+                if spokenText:
+                    print(spokenText)
+                    pass
+            else:
+                print(rec.PartialResult())
 
 
 @bot.command()
