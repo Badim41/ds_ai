@@ -183,8 +183,8 @@ async def say(ctx, *args):
     message = " ".join(args)
     from function import replace_mat_in_sentence
     if not default_settings.get("robot_name_need"):
-        print(message)
         message = default_settings.get("currentAIname") + ", " + message
+        print(message)
     else:
         print(message)
     message = await replace_mat_in_sentence(message)
