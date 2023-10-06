@@ -85,11 +85,11 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     print("RowInput:", spokenText)
     temp_spokenText = spokenText
 
-    # while "стоп" in temp_spokenText:
-    #     temp_spokenText = remove_before_stop(temp_spokenText, "стоп")
-    #
-    # while "Стоп" in temp_spokenText:
-    #     temp_spokenText = remove_before_stop(temp_spokenText, "Стоп")
+    while "стоп" in temp_spokenText:
+        temp_spokenText = remove_before_stop(temp_spokenText, "стоп")
+
+    while "Стоп" in temp_spokenText:
+        temp_spokenText = remove_before_stop(temp_spokenText, "Стоп")
 
     if await is_robot_name(temp_spokenText, ctx):
         await result_command_change("Обработка...", Color.BLACK)
@@ -160,7 +160,7 @@ async def replace_numbers_in_sentence(sentence):
     while i < len(words):
         current_word = words[i]
         if current_word in number_map:
-            number = words[i].replace(current_word, number_map[current_word])
+            number = words[i].replace(current_word, str(number_map[current_word]))
             return_sentence.append(number)
             i += 1
         else:
@@ -1092,9 +1092,7 @@ async def remove_before_stop(input_str, target_word):
     index = input_str.find(target_word)
 
     if index != -1:
-        remaining_text = input_str[index + len(target_word):]
-        return remaining_text.lstrip(
-            'abcasync defghijklmnopqrstuvwxyzABCasync defGHIJKLMNOPQRSTUVWXYZабвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ').strip()
+        return input_str[index + len(target_word):]
 
     return input_str
 
