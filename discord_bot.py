@@ -301,10 +301,10 @@ async def __lenght(
     await ctx.delete()
 
 
-@bot.slash_command(name="say")
+@bot.slash_command(name="say", description='Сказать роботу что-то')
 async def __say(
         ctx,
-        text: Option(str, description='сказать роботу что-то. Список команд: \help-say', required=True)
+        text: Option(str, description='Сам текст/команда. Список команд: \\help-say', required=True)
 ):
     await ctx.defer()
     from function import replace_mat_in_sentence
@@ -313,7 +313,7 @@ async def __say(
     text = await replace_mat_in_sentence(text)
     print(f'{text} ({type(text).__name__})\n')
     await run_main_with_settings(ctx, text, True)
-    await ctx.delete()
+    await ctx.respond('Успешный тест!')
 
 
 if __name__ == "__main__":
