@@ -3,6 +3,9 @@ import os
 import subprocess
 import configparser
 import asyncio
+import wave
+
+from pydub import AudioSegment
 
 from discord import Option
 from modifed_sinks import StreamSink
@@ -379,6 +382,7 @@ WAIT_FOR_ANSWER_IN_SECONDS = 1.5
 
 async def recognize(ctx):
     global file_not_found_in_raw, WAIT_FOR_ANSWER_IN_SECONDS
+    mp3_filename = "out_all.mp3"
     recognizer = sr.Recognizer()
     while True:
         if not await set_get_config():
@@ -396,7 +400,7 @@ async def recognize(ctx):
             if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS * 10:
                 stream_sink.cleanup()
                 file_not_found_in_raw = 0
-                with sr.AudioFile("output_all.mp3") as source:
+                with sr.AudioFile(mp3_filename) as source:
                     audio_data = recognizer.record(source)
                     try:
                         text = recognizer.recognize_google(audio_data, language="ru-RU")
@@ -404,18 +408,20 @@ async def recognize(ctx):
                         pass
                     except sr.RequestError as e:
                         print(f"Ошибка: {e}")
-                Path("out_all.mp3").unlink()
+                Path(mp3_filename).unlink()
                 from function import replace_mat_in_sentence, replace_numbers_in_sentence
                 text = await replace_numbers_in_sentence(text)
                 text = await replace_mat_in_sentence(text)
                 print(text)
                 await run_main_with_settings(ctx, text, True)
+                # создание пустого файла
+                with wave.open(mp3_filename, 'w') as wf:
+                    wf.setparams((0, 0, 0, 0, 'NONE', 'not compressed'))
+                with open(mp3_filename, 'wb') as f:
+                    f.write(b'\xFF\xFB')
             continue
-            empty_audio = silence(duration=2000)
-            empty_audio.export("output_all.mp3", format="mp3")
-        # print("file found")
-
-        # print(f'Файл {Path(file_found)} удален')
+        result = AudioSegment.from_file(file_found, format="mp3") + AudioSegment.from_file(mp3_filename, format="mp3")
+        result.export(mp3_filename, format="mp3")
 
     print("Stop_Recording")
 
