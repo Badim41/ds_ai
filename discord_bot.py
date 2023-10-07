@@ -120,7 +120,7 @@ async def disconnect(ctx):
     await ctx.defer()
     voice = ctx.author.voice
     if voice:
-        await voice.channel.disconnect()
+        await voice.disconnect()
         await ctx.respond("выхожу")
     else:
         await ctx.respond("Я не в войсе")
