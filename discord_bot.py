@@ -288,7 +288,7 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
 
 
 @bot.slash_command(name="lenght")
-async def __test(
+async def __lenght(
         ctx,
         number: Option(int, description='Длина запроса для GPT (Число от 1 до 1000)', required=True, min_value=1,
                        max_value=1000)
@@ -302,7 +302,7 @@ async def __test(
 
 
 @bot.slash_command(name="say")
-async def __test(
+async def __say(
         ctx,
         text: Option(str, description='сказать роботу что-то. Список команд: \help-say', required=True)
 ):
