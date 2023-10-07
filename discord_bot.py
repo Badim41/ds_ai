@@ -62,17 +62,14 @@ async def join(ctx):
 
     if not voice:
         await ctx.send(voiceChannelErrorText)
-
     vc = None
-
     # если бот УЖЕ в войс-чате
     if ctx.guild.id in connections:
-        vc = connections[ctx.guild.id]
         if vc.channel != voice.channel:
             await vc.move_to(voice.channel)
     # если бота НЕТ в войс-чате
     if not vc:
-        vc = await voice.channel.connect()
+        await voice.channel.connect()
 
 
 @bot.slash_command(name="record", description='воспринимать команды из микрофона')

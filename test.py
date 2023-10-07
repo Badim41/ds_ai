@@ -12,20 +12,7 @@
 #     zipf.write(audio_paths[1], arcname='бэквокал.mp3')
 #     zipf.write(audio_paths[2], arcname='музыка.mp3')
 # FileLink(f'{os.path.basename(output_path)[:-4]}.zip')
-import http.server
-import socketserver
-import zipfile
+from pydub import AudioSegment
 
-# Создание .zip архива
-zip_filename = 'архив.zip'
-with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
-    zipf.write('test.py', arcname='test.py')
-
-# Настройка HTTP сервера
-port = 8080
-Handler = http.server.SimpleHTTPRequestHandler
-
-with socketserver.TCPServer(("", port), Handler) as httpd:
-    print(f"Сервер работает на порту {port}")
-    print(f"Вы можете скачать архив по адресу: http://localhost:{port}/{zip_filename}")
-    httpd.serve_forever()
+empty_audio = AudioSegment.silent(duration=0)
+empty_audio.export("out_all.wav", format="wav")
