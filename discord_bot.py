@@ -77,6 +77,9 @@ async def join(ctx):
 async def record(ctx):  # if you're using commands.Bot, this will also work.
     voice = ctx.author.voice
     voice_channel = voice.channel
+    # добавляем ключ к connetions
+    if ctx.guild.id not in connections:
+        connections[ctx.guild.id] = []
 
     if not voice:
         return await ctx.respond(voiceChannelErrorText)
