@@ -11,6 +11,7 @@ from pathlib import Path
 import sys
 import discord
 from discord.ext import commands
+from pydub.generators import silence
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
@@ -195,7 +196,7 @@ async def __say(
     await ctx.respond('Выполнение...')
     from function import replace_mat_in_sentence
     if await set_get_config_default("robot_name_need") == "False":
-        text = await set_get_config_default("currentAIname") + ", " + text
+        text = await set_get_config_default("currentainame") + ", " + text
     text = await replace_mat_in_sentence(text)
     print(f'{text} ({type(text).__name__})\n')
     await run_main_with_settings(ctx, text, True)
@@ -219,7 +220,7 @@ async def __tts(
         return
     print(f'{text} ({type(text).__name__})\n')
     if ai_voice is None:
-        ai_voice = await set_get_config_default("currentAIname")
+        ai_voice = await set_get_config_default("currentainame")
     await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
 
 
@@ -374,12 +375,11 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
 
 
 file_not_found_in_raw = 0
-recognized_text = ""
 WAIT_FOR_ANSWER_IN_SECONDS = 1.5
 
 
 async def recognize(ctx):
-    global file_not_found_in_raw, recognized_text, WAIT_FOR_ANSWER_IN_SECONDS
+    global file_not_found_in_raw, WAIT_FOR_ANSWER_IN_SECONDS
     recognizer = sr.Recognizer()
     while True:
         if not await set_get_config():
@@ -387,7 +387,7 @@ async def recognize(ctx):
             return
         file_found = None
         for filename in os.listdir(os.getcwd()):
-            if filename.startswith("output") and filename.endswith(".wav"):
+            if filename.startswith("output") and filename.endswith(".mp3"):
                 file_found = filename
                 break
         if file_found is None:
@@ -396,28 +396,26 @@ async def recognize(ctx):
 
             if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS * 10:
                 stream_sink.cleanup()
-                if not recognized_text == "":
-                    from function import replace_mat_in_sentence, replace_numbers_in_sentence
-                    recognized_text = await replace_numbers_in_sentence(recognized_text)
-                    recognized_text = await replace_mat_in_sentence(recognized_text)
-                    print(recognized_text)
-                    await run_main_with_settings(ctx, recognized_text, True)
-                    recognized_text = ""
+                file_not_found_in_raw = 0
+                with sr.AudioFile("output_all.mp3") as source:
+                    audio_data = recognizer.record(source)
+                    try:
+                        text = recognizer.recognize_google(audio_data, language="ru-RU")
+                    except sr.UnknownValueError:
+                        pass
+                    except sr.RequestError as e:
+                        print(f"Ошибка: {e}")
+                Path("out_all.mp3").unlink()
+                from function import replace_mat_in_sentence, replace_numbers_in_sentence
+                text = await replace_numbers_in_sentence(text)
+                text = await replace_mat_in_sentence(text)
+                print(text)
+                await run_main_with_settings(ctx, text, True)
             continue
+            empty_audio = silence(duration=2000)
+            empty_audio.export("output_all.mp3", format="mp3")
         # print("file found")
-        file_not_found_in_raw = 0
 
-        with sr.AudioFile(file_found) as source:
-            audio_data = recognizer.record(source)
-
-            try:
-                text = recognizer.recognize_google(audio_data, language="ru-RU")
-                recognized_text += text + " "
-            except sr.UnknownValueError:
-                pass
-            except sr.RequestError as e:
-                print(f"Ошибка: {e}")
-        Path(file_found).unlink()
         # print(f'Файл {Path(file_found)} удален')
 
     print("Stop_Recording")

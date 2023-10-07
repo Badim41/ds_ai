@@ -493,12 +493,12 @@ async def setAIvoice(name, ttsNeed, ctx):
     if os.path.exists(f"rvc_models/{name}"):
         with open(os.path.join(f"rvc_models/{name}/info.txt"), 'r', encoding='UTF-8') as file:
             await set_config(currentAIinfo, file.read())
-        await set_config("currentAIName", name)
+        await set_config("currentainame", name)
         with open(os.path.join(f"rvc_models/{name}/gender.txt"), 'r', encoding='UTF-8') as file:
             if file.read().lower() == "female":
-                await set_config("currentAIpitch", 0)
+                await set_config("currentaipitch", 0)
             else:
-                await set_config("currentAIpitch", -1)
+                await set_config("currentaipitch", -1)
     else:
         await text_to_speech("голос не найден", False, ctx)
 
