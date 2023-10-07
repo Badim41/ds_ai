@@ -297,7 +297,7 @@ async def __lenght(
     # for argument in (number,"""boolean, member, text, choice"""):
     print(f'{number} ({type(number).__name__})\n')
     await run_main_with_settings(ctx, f"робот длина запроса{number}", True)
-    await ctx.respond('Успешный тест!')
+    await ctx.respond('Выполнение...')
     await ctx.send(f"Длина запроса: {number}")
 
 
@@ -313,7 +313,7 @@ async def __say(
     text = await replace_mat_in_sentence(text)
     print(f'{text} ({type(text).__name__})\n')
     await run_main_with_settings(ctx, text, True)
-    await ctx.respond('Успешный тест!')
+    await ctx.respond('Выполнение...')
 
 
 if __name__ == "__main__":
