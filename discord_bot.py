@@ -91,7 +91,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
     if vc in connections[ctx.guild.id]:
         return await ctx.respond("Уже записываю ваш голос🎤")
     stream_sink.set_user(ctx.author.id)
-    connections[ctx.guild.id] = vc
+    connections[ctx.guild.id].append(vc)
 
     # Начинаем запись
     vc.start_recording(
