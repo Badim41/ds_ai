@@ -238,14 +238,14 @@ async def __say(
     await run_main_with_settings(ctx, text, True)
 
 
-folders = []
+folders = ["None"]
 
 
 @bot.slash_command(name="tts", description='_Заставить_ бота говорить всё, что захочешь')
 async def __tts(
         ctx,
-        text: Option(str, description='Текст для озвучки', choices=folders, required=True),
-        ai_voice: Option(str, description='Голос для озвучки', required=False, default=None)
+        text: Option(str, description='Текст для озвучки', required=True),
+        ai_voice: Option(str, description='Голос для озвучки', required=False, choices=folders, default="None")
 ):
     await ctx.defer()
     await ctx.respond('Выполнение...')
@@ -255,7 +255,7 @@ async def __tts(
         await ctx.respond("Такое нельзя произносить!")
         return
     print(f'{text} ({type(text).__name__})\n')
-    if ai_voice is None:
+    if ai_voice == "None":
         ai_voice = await set_get_config_default("currentainame")
     await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
 
