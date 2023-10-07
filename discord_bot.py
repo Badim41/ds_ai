@@ -414,6 +414,8 @@ async def recognize(ctx):
                         pass
                     except sr.RequestError as e:
                         print(f"Ошибка: {e}")
+                if text is None:
+                    continue
                 Path(wav_filename).unlink()
                 from function import replace_mat_in_sentence, replace_numbers_in_sentence
                 text = await replace_numbers_in_sentence(text)
