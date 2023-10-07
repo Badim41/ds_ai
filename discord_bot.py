@@ -170,7 +170,7 @@ async def __lenght(
     await ctx.respond('Выполнение...')
     # for argument in (number,"""boolean, member, text, choice"""):
     print(f'{number} ({type(number).__name__})\n')
-    await run_main_with_settings(ctx, f"робот длина запроса{number}", True)
+    await run_main_with_settings(ctx, f"робот длина запроса {number}", True)
     await ctx.send(f"Длина запроса: {number}")
 
 

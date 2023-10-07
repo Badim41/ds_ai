@@ -46,11 +46,6 @@ def run():
                 )
 
                 out = tokenizer.decode(output[0], skip_special_tokens=True)
-                # config_gpt = {'num_beams': 2,
-                #               'min_new_tokens': tokens,
-                #               'max_length': tokens * 12,
-                #               'repetition_penalty': 2.0}
-                # out = model.generate(prompt, config_gpt)
                 with open("gpt_result.txt", "w", encoding="utf-8") as writer:
                     writer.writelines(out)
                     writer.write("$$")
