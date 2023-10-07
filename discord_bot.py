@@ -290,7 +290,7 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
 @bot.slash_command(name="lenght", help="описание")
 async def __test(
         ctx,
-        number: Option(int, description='Число в диапазоне от 1 до 1000', required=True, min_value=1, max_value=1000)
+        number: Option(int, description='Длина запроса для GPT (Число от 1 до 1000)', required=True, min_value=1, max_value=1000)
 ):
     # for argument in (number,"""boolean, member, text, choice"""):
     print(f'{number} ({type(number).__name__})\n')
