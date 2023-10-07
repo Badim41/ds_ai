@@ -250,7 +250,7 @@ async def __tts(
     await ctx.defer()
     await ctx.respond('Выполнение...')
     config.read('config.ini')
-    voices = config.get("Sound", "voices").split(",")
+    voices = config.get("Sound", "voices").split(";")
     if ai_voice not in voices:
         return await ctx.respond("Выберите голос из списка: ", voices)
     from function import replace_mat_in_sentence, mat_found, text_to_speech
@@ -359,9 +359,9 @@ async def __add_voice(
         ]
         subprocess.run(command, check=True)
         config.read('config.ini')
-        voices = config.get("Sound", "voices").split(",")
+        voices = config.get("Sound", "voices").split(";")
         voices.append(name)
-        config.set('Sound', "voices", ','.join(voices))
+        config.set('Sound', "voices", ';'.join(voices))
         # Сохранение
         with open('config.ini', 'w') as configfile:
             config.write(configfile)
