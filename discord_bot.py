@@ -38,6 +38,7 @@ async def set_get_config_all(section, key, value):
         config.write(configfile)
     return ' '.join([section, key, value])
 
+
 async def set_get_config(key="record", value=None):
     config.read('config.ini')
     if value is None:
@@ -66,6 +67,7 @@ async def on_ready():
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
 
+
 @bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
 async def __config(
         ctx,
@@ -75,6 +77,8 @@ async def __config(
 ):
     await ctx.defer()
     await ctx.respond(await set_get_config_all(section, key, value))
+
+
 @bot.slash_command(name="join", description='присоединиться к голосовому каналу')
 async def join(ctx):
     await ctx.defer()
@@ -147,7 +151,6 @@ async def disconnect(ctx):
         await ctx.respond("Я не в войсе")
     if ctx.guild.id in connections:
         del connections[ctx.guild.id]  # remove the guild from the cache.
-
 
 
 # @bot.command(help="сказать роботу текст")
@@ -242,10 +245,14 @@ async def __say(
 async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
-        ai_voice: Option(str, description='Голос для озвучки', required=False, choices=set_get_config("voices"), default="None")
+        ai_voice: Option(str, description='Голос для озвучки', required=False, default="None")
 ):
     await ctx.defer()
     await ctx.respond('Выполнение...')
+    config.read('config.ini')
+    voices = config.get("Sound", "voices").split(",")
+    if ai_voice not in voices:
+        ctx.respond("Выберите голос из списка: ", )
     from function import replace_mat_in_sentence, mat_found, text_to_speech
     text = await replace_mat_in_sentence(text)
     if mat_found:
