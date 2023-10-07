@@ -61,10 +61,9 @@ async def join(ctx):
     voice = ctx.author.voice
 
     if not voice:
-        # hehe
         await ctx.send(voiceChannelErrorText)
 
-    vc = None  # Инициализируем переменную для хранения подключения к войс-чату.
+    vc = None
 
     # если бот УЖЕ в войс-чате
     if ctx.guild.id in connections:
@@ -73,9 +72,7 @@ async def join(ctx):
             await vc.move_to(voice.channel)
     # если бота НЕТ в войс-чате
     if not vc:
-        stream_sink.set_user(ctx.author.id)
         vc = await voice.channel.connect()
-        connections[ctx.guild.id] = vc
 
 
 @bot.slash_command(name="record", description='воспринимать команды из микрофона')
