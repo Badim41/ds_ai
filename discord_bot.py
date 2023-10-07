@@ -60,7 +60,7 @@ async def on_ready():
 async def join(ctx):
     voice = ctx.author.voice
     if not voice:
-        await ctx.send(voiceChannelErrorText)
+        await ctx.respond(voiceChannelErrorText)
 
     voice_client = ctx.voice_client
     if voice_client is not None:
@@ -74,7 +74,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
     voice = ctx.author.voice
 
     if not voice:
-        return await ctx.send(voiceChannelErrorText)
+        return await ctx.respond(voiceChannelErrorText)
 
     if ctx.voice_client is None:
         # если бота НЕТ в войс-чате
@@ -84,7 +84,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         vc = await ctx.voice_client.move_to(voice)
     # если уже записывает
     if vc in connections[ctx.guild.id]:
-        return await ctx.send("Уже записываю ваш голос🎤")
+        return await ctx.respond("Уже записываю ваш голос🎤")
     stream_sink.set_user(ctx.author.id)
     connections[ctx.guild.id] = vc
 
@@ -95,7 +95,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         ctx.channel  # the channel to disconnect from.
     )
     await set_get_config(value=True)
-    await ctx.send("Started listening.")
+    await ctx.respond("Started listening.")
     await recognize(ctx)
 
 
@@ -107,7 +107,7 @@ async def stop_recording(ctx):
         vc.stop_recording()
         del connections[ctx.guild.id]  # remove the guild from the cache.
     else:
-        await ctx.send("Я и так тебя не слушал ._.")
+        await ctx.respond("Я и так тебя не слушал ._.")
 
 
 @bot.slash_command(name="disconnect", description='выйти из войс-чата')
@@ -115,7 +115,7 @@ async def disconnect(ctx):
     if ctx.guild.id in connections:
         del connections[ctx.guild.id]  # remove the guild from the cache.
     else:
-        await ctx.send("Я не в войсе")
+        await ctx.respond("Я не в войсе")
 
 
 # @bot.command(help="сказать роботу текст")
@@ -155,12 +155,12 @@ async def pause(ctx):
     voice_client = ctx.voice_client
     if voice_client.is_playing():
         voice_client.pause()
-        await ctx.send("Пауза ⏸")
+        await ctx.respond("Пауза ⏸")
     elif voice_client.is_paused():
         voice_client.resume()
-        await ctx.send("Продолжаем воспроизведение ▶️")
+        await ctx.respond("Продолжаем воспроизведение ▶️")
     else:
-        await ctx.send("Нет активного аудио для приостановки или продолжения.")
+        await ctx.respond("Нет активного аудио для приостановки или продолжения.")
 
 
 @bot.slash_command(name="skip", description='пропуск аудио')
@@ -171,10 +171,10 @@ async def skip(ctx):
     voice_client = ctx.voice_client
     if voice_client.is_playing():
         voice_client.stop()
-        await ctx.send("Текущий трек пропущен ⏭️")
+        await ctx.respond("Текущий трек пропущен ⏭️")
         stop_milliseconds = 0
     else:
-        await ctx.send("Нет активного аудио для пропуска.")
+        await ctx.respond("Нет активного аудио для пропуска.")
 
 
 @bot.slash_command(name="lenght", description='Длина запроса')
@@ -188,7 +188,7 @@ async def __lenght(
     # for argument in (number,"""boolean, member, text, choice"""):
     print(f'{number} ({type(number).__name__})\n')
     await run_main_with_settings(ctx, f"робот длина запроса{number}", True)
-    await ctx.send(f"Длина запроса: {number}")
+    await ctx.respond(f"Длина запроса: {number}")
 
 
 @bot.slash_command(name="say", description='Сказать роботу что-то')
@@ -220,7 +220,7 @@ async def __tts(
     from function import replace_mat_in_sentence, mat_found, text_to_speech
     text = await replace_mat_in_sentence(text)
     if mat_found:
-        await ctx.send("Такое нельзя произносить!")
+        await ctx.respond("Такое нельзя произносить!")
         return
     print(f'{text} ({type(text).__name__})\n')
     if ai_voice is None:
@@ -325,7 +325,7 @@ async def __add_voice(
         global folders
         folders.append(name)
     except subprocess.CalledProcessError as e:
-        await ctx.send(f"Ошибка при скачивании голоса {command}: {e}")
+        await ctx.respond(f"Ошибка при скачивании голоса {command}: {e}")
 
 
 @bot.command(aliases=['cmd'], help="командная строка")
