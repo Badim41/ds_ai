@@ -72,6 +72,7 @@ async def join(ctx):
     # если бота НЕТ в войс-чате
     if not vc:
         await voice.channel.connect()
+        connections[ctx.guild.id] = vc
 
 
 @bot.slash_command(name="record", description='воспринимать команды из микрофона')
@@ -118,8 +119,12 @@ async def stop_recording(ctx):
 
 @bot.slash_command(name="disconnect", description='выйти из войс-чата')
 async def disconnect(ctx):
-    if ctx.voice_client:
-        await ctx.voice_client.disconnect()
+    if ctx.guild.id in connections:  # check if the guild is in the cache.
+        vc = connections[ctx.guild.id]
+        vc.stop_recording()
+        del connections[ctx.guild.id]  # remove the guild from the cache.
+    else:
+        await ctx.send("Я не в войсе")
 
 
 # @bot.command(help="сказать роботу текст")
