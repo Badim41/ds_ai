@@ -403,6 +403,7 @@ async def recognize(ctx):
             file_not_found_in_raw += 1
 
             if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS * 10:
+                text = None
                 stream_sink.cleanup()
                 file_not_found_in_raw = 0
                 with sr.AudioFile(wav_filename) as source:
