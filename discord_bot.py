@@ -79,7 +79,6 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
     voice = ctx.author.voice
 
     if not voice:
-        # hehe
         await ctx.send(voiceChannelErrorText)
 
     vc = None  # Инициализируем переменную для хранения подключения к войс-чату.
