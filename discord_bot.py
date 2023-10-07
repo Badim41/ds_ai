@@ -307,6 +307,8 @@ async def __add_voice(
             info
         ]
         subprocess.run(command, check=True)
+        global folders
+        folders.append(name)
     except subprocess.CalledProcessError as e:
         await ctx.send(f"Ошибка при скачивании голоса {command}: {e}")
 
