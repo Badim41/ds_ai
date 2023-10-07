@@ -287,10 +287,11 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
         stop_milliseconds += 1000
 
 
-@bot.slash_command(name="lenght", help="описание")
+@bot.slash_command(name="lenght")
 async def __test(
         ctx,
-        number: Option(int, description='Длина запроса для GPT (Число от 1 до 1000)', required=True, min_value=1, max_value=1000)
+        number: Option(int, description='Длина запроса для GPT (Число от 1 до 1000)', required=True, min_value=1,
+                       max_value=1000)
 ):
     await ctx.defer()
     # for argument in (number,"""boolean, member, text, choice"""):
@@ -299,13 +300,17 @@ async def __test(
     await ctx.send(f"Длина запроса: {number}")
     await ctx.delete()
 
-@bot.slash_command(name="lenght", help="описание")
+
+@bot.slash_command(name="say")
 async def __test(
         ctx,
-        text:    Option(str,             description='Текст из нескольких слов',     required=False, default='')
+        text: Option(str, description='сказать роботу что-то. Список команд: \help-say', required=True)
 ):
     await ctx.defer()
-    # for argument in (number,"""boolean, member, text, choice"""):
+    from function import replace_mat_in_sentence
+    if not default_settings.get("robot_name_need"):
+        text = default_settings.get("currentAIname") + ", " + text
+    text = await replace_mat_in_sentence(text)
     print(f'{text} ({type(text).__name__})\n')
     await run_main_with_settings(ctx, text, True)
     await ctx.delete()
