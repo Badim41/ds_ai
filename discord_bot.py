@@ -60,13 +60,15 @@ async def on_ready():
 async def join(ctx):
     voice = ctx.author.voice
     if not voice:
-        await ctx.respond(voiceChannelErrorText)
+        await ctx.send(voiceChannelErrorText)
+        return
 
-    voice_client = ctx.voice_client
-    if voice_client is not None:
-        return await voice_client.move_to(voice)
+    voice_channel = voice.channel
 
-    await voice.connect()
+    if ctx.voice_client is not None:
+        return await ctx.voice_client.move_to(voice_channel)
+
+    await voice_channel.connect()
 
 
 @bot.slash_command(name="record", description='воспринимать команды из микрофона')
