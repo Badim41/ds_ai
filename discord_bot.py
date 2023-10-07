@@ -415,10 +415,8 @@ async def recognize(ctx):
                 print(text)
                 await run_main_with_settings(ctx, text, True)
                 # создание пустого файла
-                with wave.open(mp3_filename, 'w') as wf:
-                    wf.setparams((0, 0, 0, 0, 'NONE', 'not compressed'))
-                with open(mp3_filename, 'wb') as f:
-                    f.write(b'\xFF\xFB')
+                empty_audio = AudioSegment.silent(duration=0)
+                empty_audio.export(mp3_filename, format="mp3")
             continue
         result = AudioSegment.from_file(file_found, format="mp3") + AudioSegment.from_file(mp3_filename, format="mp3")
         result.export(mp3_filename, format="mp3")
