@@ -402,7 +402,7 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
 
 
 file_not_found_in_raw = 0
-WAIT_FOR_ANSWER_IN_SECONDS = 6
+WAIT_FOR_ANSWER_IN_SECONDS = 20
 
 
 async def recognize(ctx):
