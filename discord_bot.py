@@ -119,9 +119,7 @@ async def stop_recording(ctx):
 
 @bot.slash_command(name="disconnect", description='выйти из войс-чата')
 async def disconnect(ctx):
-    if ctx.guild.id in connections:  # check if the guild is in the cache.
-        vc = connections[ctx.guild.id]
-        vc.stop_recording()
+    if ctx.guild.id in connections:
         del connections[ctx.guild.id]  # remove the guild from the cache.
     else:
         await ctx.send("Я не в войсе")
