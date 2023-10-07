@@ -292,10 +292,22 @@ async def __test(
         ctx,
         number: Option(int, description='Длина запроса для GPT (Число от 1 до 1000)', required=True, min_value=1, max_value=1000)
 ):
+    await ctx.defer()
     # for argument in (number,"""boolean, member, text, choice"""):
     print(f'{number} ({type(number).__name__})\n')
     await run_main_with_settings(ctx, f"робот длина запроса{number}", True)
     await ctx.send(f"Длина запроса: {number}")
+    await ctx.delete()
+
+@bot.slash_command(name="lenght", help="описание")
+async def __test(
+        ctx,
+        text:    Option(str,             description='Текст из нескольких слов',     required=False, default='')
+):
+    await ctx.defer()
+    # for argument in (number,"""boolean, member, text, choice"""):
+    print(f'{text} ({type(text).__name__})\n')
+    await run_main_with_settings(ctx, text, True)
     await ctx.delete()
 
 
