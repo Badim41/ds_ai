@@ -438,18 +438,12 @@ async def recognize(ctx):
                     pass
                 except sr.RequestError as e:
                     print(f"Ошибка при распознавании: {e}")
-                print("recognize4")
+                print("recognize5")
 
                 try:
                     Path(wav_filename).unlink()
                 except FileNotFoundError:
                     pass
-                if not text is None:
-                    from function import replace_mat_in_sentence, replace_numbers_in_sentence
-                    text = await replace_numbers_in_sentence(text)
-                    text = await replace_mat_in_sentence(text)
-                    print(text)
-                    await run_main_with_settings(ctx, text, True)
 
                 # Создание пустого файла
                 empty_audio = AudioSegment.silent(duration=0)
@@ -457,15 +451,23 @@ async def recognize(ctx):
                     empty_audio.export(wav_filename, format="wav")
                 except Exception as e:
                     print(f"Ошибка при создании пустого аудиофайла: {e}")
+                print("recognize6")
+
+                if not text is None:
+                    from function import replace_mat_in_sentence, replace_numbers_in_sentence
+                    text = await replace_numbers_in_sentence(text)
+                    text = await replace_mat_in_sentence(text)
+                    print(text)
+                    await run_main_with_settings(ctx, text, True)
 
             continue
-
+        print("recognize_saving")
         result = AudioSegment.from_file(file_found, format="wav") + AudioSegment.from_file(wav_filename, format="wav")
         try:
             result.export(wav_filename, format="wav")
         except Exception as e:
             print(f"Ошибка при экспорте аудио: {e}")
-
+        print("recognize_saved")
     print("Stop_Recording")
 
 
