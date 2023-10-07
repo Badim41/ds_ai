@@ -58,13 +58,24 @@ async def on_ready():
 
 @bot.slash_command(name="join", description='присоединиться к голосовому каналу')
 async def join(ctx):
-    if ctx.message.author.voice:
-        if not ctx.voice_client:
-            await ctx.message.author.voice.channel.connect(reconnect=True)
-        else:
-            await ctx.voice_client.move_to(ctx.message.author.voice.channel)
-    else:
-        await ctx.message.send(voiceChannelErrorText)
+    voice = ctx.author.voice
+
+    if not voice:
+        # hehe
+        await ctx.send(voiceChannelErrorText)
+
+    vc = None  # Инициализируем переменную для хранения подключения к войс-чату.
+
+    # если бот УЖЕ в войс-чате
+    if ctx.guild.id in connections:
+        vc = connections[ctx.guild.id]
+        if vc.channel != voice.channel:
+            await vc.move_to(voice.channel)
+    # если бота НЕТ в войс-чате
+    if not vc:
+        stream_sink.set_user(ctx.author.id)
+        vc = await voice.channel.connect()
+        connections[ctx.guild.id] = vc
 
 
 @bot.slash_command(name="record", description='воспринимать команды из микрофона')
@@ -73,7 +84,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
 
     if not voice:
         # hehe
-        await ctx.send("You aren't in a voice channel, get your life together lmao")
+        await ctx.send(voiceChannelErrorText)
 
     vc = None  # Инициализируем переменную для хранения подключения к войс-чату.
 
