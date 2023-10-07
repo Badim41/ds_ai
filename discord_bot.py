@@ -118,9 +118,9 @@ async def stop_recording(ctx):
 @bot.slash_command(name="disconnect", description='выйти из войс-чата')
 async def disconnect(ctx):
     await ctx.defer()
-    voice = ctx.author.voice
+    voice = ctx.voice_client
     if voice:
-        await voice.disconnect()
+        await voice.disconnect(force=True)
         await ctx.respond("выхожу")
     else:
         await ctx.respond("Я не в войсе")
