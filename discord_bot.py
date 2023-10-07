@@ -109,11 +109,10 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
 
 @bot.slash_command(name="stop_recording", description='перестать воспринимать команды из микрофона')
 async def stop_recording(ctx):
-    if ctx.guild.id in connections:  # check if the guild is in the cache.
-        vc = connections[ctx.guild.id]
-        # stop recording, and call the callback (once_done).
+    if ctx.guild.id in connections:
+        vc = connections[ctx.guild.id][0]  # Получаем элемент списка
         vc.stop_recording()
-        del connections[ctx.guild.id]  # remove the guild from the cache.
+        del connections[ctx.guild.id]
     else:
         await ctx.respond("Я и так тебя не слушал ._.")
 
