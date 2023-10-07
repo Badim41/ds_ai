@@ -12,7 +12,6 @@ import sys
 import discord
 from discord.ext import commands
 
-
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
 config = configparser.ConfigParser()
@@ -63,7 +62,6 @@ async def join(ctx):
             await ctx.voice_client.move_to(ctx.message.author.voice.channel)
     else:
         await ctx.message.send(voiceChannelErrorText)
-
 
 
 @bot.command(aliases=['прослушай_кеклола'], help="ХАВХВАХВАХВАХВАХ")
@@ -117,6 +115,7 @@ file_not_found_in_raw = 0
 recognized_text = ""
 WAIT_FOR_ANSWER_IN_SECONDS = 1.5
 
+
 async def recognize(ctx):
     global file_not_found_in_raw, recognized_text, WAIT_FOR_ANSWER_IN_SECONDS
     recognizer = sr.Recognizer()
@@ -133,7 +132,7 @@ async def recognize(ctx):
             await asyncio.sleep(0.1)
             file_not_found_in_raw += 1
 
-            if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS*10:
+            if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS * 10:
                 stream_sink.cleanup()
                 if not recognized_text == "":
                     from function import replace_mat_in_sentence, replace_numbers_in_sentence
@@ -160,6 +159,7 @@ async def recognize(ctx):
         # print(f'Файл {Path(file_found)} удален')
 
     print("Stop_Recording")
+
 
 @bot.command(aliases=['srec', 'SREC'], help="перестать воспринимать команды из своего микрофона")
 async def stop_recording(ctx):
@@ -238,8 +238,11 @@ async def command_line(ctx, *args):
     text = " ".join(args)
     print("cmd", text)
     try:
+        print("cmd2")
         process = subprocess.Popen(text, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        print("cmd3")
         stdout, stderr = process.communicate()
+        print("cmd4")
         for line in stdout.decode().split('\n'):
             if line.strip():
                 await ctx.send(line)
@@ -250,8 +253,6 @@ async def command_line(ctx, *args):
         await ctx.send(f"Ошибка выполнения команды: {e}")
     except Exception as e:
         await ctx.send(f"Произошла неизвестная ошибка: {e}")
-
-
 
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
