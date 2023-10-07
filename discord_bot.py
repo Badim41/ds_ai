@@ -252,7 +252,7 @@ async def __tts(
     config.read('config.ini')
     voices = config.get("Sound", "voices").split(";")
     if ai_voice not in voices:
-        return await ctx.respond("Выберите голос из списка: ", voices)
+        return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
     from function import replace_mat_in_sentence, mat_found, text_to_speech
     text = await replace_mat_in_sentence(text)
     if mat_found:
