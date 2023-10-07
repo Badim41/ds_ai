@@ -11,7 +11,6 @@ from pathlib import Path
 import sys
 import discord
 from discord.ext import commands
-from pydub.generators import silence
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
