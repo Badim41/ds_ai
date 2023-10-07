@@ -295,7 +295,7 @@ async def __test(
     # for argument in (number,"""boolean, member, text, choice"""):
     print(f'{number} ({type(number).__name__})\n')
     await run_main_with_settings(ctx, f"робот длина запроса{number}", True)
-    await ctx.write(f"Длина запроса: {number}")
+    await ctx.reply(f"Длина запроса: {number}")
     await ctx.delete()
 
 
