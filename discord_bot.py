@@ -459,7 +459,7 @@ async def recognize(ctx):
                     await run_main_with_settings(ctx, text, True)
 
             continue
-        result = AudioSegment.from_file(file_found, format="wav") + AudioSegment.from_file(wav_filename, format="wav")
+        result = AudioSegment.from_file(wav_filename, format="wav") + AudioSegment.from_file(file_found, format="wav")
         try:
             result.export(wav_filename, format="wav")
         except Exception as e:
