@@ -58,6 +58,7 @@ async def on_ready():
 
 @bot.slash_command(name="join", description='присоединиться к голосовому каналу')
 async def join(ctx):
+    await ctx.defer()
     voice = ctx.author.voice
     if not voice:
         await ctx.respond(voiceChannelErrorText)
@@ -75,16 +76,17 @@ async def join(ctx):
 @bot.slash_command(name="record", description='воспринимать команды из микрофона')
 async def record(ctx):  # if you're using commands.Bot, this will also work.
     voice = ctx.author.voice
+    voice_channel = voice.channel
 
     if not voice:
         return await ctx.respond(voiceChannelErrorText)
 
     if ctx.voice_client is None:
         # если бота НЕТ в войс-чате
-        vc = await voice.connect()
+        vc = await voice_channel.connect()
     else:
         # если бот УЖЕ в войс-чате
-        vc = await ctx.voice_client.move_to(voice)
+        vc = await ctx.voice_client.move_to(voice_channel)
     # если уже записывает
     if vc in connections[ctx.guild.id]:
         return await ctx.respond("Уже записываю ваш голос🎤")
@@ -115,8 +117,11 @@ async def stop_recording(ctx):
 
 @bot.slash_command(name="disconnect", description='выйти из войс-чата')
 async def disconnect(ctx):
+    await ctx.defer()
     if ctx.guild.id in connections:
         del connections[ctx.guild.id]  # remove the guild from the cache.
+        await ctx.author.voice.channel.disconnect()
+        await ctx.respond("выхожу")
     else:
         await ctx.respond("Я не в войсе")
 
