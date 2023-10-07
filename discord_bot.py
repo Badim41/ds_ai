@@ -62,8 +62,9 @@ async def join(ctx):
     if not voice:
         await ctx.send(voiceChannelErrorText)
 
-    if ctx.voice_client is not None:
-        return await ctx.voice_client.move_to(voice)
+    voice_client = ctx.voice_client
+    if voice_client is not None:
+        return await voice_client.move_to(voice)
 
     await voice.connect()
 
