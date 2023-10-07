@@ -938,8 +938,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=currentAIname)
     try:
         voiceFile = gTTS(tts, lang=language[:2])
         # Сохранение в файл
-        file_name = "1.mp3"
-        voiceFile.save(file_name)
+        voiceFile.save("1.mp3")
     except Exception as e:
         print(f"Произошла ошибка при синтезе речи: {str(e)}")
 
@@ -947,8 +946,8 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=currentAIname)
         print(e)
 
     pitch = currentAIpitch - 1
-    if language == "русский":
-        pitch += 1
+    if language == "russian":
+        pitch -= 1
     # используем RVC
     successful = True
     try:
