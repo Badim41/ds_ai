@@ -57,41 +57,21 @@ async def on_ready():
 
 
 @bot.slash_command(name="join", description='присоединиться к голосовому каналу')
-async def join(ctx):
-    voice = ctx.author.voice
+async def join(ctx, channel: discord.VoiceChannel):
+    if ctx.voice_client is not None:
+        return await ctx.voice_client.move_to(channel)
 
-    if not voice:
-        await ctx.send(voiceChannelErrorText)
-    vc = None
-    # если бот УЖЕ в войс-чате
-    if ctx.guild.id in connections:
-        if vc.channel != voice.channel:
-            await vc.move_to(voice.channel)
-    # если бота НЕТ в войс-чате
-    if not vc:
-        await voice.channel.connect()
+    stream_sink.set_user(ctx.author.id)
+    vc = await channel.connect()
 
 
 @bot.slash_command(name="record", description='воспринимать команды из микрофона')
-async def record(ctx):  # if you're using commands.Bot, this will also work.
-    voice = ctx.author.voice
+async def record(ctx, channel: discord.VoiceChannel):  # if you're using commands.Bot, this will also work.
+    if ctx.voice_client is not None:
+        return await ctx.voice_client.move_to(channel)
 
-    if not voice:
-        # hehe
-        await ctx.send(voiceChannelErrorText)
-
-    vc = None  # Инициализируем переменную для хранения подключения к войс-чату.
-
-    # если бот УЖЕ в войс-чате
-    if ctx.guild.id in connections:
-        vc = connections[ctx.guild.id]
-        if vc.channel != voice.channel:
-            await vc.move_to(voice.channel)
-    # если бота НЕТ в войс-чате
-    if not vc:
-        stream_sink.set_user(ctx.author.id)
-        vc = await voice.channel.connect()
-        connections[ctx.guild.id] = vc
+    stream_sink.set_user(ctx.author.id)
+    vc = await channel.connect()
 
     # Начинаем запись
     vc.start_recording(
@@ -118,7 +98,7 @@ async def stop_recording(ctx):
 @bot.slash_command(name="disconnect", description='выйти из войс-чата')
 async def disconnect(ctx):
     if ctx.voice_client:
-        await ctx.voice_client.disconnect()
+        await ctx.voice_client.disconnect(force=True)
 
 
 # @bot.command(help="сказать роботу текст")
@@ -236,16 +216,25 @@ async def __cover(
         ctx,
         url: Option(str, description='Ссылка на видео', required=True),
         voice: Option(str, description='Голос для видео', required=False, default=None),
-        pitch: Option(int, description='Тональность (от -2 до 2)', required=False, default=0, min_value=-2, max_value=2),
+        pitch: Option(int, description='Тональность (от -2 до 2)', required=False, default=0, min_value=-2,
+                      max_value=2),
         time: Option(int, description='Время (мин. 0)', required=False, default=-1, min_value=0),
-        indexrate: Option(float, description='Индекс частоты (от 0 до 1)', required=False, default=0.5, min_value=0, max_value=1),
-        loudness: Option(float, description='Громкость (от 0 до 1)', required=False, default=0.2, min_value=0, max_value=1),
-        main_vocal: Option(int, description='Громкость основного вокала (от -20 до 0)', required=False, default=0, min_value=-20, max_value=0),
-        back_vocal: Option(int, description='Громкость бэквокала (от -20 до 0)', required=False, default=0, min_value=-20, max_value=0),
-        music: Option(int, description='Громкость музыки (от -20 до 0)', required=False, default=0, min_value=-20, max_value=0),
-        roomsize: Option(float, description='Размер помещения (от 0 до 1)', required=False, default=0.2, min_value=0, max_value=1),
-        wetness: Option(float, description='Влажность (от 0 до 1)', required=False, default=0.1, min_value=0, max_value=1),
-        dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0, max_value=1),
+        indexrate: Option(float, description='Индекс частоты (от 0 до 1)', required=False, default=0.5, min_value=0,
+                          max_value=1),
+        loudness: Option(float, description='Громкость (от 0 до 1)', required=False, default=0.2, min_value=0,
+                         max_value=1),
+        main_vocal: Option(int, description='Громкость основного вокала (от -20 до 0)', required=False, default=0,
+                           min_value=-20, max_value=0),
+        back_vocal: Option(int, description='Громкость бэквокала (от -20 до 0)', required=False, default=0,
+                           min_value=-20, max_value=0),
+        music: Option(int, description='Громкость музыки (от -20 до 0)', required=False, default=0, min_value=-20,
+                      max_value=0),
+        roomsize: Option(float, description='Размер помещения (от 0 до 1)', required=False, default=0.2, min_value=0,
+                         max_value=1),
+        wetness: Option(float, description='Влажность (от 0 до 1)', required=False, default=0.1, min_value=0,
+                        max_value=1),
+        dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
+                        max_value=1),
         start: Option(int, description='Начало (минимальное значение 0)', required=False, default=0, min_value=0),
         output: Option(bool, description='Отправить результат в архиве', required=False, default=False)
 ):
@@ -284,6 +273,7 @@ async def __cover(
 
     await run_main_with_settings(ctx, "робот протокол 13 " + param_string, False)
     # output..
+
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
 async def __add_voice(
