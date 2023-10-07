@@ -426,8 +426,10 @@ async def recognize(ctx):
             # если долго не было файлов (человек перестал говорить)
             if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS * 10:
                 text = None
+                # очищаем поток
                 stream_sink.cleanup()
                 file_not_found_in_raw = 0
+                # распознание речи
                 try:
                     with sr.AudioFile(wav_filename) as source:
                         audio_data = recognizer.record(source)
@@ -436,19 +438,19 @@ async def recognize(ctx):
                     pass
                 except sr.RequestError as e:
                     print(f"Ошибка при распознавании: {e}")
-
+                # удаление out_all.wav
                 try:
                     Path(wav_filename).unlink()
                 except FileNotFoundError:
                     pass
 
-                # Создание пустого файла
+                # создание пустого файла
                 empty_audio = AudioSegment.silent(duration=0)
                 try:
                     empty_audio.export(wav_filename, format="wav")
                 except Exception as e:
                     print(f"Ошибка при создании пустого аудиофайла: {e}")
-
+                # вызов function
                 if not text is None:
                     from function import replace_mat_in_sentence, replace_numbers_in_sentence
                     text = await replace_numbers_in_sentence(text)
@@ -457,7 +459,6 @@ async def recognize(ctx):
                     await run_main_with_settings(ctx, text, True)
 
             continue
-        print("recognize_saving")
         result = AudioSegment.from_file(file_found, format="wav") + AudioSegment.from_file(wav_filename, format="wav")
         try:
             result.export(wav_filename, format="wav")
