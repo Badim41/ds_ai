@@ -409,6 +409,7 @@ async def recognize(ctx):
     global file_not_found_in_raw, WAIT_FOR_ANSWER_IN_SECONDS
     wav_filename = "out_all.wav"
     recognizer = sr.Recognizer()
+
     while True:
         if not await set_get_config():
             print("Stopped listening2.")
@@ -426,28 +427,43 @@ async def recognize(ctx):
                 text = None
                 stream_sink.cleanup()
                 file_not_found_in_raw = 0
-                with sr.AudioFile(wav_filename) as source:
-                    audio_data = recognizer.record(source)
-                    try:
+                try:
+                    with sr.AudioFile(wav_filename) as source:
+                        audio_data = recognizer.record(source)
                         text = recognizer.recognize_google(audio_data, language="ru-RU")
-                    except sr.UnknownValueError:
-                        pass
-                    except sr.RequestError as e:
-                        print(f"Ошибка: {e}")
+                except sr.UnknownValueError:
+                    pass
+                except sr.RequestError as e:
+                    print(f"Ошибка при распознавании: {e}")
+
                 if text is None:
                     continue
-                Path(wav_filename).unlink()
+
+                try:
+                    Path(wav_filename).unlink()
+                except FileNotFoundError:
+                    pass
+
                 from function import replace_mat_in_sentence, replace_numbers_in_sentence
                 text = await replace_numbers_in_sentence(text)
                 text = await replace_mat_in_sentence(text)
                 print(text)
                 await run_main_with_settings(ctx, text, True)
-                # создание пустого файла
+
+                # Создание пустого файла
                 empty_audio = AudioSegment.silent(duration=0)
-                empty_audio.export(wav_filename, format="wav")
+                try:
+                    empty_audio.export(wav_filename, format="wav")
+                except Exception as e:
+                    print(f"Ошибка при создании пустого аудиофайла: {e}")
+
             continue
+
         result = AudioSegment.from_file(file_found, format="wav") + AudioSegment.from_file(wav_filename, format="wav")
-        result.export(wav_filename, format="wav")
+        try:
+            result.export(wav_filename, format="wav")
+        except Exception as e:
+            print(f"Ошибка при экспорте аудио: {e}")
 
     print("Stop_Recording")
 
