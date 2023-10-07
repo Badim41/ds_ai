@@ -402,7 +402,7 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
 
 
 file_not_found_in_raw = 0
-WAIT_FOR_ANSWER_IN_SECONDS = 7
+WAIT_FOR_ANSWER_IN_SECONDS = 10
 
 
 async def recognize(ctx):
@@ -474,7 +474,7 @@ async def recognize(ctx):
 
 
 if __name__ == "__main__":
-    print("update 3")
+    print("update 4")
     arguments = sys.argv
 
     if len(arguments) > 1:
