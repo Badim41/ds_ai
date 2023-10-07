@@ -232,8 +232,8 @@ async def __cover(
         time: Option(int, description='Время (мин. 0)', required=False, default=-1, min_value=0),
         indexrate: Option(float, description='Индекс частоты (от 0 до 1)', required=False, default=0.5, min_value=0, max_value=1),
         loudness: Option(float, description='Громкость (от 0 до 1)', required=False, default=0.2, min_value=0, max_value=1),
-        mainVocal: Option(int, description='Громкость основного вокала (от -20 до 0)', required=False, default=0, min_value=-20, max_value=0),
-        backVocal: Option(int, description='Громкость бэквокала (от -20 до 0)', required=False, default=0, min_value=-20, max_value=0),
+        main_vocal: Option(int, description='Громкость основного вокала (от -20 до 0)', required=False, default=0, min_value=-20, max_value=0),
+        back_vocal: Option(int, description='Громкость бэквокала (от -20 до 0)', required=False, default=0, min_value=-20, max_value=0),
         music: Option(int, description='Громкость музыки (от -20 до 0)', required=False, default=0, min_value=-20, max_value=0),
         roomsize: Option(float, description='Размер помещения (от 0 до 1)', required=False, default=0.2, min_value=0, max_value=1),
         wetness: Option(float, description='Влажность (от 0 до 1)', required=False, default=0.1, min_value=0, max_value=1),
@@ -258,10 +258,10 @@ async def __cover(
         params.append(f"-indexrate {indexrate}")
     if loudness != 0.2:
         params.append(f"-loudness {loudness}")
-    if mainVocal != 0:
-        params.append(f"-vocal {mainVocal}")
-    if backVocal != 0:
-        params.append(f"-bvocal {backVocal}")
+    if main_vocal != 0:
+        params.append(f"-vocal {main_vocal}")
+    if back_vocal != 0:
+        params.append(f"-bvocal {back_vocal}")
     if music != 0:
         params.append(f"-music {music}")
     if roomsize != 0.2:
