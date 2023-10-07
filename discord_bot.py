@@ -416,7 +416,7 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
 
 async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
     await set_get_config(value=False)
-    await sink.vc.disconnect()  # disconnect from the voice channel.
+    # await sink.vc.disconnect()  # disconnect from the voice channel.
     print("Stopped listening.")
 
 
