@@ -27,11 +27,22 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='\\', intents=intents)
 
 
+async def set_get_config_all(section, key, value):
+    config.read('config.ini')
+    if value is None:
+        config.read('config.ini')
+        return config.get(section, key)
+    config.set(section, key, str(value))
+    # Сохранение
+    with open('config.ini', 'w') as configfile:
+        config.write(configfile)
+    return ' '.join([section, key, value])
+
 async def set_get_config(key="record", value=None):
     config.read('config.ini')
     if value is None:
         config.read('config.ini')
-        return config.getboolean("Sound", key)
+        return config.get("Sound", key)
     config.set('Sound', key, str(value))
     # Сохранение
     with open('config.ini', 'w') as configfile:
@@ -55,7 +66,16 @@ async def on_ready():
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
 
-
+@bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
+async def __config(
+        ctx,
+        section: Option(str, description='секция', required=True, min_value=1,
+                       max_value=1000),
+        key: Option(str, description='Длина запроса для GPT (Число от 1 до 1000)', required=True),
+        value: Option(str, description='Длина запроса для GPT (Число от 1 до 1000)', required=False, default=None)
+):
+    await ctx.defer()
+    await ctx.respond(await set_get_config_all(section, key, value))
 @bot.slash_command(name="join", description='присоединиться к голосовому каналу')
 async def join(ctx):
     await ctx.defer()
@@ -402,16 +422,15 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
 
 
 file_not_found_in_raw = 0
-WAIT_FOR_ANSWER_IN_SECONDS = 20
 
 
 async def recognize(ctx):
-    global file_not_found_in_raw, WAIT_FOR_ANSWER_IN_SECONDS
+    global file_not_found_in_raw
     wav_filename = "out_all.wav"
     recognizer = sr.Recognizer()
     while True:
         # распознаём, пока не произойдёт once_done
-        if not await set_get_config():
+        if await set_get_config() == "False":
             print("Stopped listening2.")
             return
         file_found = None
@@ -424,7 +443,7 @@ async def recognize(ctx):
             await asyncio.sleep(0.1)
             file_not_found_in_raw += 1
             # если долго не было файлов (человек перестал говорить)
-            if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS * 10:
+            if file_not_found_in_raw > float(await set_get_config("delay_record")) * 10:
                 text = None
                 # очищаем поток
                 stream_sink.cleanup()
