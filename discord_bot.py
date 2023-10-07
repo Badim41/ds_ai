@@ -223,7 +223,7 @@ async def __tts(
     await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
 
 
-@bot.slash_command(name="AI_cover", description='_Заставить_ бота озвучить видео/спеть песню')
+@bot.slash_command(name="ai_cover", description='_Заставить_ бота озвучить видео/спеть песню')
 async def __cover(
         ctx,
         url: Option(str, description='Ссылка на видео', required=True),

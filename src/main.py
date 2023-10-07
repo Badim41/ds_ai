@@ -250,9 +250,9 @@ def combine_audio(audio_paths, output_path, main_gain, backup_gain, inst_gain, o
 
     # сохраняем .zip архив
     with zipfile.ZipFile(f'{os.path.basename(output_path)}.zip', 'w') as zipf:
-        zipf.write(audio_paths[0])
-        zipf.write(audio_paths[1])
-        zipf.write(audio_paths[2])
+        zipf.write(audio_paths[0], arcname='вокал.mp3')
+        zipf.write(audio_paths[1], arcname='бэквокал.mp3')
+        zipf.write(audio_paths[2], arcname='музыка.mp3')
     FileLink(f'{output_path[:-4]}.zip')
 
 
