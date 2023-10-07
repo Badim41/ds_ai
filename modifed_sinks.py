@@ -50,7 +50,7 @@ class StreamBuffer:
         self.channels = 2
         self.sample_rate = 48000
         self.bytes_ps = 192000  # bytes added to buffer per second
-        self.block_len = 2  # how long you want each audio block to be in seconds
+        self.block_len = 0.1  # how long you want each audio block to be in seconds
         # min len to pull bytes from buffer
         self.buff_lim = self.bytes_ps * self.block_len
 
@@ -58,11 +58,9 @@ class StreamBuffer:
         self.ct = 1
 
     def write(self, data, user):
-
         self.byte_buffer += data  # data is a bytearray object
         # checking amount of data in the buffer
         if len(self.byte_buffer) > self.buff_lim:
-
             # grabbing slice from the buffer to work with
             byte_slice = self.byte_buffer[:self.buff_lim]
 
