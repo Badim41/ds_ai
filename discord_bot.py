@@ -287,15 +287,16 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
         stop_milliseconds += 1000
 
 
-@bot.slash_command(name='number')
+@bot.slash_command(name='длина запроса')
 async def __test(
         ctx,
-        number: Option(int, description='Число в диапазоне от 1 до 10', required=True, min_value=1, max_value=10)
+        number: Option(int, description='Число в диапазоне от 1 до 10', required=True, min_value=1, max_value=1000)
 ):
     await ctx.delete()
 
-    for argument in (number,"""boolean, member, text, choice"""):
-        print(f'{argument} ({type(argument).__name__})\n')
+    # for argument in (number,"""boolean, member, text, choice"""):
+    print(f'{number} ({type(number).__name__})\n')
+    await run_main_with_settings(ctx, f"робот длина запроса{number}", True)
 
 
 if __name__ == "__main__":
