@@ -297,8 +297,8 @@ async def __lenght(
     # for argument in (number,"""boolean, member, text, choice"""):
     print(f'{number} ({type(number).__name__})\n')
     await run_main_with_settings(ctx, f"робот длина запроса{number}", True)
+    await ctx.respond('Успешный тест!')
     await ctx.send(f"Длина запроса: {number}")
-    await ctx.delete()
 
 
 @bot.slash_command(name="say", description='Сказать роботу что-то')
