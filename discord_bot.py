@@ -393,7 +393,7 @@ WAIT_FOR_ANSWER_IN_SECONDS = 1.5
 
 async def recognize(ctx):
     global file_not_found_in_raw, WAIT_FOR_ANSWER_IN_SECONDS
-    mp3_filename = "out_all.mp3"
+    wav_filename = "out_all.wav"
     recognizer = sr.Recognizer()
     while True:
         if not await set_get_config():
@@ -401,7 +401,7 @@ async def recognize(ctx):
             return
         file_found = None
         for filename in os.listdir(os.getcwd()):
-            if filename.startswith("output") and filename.endswith(".mp3"):
+            if filename.startswith("output") and filename.endswith(".wav"):
                 file_found = filename
                 break
         if file_found is None:
@@ -411,7 +411,7 @@ async def recognize(ctx):
             if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS * 10:
                 stream_sink.cleanup()
                 file_not_found_in_raw = 0
-                with sr.AudioFile(mp3_filename) as source:
+                with sr.AudioFile(wav_filename) as source:
                     audio_data = recognizer.record(source)
                     try:
                         text = recognizer.recognize_google(audio_data, language="ru-RU")
@@ -419,7 +419,7 @@ async def recognize(ctx):
                         pass
                     except sr.RequestError as e:
                         print(f"Ошибка: {e}")
-                Path(mp3_filename).unlink()
+                Path(wav_filename).unlink()
                 from function import replace_mat_in_sentence, replace_numbers_in_sentence
                 text = await replace_numbers_in_sentence(text)
                 text = await replace_mat_in_sentence(text)
@@ -427,10 +427,10 @@ async def recognize(ctx):
                 await run_main_with_settings(ctx, text, True)
                 # создание пустого файла
                 empty_audio = AudioSegment.silent(duration=0)
-                empty_audio.export(mp3_filename, format="mp3")
+                empty_audio.export(wav_filename, format="wav")
             continue
-        result = AudioSegment.from_file(file_found, format="mp3") + AudioSegment.from_file(mp3_filename, format="mp3")
-        result.export(mp3_filename, format="mp3")
+        result = AudioSegment.from_file(file_found, format="wav") + AudioSegment.from_file(wav_filename, format="wav")
+        result.export(wav_filename, format="wav")
 
     print("Stop_Recording")
 
