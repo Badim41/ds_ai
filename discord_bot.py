@@ -406,27 +406,25 @@ WAIT_FOR_ANSWER_IN_SECONDS = 1.5
 
 
 async def recognize(ctx):
-    print("recognize1")
     global file_not_found_in_raw, WAIT_FOR_ANSWER_IN_SECONDS
     wav_filename = "out_all.wav"
     recognizer = sr.Recognizer()
-    print("recognize2")
     while True:
+        # распознаём, пока не произойдёт once_done
         if not await set_get_config():
             print("Stopped listening2.")
             return
         file_found = None
+        # проверяем наличие временных файлов
         for filename in os.listdir(os.getcwd()):
             if filename.startswith("output") and filename.endswith(".wav"):
                 file_found = filename
                 break
         if file_found is None:
-            print("recognize3")
             await asyncio.sleep(0.1)
             file_not_found_in_raw += 1
-
+            # если долго не было файлов (человек перестал говорить)
             if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS * 10:
-                print("recognize4")
                 text = None
                 stream_sink.cleanup()
                 file_not_found_in_raw = 0
@@ -438,7 +436,6 @@ async def recognize(ctx):
                     pass
                 except sr.RequestError as e:
                     print(f"Ошибка при распознавании: {e}")
-                print("recognize5")
 
                 try:
                     Path(wav_filename).unlink()
@@ -451,7 +448,6 @@ async def recognize(ctx):
                     empty_audio.export(wav_filename, format="wav")
                 except Exception as e:
                     print(f"Ошибка при создании пустого аудиофайла: {e}")
-                print("recognize6")
 
                 if not text is None:
                     from function import replace_mat_in_sentence, replace_numbers_in_sentence
@@ -468,6 +464,11 @@ async def recognize(ctx):
         except Exception as e:
             print(f"Ошибка при экспорте аудио: {e}")
         print("recognize_saved")
+        # удаление временного файла
+        try:
+            Path(file_found).unlink()
+        except FileNotFoundError:
+            pass
     print("Stop_Recording")
 
 
