@@ -406,10 +406,14 @@ WAIT_FOR_ANSWER_IN_SECONDS = 1.5
 
 
 async def recognize(ctx):
+    number = 0
+    print("recognize", number);
+    number += 1
     global file_not_found_in_raw, WAIT_FOR_ANSWER_IN_SECONDS
     wav_filename = "out_all.wav"
     recognizer = sr.Recognizer()
-
+    print("recognize", number);
+    number += 1
     while True:
         if not await set_get_config():
             print("Stopped listening2.")
@@ -424,6 +428,8 @@ async def recognize(ctx):
             file_not_found_in_raw += 1
 
             if file_not_found_in_raw > WAIT_FOR_ANSWER_IN_SECONDS * 10:
+                print("recognize", number);
+                number += 1
                 text = None
                 stream_sink.cleanup()
                 file_not_found_in_raw = 0
@@ -458,13 +464,15 @@ async def recognize(ctx):
                     print(f"Ошибка при создании пустого аудиофайла: {e}")
 
             continue
-
+        print("recognize", number);
+        number += 1
         result = AudioSegment.from_file(file_found, format="wav") + AudioSegment.from_file(wav_filename, format="wav")
         try:
             result.export(wav_filename, format="wav")
         except Exception as e:
             print(f"Ошибка при экспорте аудио: {e}")
-
+        print("recognize", number);
+        number += 1
     print("Stop_Recording")
 
 
