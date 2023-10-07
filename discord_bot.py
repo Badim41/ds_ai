@@ -210,8 +210,10 @@ async def say(ctx, *args):
 stop_milliseconds = 0
 
 
-@bot.command(aliases=['пауза'], help="пауза")
+@bot.slash_command(name="pause")
 async def pause(ctx):
+    await ctx.defer()
+    await ctx.respond('Выполнение...')
     voice_client = ctx.voice_client
     if voice_client.is_playing():
         voice_client.pause()
@@ -222,9 +224,10 @@ async def pause(ctx):
     else:
         await ctx.send("Нет активного аудио для приостановки или продолжения.")
 
-
-@bot.command(aliases=['скип'], help="пропуск")
+@bot.slash_command(name="stop")
 async def skip(ctx):
+    await ctx.defer()
+    await ctx.respond('Выполнение...')
     global stop_milliseconds
     voice_client = ctx.voice_client
     if voice_client.is_playing():
@@ -272,12 +275,9 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     if not ctx.voice_client:
         await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
         return
-
-    # Создаем аудиофайл для проигрывания
-
     source = discord.FFmpegPCMAudio(audio_file_path, options=f"-ss {start_seconds} -t {duration}")
 
-    # Проигрываем аудиофайл
+    # Проигрываем файл
     ctx.voice_client.play(source)
 
     # Ожидаем окончания проигрывания
@@ -294,10 +294,10 @@ async def __lenght(
                        max_value=1000)
 ):
     await ctx.defer()
+    await ctx.respond('Выполнение...')
     # for argument in (number,"""boolean, member, text, choice"""):
     print(f'{number} ({type(number).__name__})\n')
     await run_main_with_settings(ctx, f"робот длина запроса{number}", True)
-    await ctx.respond('Выполнение...')
     await ctx.send(f"Длина запроса: {number}")
 
 
@@ -307,17 +307,17 @@ async def __say(
         text: Option(str, description='Сам текст/команда. Список команд: \\help-say', required=True)
 ):
     await ctx.defer()
+    await ctx.respond('Выполнение...')
     from function import replace_mat_in_sentence
     if not default_settings.get("robot_name_need"):
         text = default_settings.get("currentAIname") + ", " + text
     text = await replace_mat_in_sentence(text)
     print(f'{text} ({type(text).__name__})\n')
     await run_main_with_settings(ctx, text, True)
-    await ctx.respond('Выполнение...')
 
 
 if __name__ == "__main__":
-    print("update 3")
+    print("update 1")
     arguments = sys.argv
 
     if len(arguments) > 1:
