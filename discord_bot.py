@@ -238,14 +238,11 @@ async def __say(
     await run_main_with_settings(ctx, text, True)
 
 
-folders = ["None"]
-
-
 @bot.slash_command(name="tts", description='_Заставить_ бота говорить всё, что захочешь')
 async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
-        ai_voice: Option(str, description='Голос для озвучки', required=False, choices=folders, default="None")
+        ai_voice: Option(str, description='Голос для озвучки', required=False, choices=set_get_config("voices"), default="None")
 ):
     await ctx.defer()
     await ctx.respond('Выполнение...')
@@ -354,8 +351,13 @@ async def __add_voice(
             info
         ]
         subprocess.run(command, check=True)
-        global folders
-        folders.append(name)
+        config.read('config.ini')
+        voices = config.get("Sound", "voices").split(",")
+        voices.append(name)
+        config.set('Sound', "voices", ','.join(voices))
+        # Сохранение
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
     except subprocess.CalledProcessError as e:
         await ctx.respond(f"Ошибка при скачивании голоса {command}: {e}")
 
