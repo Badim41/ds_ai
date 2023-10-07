@@ -69,10 +69,9 @@ async def on_ready():
 @bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
 async def __config(
         ctx,
-        section: Option(str, description='секция', required=True, min_value=1,
-                       max_value=1000),
-        key: Option(str, description='Длина запроса для GPT (Число от 1 до 1000)', required=True),
-        value: Option(str, description='Длина запроса для GPT (Число от 1 до 1000)', required=False, default=None)
+        section: Option(str, description='секция', required=True),
+        key: Option(str, description='ключ', required=True),
+        value: Option(str, description='значение', required=False, default=None)
 ):
     await ctx.defer()
     await ctx.respond(await set_get_config_all(section, key, value))
