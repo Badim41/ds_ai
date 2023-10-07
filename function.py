@@ -345,7 +345,7 @@ async def voice_commands(sentence, ctx):
         return True
 
     # протоколы
-    if "протокол" in sentence:
+    if "протокол " in sentence:
         protocol_number = await extract_number_after_keyword(sentence, "протокол")
         if protocol_number != -1:
             print("Протокол", protocol_number)
