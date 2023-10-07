@@ -108,7 +108,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         vc = await voice_channel.connect()
     else:
         # если бот УЖЕ в войс-чате
-        vc = await ctx.voice_client.move_to(voice_channel)
+        vc = ctx.voice_client
     # если уже записывает
     if vc in connections[ctx.guild.id]:
         return await ctx.respond("Уже записываю ваш голос🎤")
