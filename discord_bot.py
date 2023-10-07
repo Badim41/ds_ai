@@ -34,6 +34,7 @@ async def set_get_config(key="record", value=None):
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
 
+
 async def set_get_config_default(key, value=None):
     config.read('config.ini')
     if value is None:
@@ -199,7 +200,10 @@ async def __say(
     print(f'{text} ({type(text).__name__})\n')
     await run_main_with_settings(ctx, text, True)
 
+
 folders = []
+
+
 @bot.slash_command(name="tts", description='_Заставить_ бота говорить всё, что захочешь')
 async def __tts(
         ctx,
@@ -219,13 +223,69 @@ async def __tts(
     await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
 
 
+@bot.slash_command(name="AI_cover", description='_Заставить_ бота озвучить видео/спеть песню')
+async def __cover(
+        ctx,
+        url: Option(str, description='Ссылка на видео', required=True),
+        voice: Option(str, description='Голос для видео', required=False, default=None),
+        pitch: Option(int, description='Тональность (от -2 до 2)', required=False, default=0, min_value=-2, max_value=2),
+        time: Option(int, description='Время (мин. 0)', required=False, default=-1, min_value=0),
+        indexrate: Option(float, description='Индекс частоты (от 0 до 1)', required=False, default=0.5, min_value=0, max_value=1),
+        loudness: Option(float, description='Громкость (от 0 до 1)', required=False, default=0.2, min_value=0, max_value=1),
+        mainVocal: Option(int, description='Громкость основного вокала (от -20 до 0)', required=False, default=0, min_value=-20, max_value=0),
+        backVocal: Option(int, description='Громкость бэквокала (от -20 до 0)', required=False, default=0, min_value=-20, max_value=0),
+        music: Option(int, description='Громкость музыки (от -20 до 0)', required=False, default=0, min_value=-20, max_value=0),
+        roomsize: Option(float, description='Размер помещения (от 0 до 1)', required=False, default=0.2, min_value=0, max_value=1),
+        wetness: Option(float, description='Влажность (от 0 до 1)', required=False, default=0.1, min_value=0, max_value=1),
+        dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0, max_value=1),
+        start: Option(int, description='Начало (минимальное значение 0)', required=False, default=0, min_value=0),
+        output: Option(bool, description='Отправить результат в архиве', required=False, default=False)
+):
+    await ctx.defer()
+    await ctx.respond('Выполнение...')
+    if voice is None:
+        voice = await set_get_config_default("currentAIname")
+    params = []
+    if url:
+        params.append(f"-url {url}")
+    if voice:
+        params.append(f"-voice {voice}")
+    if pitch != 0:
+        params.append(f"-pitch {pitch}")
+    if time != -1:
+        params.append(f"-time {time}")
+    if indexrate != 0.5:
+        params.append(f"-indexrate {indexrate}")
+    if loudness != 0.2:
+        params.append(f"-loudness {loudness}")
+    if mainVocal != 0:
+        params.append(f"-vocal {mainVocal}")
+    if backVocal != 0:
+        params.append(f"-bvocal {backVocal}")
+    if music != 0:
+        params.append(f"-music {music}")
+    if roomsize != 0.2:
+        params.append(f"-roomsize {roomsize}")
+    if wetness != 0.1:
+        params.append(f"-wetness {wetness}")
+    if dryness != 0.85:
+        params.append(f"-dryness {dryness}")
+    if start != 0:
+        params.append(f"-start {start}")
+    param_string = ' '.join(params)
+
+    await run_main_with_settings(ctx, param_string, False)
+    # output..
+
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
 async def __add_voice(
         ctx,
         url: Option(str, description='Ссылка на .zip файл с моделью RVC', required=True),
         name: Option(str, description=f'Имя модели', required=True),
-        gender: Option(str, description=f'Пол (для настройки тональности)', required=True, choices=['мужчина', 'женщина']),
-        info: Option(str, description=f'(необязательно) Какие-то сведения о данном человеке', required=False, default="Отсутствует")
+        gender: Option(str, description=f'Пол (для настройки тональности)', required=True,
+                       choices=['мужчина', 'женщина']),
+        info: Option(str, description=f'(необязательно) Какие-то сведения о данном человеке', required=False,
+                     default="Отсутствует")
 ):
     await ctx.defer()
     await ctx.respond('Выполнение...')
@@ -249,6 +309,7 @@ async def __add_voice(
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
         await ctx.send(f"Ошибка при скачивании голоса {command}: {e}")
+
 
 @bot.command(aliases=['cmd'], help="командная строка")
 async def command_line(ctx, *args):
@@ -370,6 +431,7 @@ if __name__ == "__main__":
         print("Укажите discord_TOKEN")
         exit(-1)
     from GPT_runner import run
+
     pool = multiprocessing.Pool(processes=1)
     pool.apply_async(run)
     pool.close()
