@@ -5,6 +5,8 @@ import time
 import configparser
 import pyaudio
 import asyncio
+
+from discord import Option
 from modifed_sinks import StreamSink
 import speech_recognition as sr
 from pathlib import Path
@@ -283,6 +285,17 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     while ctx.voice_client.is_playing():
         await asyncio.sleep(1)
         stop_milliseconds += 1000
+
+
+@bot.slash_command(name='number')
+async def __test(
+        ctx,
+        number: Option(int, description='Число в диапазоне от 1 до 10', required=True, min_value=1, max_value=10)
+):
+    await ctx.delete()
+
+    for argument in (number,"""boolean, member, text, choice"""):
+        print(f'{argument} ({type(argument).__name__})\n')
 
 
 if __name__ == "__main__":
