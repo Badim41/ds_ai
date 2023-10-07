@@ -24,7 +24,7 @@ def extract_zip(extraction_folder, zip_name, gender, info):
                 model_filepath = os.path.join(root, name)
 
     if not model_filepath:
-        raise Exception(f'No .pth model file was found in the extracted zip. Please check {extraction_folder}.')
+        raise Exception(f'Нет .pth файла в zip. архиву. Проверьте {extraction_folder}.')
     try:
         with open(os.path.join(extraction_folder + "/info.txt"), 'w') as writer:
             writer.writelines(info)
@@ -45,12 +45,12 @@ def extract_zip(extraction_folder, zip_name, gender, info):
 
 def download_online_model(url, dir_name, gender, info):
     try:
-        print(f'[~] Downloading voice model with name {dir_name}...')
+        print(f'[~] Скачивание модели с именем {dir_name}...')
         zip_name = url.split('/')[-1]
         extraction_folder = os.path.join(rvc_models_dir, dir_name)
         if os.path.exists(extraction_folder):
             raise Exception \
-                (f'Voice model directory {dir_name} already exists! Choose a different name for your voice model.')
+                (f'Модель {dir_name} уже существует! Выберите другое имя модели.')
 
         if 'pixeldrain.com' in url:
             url = f'https://pixeldrain.com/api/file/{zip_name}'
@@ -59,7 +59,7 @@ def download_online_model(url, dir_name, gender, info):
 
         print('[~] Extracting zip...')
         extract_zip(extraction_folder, zip_name, gender, info)
-        print(f'[+] {dir_name} Model successfully downloaded!')
+        print(f'[+] {dir_name} модель успешна установлена!')
 
     except Exception as e:
         raise Exception(str(e))

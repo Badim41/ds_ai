@@ -903,21 +903,21 @@ async def console_command_runner(command, ctx):
         pass
 
 
-async def text_to_speech(tts, write_in_memory, ctx):
+async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=currentAIname):
     await result_command_change(tts, Color.GRAY)
     if write_in_memory:
         try:
-            with open(f"texts/memories/{await utf_code(currentAIname)}.txt", 'a') as writer2:
-                writer2.write(f"{await utf_code(currentAIname)}: {tts}\n")
+            with open(f"texts/memories/{await utf_code(ai_dictionary)}.txt", 'a') as writer2:
+                writer2.write(f"{await utf_code(ai_dictionary)}: {tts}\n")
         except IOError as ex:
             raise RuntimeError(ex)
 
-        while os.path.getsize(f"texts/memories/{await utf_code(currentAIname)}.txt") > 500:
+        while os.path.getsize(f"texts/memories/{await utf_code(ai_dictionary)}.txt") > 500:
             try:
-                with open(f"texts/memories/{await utf_code(currentAIname)}.txt", 'r') as reader:
+                with open(f"texts/memories/{await utf_code(ai_dictionary)}.txt", 'r') as reader:
                     lines = reader.readlines()
                 lines = lines[2:]
-                with open(f"texts/memories/{await utf_code(currentAIname)}.txt", 'w') as writer:
+                with open(f"texts/memories/{await utf_code(ai_dictionary)}.txt", 'w') as writer:
                     writer.writelines(await utf_code(lines))
             except IOError as e:
                 print(e)
@@ -956,14 +956,14 @@ async def text_to_speech(tts, write_in_memory, ctx):
             "src/only_voice_change.py",
             "-i", "1.mp3",
             "-o", "2.mp3",
-            "-dir", str(currentAIname),
+            "-dir", str(ai_dictionary),
             "-p", str(pitch),
             "-ir", "0.5",
             "-fr", "3",
             "-rms", "0.3",
             "-pro", "0.15"
         ]
-        print("run RVC, AIName:", currentAIname)
+        print("run RVC, AIName:", ai_dictionary)
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
         print(f"Ошибка при выполнении команды: {e}")
