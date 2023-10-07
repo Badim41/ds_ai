@@ -274,7 +274,7 @@ async def __cover(
         params.append(f"-start {start}")
     param_string = ' '.join(params)
 
-    await run_main_with_settings(ctx, param_string, False)
+    await run_main_with_settings(ctx, "робот протокол 13 " + param_string, False)
     # output..
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
