@@ -483,7 +483,7 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     # Ожидаем окончания проигрывания
     while ctx.voice_client.is_playing():
         await asyncio.sleep(1)
-        stop_milliseconds += 1000
+        .stop_milliseconds += 1000
 
 
 async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
