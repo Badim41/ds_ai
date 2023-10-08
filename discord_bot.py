@@ -265,12 +265,12 @@ async def __cover(
         ctx,
         url: Option(str, description='Ссылка на видео', required=True),
         voice: Option(str, description='Голос для видео', required=False, default=None),
-        pitch: Option(str, description='Кто говорит/поёт в видео? (от -2 до 2)', required=False,
+        pitch: Option(str, description='Кто говорит/поёт в видео?', required=False,
                       choices=['мужчина', 'женщина'], default=None),
-        time: Option(int, description='Время (мин. 0)', required=False, default=-1, min_value=0),
+        time: Option(int, description='Ограничить длительность воспроизведения (в секундах)', required=False, default=-1, min_value=0),
         indexrate: Option(float, description='Индекс частоты (от 0 до 1)', required=False, default=0.5, min_value=0,
                           max_value=1),
-        loudness: Option(float, description='Громкость (от 0 до 1)', required=False, default=0.2, min_value=0,
+        loudness: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.2, min_value=0,
                          max_value=1),
         main_vocal: Option(int, description='Громкость основного вокала (от -20 до 0)', required=False, default=0,
                            min_value=-20, max_value=0),
@@ -284,7 +284,7 @@ async def __cover(
                         max_value=1),
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
                         max_value=1),
-        start: Option(int, description='Начало (минимальное значение 0)', required=False, default=0, min_value=0),
+        start: Option(int, description='Начать воспроизводить с (в секундах)', required=False, default=0, min_value=0),
         output: Option(bool, description='Отправить результат в архиве', required=False, default=False)
 ):
     await ctx.defer()
