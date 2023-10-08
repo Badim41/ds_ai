@@ -269,8 +269,8 @@ async def __cover(
         ctx,
         url: Option(str, description='Ссылка на видео', required=True),
         voice: Option(str, description='Голос для видео', required=False, default=None),
-        pitch: Option(int, description='Тональность (от -2 до 2)', required=False, default=0, min_value=-2,
-                      max_value=2),
+        pitch: Option(str, description='Кто говорит/поёт в видео? (от -2 до 2)', required=False,
+                      choices=['мужчина', 'женщина'], default=None),
         time: Option(int, description='Время (мин. 0)', required=False, default=-1, min_value=0),
         indexrate: Option(float, description='Индекс частоты (от 0 до 1)', required=False, default=0.5, min_value=0,
                           max_value=1),
@@ -300,8 +300,17 @@ async def __cover(
         params.append(f"-url {url}")
     if voice:
         params.append(f"-voice {voice}")
-    if pitch != 0:
-        params.append(f"-pitch {pitch}")
+    # если мужчина-мужчина, женщина-женщина, pitch не меняем
+    pitch_int = 0
+    # если женщина, но AI мужчина = 1,
+    if pitch == 'женщина':
+        if not await set_get_config_default("currentaipitch") == 1:
+            pitch_int = 1
+    # если мужчина, но AI женщина = -1,
+    elif pitch == 'мужчина':
+        if not await set_get_config_default("currentaipitch") == 0:
+            pitch_int = -1
+    params.append(f"-pitch {pitch_int}")
     if time != -1:
         params.append(f"-time {time}")
     if indexrate != 0.5:
@@ -336,7 +345,9 @@ async def __add_voice(
         gender: Option(str, description=f'Пол (для настройки тональности)', required=True,
                        choices=['мужчина', 'женщина']),
         info: Option(str, description=f'(необязательно) Какие-то сведения о данном человеке', required=False,
-                     default="Отсутствует")
+                     default="Отсутствует"),
+        change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
+                             default=False)
 ):
     await ctx.defer()
     await ctx.respond('Выполнение...')
@@ -365,6 +376,8 @@ async def __add_voice(
         # Сохранение
         with open('config.ini', 'w') as configfile:
             config.write(configfile)
+        if change_voice:
+            await run_main_with_settings(ctx, f"робот измени голос на {name}", True)
     except subprocess.CalledProcessError as e:
         await ctx.respond(f"Ошибка при скачивании голоса {command}: {e}")
 
