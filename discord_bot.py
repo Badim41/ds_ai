@@ -549,7 +549,7 @@ async def recognize(ctx):
                     text = await replace_numbers_in_sentence(text)
                     text = await replace_mat_in_sentence(text)
                     print(text)
-                    await run_main_with_settings(ctx, text, True)
+                    await run_main_with_settings(ctx, "робот, " + text, True)
 
             continue
         result = AudioSegment.from_file(wav_filename, format="wav") + AudioSegment.from_file(file_found, format="wav")
