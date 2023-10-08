@@ -1006,10 +1006,7 @@ async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
         return
 
     # Проверяем, чтобы ничего не играло
-    voice_client = ctx.voice_client
-    if voice_client.is_playing():
-        print("already playing smth")
-        time.sleep(0.1)
+    # перенесено
 
     if duration <= 0:
         duration = len(AudioSegment.from_file(audio_file_path)) / 1000
