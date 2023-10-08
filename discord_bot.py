@@ -259,7 +259,7 @@ async def __tts(
     ai_voice_temp = await set_get_config_default("currentainame")
     if ai_voice == "None":
         ai_voice = await set_get_config_default("currentainame")
-        print(set_get_config_default("currentainame"))
+        print(await set_get_config_default("currentainame"))
     await set_get_config_default("currentainame", ai_voice)
     # запускаем TTS
     await run_main_with_settings(ctx, f"робот протокол 24 {text}", False) # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
