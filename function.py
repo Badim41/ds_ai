@@ -568,7 +568,7 @@ async def createAICaver(ctx):
 
     with open("caversAI/audio_links.txt", "a", encoding="UTF-8") as writer:
         for line in lines:
-            writer.write(line + "\n")
+            writer.write(await utf_code(line) + "\n")
     config.read('config.ini')
     continue_process = config.getboolean('Values', 'queue')
     if not continue_process:
