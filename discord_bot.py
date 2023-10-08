@@ -420,54 +420,6 @@ async def write_in_discord(ctx, text):
     # await run_main_with_settings(ctx, text, True)
     await ctx.send(text)
 
-import asyncio
-
-async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
-    # Проверяем, находится ли бот в голосовом канале
-    if not ctx.voice_client:
-        await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
-        return
-    
-    # Проверяем, играет ли что-то уже
-    #if ctx.voice_client.is_playing():
-        # Если что-то играет, подождем 100 миллисекунд
-        #await asyncio.sleep(0.1)
-
-    # Создаем источник аудио с указанными параметрами
-    source = discord.FFmpegPCMAudio(audio_file_path, options=f"-ss {start_seconds} -t {duration}")
-
-    # Проигрываем файл
-    ctx.voice_client.play(source)
-
-    # Ожидаем окончания проигрывания
-    while ctx.voice_client.is_playing():
-        await asyncio.sleep(1)
-        # Можно добавить другие операции здесь, если необходимо
-import asyncio
-
-async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
-    # Проверяем, находится ли бот в голосовом канале
-    if not ctx.voice_client:
-        await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
-        return
-    
-    # Проверяем, играет ли что-то уже
-    if ctx.voice_client.is_playing():
-        # Если что-то играет, подождем 100 миллисекунд
-        await asyncio.sleep(0.1)
-
-    # Создаем источник аудио с указанными параметрами
-    source = discord.FFmpegPCMAudio(audio_file_path, options=f"-ss {start_seconds} -t {duration}")
-
-    # Проигрываем файл
-    ctx.voice_client.play(source)
-
-    # Ожидаем окончания проигрывания
-    while ctx.voice_client.is_playing():
-        await asyncio.sleep(1)
-        # Можно добавить другие операции здесь, если необходимо
-import asyncio
-
 async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     # Проверяем, находится ли бот в голосовом канале
     if not ctx.voice_client:
@@ -483,8 +435,8 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     ctx.voice_client.play(source)
 
     # Ожидаем окончания проигрывания
-    #while ctx.voice_client.is_playing():
-        #await asyncio.sleep(1)
+    while ctx.voice_client.is_playing():
+        await asyncio.sleep(1)
         # stop_milliseconds += 1000
         await set_get_config("stop_milliseconds", int(await set_get_config("stop_milliseconds")) + 1000)
 
