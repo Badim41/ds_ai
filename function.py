@@ -931,7 +931,10 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=currentAIname)
         os.remove(file_name)
     else:
         print(f"Файл не существует: {file_name}")
-
+    # обновляем язык во избежания проблем
+    global language
+    config.read('config.ini')
+    language = config.get('Default', 'language')
     # на вход идёт всегда русский текст, так что переводим его
     if language != "russian":
         tts = translate(tts)
