@@ -101,22 +101,22 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             raise ex
 
         try:
-            # file_path = "texts/memories/" + str(await utf_code(currentAIname)) + ".txt"
+            # file_path = "texts/memories/" + str(currentAIname) + ".txt"
             # if not os.path.exists(file_path):
             #     print("File doesn't exist, creating a new one.")
-            #     with open(file_path, "w", encoding="utf-8") as create_file:
+            #     with open(file_path, "w") as create_file:
             #         create_file.write(
             #             await utf_code("Человек: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n"))
             # Open the file
-            # with open(file_path, "r", encoding="cp1251") as file:
+            # with open(file_path, "r") as file:
             #     file_content = file.read()
             # prompt = f"Напиши ответ человеку, он говорит:\""
-            prompt = f"Представь, что тебя зовут {currentAIname}. Тебе пишут: {temp_spokenText}. Ответ:"
-            # prompt = f"Представь, что тебя зовут {await utf_code(currentAIname)}. {currentAIinfo}." \
+            prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}. Тебе пишут: {temp_spokenText}. Ответ:"
+            # prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}." \
             #          f"Тебе нужно вести диалог. Ты не говоришь, что какую-либо выполняешь роль (Например: " \
             #          f"я не могу выполнить такие действия, так как это нарушает мою роль). " \
             #          f"Отвечай как можно короче. " \
-            #          f"У тебя ({await utf_code(currentAIname)}) есть воспоминания:\"{file_content}\". " \
+            #          f"У тебя ({currentAIname}) есть воспоминания:\"{file_content}\". " \
             #          f"Напиши ответ человеку, он говорит:\""
             # prompt += temp_spokenText + "\". Ответ: "
         except Exception as ex:
@@ -233,10 +233,10 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
         await write_in_discord(ctx, "модель чат-бота не загрузилась, подождите пару минут")
         return
     print('generating answer')
-    with open("gpt_prompt.txt", "w", encoding="utf-8") as writer:
+    with open("gpt_prompt.txt", "w") as writer:
         writer.write(prompt)
     while True:
-        with open("gpt_result.txt", "r", encoding="utf-8") as reader:
+        with open("gpt_result.txt", "r") as reader:
             result = reader.readlines()
             if result:
                 if result[-1].endswith('$$'):
@@ -248,7 +248,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
                 else:
                     await asyncio.sleep(0.05)
                     continue
-    with open("gpt_result.txt", "w", encoding="UTF-8") as writer:
+    with open("gpt_result.txt", "w") as writer:
         writer.write("None")
     if not language == "russian":
         translator = Translator(from_lang="ru", to_lang=language[:2].lower())
@@ -353,15 +353,15 @@ async def voice_commands(sentence, ctx):
         sentence = sentence[sentence.index(str(protocol_number)) + len(str(protocol_number)):]
         spoken_text_temp = spokenText[spokenText.index(str(protocol_number)) + len(str(protocol_number)):]
         if protocol_number == 999:
-            with open(spoken_text_temp, "r", encoding="utf-8") as reader:
+            with open(spoken_text_temp, "r") as reader:
                 await write_in_discord(ctx, reader.readlines())
             return True
         # отчистить память
         elif protocol_number == 998:
             try:
-                with open(f"texts/memories/{await utf_code(currentAIname)}.txt", "w") as create_file:
+                with open(f"texts/memories/{currentAIname}.txt", "w") as create_file:
                     create_file.write(
-                        await utf_code("Человек: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n"))
+                        "Человек: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n")
                 await text_to_speech("отчищена память", False, ctx)
             except Exception as e:
                 print("Error:", e)
@@ -492,10 +492,10 @@ async def voice_commands(sentence, ctx):
 async def setAIvoice(name, ttsNeed, ctx):
     global currentAIname, currentAIinfo, currentAIpitch
     if os.path.exists(f"rvc_models/{name}"):
-        with open(os.path.join(f"rvc_models/{name}/info.txt"), 'r', encoding='UTF-8') as file:
+        with open(os.path.join(f"rvc_models/{name}/info.txt")) as file:
             await set_config(currentAIinfo, file.read())
         await set_config("currentainame", name)
-        with open(os.path.join(f"rvc_models/{name}/gender.txt"), 'r', encoding='UTF-8') as file:
+        with open(os.path.join(f"rvc_models/{name}/gender.txt")) as file:
             if file.read().lower() == "female":
                 await set_config("currentaipitch", 0)
             else:
@@ -568,7 +568,7 @@ async def createAICaver(ctx):
 
     with open("caversAI/audio_links.txt", "a") as writer:
         for line in lines:
-            writer.write(await utf_code(line) + "\n")
+            writer.write(line + "\n")
     config.read('config.ini')
     continue_process = config.getboolean('Values', 'queue')
     if not continue_process:
@@ -699,7 +699,7 @@ async def getCaverPrms(line, ctx):
 
 
 # async def defaultRVCParams(filePath, pitch):
-#     return f"python ../AICoverGen/src/main.py -i {filePath} -dir modelsRVC/{await utf_code(currentAIname)} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
+#     return f"python ../AICoverGen/src/main.py -i {filePath} -dir modelsRVC/{currentAIname} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
 def prepare_audio_process_cuda_0(ctx):
     print("DEV_START_CUDA_0")
@@ -807,7 +807,7 @@ async def remove_line_from_txt(file_path, delete_line):
 
         with open(file_path, "w") as writer:
             for line in lines:
-                writer.write(await utf_code(line))
+                writer.write(line)
     except IOError as e:
         print(e)
 
@@ -908,18 +908,18 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=currentAIname)
     await result_command_change(tts, Color.GRAY)
     if write_in_memory:
         try:
-            with open(f"texts/memories/{await utf_code(ai_dictionary)}.txt", 'a') as writer2:
-                writer2.write(f"{await utf_code(ai_dictionary)}: {tts}\n")
+            with open(f"texts/memories/{ai_dictionary}.txt", 'a') as writer2:
+                writer2.write(f"{ai_dictionary}: {tts}\n")
         except IOError as ex:
             raise RuntimeError(ex)
 
-        while os.path.getsize(f"texts/memories/{await utf_code(ai_dictionary)}.txt") > 500:
+        while os.path.getsize(f"texts/memories/{ai_dictionary}.txt") > 500:
             try:
-                with open(f"texts/memories/{await utf_code(ai_dictionary)}.txt", 'r') as reader:
+                with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
                     lines = reader.readlines()
                 lines = lines[2:]
-                with open(f"texts/memories/{await utf_code(ai_dictionary)}.txt", 'w') as writer:
-                    writer.writelines(await utf_code(lines))
+                with open(f"texts/memories/{ai_dictionary}.txt", 'w') as writer:
+                    writer.writelines(lines)
             except IOError as e:
                 print(e)
     if not ctx.voice_client:
@@ -1037,7 +1037,7 @@ async def find_in_files(targetGroup, directoryPath, ctx):
     for filename in os.listdir(directoryPath):
         if filename.endswith(".wav"):
             try:
-                with open(os.path.join(directoryPath, filename), 'r', encoding='UTF-8') as file:
+                with open(os.path.join(directoryPath, filename)) as file:
                     content = file.read()
                     content = preprocess_text(content)
 
@@ -1102,12 +1102,3 @@ async def remove_before_stop(input_str, target_word):
         return input_str[index + len(target_word):]
 
     return input_str
-
-
-async def utf_code(text):
-    if type(text) == "list":
-        text = ' '.join(text)
-    with open("temp1", "w", encoding="cp1251") as file_utf8:
-        file_utf8.write(text)
-    with open("temp1", "r", encoding="cp1251") as file:
-        return file.read()

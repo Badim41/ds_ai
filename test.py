@@ -11,11 +11,21 @@
 #     zipf.write(audio_paths[0], arcname='вокал.mp3')
 #     zipf.write(audio_paths[1], arcname='бэквокал.mp3')
 #     zipf.write(audio_paths[2], arcname='музыка.mp3')
-# FileLink(f'{os.path.basename(output_path)[:-4]}.zip')
+# FileLink(f'{os.path.basename(output_path)[:-4]}
+import configparser
 
-print(
-    f"{input_char}     {input_char}\n"
-    f"{input_char}{input_char}   {input_char}{input_char}\n"
-    f"  {input_char}{input_char}{input_char} \n"
-    f"{input_char}  {input_char}  {input_char}\n"
-)
+
+def utf_code(text):
+    if type(text) == "list":
+        text = ' '.join(text)
+    with open("temp1", "w", encoding="cp1251") as file_utf8:
+        file_utf8.write(text)
+    with open("temp1", "r", encoding="cp1251") as file:
+        return file.read()
+
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+currentAIname = config.get('Default', 'currentainame')
+with open("caversAI/audio_links.txt", "w") as file:
+    file.write(utf_code(currentAIname))
