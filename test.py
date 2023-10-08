@@ -12,7 +12,10 @@
 #     zipf.write(audio_paths[1], arcname='бэквокал.mp3')
 #     zipf.write(audio_paths[2], arcname='музыка.mp3')
 # FileLink(f'{os.path.basename(output_path)[:-4]}.zip')
-from pydub import AudioSegment
 
-empty_audio = AudioSegment.silent(duration=0)
-empty_audio.export("out_all.wav", format="wav")
+print(
+    f"{input_char}     {input_char}\n"
+    f"{input_char}{input_char}   {input_char}{input_char}\n"
+    f"  {input_char}{input_char}{input_char} \n"
+    f"{input_char}  {input_char}  {input_char}\n"
+)

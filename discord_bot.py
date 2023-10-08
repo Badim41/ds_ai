@@ -180,9 +180,6 @@ async def disconnect(ctx):
 #         await ctx.send("Вы должны находиться в войс-чате, чтобы использовать эту команду.")
 
 
-stop_milliseconds = 0
-
-
 @bot.slash_command(name="pause", description='пауза/воспроизведение')
 async def pause(ctx):
     await ctx.defer()
@@ -202,12 +199,11 @@ async def pause(ctx):
 async def skip(ctx):
     await ctx.defer()
     await ctx.respond('Выполнение...')
-    global stop_milliseconds
     voice_client = ctx.voice_client
     if voice_client.is_playing():
         voice_client.stop()
         await ctx.respond("Текущий трек пропущен ⏭️")
-        stop_milliseconds = 0
+        await set_get_config("stop_milliseconds", 0)
     else:
         await ctx.respond("Нет активного аудио для пропуска.")
 
@@ -483,7 +479,8 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     # Ожидаем окончания проигрывания
     while ctx.voice_client.is_playing():
         await asyncio.sleep(1)
-        .stop_milliseconds += 1000
+        # stop_milliseconds += 1000
+        await set_get_config("stop_milliseconds", int(await set_get_config("stop_milliseconds")) + 1000)
 
 
 async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
