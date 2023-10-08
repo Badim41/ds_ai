@@ -909,8 +909,13 @@ async def console_command_runner(command, ctx):
         pass
 
 
-async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=currentAIname):
+async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     await result_command_change(tts, Color.GRAY)
+
+    if ai_dictionary is None:
+        global currentAIname
+        ai_dictionary = currentAIname
+        print(currentAIname)
     if write_in_memory:
         try:
             with open(f"texts/memories/{ai_dictionary}.txt", 'a') as writer2:
