@@ -74,11 +74,11 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     global video_length
     video_length = config.getint('Default', 'video_length')
     global currentAIname
-    currentAIname = config.get('Default', 'currentAIname')
+    currentAIname = config.get('Default', 'currentainame')
     global currentAIinfo
-    currentAIinfo = config.get('Default', 'currentAIinfo')
+    currentAIinfo = config.get('Default', 'currentaiinfo')
     global currentAIpitch
-    currentAIpitch = config.getint('Default', 'currentAIpitch')
+    currentAIpitch = config.getint('Default', 'currentaipitch')
     global robot_names
     robot_names = ["robot", "robots", "робот", "нейросеть", "hello", "роботы", "ропот"]
 
