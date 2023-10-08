@@ -934,8 +934,6 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=currentAIname)
 
     if os.path.exists(file_name):
         os.remove(file_name)
-    else:
-        print(f"Файл не существует: {file_name}")
     # обновляем язык во избежания проблем
     global language
     config.read('config.ini')

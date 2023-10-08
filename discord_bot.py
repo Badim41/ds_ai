@@ -255,10 +255,15 @@ async def __tts(
         await ctx.respond("Такое нельзя произносить!")
         return
     print(f'{text} ({type(text).__name__})\n')
+    # меняем голос
+    ai_voice_temp = await set_get_config_default("currentainame")
     if ai_voice == "None":
         ai_voice = await set_get_config_default("currentainame")
-    await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
-
+    await set_get_config_default("currentainame", ai_voice)
+    # запускаем TTS
+    await run_main_with_settings(ctx, "робот протокол 32", False) # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
+    # возращаем голос
+    await set_get_config_default("currentainame", ai_voice_temp)
 
 @bot.slash_command(name="ai_cover", description='_Заставить_ бота озвучить видео/спеть песню')
 async def __cover(
