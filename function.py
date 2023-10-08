@@ -745,6 +745,7 @@ def prepare_audio_process_cuda_0(ctx):
                         print("Больше нет ссылок")
                         asyncio.run(set_config_static_values("queue", "False"))
                         break
+                    asyncio.sleep(0.5)
         except (IOError, KeyboardInterrupt):
             pass
 
@@ -789,6 +790,7 @@ def prepare_audio_process_cuda_1(ctx):
                         print("Больше нет ссылок")
                         asyncio.run(set_config_static_values("queue", "False"))
                         break
+                    asyncio.sleep(0.5)
         except (IOError, KeyboardInterrupt):
             pass
 
