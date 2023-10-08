@@ -565,13 +565,15 @@ async def createAICaver(ctx):
     if not os.path.exists("caversAI/audio_links.txt"):
         with open("caversAI/audio_links.txt", "w"):
             pass
-
+    print("temp1")
     with open("caversAI/audio_links.txt", "a") as writer:
         for line in lines:
             writer.write(line + "\n")
+    print("temp2")
     config.read('config.ini')
     continue_process = config.getboolean('Values', 'queue')
     if not continue_process:
+        print("temp3")
         await write_in_discord(ctx, "Начинаю обработку видео")
         pool = multiprocessing.Pool(processes=3)
         pool.apply_async(prepare_audio_process_cuda_0, (ctx,))
@@ -582,6 +584,7 @@ async def createAICaver(ctx):
         pool.close()
         pool.join()
     else:
+        print("temp41")
         queue_position = 0
         if config.getboolean('Values', 'cuda0_is_busy'):
             queue_position += 1
@@ -713,7 +716,7 @@ def prepare_audio_process_cuda_0(ctx):
                         asyncio.run(text_to_speech("Видео должно быть с ютуба", False, ctx))
                         asyncio.run(result_command_change("Ссылка не с YT", Color.RED))
                         asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
-                        break
+                        continue
 
                     # url = line[line.index("https://"):].split()[0]
                     # if " " in url:
@@ -731,6 +734,7 @@ def prepare_audio_process_cuda_0(ctx):
                     params += " -cuda 0"
                     asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
                     print("запуск AICoverGen")
+                    print(params)
                     asyncio.run(console_command_runner(params, ctx))
                     time.sleep(0.05)
                 else:
@@ -757,7 +761,7 @@ def prepare_audio_process_cuda_1(ctx):
                         asyncio.run(text_to_speech("Видео должно быть с ютуба", False, ctx))
                         asyncio.run(result_command_change("Ссылка не с YT", Color.RED))
                         asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
-                        break
+                        continue
 
                     # url = line[line.index("https://"):].split()[0]
                     # if " " in url:
@@ -826,7 +830,6 @@ async def file_was_filler(folder, file_list):
 def play_audio_process(ctx):
     try:
         asyncio.run(set_config_static_values("queue", "True"))
-        from discord_bot import stop_milliseconds
         while True:
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
