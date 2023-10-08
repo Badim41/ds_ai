@@ -429,9 +429,9 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
         return
     
     # Проверяем, играет ли что-то уже
-    if ctx.voice_client.is_playing():
+    #if ctx.voice_client.is_playing():
         # Если что-то играет, подождем 100 миллисекунд
-        await asyncio.sleep(0.1)
+        #await asyncio.sleep(0.1)
 
     # Создаем источник аудио с указанными параметрами
     source = discord.FFmpegPCMAudio(audio_file_path, options=f"-ss {start_seconds} -t {duration}")
