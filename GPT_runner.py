@@ -33,6 +33,7 @@ def run():
             time.sleep(0.25)
             continue
         else:
+            print("found_prompt")
             set_get_config("prompt", value="enter prompt")
             prompt = prompt.replace("\\n", "\n")
             tokens = config.getint('Default', 'prompt_length')
