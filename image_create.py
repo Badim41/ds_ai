@@ -1,59 +1,14 @@
-# !git clone https://github.com/ai-forever/diffusers.git
 import argparse
-import random
-from diffusers import KandinskyV22Pipeline, KandinskyV22PriorPipeline
-import torch
-from transformers import CLIPVisionModelWithProjection
-from diffusers.models import UNet2DConditionModel
+
 import cv2
+from kandinsky2 import get_kandinsky2
 
 def generate_picture(prompt, negative_prompt, x, y, steps, seed):
-    image_encoder = CLIPVisionModelWithProjection.from_pretrained(
-        'kandinsky-community/kandinsky-2-2-prior',
-        subfolder='image_encoder'
-    ).half().to("cuda:0")
-    print("image3")
-    unet = UNet2DConditionModel.from_pretrained(
-        'kandinsky-community/kandinsky-2-2-decoder',
-        subfolder='unet'
-    ).half().to("cuda:0")
-    print("image4")
-    prior = KandinskyV22PriorPipeline.from_pretrained(
-        'kandinsky-community/kandinsky-2-2-prior',
-        image_encoder=image_encoder,
-        torch_dtype=torch.float16
-    ).to("cuda:0")
-    print("image5")
-    decoder = KandinskyV22Pipeline.from_pretrained(
-        'kandinsky-community/kandinsky-2-2-decoder',
-        unet=unet,
-        torch_dtype=torch.float16
-    ).to("cuda:0")
-    print("image6")
-    torch.manual_seed(seed)
 
-    negative_prior_prompt = negative_prompt
-    img_emb = prior(
-        prompt=prompt,
-        num_inference_steps=steps,
-        num_images_per_prompt=1
-    )
-    print("image7")
-
-    negative_emb = prior(
-        prompt=negative_prior_prompt,
-        num_inference_steps=steps,
-        num_images_per_prompt=1
-    )
-    print("image8")
-
-    images = decoder(
-        image_embeds=img_emb.image_embeds,
-        negative_image_embeds=negative_emb.image_embeds,
-        num_inference_steps=75,
-        height=y,
-        width=x)
-    print("image9")
+    model = get_kandinsky2('cuda', task_type='text2img', cache_dir='/tmp/kandinsky2', model_version='2.1',
+                           use_flash_attention=False)
+    images = model.generate_text2img(prompt, num_steps=steps, batch_size=1, guidance_scale=4, h=y, w=x,
+                                     sampler='p_sampler', prior_cf_scale=4, prior_steps="5", )
     cv2.imwrite("picture.png", images.images[0])
     print("Изображение сохранено как picture.png")
 

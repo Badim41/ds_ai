@@ -17,3 +17,4 @@ py-cord[voice]
 py-cord
 opencv-python
 SpeechRecognition
+requests
