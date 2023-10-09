@@ -236,19 +236,16 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
         await write_in_discord(ctx, "модель чат-бота не загрузилась, подождите пару минут")
         return
     print('generating answer')
-    with open("gpt_prompt.txt", "w") as writer:
-        writer.write(prompt)
+    await set_get_config_all("gpt", "gpt_prompt", prompt) 
     result = "None"
-    while not result == "None":
+    while result == "None":
         if result.endswith('$$'):
             index_answer = result.index("Ответ:")
             if not index_answer == -1:
                 result = result[index_answer + 6:]
             break
-        else:
-            result = await set_get_config_all("gpt", "gpt_result")
-            await asyncio.sleep(0.05)
-            continue
+        result = await set_get_config_all("gpt", "gpt_result")
+        await asyncio.sleep(0.05)
     await set_get_config_all("gpt", "gpt_result", "None")
     if not language == "russian":
         translator = Translator(from_lang="ru", to_lang=language[:2].lower())
