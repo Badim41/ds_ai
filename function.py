@@ -50,9 +50,12 @@ async def set_config(key, value):
         config.write(configfile)
 
 
-async def set_config_static_values(key, value):
+async def set_get_config_all(section, key, value=None):
     config.read('config.ini')
-    config.set('Values', key, value)
+    if value is None:
+        config.read('config.ini')
+        return config.get(section, key)
+    config.set(section, key, str(value))
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
@@ -66,7 +69,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     config.read('config.ini')
     language = config.get('Default', 'language')
     global prompt_length
-    prompt_length = config.getint('Default', 'prompt_length')
+    prompt_length = config.getint('gpt', 'prompt_length')
     global admin
     admin = config.getboolean('Default', 'admin')
     global all_admin
@@ -227,7 +230,7 @@ async def translate(text):
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     config.read('config.ini')
-    gpt_loaded = config.getboolean('Loaded', 'gpt')
+    gpt_loaded = config.getboolean('gpt', 'gpt')
     print("DEV_TEMP_gpt_loaded:", gpt_loaded)
     if not gpt_loaded:
         await write_in_discord(ctx, "модель чат-бота не загрузилась, подождите пару минут")
@@ -235,21 +238,18 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     print('generating answer')
     with open("gpt_prompt.txt", "w") as writer:
         writer.write(prompt)
-    while True:
-        with open("gpt_result.txt", "r") as reader:
-            result = reader.readlines()
-            if result:
-                if result[-1].endswith('$$'):
-                    result = '\n'.join(result)[:-2]
-                    index_answer = result.index("Ответ:")
-                    if not index_answer == -1:
-                        result = result[index_answer + 6:]
-                    break
-                else:
-                    await asyncio.sleep(0.05)
-                    continue
-    with open("gpt_result.txt", "w") as writer:
-        writer.write("None")
+    result = "None"
+    while not result == "None":
+        if result.endswith('$$'):
+            index_answer = result.index("Ответ:")
+            if not index_answer == -1:
+                result = result[index_answer + 6:]
+            break
+        else:
+            result = await set_get_config_all("gpt", "gpt_result")
+            await asyncio.sleep(0.05)
+            continue
+    await set_get_config_all("gpt", "gpt_result", "None")
     if not language == "russian":
         translator = Translator(from_lang="ru", to_lang=language[:2].lower())
         result = translator.translate(result)
@@ -435,15 +435,16 @@ async def voice_commands(sentence, ctx):
                 return True
 
     if "длина запроса" in sentence:
+        number = None
         if sentence != "длина запроса":
             number = await extract_number_after_keyword(sentence, "длина запроса")
             if number > 500:
-                await set_config("prompt_length", 500)
+                await set_get_config_all('gpt', "prompt_length", 500)
                 await text_to_speech(f"Слишком большое число. Длина запроса: 500", False, ctx)
                 return True
             if number != -1:
-                await set_config("prompt_length", number)
-        await text_to_speech("Длина запроса: " + str(prompt_length), False, ctx)
+                await set_get_config_all('gpt', "prompt_length", number)
+        await text_to_speech("Длина запроса: " + str(number), False, ctx)
         return True
 
     if "длина видео" in sentence:
@@ -711,7 +712,7 @@ def prepare_audio_process_cuda_0(ctx):
             with open("caversAI/audio_links.txt") as reader:
                 line = reader.readline()
                 if not line == "" and not line is None:
-                    asyncio.run(set_config_static_values("cuda0_is_busy", "True"))
+                    asyncio.run(set_get_config_all('Values', "cuda0_is_busy", "True"))
                     if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
                         asyncio.run(text_to_speech("Видео должно быть с ютуба", False, ctx))
                         asyncio.run(result_command_change("Ссылка не с YT", Color.RED))
@@ -739,11 +740,11 @@ def prepare_audio_process_cuda_0(ctx):
                     time.sleep(0.05)
                 else:
                     config.read('config.ini')
-                    asyncio.run(set_config_static_values("cuda0_is_busy", "False"))
+                    asyncio.run(set_get_config_all('Values', "cuda0_is_busy", "False"))
                     continue_process = config.getboolean('Values', 'cuda1_is_busy')
                     if not continue_process:
                         print("Больше нет ссылок")
-                        asyncio.run(set_config_static_values("queue", "False"))
+                        asyncio.run(set_get_config_all('Values', "queue", "False"))
                         break
                     asyncio.sleep(0.5)
         except (IOError, KeyboardInterrupt):
@@ -757,7 +758,7 @@ def prepare_audio_process_cuda_1(ctx):
             with open("caversAI/audio_links.txt") as reader:
                 line = reader.readline()
                 if not line == "" and not line is None:
-                    asyncio.run(set_config_static_values("cuda1_is_busy", "True"))
+                    asyncio.run(set_get_config_all('Values', "cuda1_is_busy", "True"))
                     if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
                         asyncio.run(text_to_speech("Видео должно быть с ютуба", False, ctx))
                         asyncio.run(result_command_change("Ссылка не с YT", Color.RED))
@@ -784,11 +785,11 @@ def prepare_audio_process_cuda_1(ctx):
                     time.sleep(0.05)
                 else:
                     config.read('config.ini')
-                    asyncio.run(set_config_static_values("cuda1_is_busy", "False"))
+                    asyncio.run(set_get_config_all('Values', "cuda1_is_busy", "False"))
                     continue_process = config.getboolean('Values', 'cuda0_is_busy')
                     if not continue_process:
                         print("Больше нет ссылок")
-                        asyncio.run(set_config_static_values("queue", "False"))
+                        asyncio.run(set_get_config_all('Values', "queue", "False"))
                         break
                     asyncio.sleep(0.5)
         except (IOError, KeyboardInterrupt):
@@ -831,7 +832,7 @@ async def file_was_filler(folder, file_list):
 
 def play_audio_process(ctx):
     try:
-        asyncio.run(set_config_static_values("queue", "True"))
+        asyncio.run(set_get_config_all('Values', "queue", "True"))
         while True:
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
