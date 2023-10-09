@@ -45,8 +45,15 @@ def run():
                     # num_return_sequences=5,
                     # do_sample=True
                 )
-
                 out = tokenizer.decode(output[0], skip_special_tokens=True)
+                if '\n\n' in out:
+                    index = out.find('$')
+                    if len(out) - index > 50:
+                        remove_tokens = str(index / len(out) * tokens)
+                        print(f"слишком много токенов, советуем убрать {remove_tokens[remove_tokens.find('.'):]} токенов")
+                    out = out[:index]
+                else:
+                    print("\\n\\n не найден")
                 with open("gpt_result.txt", "w", encoding="utf-8") as writer:
                     writer.writelines(out)
                     writer.write("$$")
