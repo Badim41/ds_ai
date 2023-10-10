@@ -36,7 +36,7 @@ def run():
             print("found_prompt")
             set_get_config("gpt_prompt", value="enter prompt")
             prompt = prompt.replace("\\n", "\n")
-            tokens = config.getint('Default', 'prompt_length')
+            tokens = config.getint('gpt', 'prompt_length')
             encoded_input = tokenizer(prompt, return_tensors='pt').to('cuda:0')
             output = model.generate(
                 **encoded_input,
