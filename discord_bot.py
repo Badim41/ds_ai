@@ -68,6 +68,16 @@ async def on_ready():
         type=discord.ActivityType.listening, name='AI-covers'))
 
 
+@bot.slash_command(name="change_image", description='сделать изображения')
+async def __image(
+        ctx,
+        prompt: Option(str, description='промпт', required=True),
+        negative_prompt: Option(str, description='негативный промпт', required=False)
+):
+    await ctx.defer()
+    await ctx.respond("генерация изображения")
+
+
 @bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
 async def __config(
         ctx,
