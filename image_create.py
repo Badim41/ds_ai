@@ -37,7 +37,7 @@ def generate_picture(prompt, negative_prompt, x, y, steps, seed):
     )
     pipe = pipe.to("cuda")
 
-    generator = torch.Generator(device="cuda").manual_seed(43)
+    generator = torch.Generator(device="cuda").manual_seed(seed)
 
     # run prior pipeline
 
@@ -50,10 +50,10 @@ def generate_picture(prompt, negative_prompt, x, y, steps, seed):
         image_embeds=img_emb.image_embeds,
         negative_image_embeds=negative_emb.image_embeds,
         hint=hint,
-        num_inference_steps=50,
+        num_inference_steps=steps,
         generator=generator,
-        height=512,
-        width=512,
+        height=y,
+        width=x,
     ).images
 
     images[0].save("robot_cat.png")
