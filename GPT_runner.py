@@ -30,6 +30,7 @@ def run():
     while True:
         prompt = set_get_config("prompt")
         if prompt == "enter prompt":
+            print("not_found_prompt")
             time.sleep(0.25)
             continue
         else:
@@ -49,7 +50,7 @@ def run():
             )
             out = tokenizer.decode(output[0], skip_special_tokens=True)
             if '\n\n' in out:
-                index = out.find('$')
+                index = out.find('\n\n')
                 if len(out) - index > 50:
                     remove_tokens = str(index / len(out) * tokens)
                     print(f"слишком много токенов, советуем убрать {remove_tokens[remove_tokens.find('.'):]} токенов")
