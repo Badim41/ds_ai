@@ -249,7 +249,7 @@ async def __tts(
     voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
     if ai_voice not in voices:
         return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
-    from function import replace_mat_in_sentence, mat_found, text_to_speech
+    from function import replace_mat_in_sentence, mat_found
     text = await replace_mat_in_sentence(text)
     if mat_found:
         await ctx.respond("Такое нельзя произносить!")

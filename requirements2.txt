@@ -18,3 +18,5 @@ py-cord
 opencv-python
 SpeechRecognition
 requests
+diffusers
+transformers
