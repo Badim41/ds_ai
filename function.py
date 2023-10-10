@@ -236,7 +236,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
         await write_in_discord(ctx, "модель чат-бота не загрузилась, подождите пару минут")
         return
     print('generating answer')
-    await set_get_config_all("gpt", "gpt_prompt", prompt) 
+    await set_get_config_all("gpt", "gpt_prompt", prompt.replace("\n", "\\n"))
     result = "None"
     while result == "None":
         if result.endswith('$$'):
@@ -351,7 +351,8 @@ async def voice_commands(sentence, ctx):
         spoken_text_temp = spokenText[spokenText.index(str(protocol_number)) + len(str(protocol_number)):]
         if protocol_number == 999:
             with open(spoken_text_temp, "r") as reader:
-                await write_in_discord(ctx, reader.readlines())
+                lines = reader.readlines()
+                await write_in_discord(ctx, '\n'.join(lines).replace("\'", "").replace("\\n", "\n"))
             return True
         # отчистить память
         elif protocol_number == 998:
