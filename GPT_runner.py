@@ -48,12 +48,15 @@ def run():
                 # do_sample=True
             )
             out = tokenizer.decode(output[0], skip_special_tokens=True)
+            print("generated_prompt")
             if '\n\n' in out:
+                print("\\n\\n in sentence")
                 index = out.find('\n\n')
                 if len(out) - index > 50:
                     remove_tokens = str(index / len(out) * tokens)
                     print(f"слишком много токенов, советуем убрать {remove_tokens[remove_tokens.find('.'):]} токенов")
                 out = out[:index]
+                print("\\n\\n deleted")
             else:
                 print("\\n\\n не найден")
             set_get_config("gpt_result", out + "$$")
