@@ -42,8 +42,7 @@ def run():
                 **encoded_input,
                 num_beams=4,
                 max_new_tokens=tokens,
-                no_repeat_ngram_size=2,
-                output_scores=True,
+                no_repeat_ngram_size=2
                 # num_return_sequences=5,
                 # do_sample=True
             )
