@@ -28,14 +28,13 @@ def run():
     set_get_config("gpt", value=True)
     print("==========Model Loaded!==========")
     while True:
-        prompt = set_get_config("prompt")
+        prompt = set_get_config("gpt_prompt")
         if prompt == "enter prompt":
-            print("not_found_prompt")
             time.sleep(0.25)
             continue
         else:
             print("found_prompt")
-            set_get_config("prompt", value="enter prompt")
+            set_get_config("gpt_prompt", value="enter prompt")
             prompt = prompt.replace("\\n", "\n")
             tokens = config.getint('Default', 'prompt_length')
             encoded_input = tokenizer(prompt, return_tensors='pt').to('cuda:0')
