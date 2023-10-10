@@ -239,12 +239,12 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     await set_get_config_all("gpt", "gpt_prompt", prompt.replace("\n", "\\n"))
     result = "None"
     while result == "None":
+        result = await set_get_config_all("gpt", "gpt_result")
         if result.endswith('$$'):
             index_answer = result.index("Ответ:")
             if not index_answer == -1:
                 result = result[index_answer + 6:]
             break
-        result = await set_get_config_all("gpt", "gpt_result")
         await asyncio.sleep(0.05)
     await set_get_config_all("gpt", "gpt_result", "None")
     if not language == "russian":
