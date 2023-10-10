@@ -7,7 +7,38 @@ from diffusers.utils import load_image
 from transformers import pipeline
 import time
 
-def generate_picture(prompt, negative_prompt, x, y, steps, seed):
+negative_prompt = ("lowres, "
+                                                                           "text, "
+                                                                           "error, "
+                                                                           "cropped, "
+                                                                           "worst quality, "
+                                                                           "low quality, "
+                                                                           "mutilated, "
+                                                                           "out of frame, "
+                                                                           "extra fingers, "
+                                                                           "poorly drawn hands, "
+                                                                           "mutation, "
+                                                                           "deformed, "
+                                                                           "blurry, "
+                                                                           "bad proportions, "
+                                                                           "extra limbs, "
+                                                                           "cloned face, "
+                                                                           "disfigured, "
+                                                                           "gross proportions, "
+                                                                           "malformed limbs, "
+                                                                           "missing arms, "
+                                                                           "missing legs, "
+                                                                           "extra arms, "
+                                                                           "extra legs, "
+                                                                           "fused fingers, "
+                                                                           "too many fingers, "
+                                                                           "long neck, "
+                                                                           "username, "
+                                                                           "watermark, "
+                                                                           "signature") 
+prompt = 'HD image'
+
+def generate_picture(prompt=prompt, negative_prompt=negative_prompt, x=512, y=512, steps=50, seed=1):
     # test IMAGES 1
 
 
@@ -63,37 +94,9 @@ if __name__ == '__main__':
     print("image0")
     parser = argparse.ArgumentParser(description='Generate a AI cover song in the song_output/id directory.',
                                      add_help=True)
-    parser.add_argument('-prompt', '--prompt', type=str, default='HD image',
+    parser.add_argument('-prompt', '--prompt', type=str, default=prompt',
                         help='prompt for picture')
-    parser.add_argument('-nprompt', '--negative-prompt', type=str, default="lowres, "
-                                                                           "text, "
-                                                                           "error, "
-                                                                           "cropped, "
-                                                                           "worst quality, "
-                                                                           "low quality, "
-                                                                           "mutilated, "
-                                                                           "out of frame, "
-                                                                           "extra fingers, "
-                                                                           "poorly drawn hands, "
-                                                                           "mutation, "
-                                                                           "deformed, "
-                                                                           "blurry, "
-                                                                           "bad proportions, "
-                                                                           "extra limbs, "
-                                                                           "cloned face, "
-                                                                           "disfigured, "
-                                                                           "gross proportions, "
-                                                                           "malformed limbs, "
-                                                                           "missing arms, "
-                                                                           "missing legs, "
-                                                                           "extra arms, "
-                                                                           "extra legs, "
-                                                                           "fused fingers, "
-                                                                           "too many fingers, "
-                                                                           "long neck, "
-                                                                           "username, "
-                                                                           "watermark, "
-                                                                           "signature",
+    parser.add_argument('-nprompt', '--negative-prompt', type=str, default=negative_prompt,
                         help='negative prompt for picture')
     parser.add_argument('-x', '--x', type=int, default='512',
                         help='size X')
@@ -104,4 +107,4 @@ if __name__ == '__main__':
     parser.add_argument('-seed', '--seed', type=int, default=random.randint(1, 10000),
                        help='seed')
     args = parser.parse_args()
-    generate_picture(args.prompt, args.negative_prompt, args.x, args.y, args.steps, args.seed)
+    generate_picture(prompt=args.prompt, negative_prompt=args.negative_prompt, x=args.x, y=args.y, steps=args.steps, seed=args.seed)
