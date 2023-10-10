@@ -243,7 +243,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
         if result.endswith('$$'):
             index_answer = result.index("Ответ:")
             if not index_answer == -1:
-                result = result[index_answer + 6:]
+                result = result[index_answer + 6:-2]
             break
         await asyncio.sleep(0.05)
     await set_get_config_all("gpt", "gpt_result", "None")
