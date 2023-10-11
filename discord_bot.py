@@ -602,6 +602,7 @@ if __name__ == "__main__":
     from GPT_runner import run
     from image_create import generate_picture
 
+    print("loading models")
     pool = multiprocessing.Pool(processes=2)
     pool.apply_async(run)
     pool.apply_async(generate_picture)

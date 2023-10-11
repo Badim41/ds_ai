@@ -76,7 +76,7 @@ def generate_picture():
         "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
     )
     pipe = pipe.to("cuda")
-    print("loaded images!")
+    print("==========Images Model Loaded!==========")
     set_get_config("model_loaded", True)
     while True:
         prompt = set_get_config("gpt_prompt")
