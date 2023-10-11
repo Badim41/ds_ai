@@ -87,6 +87,20 @@ async def __image(
     await ctx.respond("генерация изображения")
 
 
+async def get_image(
+        ctx,
+        image: discord.File
+):
+    await ctx.defer()
+
+    # Сохраните изображение в локальный файл
+    image_data = await image.fp.read()
+    with open("saved_image.png", "wb") as file:
+        file.write(image_data)
+
+    await ctx.respond("Изображение сохранено как saved_image.png")
+
+
 @bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
 async def __config(
         ctx,

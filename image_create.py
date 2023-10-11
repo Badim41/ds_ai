@@ -91,12 +91,13 @@ def generate_picture(prompt=prompt, negative_prompt=negative_prompt, x=512, y=51
         height=y,
         width=x,
     ).images
-
-    images[0].save(f"image{random.randint(1, 10000)}.png")
+    images_filename = "image" + str(random.randint(1, 10000)) + ".png"
+    images[0].save(images_filename)
 
     current_datetime = datetime.datetime.now()
     current_time = current_datetime.time()
     print("Конец:", current_time)
+    return images_filename
 
 
 if __name__ == '__main__':
