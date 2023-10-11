@@ -17,6 +17,14 @@ def set_get_config(key, value=None):
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
+
+
+def run_pictures(command):
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = process.communicate()
+    print(f"Выполнено: {command}\nВыход: {out.decode('utf-8')}\nОшибка: {err.decode('utf-8')}")
+
+
 def run():
     model_name = 'fffrrt/ruGPT-3.5-13B-GPTQ'
     model_basename = 'gptq_model-4bit-128g'
@@ -31,10 +39,14 @@ def run():
     set_get_config("gpt", value=True)
     print("==========GPT Model Loaded!==========")
     # load image model
-    from image_create import generate_picture
+    command = (
+    "python",
+    "image_create.py"
+    ) 
     pool = multiprocessing.Pool(processes=1)
-    pool.apply_async(generate_picture)
+    pool.apply_async(run_pictures(command,))
     pool.close()
+    
     while True:
         prompt = set_get_config("gpt_prompt")
         if prompt == "None":
