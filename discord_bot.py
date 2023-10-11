@@ -119,6 +119,7 @@ async def __image(ctx,
     await set_get_config_all("Image", "negative_prompt", negative_prompt)
     await set_get_config_all("Image", "prompt", prompt)
     await set_get_config_all("Image", "input", image.filename)
+    print("params suc")
     # wait for answer
     image_path = await set_get_config_all("Image", "result", None)
     while image_path == "None":
