@@ -38,7 +38,7 @@ negative_prompt = ("lowres, "
                                                                            "signature") 
 prompt = 'HD image'
 
-def generate_picture(prompt=prompt, negative_prompt=negative_prompt, x=512, y=512, steps=50, seed=1):
+def generate_picture(prompt=prompt, negative_prompt=negative_prompt, x=512, y=512, steps=50, seed=random.randint(1, 10000), strenght=strenght):
     # test IMAGES 1
 
 
@@ -77,7 +77,7 @@ def generate_picture(prompt=prompt, negative_prompt=negative_prompt, x=512, y=51
     # run controlnet img2img pipeline
     images = pipe(
         image=img,
-        strength=0.5,
+        strength=strenght,
         image_embeds=img_emb.image_embeds,
         negative_image_embeds=negative_emb.image_embeds,
         hint=hint,
@@ -106,5 +106,7 @@ if __name__ == '__main__':
                         help='steps')
     parser.add_argument('-seed', '--seed', type=int, default=random.randint(1, 10000),
                        help='seed')
+    parser.add_argument('-strenght', '--strenght', type=float, default=0.5,
+                       help='strenght of changing') 
     args = parser.parse_args()
-    generate_picture(prompt=args.prompt, negative_prompt=args.negative_prompt, x=args.x, y=args.y, steps=args.steps, seed=args.seed)
+    generate_picture(prompt=args.prompt, negative_prompt=args.negative_prompt, x=args.x, y=args.y, steps=args.steps, seed=args.seed, strenght=args.strenght)
