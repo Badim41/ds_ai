@@ -107,9 +107,15 @@ async def __image(ctx,
                                                    max_value=1)
                   ):
     await ctx.defer()
-    attachment = image.attachments
-    file_name = attachment.filename
-    await attachment.save(file_name)
+    if image:
+        attachment = image
+        file_name = attachment.filename
+        await attachment.read()
+
+        # Отправляем ответ
+        await ctx.respond(f"Изображение '{file_name}' получено и обработано.")
+    else:
+        await ctx.respond("Изображение не было прикреплено к команде.")
     await ctx.respond("Изображение получено")
     # loading params
     await set_get_config_all("Image", "strength_negative_prompt", strength_negative_prompt)
