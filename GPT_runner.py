@@ -1,5 +1,6 @@
 import configparser
 import multiprocessing
+import subprocess
 
 from transformers import AutoTokenizer
 from auto_gptq import AutoGPTQForCausalLM
@@ -20,6 +21,7 @@ def set_get_config(key, value=None):
 
 
 def run_pictures(command):
+    print("subprocess")
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = process.communicate()
     print(f"Выполнено: {command}\nВыход: {out.decode('utf-8')}\nОшибка: {err.decode('utf-8')}")
@@ -43,10 +45,11 @@ def run():
     "python",
     "image_create.py"
     ) 
+    print("subprocess0")
     pool = multiprocessing.Pool(processes=1)
     pool.apply_async(run_pictures(command,))
     pool.close()
-    
+    print("subprocess1")
     while True:
         prompt = set_get_config("gpt_prompt")
         if prompt == "None":
