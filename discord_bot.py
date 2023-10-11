@@ -107,16 +107,7 @@ async def __image(ctx,
                                                    max_value=1)
                   ):
     await ctx.defer()
-    if image:
-        attachment = image
-        file_name = attachment.filename
-        await attachment.save(file_name)
-
-        # Отправляем ответ
-        await ctx.respond(f"Изображение '{file_name}' получено и обработано.")
-    else:
-        await ctx.respond("Изображение не было прикреплено к команде.")
-    await ctx.respond("Изображение получено")
+    await image.save(image.filename)
     # loading params
     await set_get_config_all("Image", "strength_negative_prompt", strength_negative_prompt)
     await set_get_config_all("Image", "strength_prompt", strength_prompt)
@@ -125,6 +116,7 @@ async def __image(ctx,
     await set_get_config_all("Image", "steps", steps)
     await set_get_config_all("Image", "negative_prompt", negative_prompt)
     await set_get_config_all("Image", "prompt", prompt)
+    await set_get_config_all("Image", "input", image.filename)
     # wait for answer
     image_path = await set_get_config_all("Image", "result", None)
     while not image_path == "None":
@@ -604,9 +596,12 @@ if __name__ == "__main__":
     else:
         print("Укажите discord_TOKEN")
         exit(-1)
+    # load models in functions
     from GPT_runner import run
+    from image_create import generate_picture
 
-    pool = multiprocessing.Pool(processes=1)
+    pool = multiprocessing.Pool(processes=2)
     pool.apply_async(run)
+    pool.apply_async(generate_picture)
     pool.close()
     bot.run(discord_token)
