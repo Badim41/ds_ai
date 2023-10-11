@@ -88,13 +88,13 @@ def generate_picture():
         current_time = current_datetime.time()
         print("Начало:", current_time)
 
-        img = load_image(set_get_config("input")).resize((512, 512))
+
         negative_prompt = set_get_config("negative_prompt")
         x = int(set_get_config("x"))
         y = int(set_get_config("y"))
         steps = int(set_get_config("steps"))
         seed = int(set_get_config("seed"))
-        strenght = float(set_get_config("strenght"))
+        strength = float(set_get_config("strength"))
         strength_prompt = float(set_get_config("strength_prompt"))
         strength_negative_prompt = float(set_get_config("strength_negative_prompt"))
 
@@ -102,6 +102,7 @@ def generate_picture():
         generator = torch.Generator(device="cuda").manual_seed(seed)
 
         # make hint
+        img = load_image(set_get_config("input")).resize((x, y))
         depth_estimator = pipeline("depth-estimation")
         hint = make_hint(img, depth_estimator).unsqueeze(0).half().to("cuda")
 
@@ -113,7 +114,7 @@ def generate_picture():
         # run controlnet img2img pipeline
         images = pipe(
             image=img,
-            strength=strenght,
+            strength=strength,
             image_embeds=img_emb.image_embeds,
             negative_image_embeds=negative_emb.image_embeds,
             hint=hint,
