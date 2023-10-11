@@ -67,6 +67,7 @@ async def on_ready():
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
 
+
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -87,19 +88,12 @@ async def __image(
     await ctx.respond("генерация изображения")
 
 
-@bot.slash_command(name="get_image", description='изображение')
-async def get_image(
-        ctx,
-        image: discord.File
-):
+@bot.slash_command(name="get_image", description='Получить изображение')
+async def get_image(ctx, prompt: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
+                                        required=True)):
+    # В этом месте вы можете обрабатывать изображение, например, сохранить его
     await ctx.defer()
-
-    # Сохраните изображение в локальный файл
-    image_data = await image.fp.read()
-    with open("saved_image.png", "wb") as file:
-        file.write(image_data)
-
-    await ctx.respond("Изображение сохранено как saved_image.png")
+    await ctx.respond("Изображение получено")
 
 
 @bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
@@ -296,9 +290,11 @@ async def __tts(
         print(await set_get_config_default("currentainame"))
     await set_get_config_default("currentainame", ai_voice)
     # запускаем TTS
-    await run_main_with_settings(ctx, f"робот протокол 24 {text}", False) # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
+    await run_main_with_settings(ctx, f"робот протокол 24 {text}",
+                                 False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
     # возращаем голос
     await set_get_config_default("currentainame", ai_voice_temp)
+
 
 @bot.slash_command(name="ai_cover", description='_Заставить_ бота озвучить видео/спеть песню')
 async def __cover(
@@ -307,7 +303,8 @@ async def __cover(
         voice: Option(str, description='Голос для видео', required=False, default=None),
         pitch: Option(str, description='Кто говорит/поёт в видео?', required=False,
                       choices=['мужчина', 'женщина'], default=None),
-        time: Option(int, description='Ограничить длительность воспроизведения (в секундах)', required=False, default=-1, min_value=0),
+        time: Option(int, description='Ограничить длительность воспроизведения (в секундах)', required=False,
+                     default=-1, min_value=0),
         indexrate: Option(float, description='Индекс частоты (от 0 до 1)', required=False, default=0.5, min_value=0,
                           max_value=1),
         loudness: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.2, min_value=0,
@@ -454,12 +451,13 @@ async def write_in_discord(ctx, text):
     # await run_main_with_settings(ctx, text, True)
     await ctx.send(text)
 
+
 async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     # Проверяем, находится ли бот в голосовом канале
     if not ctx.voice_client:
         await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
         return
-    
+
     # Проверяем, играет ли что-то уже
     if ctx.voice_client.is_playing():
         await asyncio.sleep(0.1)
