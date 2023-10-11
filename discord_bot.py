@@ -67,6 +67,15 @@ async def on_ready():
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
 
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+    if len(message.attachments) > 0:
+        for attachment in message.attachments:
+            await attachment.save(attachment.filename)
+            print(f'Получен файл: {attachment.filename}')
+
 
 @bot.slash_command(name="change_image", description='сделать изображения')
 async def __image(

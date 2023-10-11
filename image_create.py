@@ -5,42 +5,47 @@ import numpy as np
 from diffusers import KandinskyV22PriorEmb2EmbPipeline, KandinskyV22ControlnetImg2ImgPipeline
 from diffusers.utils import load_image
 from transformers import pipeline
-import time
+import datetime
+
 
 negative_prompt = ("lowres, "
-                                                                           "text, "
-                                                                           "error, "
-                                                                           "cropped, "
-                                                                           "worst quality, "
-                                                                           "low quality, "
-                                                                           "mutilated, "
-                                                                           "out of frame, "
-                                                                           "extra fingers, "
-                                                                           "poorly drawn hands, "
-                                                                           "mutation, "
-                                                                           "deformed, "
-                                                                           "blurry, "
-                                                                           "bad proportions, "
-                                                                           "extra limbs, "
-                                                                           "cloned face, "
-                                                                           "disfigured, "
-                                                                           "gross proportions, "
-                                                                           "malformed limbs, "
-                                                                           "missing arms, "
-                                                                           "missing legs, "
-                                                                           "extra arms, "
-                                                                           "extra legs, "
-                                                                           "fused fingers, "
-                                                                           "too many fingers, "
-                                                                           "long neck, "
-                                                                           "username, "
-                                                                           "watermark, "
-                                                                           "signature") 
+                   "text, "
+                   "error, "
+                   "cropped, "
+                   "worst quality, "
+                   "low quality, "
+                   "mutilated, "
+                   "out of frame, "
+                   "extra fingers, "
+                   "poorly drawn hands, "
+                   "mutation, "
+                   "deformed, "
+                   "blurry, "
+                   "bad proportions, "
+                   "extra limbs, "
+                   "cloned face, "
+                   "disfigured, "
+                   "gross proportions, "
+                   "malformed limbs, "
+                   "missing arms, "
+                   "missing legs, "
+                   "extra arms, "
+                   "extra legs, "
+                   "fused fingers, "
+                   "too many fingers, "
+                   "long neck, "
+                   "username, "
+                   "watermark, "
+                   "signature")
 prompt = 'HD image'
 
-def generate_picture(prompt=prompt, negative_prompt=negative_prompt, x=512, y=512, steps=50, seed=random.randint(1, 10000), strenght=0.5):
-    # test IMAGES 1
 
+def generate_picture(prompt=prompt, negative_prompt=negative_prompt, x=512, y=512, steps=50,
+                     seed=random.randint(1, 10000), strenght=0.5):
+    # test IMAGES 1
+    current_datetime = datetime.datetime.now()
+    current_time = current_datetime.time()
+    print("Начало:", current_time)
 
     img = load_image(
         "https://huggingface.co/datasets/hf-internal-testing/diffusers-images/resolve/main" "/kandinskyv22/cat.png"
@@ -87,7 +92,11 @@ def generate_picture(prompt=prompt, negative_prompt=negative_prompt, x=512, y=51
         width=x,
     ).images
 
-    images[0].save("robot_cat.png")
+    images[0].save(f"image{random.randint(1, 10000)}.png")
+
+    current_datetime = datetime.datetime.now()
+    current_time = current_datetime.time()
+    print("Конец:", current_time)
 
 
 if __name__ == '__main__':
@@ -105,8 +114,9 @@ if __name__ == '__main__':
     parser.add_argument('-steps', '--steps', type=int, default='25',
                         help='steps')
     parser.add_argument('-seed', '--seed', type=int, default=random.randint(1, 10000),
-                       help='seed')
+                        help='seed')
     parser.add_argument('-strenght', '--strenght', type=float, default=0.5,
-                       help='strenght of changing') 
+                        help='strenght of changing')
     args = parser.parse_args()
-    generate_picture(prompt=args.prompt, negative_prompt=args.negative_prompt, x=args.x, y=args.y, steps=args.steps, seed=args.seed, strenght=args.strenght)
+    generate_picture(prompt=args.prompt, negative_prompt=args.negative_prompt, x=args.x, y=args.y, steps=args.steps,
+                     seed=args.seed, strenght=args.strenght)
