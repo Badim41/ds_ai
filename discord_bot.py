@@ -91,8 +91,12 @@ async def __image(
 @bot.slash_command(name="get_image", description='Получить изображение')
 async def get_image(ctx, prompt: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
                                         required=True)):
-    attachment = prompt[0]
-    await attachment.save(f"изображение_{attachment.filename}")
+    if prompt:  # Проверяем, что изображение было прикреплено
+        attachment = prompt[0]  # Получаем первое прикрепленное изображение
+        file_name = attachment.filename
+
+        # Сохраняем изображение в текущую директорию
+        await attachment.save(file_name)
     await ctx.defer()
     await ctx.respond("Изображение получено")
 
