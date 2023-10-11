@@ -72,7 +72,7 @@ def generate_picture(prompt=prompt, negative_prompt=negative_prompt, x=512, y=51
 
     # run prior pipeline
 
-    img_emb = pipe_prior(prompt=prompt, image=img, strength=0.85, generator=generator)
+    img_emb = pipe_prior(prompt=prompt, image=img, strength=0.05, generator=generator)
     negative_emb = pipe_prior(prompt=negative_prompt, image=img, strength=1, generator=generator)
     # run controlnet img2img pipeline
     images = pipe(
