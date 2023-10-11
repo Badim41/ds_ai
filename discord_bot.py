@@ -119,7 +119,7 @@ async def __image(ctx,
     await set_get_config_all("Image", "input", image.filename)
     # wait for answer
     image_path = await set_get_config_all("Image", "result", None)
-    while not image_path == "None":
+    while image_path == "None":
         image_path = await set_get_config_all("Image", "result", None)
         await asyncio.sleep(0.25)
     await send_image(ctx, image_path)
