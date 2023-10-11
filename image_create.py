@@ -82,12 +82,12 @@ def generate_picture():
         if prompt == "None":
             time.sleep(0.25)
             continue
+        set_get_config("gpt_prompt", "None")
         current_datetime = datetime.datetime.now()
         current_time = current_datetime.time()
         print("Конец:", current_time)
 
-
-        img = load_image(set_get_config("gpt_prompt"))
+        img = load_image(set_get_config("input")).resize((512, 512))
         negative_prompt = set_get_config("negative_prompt")
         x = int(set_get_config("x"))
         y = int(set_get_config("y"))
@@ -106,7 +106,8 @@ def generate_picture():
 
         # run prior pipeline
         img_emb = pipe_prior(prompt=prompt, image=img, strength=strength_prompt, generator=generator)
-        negative_emb = pipe_prior(prompt=negative_prompt, image=img, strength=strength_negative_prompt, generator=generator)
+        negative_emb = pipe_prior(prompt=negative_prompt, image=img, strength=strength_negative_prompt,
+                                  generator=generator)
 
         # run controlnet img2img pipeline
         images = pipe(
