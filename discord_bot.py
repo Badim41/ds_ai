@@ -107,6 +107,8 @@ async def __image(ctx,
                                                    max_value=1)
                   ):
     await ctx.defer()
+    if await set_get_config_all("Image", "model_loaded", None) == "False":
+        return await ctx.respond("модель для картинок не загрузилась, подождите пару минут")
     await image.save(image.filename)
     # loading params
     await set_get_config_all("Image", "strength_negative_prompt", strength_negative_prompt)
