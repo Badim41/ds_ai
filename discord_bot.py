@@ -1,5 +1,6 @@
 import multiprocessing
 import os
+import random
 import subprocess
 import configparser
 import asyncio
@@ -85,11 +86,13 @@ async def __image(ctx,
                   # prompt=prompt, negative_prompt=negative_prompt, x=512, y=512, steps=50,
                   #                      seed=random.randint(1, 10000), strenght=0.5
                   prompt: Option(str, description='запрос', required=True),
-                  negative_prompt: Option(str, description='негативный запрос', required=False),
+                  negative_prompt: Option(str, description='негативный запрос', default="NSFW", required=False),
                   steps: Option(int, description='число шагов', required=False,
+                                default=30,
                                 min_value=1,
                                 max_value=500),
                   seed: Option(int, description='сид изображения', required=False,
+                               default=random.randint(1, 1000000),
                                min_value=1,
                                max_value=1000000),
                   strength: Option(float, description='насколько сильны будут изменения', required=False,
@@ -114,9 +117,7 @@ async def __image(ctx,
     await set_get_config_all("Image", "strength_negative_prompt", strength_negative_prompt)
     await set_get_config_all("Image", "strength_prompt", strength_prompt)
     await set_get_config_all("Image", "strength", strength)
-    print("strength")
     await set_get_config_all("Image", "seed", seed)
-    print("seed")
     await set_get_config_all("Image", "steps", steps)
     await set_get_config_all("Image", "negative_prompt", negative_prompt)
     await set_get_config_all("Image", "prompt", prompt)
@@ -484,6 +485,7 @@ async def run_main_with_settings(ctx, spokenText, writeAnswer):
 async def write_in_discord(ctx, text):
     # await run_main_with_settings(ctx, text, True)
     await ctx.send(text)
+
 
 async def send_image(ctx, image_path):
     try:
