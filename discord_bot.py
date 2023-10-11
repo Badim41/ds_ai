@@ -111,6 +111,15 @@ async def __image(ctx,
     file_name = attachment.filename
     await attachment.save(file_name)
     await ctx.respond("Изображение получено")
+    # loading params
+    await set_get_config_all("Image", "strength_negative_prompt", strength_negative_prompt)
+    await set_get_config_all("Image", "strength_prompt", strength_prompt)
+    await set_get_config_all("Image", "strength", strength)
+    await set_get_config_all("Image", "seed", seed)
+    await set_get_config_all("Image", "steps", steps)
+    await set_get_config_all("Image", "negative_prompt", negative_prompt)
+    await set_get_config_all("Image", "prompt", prompt)
+    # wait for answer
     image_path = await set_get_config_all("Image", "result", None)
     while not image_path == "None":
         image_path = await set_get_config_all("Image", "result", None)
