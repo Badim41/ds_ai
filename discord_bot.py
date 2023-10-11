@@ -112,7 +112,8 @@ async def __image(ctx,
     await ctx.defer()
     if await set_get_config_all("Image", "model_loaded", None) == "False":
         return await ctx.respond("модель для картинок не загрузилась, подождите пару минут")
-    await image.save(image.filename)
+    filename = str(random.randint(1, 1000000)) + ".png"
+    await image.save(filename)
     # loading params
     await set_get_config_all("Image", "strength_negative_prompt", strength_negative_prompt)
     await set_get_config_all("Image", "strength_prompt", strength_prompt)
@@ -121,7 +122,7 @@ async def __image(ctx,
     await set_get_config_all("Image", "steps", steps)
     await set_get_config_all("Image", "negative_prompt", negative_prompt)
     await set_get_config_all("Image", "prompt", prompt)
-    await set_get_config_all("Image", "input", image.filename)
+    await set_get_config_all("Image", "input", filename)
     print("params suc")
     # wait for answer
     image_path = await set_get_config_all("Image", "result", None)
