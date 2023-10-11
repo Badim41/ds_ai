@@ -57,6 +57,7 @@ def set_get_config(key, value=None):
 
 def generate_picture():
     # test IMAGES 1
+    print("image1")
 
     def make_hint(image, depth_estimator):
         image = depth_estimator(image)["depth"]
@@ -65,13 +66,14 @@ def generate_picture():
         image = np.concatenate([image, image, image], axis=2)
         detected_map = torch.from_numpy(image).float() / 255.0
         hint = detected_map.permute(2, 0, 1)
+        print("image-Hint")
         return hint
-
+    print("image2")
     pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
         "kandinsky-community/kandinsky-2-2-prior", torch_dtype=torch.float16
     )
     pipe_prior = pipe_prior.to("cuda")
-
+    print("image3")
     pipe = KandinskyV22ControlnetImg2ImgPipeline.from_pretrained(
         "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
     )
@@ -150,5 +152,5 @@ if __name__ == '__main__':
     parser.add_argument('-strenght', '--strenght', type=float, default=0.5,
                         help='strenght of changing')
     args = parser.parse_args()
-    generate_picture(prompt=args.prompt, negative_prompt=args.negative_prompt, x=args.x, y=args.y, steps=args.steps,
-                     seed=args.seed, strenght=args.strenght)
+    #generate_picture(prompt=args.prompt, negative_prompt=args.negative_prompt, x=args.x, y=args.y, steps=args.steps,
+                     #seed=args.seed, strenght=args.strenght)
