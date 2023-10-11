@@ -38,7 +38,7 @@ negative_prompt = ("lowres, "
                                                                            "signature") 
 prompt = 'HD image'
 
-def generate_picture(prompt=prompt, negative_prompt=negative_prompt, x=512, y=512, steps=50, seed=random.randint(1, 10000), strenght=strenght):
+def generate_picture(prompt=prompt, negative_prompt=negative_prompt, x=512, y=512, steps=50, seed=random.randint(1, 10000), strenght=0.5):
     # test IMAGES 1
 
 
