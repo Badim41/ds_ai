@@ -68,14 +68,14 @@ async def on_ready():
         type=discord.ActivityType.listening, name='AI-covers'))
 
 
-@bot.event
-async def on_message(message):
-    if message.author.bot:
-        return
-    if len(message.attachments) > 0:
-        for attachment in message.attachments:
-            await attachment.save(attachment.filename)
-            print(f'Получен файл: {attachment.filename}')
+# @bot.event
+# async def on_message(message):
+#     if message.author.bot:
+#         return
+#     if len(message.attachments) > 0:
+#         for attachment in message.attachments:
+#             await attachment.save(attachment.filename)
+#             print(f'Получен файл: {attachment.filename}')
 
 
 @bot.slash_command(name="change_image", description='сделать изображения')
@@ -92,6 +92,7 @@ async def __image(
 async def get_image(ctx, prompt: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
                                         required=True)):
     # В этом месте вы можете обрабатывать изображение, например, сохранить его
+    prompt.save(prompt.filename)
     await ctx.defer()
     await ctx.respond("Изображение получено")
 
