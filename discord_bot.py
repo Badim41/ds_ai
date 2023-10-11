@@ -604,13 +604,11 @@ if __name__ == "__main__":
     else:
         print("Укажите discord_TOKEN")
         exit(-1)
-    # load models in functions
+    # load models
     from GPT_runner import run
-    from image_create import generate_picture
 
     print("loading models")
-    pool = multiprocessing.Pool(processes=2)
+    pool = multiprocessing.Pool(processes=1)
     pool.apply_async(run)
-    pool.apply_async(generate_picture)
     pool.close()
     bot.run(discord_token)
