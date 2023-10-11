@@ -10,39 +10,7 @@ from transformers import pipeline
 import datetime
 import configparser
 
-negative_prompt = ("lowres, "
-                   "text, "
-                   "error, "
-                   "cropped, "
-                   "worst quality, "
-                   "low quality, "
-                   "mutilated, "
-                   "out of frame, "
-                   "extra fingers, "
-                   "poorly drawn hands, "
-                   "mutation, "
-                   "deformed, "
-                   "blurry, "
-                   "bad proportions, "
-                   "extra limbs, "
-                   "cloned face, "
-                   "disfigured, "
-                   "gross proportions, "
-                   "malformed limbs, "
-                   "missing arms, "
-                   "missing legs, "
-                   "extra arms, "
-                   "extra legs, "
-                   "fused fingers, "
-                   "too many fingers, "
-                   "long neck, "
-                   "username, "
-                   "watermark, "
-                   "signature")
-prompt = 'HD image'
-
 config = configparser.ConfigParser()
-
 
 def set_get_config(key, value=None):
     config.read('config.ini')
@@ -135,22 +103,6 @@ def generate_picture():
 
 if __name__ == '__main__':
     print("image0")
-    parser = argparse.ArgumentParser(description='Generate a AI cover song in the song_output/id directory.',
-                                     add_help=True)
-    parser.add_argument('-prompt', '--prompt', type=str, default=prompt,
-                        help='prompt for picture')
-    parser.add_argument('-nprompt', '--negative-prompt', type=str, default=negative_prompt,
-                        help='negative prompt for picture')
-    parser.add_argument('-x', '--x', type=int, default='512',
-                        help='size X')
-    parser.add_argument('-y', '--y', type=int, default='512',
-                        help='size Y')
-    parser.add_argument('-steps', '--steps', type=int, default='25',
-                        help='steps')
-    parser.add_argument('-seed', '--seed', type=int, default=random.randint(1, 10000),
-                        help='seed')
-    parser.add_argument('-strenght', '--strenght', type=float, default=0.5,
-                        help='strenght of changing')
-    args = parser.parse_args()
+    generate_picture()
     #generate_picture(prompt=args.prompt, negative_prompt=args.negative_prompt, x=args.x, y=args.y, steps=args.steps,
                      #seed=args.seed, strenght=args.strenght)
