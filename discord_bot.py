@@ -36,7 +36,7 @@ async def set_get_config_all(section, key, value):
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
-    return ' '.join([section, key, value])
+    return ' '.join([section, key, str(value)])
 
 
 async def set_get_config(key="record", value=None):
@@ -110,7 +110,7 @@ async def __image(ctx,
     if image:
         attachment = image
         file_name = attachment.filename
-        await attachment.read()
+        await attachment.save(file_name)
 
         # Отправляем ответ
         await ctx.respond(f"Изображение '{file_name}' получено и обработано.")
