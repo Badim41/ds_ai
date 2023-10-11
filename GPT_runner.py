@@ -9,7 +9,7 @@ import time
 
 config = configparser.ConfigParser()
 
-def set_get_config(key, value=None):
+async def set_get_config(key, value=None):
     config.read('config.ini')
     if value is None:
         return config.get('gpt', key)
