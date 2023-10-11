@@ -87,6 +87,7 @@ async def __image(
     await ctx.respond("генерация изображения")
 
 
+@bot.slash_command(name="get_image", description='изображение')
 async def get_image(
         ctx,
         image: discord.File
