@@ -88,7 +88,6 @@ def generate_picture():
         current_time = current_datetime.time()
         print("Начало:", current_time)
 
-
         negative_prompt = set_get_config("negative_prompt")
         x = int(set_get_config("x"))
         y = int(set_get_config("y"))
