@@ -91,7 +91,7 @@ async def __image(ctx,
                                 max_value=500),
                   seed: Option(int, description='сид изображения', required=False,
                                min_value=1,
-                               max_value=999999999),
+                               max_value=1000000),
                   strength: Option(float, description='насколько сильны будут изменения', required=False,
                                    default=0.5, min_value=0,
                                    max_value=1),
@@ -114,7 +114,9 @@ async def __image(ctx,
     await set_get_config_all("Image", "strength_negative_prompt", strength_negative_prompt)
     await set_get_config_all("Image", "strength_prompt", strength_prompt)
     await set_get_config_all("Image", "strength", strength)
+    print("strength")
     await set_get_config_all("Image", "seed", seed)
+    print("seed")
     await set_get_config_all("Image", "steps", steps)
     await set_get_config_all("Image", "negative_prompt", negative_prompt)
     await set_get_config_all("Image", "prompt", prompt)
