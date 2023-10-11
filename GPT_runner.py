@@ -1,8 +1,11 @@
+import configparser
+
 from transformers import AutoTokenizer
 from auto_gptq import AutoGPTQForCausalLM
-from discord_bot import config
 import time
 
+
+config = configparser.ConfigParser()
 
 def set_get_config(key, value=None):
     config.read('config.ini')
@@ -29,12 +32,12 @@ def run():
     print("==========Model Loaded!==========")
     while True:
         prompt = set_get_config("gpt_prompt")
-        if prompt == "enter prompt":
+        if prompt == "None":
             time.sleep(0.25)
             continue
         else:
             print("found_prompt")
-            set_get_config("gpt_prompt", value="enter prompt")
+            set_get_config("gpt_prompt", value="None")
             prompt = prompt.replace("\\n", "\n")
             tokens = config.getint('gpt', 'prompt_length')
             encoded_input = tokenizer(prompt, return_tensors='pt').to('cuda:0')

@@ -78,25 +78,44 @@ async def on_ready():
 #             print(f'Получен файл: {attachment.filename}')
 
 
-@bot.slash_command(name="change_image", description='сделать изображения')
-async def __image(
-        ctx,
-        prompt: Option(str, description='промпт', required=True),
-        negative_prompt: Option(str, description='негативный промпт', required=False)
-):
+@bot.slash_command(name="change_image", description='изменить изображение нейросетью')
+async def __image(ctx,
+                  image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
+                                required=True),
+                  # prompt=prompt, negative_prompt=negative_prompt, x=512, y=512, steps=50,
+                  #                      seed=random.randint(1, 10000), strenght=0.5
+                  prompt: Option(str, description='запрос', required=True),
+                  negative_prompt: Option(str, description='негативный запрос', required=False),
+                  steps: Option(int, description='число шагов', required=False,
+                                min_value=1,
+                                max_value=500),
+                  seed: Option(int, description='сид изображения', required=False,
+                               min_value=1,
+                               max_value=999999999),
+                  strength: Option(float, description='насколько сильны будут изменения', required=False,
+                                   default=0.5, min_value=0,
+                                   max_value=1),
+                  strength_prompt: Option(float,
+                                          description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется положительный промпт',
+                                          required=False,
+                                          default=0.85, min_value=0,
+                                          max_value=1),
+                  strength_negative_prompt: Option(float,
+                                                   description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется отрицательный промпт',
+                                                   required=False,
+                                                   default=1, min_value=0,
+                                                   max_value=1)
+                  ):
     await ctx.defer()
-    await ctx.respond("генерация изображения")
-
-
-@bot.slash_command(name="get_image", description='Получить изображение')
-async def get_image(ctx, prompt: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
-                                        required=True)):
-    if prompt:
-        attachment = prompt
-        file_name = attachment.filename
-        await attachment.save(file_name)
-    await ctx.defer()
+    attachment = image.attachments
+    file_name = attachment.filename
+    await attachment.save(file_name)
     await ctx.respond("Изображение получено")
+    image_path = await set_get_config_all("Image", "result", None)
+    while not image_path == "None":
+        image_path = await set_get_config_all("Image", "result", None)
+        await asyncio.sleep(0.25)
+    await send_image(ctx, image_path)
 
 
 @bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
@@ -453,6 +472,14 @@ async def run_main_with_settings(ctx, spokenText, writeAnswer):
 async def write_in_discord(ctx, text):
     # await run_main_with_settings(ctx, text, True)
     await ctx.send(text)
+
+async def send_image(ctx, image_path):
+    try:
+        await ctx.send(file=discord.File(image_path))
+    except FileNotFoundError:
+        await ctx.send('Файл не найден.')
+    except discord.HTTPException:
+        await ctx.send('Произошла ошибка при отправке файла.')
 
 
 async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
