@@ -73,8 +73,8 @@ def generate_picture():
             time.sleep(0.25)
             continue
         set_get_config("prompt", "None")
-        current_datetime = datetime.datetime.now()
-        current_time = current_datetime.time()
+        start_time = datetime.datetime.now()
+        current_time = start_time.time()
         print("Начало:", current_time)
 
         negative_prompt = set_get_config("negative_prompt")
@@ -116,7 +116,9 @@ def generate_picture():
         images_filename = "image" + str(random.randint(1, 1000000)) + ".png"
         images[0].save(images_filename)
 
-        current_datetime = datetime.datetime.now()
-        current_time = current_datetime.time()
+        end_time = datetime.datetime.now()
+        current_time = end_time.time()
         print("Конец:", current_time)
         set_get_config("result", images_filename)
+        time_elapsed = end_time - start_time
+        print("Прошло времени:", time_elapsed)

@@ -110,9 +110,11 @@ async def __image(ctx,
                                                    default=1, min_value=0,
                                                    max_value=1)
                   ):
+    while
+    await set_get_config_all("Image", "result", "None")
     await ctx.defer()
     if await set_get_config_all("Image", "model_loaded", None) == "False":
-        return await ctx.respond("модель для картинок не загрузилась, подождите пару минут")
+        return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
     filename = str(random.randint(1, 1000000)) + ".png"
     await image.save(filename)
     # get image size and round to 64
