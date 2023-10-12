@@ -9,7 +9,7 @@ import time
 
 config = configparser.ConfigParser()
 
-async def set_get_config(key, value=None):
+def set_get_config(key, value=None):
     config.read('config.ini')
     if value is None:
         return config.get('gpt', key)
@@ -46,8 +46,8 @@ def run():
     "image_create.py"
     ) 
     print("subprocess0")
-    pool = multiprocessing.Pool(processes=2)
-    pool.apply_async(run_pictures(command,))
+    pool = multiprocessing.Pool(processes=1)
+    pool.apply_async(run_pictures, (command,))
     pool.close()
     print("subprocess1")
     while True:
