@@ -47,8 +47,8 @@ def run():
     "image_create.py"
     ) 
     print("subprocess0")
-    from image_create import generate_picture
-    thread1 = threading.Thread(target=generate_picture)
+    from image_create import generate_picture2
+    thread1 = threading.Thread(target=generate_picture2)
     print("subprocess 0.1")
     thread.start()
     print("subprocess 0.2")
