@@ -110,7 +110,6 @@ async def __image(ctx,
                                                    default=1, min_value=0,
                                                    max_value=1)
                   ):
-    while
     await set_get_config_all("Image", "result", "None")
     await ctx.defer()
     if await set_get_config_all("Image", "model_loaded", None) == "False":
