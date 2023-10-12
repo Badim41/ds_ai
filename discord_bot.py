@@ -140,7 +140,7 @@ async def __image(ctx,
         image_path = await set_get_config_all("Image", "result", None)
         await asyncio.sleep(0.25)
     await ctx.respond("Вот как я изменил ваше изображение🖌")
-    await send_image(ctx, image_path)
+    await send_file(ctx, image_path)
 
 
 @bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
@@ -346,7 +346,9 @@ async def __tts(
 @bot.slash_command(name="ai_cover", description='_Заставить_ бота озвучить видео/спеть песню')
 async def __cover(
         ctx,
-        url: Option(str, description='Ссылка на видео', required=True),
+        url: Option(str, description='Ссылка на видео', required=False),
+        audio_path: Option(discord.SlashCommandOptionType.attachment, description='Аудиофайл',
+                      required=False),
         voice: Option(str, description='Голос для видео', required=False, default=None),
         pitch: Option(str, description='Кто говорит/поёт в видео?', required=False,
                       choices=['мужчина', 'женщина'], default=None),
@@ -373,11 +375,17 @@ async def __cover(
 ):
     await ctx.defer()
     await ctx.respond('Выполнение...')
+    params = []
+    if audio_path:
+        filename = str(random.randint(1, 1000000)) + ".mp3"
+        await audio_path.save(filename)
+        params.append(f"-url {filename}")
+    elif url:
+        params.append(f"-url {url}")
+    else:
+        return ctx.respond('Не указана ссылка или аудиофайл')
     if voice is None:
         voice = await set_get_config_default("currentAIname")
-    params = []
-    if url:
-        params.append(f"-url {url}")
     if voice:
         params.append(f"-voice {voice}")
     # если мужчина-мужчина, женщина-женщина, pitch не меняем
@@ -499,9 +507,9 @@ async def write_in_discord(ctx, text):
     await ctx.send(text)
 
 
-async def send_image(ctx, image_path):
+async def send_file(ctx, file_path):
     try:
-        await ctx.send(file=discord.File(image_path))
+        await ctx.send(file=discord.File(file_path))
     except FileNotFoundError:
         await ctx.send('Файл не найден.')
     except discord.HTTPException:

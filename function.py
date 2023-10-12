@@ -575,13 +575,16 @@ async def createAICaver(ctx):
         print("temp3")
         await write_in_discord(ctx, "Начинаю обработку видео")
         pool = multiprocessing.Pool(processes=3)
-        pool.apply_async(prepare_audio_process_cuda_0, (ctx,))
-        time.sleep(0.05)
-        pool.apply_async(prepare_audio_process_cuda_1, (ctx,))
-        time.sleep(0.05)
-        pool.apply_async(play_audio_process, (ctx,))
-        pool.close()
-        pool.join()
+        if not config.getboolean('Values', 'cuda0_is_busy'):
+            pool.apply_async(prepare_audio_process_cuda_0, (ctx,))
+            time.sleep(0.05)
+        if not config.getboolean('Values', 'cuda0_is_busy'):
+            pool.apply_async(prepare_audio_process_cuda_1, (ctx,))
+            time.sleep(0.05)
+        if config.getboolean('Values', 'cuda0_is_busy') or config.getboolean('Values', 'cuda1_is_busy'):
+            pool.apply_async(play_audio_process, (ctx,))
+            pool.close()
+            pool.join()
     else:
         print("temp41")
         queue_position = 0

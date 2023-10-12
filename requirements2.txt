@@ -22,3 +22,4 @@ diffusers
 transformers
 imageio
 imageio[ffmpeg]
+moviepy
