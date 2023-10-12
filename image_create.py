@@ -104,10 +104,3 @@ def generate_picture():
         current_time = current_datetime.time()
         print("Конец:", current_time)
         set_get_config("result", images_filename)
-
-
-# if __name__ == '__main__':
-print("image0")
-generate_picture()
-# generate_picture(prompt=args.prompt, negative_prompt=args.negative_prompt, x=args.x, y=args.y, steps=args.steps,
-# seed=args.seed, strenght=args.strenght)
