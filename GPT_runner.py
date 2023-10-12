@@ -46,7 +46,7 @@ def run():
     "image_create.py"
     ) 
     print("subprocess0")
-    pool = multiprocessing.Pool(processes=1)
+    pool = multiprocessing.Pool(processes=3)
     print("subprocess 0.1")
     pool.apply_async(run_pictures, (command,))
     print("subprocess 0.2")
