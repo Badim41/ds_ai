@@ -608,7 +608,7 @@ if __name__ == "__main__":
     from GPT_runner import run
 
     print("loading models")
-    pool = multiprocessing.Pool(processes=2)
+    pool = multiprocessing.Pool(processes=1)
     pool.apply_async(run)
     pool.close()
     bot.run(discord_token)

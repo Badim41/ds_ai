@@ -52,7 +52,7 @@ def generate_picture():
     set_get_config("model_loaded", True)
     # loop update image prompt
     while True:
-        prompt = set_get_config("gpt_prompt")
+        prompt = set_get_config("prompt")
         if prompt == "None":
             time.sleep(0.25)
             continue

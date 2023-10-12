@@ -36,7 +36,6 @@ def run():
     from image_create import generate_picture
     pool = multiprocessing.Pool(processes=1)
     pool.apply_async(generate_picture)
-    pool.close()
 
     # loop update gpt prompt
     while True:
