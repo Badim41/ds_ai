@@ -38,7 +38,6 @@ def run():
         prompt = set_get_config("gpt_prompt")
         if prompt == "None":
             time.sleep(0.25)
-            print("No prompt")
             continue
         else:
             print("found_prompt")
