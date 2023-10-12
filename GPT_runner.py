@@ -20,15 +20,6 @@ def set_get_config(key, value=None):
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
 
-
-def picture_model_load():
-    print("subprocess")
-    command = "python image_create.py"
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = process.communicate()
-    print(f"Выполнено: {command}\nВыход: {out.decode('utf-8')}\nОшибка: {err.decode('utf-8')}")
-
-
 def run():
     model_name = 'fffrrt/ruGPT-3.5-13B-GPTQ'
     model_basename = 'gptq_model-4bit-128g'
@@ -43,6 +34,8 @@ def run():
     set_get_config("gpt", value=True)
     print("==========GPT Model Loaded!==========")
     # load image model
+    from image_create import generate_picture
+    generate_picture()
     print("subprocess0")
     thread1 = threading.Thread(target=picture_model_load)
     print("subprocess 0.1")
