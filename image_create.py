@@ -42,12 +42,12 @@ def generate_picture():
     pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
         "kandinsky-community/kandinsky-2-2-prior", torch_dtype=torch.float16
     )
-    pipe_prior = pipe_prior.to("cuda")
+
     print("image3")
     pipe = KandinskyV22ControlnetImg2ImgPipeline.from_pretrained(
         "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
     )
-    pipe = pipe.to("cuda")
+
     print("==========Images Model Loaded!==========")
     set_get_config("model_loaded", True)
     # loop update image prompt
@@ -69,6 +69,9 @@ def generate_picture():
         strength = float(set_get_config("strength"))
         strength_prompt = float(set_get_config("strength_prompt"))
         strength_negative_prompt = float(set_get_config("strength_negative_prompt"))
+        # create pipes
+        pipe_prior = pipe_prior.to("cuda")
+        pipe = pipe.to("cuda")
 
         # create generator
         generator = torch.Generator(device="cuda").manual_seed(seed)
@@ -82,7 +85,6 @@ def generate_picture():
         img_emb = pipe_prior(prompt=prompt, image=img, strength=strength_prompt, generator=generator)
         negative_emb = pipe_prior(prompt=negative_prompt, image=img, strength=strength_negative_prompt,
                                   generator=generator)
-
         # run controlnet img2img pipeline
         images = pipe(
             image=img,
