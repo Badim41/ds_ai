@@ -608,12 +608,13 @@ if __name__ == "__main__":
     from GPT_runner import run
     from image_create import generate_picture
 
-    print("loading models")
+    print("load gpt model")
     pool1 = multiprocessing.Pool(processes=1)
-    pool2 = multiprocessing.Pool(processes=1)
     pool1.apply_async(run)
-    pool2.apply_async(generate_picture)
     pool1.close()
+    print("load image model")
+    pool2 = multiprocessing.Pool(processes=1)
+    pool2.apply_async(generate_picture)
     pool2.close()
-
+    print("load bot")
     bot.run(discord_token)
