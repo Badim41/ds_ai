@@ -1,6 +1,7 @@
 import multiprocessing
 import os
 import random
+import struct
 import subprocess
 import configparser
 import asyncio
@@ -114,6 +115,12 @@ async def __image(ctx,
         return await ctx.respond("модель для картинок не загрузилась, подождите пару минут")
     filename = str(random.randint(1, 1000000)) + ".png"
     await image.save(filename)
+    # get image size and round to 64
+    x, y = await get_image_dimensions(filename)
+    if not x % 64 == 0:
+        x = ((x // 64) + 1) * 64
+    if not y % 64 == 0:
+        y = ((y // 64) + 1) * 64
     # loading params
     await set_get_config_all("Image", "strength_negative_prompt", strength_negative_prompt)
     await set_get_config_all("Image", "strength_prompt", strength_prompt)
@@ -122,6 +129,8 @@ async def __image(ctx,
     await set_get_config_all("Image", "steps", steps)
     await set_get_config_all("Image", "negative_prompt", negative_prompt)
     await set_get_config_all("Image", "prompt", prompt)
+    await set_get_config_all("Image", "x", x)
+    await set_get_config_all("Image", "y", y)
     await set_get_config_all("Image", "input", filename)
     print("params suc")
     # wait for answer
@@ -594,6 +603,22 @@ async def recognize(ctx):
         except FileNotFoundError:
             pass
     print("Stop_Recording")
+
+
+async def get_image_dimensions(file_path):
+    with open(file_path, 'rb') as file:
+        data = file.read(24)
+
+    if data.startswith(b'\x89PNG\r\n\x1a\n'):
+        return struct.unpack('>ii', data[16:24])
+    elif data[:6] in (b'GIF87a', b'GIF89a') and data[10:12] == b'\x00\x00':
+        return struct.unpack('<HH', data[6:10])
+    elif data.startswith(b'\xff\xd8\xff\xe0') and data[6:10] == b'JFIF':
+        return struct.unpack('>H', data[7:9])[0], struct.unpack('>H', data[9:11])[0]
+    elif data.startswith(b'\xff\xd8\xff\xe1') and data[6:10] == b'Exif':
+        return struct.unpack('<HH', data[10:14])[0], struct.unpack('<HH', data[14:18])[0]
+    else:
+        raise ValueError("Формат не поддерживается")
 
 
 if __name__ == "__main__":
