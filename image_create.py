@@ -12,6 +12,7 @@ import configparser
 
 config = configparser.ConfigParser()
 
+
 def set_get_config(key, value=None):
     config.read('config.ini')
     if value is None:
@@ -36,6 +37,7 @@ def generate_picture():
         hint = detected_map.permute(2, 0, 1)
         print("image-Hint")
         return hint
+
     print("image2")
     pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
         "kandinsky-community/kandinsky-2-2-prior", torch_dtype=torch.float16
@@ -48,9 +50,10 @@ def generate_picture():
         )
         pipe = pipe.to("cuda")
     except Exception as ex:
-            raise ex
+        raise ex
     print("==========Images Model Loaded!==========")
     set_get_config("model_loaded", True)
+    # loop update image prompt
     while True:
         prompt = set_get_config("gpt_prompt")
         if prompt == "None":
@@ -104,8 +107,8 @@ def generate_picture():
         set_get_config("result", images_filename)
 
 
-#if __name__ == '__main__':
+# if __name__ == '__main__':
 print("image0")
 generate_picture()
-    #generate_picture(prompt=args.prompt, negative_prompt=args.negative_prompt, x=args.x, y=args.y, steps=args.steps,
-                     #seed=args.seed, strenght=args.strenght)
+# generate_picture(prompt=args.prompt, negative_prompt=args.negative_prompt, x=args.x, y=args.y, steps=args.steps,
+# seed=args.seed, strenght=args.strenght)

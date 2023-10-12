@@ -7,8 +7,8 @@ from transformers import AutoTokenizer
 from auto_gptq import AutoGPTQForCausalLM
 import time
 
-
 config = configparser.ConfigParser()
+
 
 def set_get_config(key, value=None):
     config.read('config.ini')
@@ -19,6 +19,7 @@ def set_get_config(key, value=None):
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
+
 
 def run():
     model_name = 'fffrrt/ruGPT-3.5-13B-GPTQ'
@@ -34,21 +35,17 @@ def run():
     set_get_config("gpt", value=True)
     print("==========GPT Model Loaded!==========")
     # load image model
-    try:
-        from image_create import generate_picture
-        print("subprocess0")
-        pool = multiprocessing.Pool(processes=1)
-        print("subprocess 0.1")
-        pool.apply_async(generate_picture)
-        print("subprocess 0.2")
-        pool.close()
-        print("subprocess1")
-    except Exception as ex:
-            raise ex
+    from image_create import generate_picture
+    pool = multiprocessing.Pool(processes=1)
+    pool.apply_async(generate_picture)
+    pool.close()
+
+    # loop update gpt prompt
     while True:
         prompt = set_get_config("gpt_prompt")
         if prompt == "None":
             time.sleep(0.25)
+            print("No prompt")
             continue
         else:
             print("found_prompt")
