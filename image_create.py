@@ -11,7 +11,8 @@ import datetime
 import configparser
 
 config = configparser.ConfigParser()
-
+def generate_picture2():
+    print("*****")
 def set_get_config(key, value=None):
     config.read('config.ini')
     if value is None:
