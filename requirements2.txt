@@ -20,3 +20,5 @@ SpeechRecognition
 requests
 diffusers
 transformers
+imageio
+imageio[ffmpeg]

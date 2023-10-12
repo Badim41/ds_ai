@@ -113,7 +113,7 @@ def generate_picture():
             height=y,
             width=x,
         ).images
-        images_filename = "image" + str(random.randint(1, 1000000)) + ".png"
+        images_filename = "image " + str(random.randint(1, 1000000)) + ".png"
         images[0].save(images_filename)
 
         end_time = datetime.datetime.now()
