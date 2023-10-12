@@ -32,10 +32,6 @@ def run():
                                                quantize_config=None)
     set_get_config("gpt", value=True)
     print("==========GPT Model Loaded!==========")
-    # load image model
-    from image_create import generate_picture
-    pool = multiprocessing.Pool(processes=1)
-    pool.apply_async(generate_picture)
 
     # loop update gpt prompt
     while True:
