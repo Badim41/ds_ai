@@ -35,16 +35,13 @@ def run():
     print("==========GPT Model Loaded!==========")
     # load image model
     from image_create import generate_picture
-    try:
-        print("subprocess0")
-        thread = threading.Thread(target=generate_picture)
-        print("subprocess 0.1")
-        thread.start()
-        print("subprocess 0.2")
-        #thread.join()
-        print("subprocess1")
-    except Exception as ex:
-            raise ex
+    print("subprocess0")
+    pool = multiprocessing.Pool(processes=1)
+    print("subprocess 0.1")
+    pool.apply_async(generate_picture)
+    print("subprocess 0.2")
+    pool.close()
+    print("subprocess1")
     while True:
         prompt = set_get_config("gpt_prompt")
         if prompt == "None":
