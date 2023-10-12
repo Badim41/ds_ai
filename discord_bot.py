@@ -139,7 +139,8 @@ async def __image(ctx,
     while image_path == "None":
         image_path = await set_get_config_all("Image", "result", None)
         await asyncio.sleep(0.25)
-    await ctx.respond("Вот как я изменил ваше изображение🖌")
+    spent_time = await set_get_config_all("Image", "time_elapsed", None)
+    await ctx.respond("Вот как я изменил ваше изображение🖌. Потрачено " + time_elapsed)
     await send_file(ctx, image_path)
 
 
