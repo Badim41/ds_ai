@@ -16,7 +16,7 @@ config = configparser.ConfigParser()
 def set_get_config(key, value=None):
     config.read('config.ini')
     if value is None:
-        return config.get('gpt', key)
+        return config.get('Image', key)
 
     config.set('Image', key, str(value))
     # Сохранение
@@ -56,7 +56,7 @@ def generate_picture():
         if prompt == "None":
             time.sleep(0.25)
             continue
-        set_get_config("gpt_prompt", "None")
+        set_get_config("prompt", "None")
         current_datetime = datetime.datetime.now()
         current_time = current_datetime.time()
         print("Начало:", current_time)
