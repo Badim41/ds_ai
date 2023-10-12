@@ -609,8 +609,11 @@ if __name__ == "__main__":
     from image_create import generate_picture
 
     print("loading models")
-    pool = multiprocessing.Pool(processes=1)
-    pool.apply_async(run)
-    pool.apply_async(generate_picture)
-    pool.close()
+    pool1 = multiprocessing.Pool(processes=1)
+    pool2 = multiprocessing.Pool(processes=1)
+    pool1.apply_async(run)
+    pool2.apply_async(generate_picture)
+    pool1.close()
+    pool2.close()
+
     bot.run(discord_token)
