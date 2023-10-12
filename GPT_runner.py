@@ -47,7 +47,9 @@ def run():
     ) 
     print("subprocess0")
     pool = multiprocessing.Pool(processes=1)
+    print("subprocess 0.1")
     pool.apply_async(run_pictures, (command,))
+    print("subprocess 0.2")
     pool.close()
     print("subprocess1")
     while True:
