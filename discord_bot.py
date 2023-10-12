@@ -596,7 +596,7 @@ async def recognize(ctx):
 
 
 if __name__ == "__main__":
-    print("update 5")
+    print("update 1")
     arguments = sys.argv
 
     if len(arguments) > 1:
