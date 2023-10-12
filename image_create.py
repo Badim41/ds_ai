@@ -42,10 +42,13 @@ def generate_picture():
     )
     pipe_prior = pipe_prior.to("cuda")
     print("image3")
-    pipe = KandinskyV22ControlnetImg2ImgPipeline.from_pretrained(
-        "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
-    )
-    pipe = pipe.to("cuda")
+    try:
+        pipe = KandinskyV22ControlnetImg2ImgPipeline.from_pretrained(
+            "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
+        )
+        pipe = pipe.to("cuda")
+    except Exception as ex:
+            raise ex
     print("==========Images Model Loaded!==========")
     set_get_config("model_loaded", True)
     while True:
