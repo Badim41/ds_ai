@@ -1,7 +1,5 @@
 import configparser
 import multiprocessing
-import subprocess
-import threading
 
 from transformers import AutoTokenizer
 from auto_gptq import AutoGPTQForCausalLM
