@@ -119,6 +119,8 @@ def generate_picture():
         end_time = datetime.datetime.now()
         current_time = end_time.time()
         print("Конец:", current_time)
-        set_get_config("result", images_filename)
+        
         time_elapsed = end_time - start_time
         print("Прошло времени:", time_elapsed)
+        set_get_config("spent_time", time_elapsed)
+        set_get_config("result", images_filename)
