@@ -47,11 +47,12 @@ def run():
     "image_create.py"
     ) 
     print("subprocess0")
-    thread = threading.Thread(target=run_pictures, args=(command,))
+    from image_create import generate_picture
+    thread1 = threading.Thread(target=generate_picture)
     print("subprocess 0.1")
     thread.start()
     print("subprocess 0.2")
-    thread.join()
+    #thread.join()
     print("subprocess1")
     while True:
         prompt = set_get_config("gpt_prompt")
