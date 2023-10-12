@@ -35,13 +35,13 @@ def run():
     print("==========GPT Model Loaded!==========")
     # load image model
     from image_create import generate_picture
-    generate_picture()
+    
     print("subprocess0")
-    thread1 = threading.Thread(target=picture_model_load)
+    thread1 = threading.Thread(target=generate_picture)
     print("subprocess 0.1")
     thread.start()
     print("subprocess 0.2")
-    thread.join()
+    #thread.join()
     print("subprocess1")
     while True:
         prompt = set_get_config("gpt_prompt")
