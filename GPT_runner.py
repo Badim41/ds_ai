@@ -21,8 +21,9 @@ def set_get_config(key, value=None):
         config.write(configfile)
 
 
-def run_pictures(command):
+def picture_model_load():
     print("subprocess")
+    command = "python image_create.py"
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = process.communicate()
     print(f"Выполнено: {command}\nВыход: {out.decode('utf-8')}\nОшибка: {err.decode('utf-8')}")
@@ -42,17 +43,12 @@ def run():
     set_get_config("gpt", value=True)
     print("==========GPT Model Loaded!==========")
     # load image model
-    command = (
-    "python",
-    "image_create.py"
-    ) 
     print("subprocess0")
-    from image_create import generate_picture2
-    thread1 = threading.Thread(target=generate_picture2)
+    thread1 = threading.Thread(target=picture_model_load)
     print("subprocess 0.1")
     thread.start()
     print("subprocess 0.2")
-    #thread.join()
+    thread.join()
     print("subprocess1")
     while True:
         prompt = set_get_config("gpt_prompt")
