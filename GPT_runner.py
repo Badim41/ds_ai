@@ -1,6 +1,7 @@
 import configparser
 import multiprocessing
 import subprocess
+import threading
 
 from transformers import AutoTokenizer
 from auto_gptq import AutoGPTQForCausalLM
@@ -46,11 +47,11 @@ def run():
     "image_create.py"
     ) 
     print("subprocess0")
-    pool = multiprocessing.Pool(processes=3)
+    thread = threading.Thread(target=run_pictures, args=(command,))
     print("subprocess 0.1")
-    pool.apply_async(run_pictures, (command,))
+    thread.start()
     print("subprocess 0.2")
-    pool.close()
+    thread.join()
     print("subprocess1")
     while True:
         prompt = set_get_config("gpt_prompt")
