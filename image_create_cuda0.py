@@ -22,6 +22,8 @@ def set_get_config(key, value=None):
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
+    print('Image2', key, str(value))
+
 
 async def get_image_dimensions(file_path):
     with open(file_path, 'rb') as file:
@@ -37,6 +39,7 @@ async def get_image_dimensions(file_path):
         return struct.unpack('<HH', data[10:14])[0], struct.unpack('<HH', data[14:18])[0]
     else:
         raise ValueError("Формат не поддерживается")
+
 
 
 def generate_picture0():
@@ -69,7 +72,7 @@ def generate_picture0():
     while True:
         prompt = set_get_config("prompt")
         if prompt == "None":
-            time.sleep(0.25)
+            time.sleep(10)
             continue
         set_get_config("prompt", "None")
         start_time = datetime.datetime.now()
