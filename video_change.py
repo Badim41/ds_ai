@@ -132,7 +132,9 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
     pool2.close()
     # wait for results
     while True:
-        if await set_get_config_all(f"Video1", "result", None) == "True" and await set_get_config_all(f"Video2", "result", None) == "True":
+        continue1 = await set_get_config_all(f"Video1", "result", None) == "True"
+        continue2 = await set_get_config_all(f"Video2", "result", None) == "True"
+        if continue1 and continue2:
             break
         await asyncio.sleep(0.1)
 
