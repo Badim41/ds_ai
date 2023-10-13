@@ -29,8 +29,19 @@ audio_clip.write_audiofile(extracted_audio_path)
 # 360p=480×360
 # 240p=426×240
 # 144p=256×144
-video_
-if
+video_extension = "480p"
+if video_extension == "480p":
+    new_width = 640
+    new_height = 480
+elif video_extension == "360p":
+    new_width = 480
+    new_height = 360
+elif video_extension == "240p":
+    new_width = 426
+    new_height = 240
+elif video_extension == "144p":
+    new_width = 256
+    new_height = 144
 fps_output = 5 # frame/sec (1, 2, 3, 5, 10, 15, 30)
 save_img_step = original_fps / fps_output
 
