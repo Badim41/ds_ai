@@ -635,10 +635,16 @@ if __name__ == "__main__":
     print("update 1")
     arguments = sys.argv
 
-    if len(arguments) > 1:
+    if len(arguments) > 2:
         discord_token = arguments[1]
+        wait_for_load_moders = arguments[2]
+        # set True or False
+        if wait_for_load_moders == "True":
+            wait_for_load_moders = True
+        else:
+            wait_for_load_moders = False
     else:
-        print("Укажите discord_TOKEN")
+        print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
         exit(-1)
     # load models
     from GPT_runner import run
@@ -648,11 +654,19 @@ if __name__ == "__main__":
     pool1 = multiprocessing.Pool(processes=1)
     pool1.apply_async(run)
     pool1.close()
-    asyncio.sleep(20)
+    if wait_for_load_moders:
+        while True:
+            if asyncio.run(set_get_config_all("gpt", "gpt", None)):
+                break
+
     print("load image model")
     pool2 = multiprocessing.Pool(processes=1)
     pool2.apply_async(generate_picture)
     pool2.close()
-    asyncio.sleep(30)
+    if wait_for_load_moders:
+        while True:
+            if asyncio.run(set_get_config_all("Image", "model_loaded", None)):
+                break
+
     print("load bot")
     bot.run(discord_token)
