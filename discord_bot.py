@@ -771,15 +771,15 @@ if __name__ == "__main__":
     bot.run(discord_token)
 
     # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
-    while True:
-        config.read('config.ini')
-        if config.getboolean("Image1", "model_loaded"):
-            asyncio.sleep(5)
-            break
-    print("second image model")
-    if check_cuda(1):
-        from image_create_cuda1 import generate_picture
-        pool3 = multiprocessing.Pool(processes=1)
-        pool3.apply_async(generate_picture)
-        pool3.close()
+    # while True:
+    #     config.read('config.ini')
+    #     if config.getboolean("Image1", "model_loaded"):
+    #         asyncio.sleep(5)
+    #         break
+    # print("second image model")
+    # if check_cuda(1):
+    #     from image_create_cuda1 import generate_picture
+    #     pool3 = multiprocessing.Pool(processes=1)
+    #     pool3.apply_async(generate_picture)
+    #     pool3.close()
 
