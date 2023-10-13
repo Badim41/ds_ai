@@ -59,7 +59,7 @@ def run():
                 print("\\n\\n in sentence")
                 index = out.find('\n\n')
                 out = out[:index]
-                if len(out) - index > 50:
+                if index - len(out)  > 50:
                     remove_tokens = str(index / len(out) * tokens)
                     remove_tokens = remove_tokens[:remove_tokens.find('.')]
                     out += f"\n||слишком много токенов, советуем убрать {remove_tokens} токенов||"
