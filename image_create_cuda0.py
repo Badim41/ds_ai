@@ -22,7 +22,6 @@ def set_get_config(key, value=None):
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
-    print('Image2', key, str(value))
 
 
 async def get_image_dimensions(file_path):
@@ -66,10 +65,11 @@ def generate_picture0():
         "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
     )
 
-    print("==========Images Model Loaded!==========")
+    print("==========Images Model Loaded0!==========")
     set_get_config("model_loaded", True)
     # loop update image prompt
     while True:
+        print("check prompt")
         prompt = set_get_config("prompt")
         if prompt == "None":
             time.sleep(10)

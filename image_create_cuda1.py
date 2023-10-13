@@ -23,22 +23,6 @@ def set_get_config(key, value=None):
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
-    print('Image2', key, str(value))
-
-async def get_image_dimensions(file_path):
-    with open(file_path, 'rb') as file:
-        data = file.read(24)
-
-    if data.startswith(b'\x89PNG\r\n\x1a\n'):
-        return struct.unpack('>ii', data[16:24])
-    elif data[:6] in (b'GIF87a', b'GIF89a') and data[10:12] == b'\x00\x00':
-        return struct.unpack('<HH', data[6:10])
-    elif data.startswith(b'\xff\xd8\xff\xe0') and data[6:10] == b'JFIF':
-        return struct.unpack('>H', data[7:9])[0], struct.unpack('>H', data[9:11])[0]
-    elif data.startswith(b'\xff\xd8\xff\xe1') and data[6:10] == b'Exif':
-        return struct.unpack('<HH', data[10:14])[0], struct.unpack('<HH', data[14:18])[0]
-    else:
-        raise ValueError("Формат не поддерживается")
 
 
 def generate_picture1():
@@ -65,10 +49,11 @@ def generate_picture1():
         "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
     )
 
-    print("==========Images Model Loaded!==========")
+    print("==========Images Model Loaded1!==========")
     set_get_config("model_loaded", True)
     # loop update image prompt
     while True:
+        print("check prompt")
         prompt = set_get_config("prompt")
         if prompt == "None":
             time.sleep(10)
