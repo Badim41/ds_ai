@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import multiprocessing
 import random
@@ -23,15 +24,15 @@ async def set_get_config_all(section, key, value):
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
 
-async def image_change(index, output_folder, prompt):
+def image_change(index, output_folder, prompt):
     for filename in sorted(os.listdir(output_folder)):
         if filename.endswith('.png'):
-            await set_get_config_all(f"Image{index}", "result", "None")
-            await set_get_config_all(f"Image{index}", "input", filename)
-            await set_get_config_all(f"Image{index}", "prompt", prompt)
+            asyncio.run(set_get_config_all(f"Image{index}", "result", "None"))
+            asyncio.run(set_get_config_all(f"Image{index}", "input", filename))
+            asyncio.run(set_get_config_all(f"Image{index}", "prompt", prompt))
             # wait for answer
             while True:
-                if await set_get_config_all(f"Image{index}", "result", None):
+                if asyncio.run(set_get_config_all(f"Image{index}", "result", None)):
                     break
                 time.sleep(0.25)
 
