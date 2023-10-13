@@ -131,7 +131,7 @@ async def __change_video(
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
                         max_value=1)
 ):
-    await wait_for_cuda_async()
+    # await wait_for_cuda_async()
     config.read('config.ini')
     voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
     if voice not in voices:
@@ -770,14 +770,15 @@ if __name__ == "__main__":
     bot.run(discord_token)
 
     # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
-    # while True:
-    #     config.read('config.ini')
-    #     if config.getboolean("Image1", "model_loaded"):
-    #         break
-    # print("second image model")
-    # if check_cuda(1):
-    #     from image_create_cuda1 import generate_picture
-    #     pool3 = multiprocessing.Pool(processes=1)
-    #     pool3.apply_async(generate_picture)
-    #     pool3.close()
+    while True:
+        config.read('config.ini')
+        if config.getboolean("Image1", "model_loaded"):
+            asyncio.sleep(5)
+            break
+    print("second image model")
+    if check_cuda(1):
+        from image_create_cuda1 import generate_picture
+        pool3 = multiprocessing.Pool(processes=1)
+        pool3.apply_async(generate_picture)
+        pool3.close()
 
