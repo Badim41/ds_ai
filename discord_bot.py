@@ -754,9 +754,8 @@ if __name__ == "__main__":
     from image_create_cuda1 import generate_picture1
 
     print("load gpt model")
-    pool1 = multiprocessing.Pool(processes=1)
-    pool1.apply_async(run)
-    pool1.close()
+    pool = multiprocessing.Pool(processes=1)
+    pool.apply_async(run)
     if wait_for_load_gpt:
         while True:
             config.read('config.ini')
@@ -764,9 +763,8 @@ if __name__ == "__main__":
                 break
 
     print("load image model")
-    pool2 = multiprocessing.Pool(processes=1)
-    pool2.apply_async(generate_picture0)
-    pool2.close()
+    pool = multiprocessing.Pool(processes=1)
+    pool.apply_async(generate_picture0)
     if wait_for_load_images:
         while True:
             config.read('config.ini')
@@ -787,12 +785,4 @@ if __name__ == "__main__":
 
     print("load bot")
     bot.run(discord_token)
-
-    # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
-    # while True:
-    #     config.read('config.ini')
-    #     if config.getboolean("Image1", "model_loaded"):
-    #         asyncio.sleep(5)
-    #         break
-    # print("second image model")
 

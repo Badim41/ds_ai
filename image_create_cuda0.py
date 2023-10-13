@@ -89,16 +89,16 @@ def generate_picture0():
         strength_negative_prompt = float(set_get_config("strength_negative_prompt"))
         image_name = set_get_config("input")
         # create pipes
-        pipe_prior = pipe_prior.to("cuda")
-        pipe = pipe.to("cuda")
+        pipe_prior = pipe_prior.to("cuda:0")
+        pipe = pipe.to("cuda:0")
 
         # create generator
-        generator = torch.Generator(device="cuda").manual_seed(seed)
+        generator = torch.Generator(device="cuda:0").manual_seed(seed)
 
         # make hint
         img = load_image(image_name).resize((x, y))
         depth_estimator = pipeline("depth-estimation")
-        hint = make_hint(img, depth_estimator).unsqueeze(0).half().to("cuda")
+        hint = make_hint(img, depth_estimator).unsqueeze(0).half().to("cuda:0")
 
         # run prior pipeline
         img_emb = pipe_prior(prompt=prompt, image=img, strength=strength_prompt, generator=generator)
