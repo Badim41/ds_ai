@@ -60,7 +60,7 @@ def run():
                 index = out.find('\n\n')
                 if len(out) - index > 50:
                     remove_tokens = str(index / len(out) * tokens)
-                    print(f"слишком много токенов, советуем убрать {remove_tokens[remove_tokens.find('.'):]} токенов")
+                    print(f"слишком много токенов, советуем убрать {remove_tokens[:remove_tokens.find('.')]} токенов")
                 out = out[:index]
                 print("\\n\\n deleted")
             else:

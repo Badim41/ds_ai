@@ -25,8 +25,12 @@ audio_clip = video_clip.audio
 audio_clip.write_audiofile(extracted_audio_path)
 
 # Размер и пропуск изображений
-new_width = 640
-new_height = 480
+# 480p=640×480
+# 360p=480×360
+# 240p=426×240
+# 144p=256×144
+video_
+if
 fps_output = 5 # frame/sec (1, 2, 3, 5, 10, 15, 30)
 save_img_step = original_fps / fps_output
 
