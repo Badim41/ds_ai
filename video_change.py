@@ -36,9 +36,9 @@ async def set_get_config_all_not_async(section, key, value):
 def image_change(index, output_folder, prompt):
     for filename in sorted(os.listdir(output_folder)):
         if filename.endswith('.png'):
-            asyncio.run(set_get_config_all(f"Image{index}", "result", "None"))
-            asyncio.run(set_get_config_all(f"Image{index}", "input", filename))
-            asyncio.run(set_get_config_all(f"Image{index}", "prompt", prompt))
+            set_get_config_all_not_async(f"Image{index}", "result", "None")
+            set_get_config_all_not_async(f"Image{index}", "input", filename)
+            set_get_config_all_not_async(f"Image{index}", "prompt", prompt)
             # wait for answer
             while True:
                 if set_get_config_all_not_async(f"Image{index}", "result", None):
