@@ -635,15 +635,18 @@ if __name__ == "__main__":
     print("update 1")
     arguments = sys.argv
 
-    if len(arguments) > 2:
+    if len(arguments) > 1:
         discord_token = arguments[1]
-        wait_for_load_moders = arguments[2]
-        # set True or False
-        if wait_for_load_moders == "True":
-            wait_for_load_moders = True
+
+        # wait for models?
+        if len(arguments) > 2:
+            wait_for_load_moders = arguments[2]
+            if wait_for_load_moders == "True":
+                wait_for_load_moders = True
         else:
             wait_for_load_moders = False
     else:
+        # raise error & exit
         print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
         exit(-1)
     # load models
