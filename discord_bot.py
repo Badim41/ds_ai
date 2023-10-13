@@ -745,41 +745,41 @@ if __name__ == "__main__":
         print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
         exit(-1)
     # load models
-    # from GPT_runner import run
-    # from image_create_cuda0 import generate_picture
-    #
-    # print("load gpt model")
-    # pool1 = multiprocessing.Pool(processes=1)
-    # pool1.apply_async(run)
-    # pool1.close()
-    # if wait_for_load_gpt:
-    #     while True:
-    #         config.read('config.ini')
-    #         if config.getboolean("gpt", "gpt"):
-    #             break
-    #
-    # print("load image model")
-    # pool2 = multiprocessing.Pool(processes=1)
-    # pool2.apply_async(generate_picture)
-    # pool2.close()
-    # if wait_for_load_images:
-    #     while True:
-    #         config.read('config.ini')
-    #         if config.getboolean("Image1", "model_loaded"):
-    #             break
+    from GPT_runner import run
+    from image_create_cuda0 import generate_picture
+
+    print("load gpt model")
+    pool1 = multiprocessing.Pool(processes=1)
+    pool1.apply_async(run)
+    pool1.close()
+    if wait_for_load_gpt:
+        while True:
+            config.read('config.ini')
+            if config.getboolean("gpt", "gpt"):
+                break
+
+    print("load image model")
+    pool2 = multiprocessing.Pool(processes=1)
+    pool2.apply_async(generate_picture)
+    pool2.close()
+    if wait_for_load_images:
+        while True:
+            config.read('config.ini')
+            if config.getboolean("Image1", "model_loaded"):
+                break
 
     print("load bot")
     bot.run(discord_token)
 
     # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
-    # while True:
-    #     config.read('config.ini')
-    #     if config.getboolean("Image1", "model_loaded"):
-    #         break
-    # print("second image model")
-    # if check_cuda(1):
-    #     from image_create_cuda1 import generate_picture
-    #     pool3 = multiprocessing.Pool(processes=1)
-    #     pool3.apply_async(generate_picture)
-    #     pool3.close()
+    while True:
+        config.read('config.ini')
+        if config.getboolean("Image1", "model_loaded"):
+            break
+    print("second image model")
+    if check_cuda(1):
+        from image_create_cuda1 import generate_picture
+        pool3 = multiprocessing.Pool(processes=1)
+        pool3.apply_async(generate_picture)
+        pool3.close()
 
