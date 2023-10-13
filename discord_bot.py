@@ -638,14 +638,16 @@ if __name__ == "__main__":
     if len(arguments) > 1:
         discord_token = arguments[1]
 
-        # wait for models?
-        wait_for_load_moders = False
+        # wait for models? (True, gpt)
+        wait_for_load_gpt = False
+        wait_for_load_images = False
         if len(arguments) > 2:
             wait_for_load_moders = arguments[2]
-            print("found 2 arg", wait_for_load_moders)
             if wait_for_load_moders == "True":
-                wait_for_load_moders = True
-                print("true")
+                wait_for_load_gpt = True
+                wait_for_load_images = True
+            if wait_for_load_moders == "gpt":
+                wait_for_load_gpt = True
     else:
         # raise error & exit
         print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
@@ -658,7 +660,7 @@ if __name__ == "__main__":
     pool1 = multiprocessing.Pool(processes=1)
     pool1.apply_async(run)
     pool1.close()
-    if wait_for_load_moders:
+    if wait_for_load_gpt:
         while True:
             config.read('config.ini')
             if config.getboolean("gpt", "gpt"):
@@ -668,7 +670,7 @@ if __name__ == "__main__":
     pool2 = multiprocessing.Pool(processes=1)
     pool2.apply_async(generate_picture)
     pool2.close()
-    if wait_for_load_moders:
+    if wait_for_load_images:
         while True:
             config.read('config.ini')
             if config.getboolean("Image", "model_loaded"):
