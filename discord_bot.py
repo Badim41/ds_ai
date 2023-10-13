@@ -774,7 +774,7 @@ if __name__ == "__main__":
                 break
 
     # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
-    if check_cuda(1):
+    if check_cuda(1) == "True":
         print("load image model-2")
         pool3 = multiprocessing.Pool(processes=1)
         pool3.apply_async(generate_picture1)
