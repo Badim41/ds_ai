@@ -648,6 +648,7 @@ if __name__ == "__main__":
             print("found 2 arg", wait_for_load_moders)
             if wait_for_load_moders == "True":
                 wait_for_load_moders = True
+                print("true")
     else:
         # raise error & exit
         print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
@@ -662,7 +663,7 @@ if __name__ == "__main__":
     pool1.close()
     if wait_for_load_moders:
         while True:
-            if asyncio.run(set_get_config_all("gpt", "gpt", None)):
+            if not asyncio.run(set_get_config_all("gpt", "gpt", None)) == "None":
                 break
 
     print("load image model")
@@ -671,7 +672,7 @@ if __name__ == "__main__":
     pool2.close()
     if wait_for_load_moders:
         while True:
-            if asyncio.run(set_get_config_all("Image", "model_loaded", None)):
+            if not asyncio.run(set_get_config_all("gpt", "gpt", None)) == "None":
                 break
 
     print("load bot")
