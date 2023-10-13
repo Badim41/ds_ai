@@ -132,6 +132,7 @@ async def __change_video(
                         max_value=1)
 ):
     # await wait_for_cuda_async()
+    await ctx.defer()
     config.read('config.ini')
     voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
     if voice not in voices:
