@@ -32,7 +32,6 @@ bot = commands.Bot(command_prefix='\\', intents=intents)
 async def set_get_config_all(section, key, value):
     config.read('config.ini')
     if value is None:
-        config.read('config.ini')
         return config.get(section, key)
     config.set(section, key, str(value))
     # Сохранение
@@ -44,7 +43,6 @@ async def set_get_config_all(section, key, value):
 async def set_get_config(key="record", value=None):
     config.read('config.ini')
     if value is None:
-        config.read('config.ini')
         return config.get("Sound", key)
     config.set('Sound', key, str(value))
     # Сохранение
@@ -55,7 +53,6 @@ async def set_get_config(key="record", value=None):
 async def set_get_config_default(key, value=None):
     config.read('config.ini')
     if value is None:
-        config.read('config.ini')
         return config.get("Default", key)
     config.set('Default', key, str(value))
     # Сохранение
@@ -663,7 +660,8 @@ if __name__ == "__main__":
     pool1.close()
     if wait_for_load_moders:
         while True:
-            if not asyncio.run(set_get_config_all("gpt", "gpt", None)) == "None":
+            config.read('config.ini')
+            if config.getboolean("gpt", "gpt"):
                 break
 
     print("load image model")
@@ -672,7 +670,8 @@ if __name__ == "__main__":
     pool2.close()
     if wait_for_load_moders:
         while True:
-            if not asyncio.run(set_get_config_all("gpt", "gpt", None)) == "None":
+            config.read('config.ini')
+            if config.getboolean("Image", "model_loaded"):
                 break
 
     print("load bot")
