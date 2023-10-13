@@ -747,25 +747,25 @@ if __name__ == "__main__":
     from GPT_runner import run
     from image_create_cuda0 import generate_picture
 
-    # print("load gpt model")
-    # pool1 = multiprocessing.Pool(processes=1)
-    # pool1.apply_async(run)
-    # pool1.close()
-    # if wait_for_load_gpt:
-    #     while True:
-    #         config.read('config.ini')
-    #         if config.getboolean("gpt", "gpt"):
-    #             break
-    #
-    # print("load image model")
-    # pool2 = multiprocessing.Pool(processes=1)
-    # pool2.apply_async(generate_picture)
-    # pool2.close()
-    # if wait_for_load_images:
-    #     while True:
-    #         config.read('config.ini')
-    #         if config.getboolean("Image1", "model_loaded"):
-    #             break
+    print("load gpt model")
+    pool1 = multiprocessing.Pool(processes=1)
+    pool1.apply_async(run)
+    pool1.close()
+    if wait_for_load_gpt:
+        while True:
+            config.read('config.ini')
+            if config.getboolean("gpt", "gpt"):
+                break
+
+    print("load image model")
+    pool2 = multiprocessing.Pool(processes=1)
+    pool2.apply_async(generate_picture)
+    pool2.close()
+    if wait_for_load_images:
+        while True:
+            config.read('config.ini')
+            if config.getboolean("Image1", "model_loaded"):
+                break
 
     print("load bot")
     bot.run(discord_token)
