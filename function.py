@@ -236,7 +236,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
         await write_in_discord(ctx, "модель чат-бота не загрузилась, подождите пару минут")
         return
     print('generating answer')
-    await set_get_config_all("gpt", "gpt_prompt", prompt.replace("\n", "\\n"))
+    await set_get_config_all("gpt", "gpt_prompt", prompt)
     result = "None"
     while result == "None":
         result = await set_get_config_all("gpt", "gpt_result")
