@@ -44,17 +44,7 @@ def image_change(index, output_folder, prompt):
                 if set_get_config_all_not_async(f"Image{index}", "result", None):
                     break
                 time.sleep(0.25)
-
-async def image_change_wrapper(output_folder, prompt):
-    pool1 = multiprocessing.Pool(processes=1)
-    pool1.apply_async(image_change(0, output_folder, prompt, ))
-    pool1.close()
-    pool2 = multiprocessing.Pool(processes=1)
-    pool2.apply_async(image_change(1, output_folder, prompt, ))
-    pool2.close()
-    # wait for results
-    pool1.join()
-    pool2.join()
+    set_get_config_all_not_async(f"Video{index}", "result", True)
 
 async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
                          pitch, indexrate, loudness, main_vocal, back_vocal,
@@ -132,7 +122,19 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
     cap.release()
 
     # === обработка изображений ===
-    await image_change_wrapper(output_folder, prompt)
+    await set_get_config_all(f"Video1", "result", False)
+    await set_get_config_all(f"Video2", "result", False)
+    pool1 = multiprocessing.Pool(processes=1)
+    pool1.apply_async(image_change(0, output_folder, prompt, ))
+    pool1.close()
+    pool2 = multiprocessing.Pool(processes=1)
+    pool2.apply_async(image_change(1, output_folder, prompt, ))
+    pool2.close()
+    # wait for results
+    while True:
+        if await set_get_config_all(f"Video1", "result", None) == "True" and await set_get_config_all(f"Video2", "result", None) == "True":
+            break
+        await asyncio.sleep(0.1)
 
     # === обработка звука ===
     await set_get_config_all("voice", "generated", "None")
