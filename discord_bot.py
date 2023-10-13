@@ -151,7 +151,7 @@ async def __change_video(
     print("params suc")
     # wait for answer
     from video_change import video_pipeline
-    video_path = await video_pipeline(video_path, fps, extension, prompt, voice, pitch,
+    video_path = await video_pipeline(filename, fps, extension, prompt, voice, pitch,
                                       indexrate, loudness, main_vocal, back_vocal, music,
                                       roomsize, wetness, dryness)
     spent_time = await set_get_config_all("Image1", "spent_time", None)
