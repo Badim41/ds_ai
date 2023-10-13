@@ -77,6 +77,89 @@ async def on_ready():
 #             print(f'Получен файл: {attachment.filename}')
 
 
+@bot.slash_command(name="change_video",
+                   description='перерисовать и переозвучить видео. Бот также предложит вам название')
+async def __change_video(
+        ctx,
+        video_path: Option(discord.SlashCommandOptionType.attachment, description='Файл с видео',
+                           required=False),
+        fps: Option(str, description='Частота кадров (ОЧЕНЬ влияет на время ожидания))', required=True,
+                    choices=["30", "15", "10", "6", "5", "3", "2", "1"]),
+        extension: Option(str, description='Расширение (сильно влияет на время ожидания)', required=True,
+                          choices=["144p", "240p", "360p", "480p"]),
+        prompt: Option(str, description='запрос', required=True),
+        negative_prompt: Option(str, description='негативный запрос', default="NSFW", required=False),
+        steps: Option(int, description='число шагов', required=False,
+                      default=30,
+                      min_value=1,
+                      max_value=500),
+        seed: Option(int, description='сид изображения', required=False,
+                     default=random.randint(1, 1000000),
+                     min_value=1,
+                     max_value=1000000),
+        strength: Option(float, description='насколько сильны будут изменения', required=False,
+                         default=0.5, min_value=0,
+                         max_value=1),
+        strength_prompt: Option(float,
+                                description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется положительный промпт',
+                                required=False,
+                                default=0.85, min_value=0,
+                                max_value=1),
+        strength_negative_prompt: Option(float,
+                                         description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется отрицательный промпт',
+                                         required=False,
+                                         default=1, min_value=0,
+                                         max_value=1),
+        voice: Option(str, description='Голос для видео', required=False, default=None),
+        pitch: Option(str, description='Кто говорит/поёт в видео?', required=False,
+                      choices=['мужчина', 'женщина'], default=None),
+        indexrate: Option(float, description='Индекс голоса (от 0 до 1)', required=False, default=0.5, min_value=0,
+                          max_value=1),
+        loudness: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.2, min_value=0,
+                         max_value=1),
+        main_vocal: Option(int, description='Громкость основного вокала (от -20 до 0)', required=False, default=0,
+                           min_value=-20, max_value=0),
+        back_vocal: Option(int, description='Громкость бэквокала (от -20 до 0)', required=False, default=0,
+                           min_value=-20, max_value=0),
+        music: Option(int, description='Громкость музыки (от -20 до 0)', required=False, default=0, min_value=-20,
+                      max_value=0),
+        roomsize: Option(float, description='Размер помещения (от 0 до 1)', required=False, default=0.2, min_value=0,
+                         max_value=1),
+        wetness: Option(float, description='Влажность (от 0 до 1)', required=False, default=0.1, min_value=0,
+                        max_value=1),
+        dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
+                        max_value=1)
+):
+    config.read('config.ini')
+    voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
+    if voice not in voices:
+        return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
+    if await set_get_config_all("Image", "model_loaded", None) == "False":
+        return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
+    if video_path:
+        filename = str(random.randint(1, 1000000)) + ".mp4"
+        await video_path.save(filename)
+    # loading params
+    await set_get_config_all("Image", "strength_negative_prompt", strength_negative_prompt)
+    await set_get_config_all("Image", "strength_prompt", strength_prompt)
+    await set_get_config_all("Image", "strength", strength)
+    await set_get_config_all("Image", "seed", seed)
+    await set_get_config_all("Image", "steps", steps)
+    await set_get_config_all("Image", "negative_prompt", negative_prompt)
+    print("params suc")
+    # wait for answer
+    from video_change import video_pipeline
+    video_path = await video_pipeline(video_path, fps, extension, prompt, voice, pitch,
+                                      indexrate, loudness, main_vocal, back_vocal, music,
+                                      roomsize, wetness, dryness)
+    spent_time = await set_get_config_all("Image", "spent_time", None)
+    # убираем миллисекунды
+    spent_time = spent_time[:spent_time.find(".")]
+    # отправляем
+    await ctx.respond("Вот как я изменил ваше видео🖌. Потрачено " + spent_time)
+    await send_file(ctx, video_path)
+
+
 @bot.slash_command(name="change_image", description='изменить изображение нейросетью')
 async def __image(ctx,
                   image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
@@ -111,10 +194,10 @@ async def __image(ctx,
     await ctx.defer()
     if await set_get_config_all("Image", "model_loaded", None) == "False":
         return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
-    filename = str(random.randint(1, 1000000)) + ".png"
-    await image.save(filename)
+    input_image = "images/image" + str(random.randint(1, 1000000)) + ".png"
+    await image.save(input_image)
     # get image size and round to 64
-    x, y = await get_image_dimensions(filename)
+    x, y = await get_image_dimensions(input_image)
     if not x % 64 == 0:
         x = ((x // 64) + 1) * 64
     if not y % 64 == 0:
@@ -129,19 +212,22 @@ async def __image(ctx,
     await set_get_config_all("Image", "prompt", prompt)
     await set_get_config_all("Image", "x", x)
     await set_get_config_all("Image", "y", y)
-    await set_get_config_all("Image", "input", filename)
+    await set_get_config_all("Image", "input", input_image)
     print("params suc")
     # wait for answer
-    image_path = await set_get_config_all("Image", "result", None)
-    while image_path == "None":
-        image_path = await set_get_config_all("Image", "result", None)
+    output_image = await set_get_config_all("Image", "result", None)
+    while output_image == "None":
+        output_image = await set_get_config_all("Image", "result", None)
         await asyncio.sleep(0.25)
     spent_time = await set_get_config_all("Image", "spent_time", None)
     # убираем часы и миллисекунды
     spent_time = spent_time[spent_time.find(":") + 1:]
     spent_time = spent_time[:spent_time.find(".")]
+    # отправляем
     await ctx.respond("Вот как я изменил ваше изображение🖌. Потрачено " + spent_time)
-    await send_file(ctx, image_path)
+    await send_file(ctx, output_image)
+    # удаляем временные файлы
+    os.remove(output_image)
 
 
 @bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
@@ -355,7 +441,7 @@ async def __cover(
                       choices=['мужчина', 'женщина'], default=None),
         time: Option(int, description='Ограничить длительность воспроизведения (в секундах)', required=False,
                      default=-1, min_value=0),
-        indexrate: Option(float, description='Индекс частоты (от 0 до 1)', required=False, default=0.5, min_value=0,
+        indexrate: Option(float, description='Индекс голоса (от 0 до 1)', required=False, default=0.5, min_value=0,
                           max_value=1),
         loudness: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.2, min_value=0,
                          max_value=1),

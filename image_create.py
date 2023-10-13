@@ -1,5 +1,3 @@
-import argparse
-import random
 import struct
 import time
 
@@ -85,6 +83,7 @@ def generate_picture():
         strength = float(set_get_config("strength"))
         strength_prompt = float(set_get_config("strength_prompt"))
         strength_negative_prompt = float(set_get_config("strength_negative_prompt"))
+        image_name = set_get_config("input")
         # create pipes
         pipe_prior = pipe_prior.to("cuda")
         pipe = pipe.to("cuda")
@@ -93,7 +92,7 @@ def generate_picture():
         generator = torch.Generator(device="cuda").manual_seed(seed)
 
         # make hint
-        img = load_image(set_get_config("input")).resize((x, y))
+        img = load_image(image_name).resize((x, y))
         depth_estimator = pipeline("depth-estimation")
         hint = make_hint(img, depth_estimator).unsqueeze(0).half().to("cuda")
 
@@ -113,8 +112,8 @@ def generate_picture():
             height=y,
             width=x,
         ).images
-        images_filename = "image " + str(random.randint(1, 1000000)) + ".png"
-        images[0].save(images_filename)
+
+        images[0].save(image_name)
 
         end_time = datetime.datetime.now()
         current_time = end_time.time()
@@ -123,4 +122,4 @@ def generate_picture():
         spent_time = end_time - start_time
         print("Прошло времени:", spent_time)
         set_get_config("spent_time", spent_time)
-        set_get_config("result", images_filename)
+        set_get_config("result", image_name)

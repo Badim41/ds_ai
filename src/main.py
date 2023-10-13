@@ -26,6 +26,9 @@ import yt_dlp
 from pedalboard import Pedalboard, Reverb, Compressor, HighpassFilter
 from pedalboard.io import AudioFile
 from pydub import AudioSegment
+import configparser
+
+config = configparser.ConfigParser()
 
 from rvc import Config, load_hubert, get_vc, rvc_infer
 
@@ -412,6 +415,8 @@ if __name__ == '__main__':
                         help='start song with (seconds)')
     parser.add_argument('-time', '--time', type=str, default='-1',
                         help='song duration')
+    parser.add_argument('-write', '--write-in-queue', type=bool, default=True,
+                        help='нужно ли записать в файл')
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda_number
     rvc_dirname = args.rvc_dirname
@@ -451,13 +456,20 @@ if __name__ == '__main__':
         shutil.rmtree(os.path.join(output_dir, song_id))
         print("DEV_TEMP: REMOVED")
     else:
-        try:
-            # Записываем путь файла в очередь
-            with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "r", encoding='utf-8') as reader:
-                for line in reader:
-                    lines = reader.readlines()
-            with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "w", encoding='utf-8') as writer:
-                writer.writelines(lines)
-                writer.write(f"{cover_path} -time {args.time} -start {args.start}\n")
-        except IOError as e:
-            print(e)
+        if not args.write_in_queue:
+            config.read('config.ini')
+            config.set('voice', 'generated_path', cover_path)
+            # Сохранение
+            with open('config.ini', 'w') as configfile:
+                config.write(configfile)
+        else:
+            try:
+                # Записываем путь файла в очередь
+                with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "r", encoding='utf-8') as reader:
+                    for line in reader:
+                        lines = reader.readlines()
+                with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "w", encoding='utf-8') as writer:
+                    writer.writelines(lines)
+                    writer.write(f"{cover_path} -time {args.time} -start {args.start}\n")
+            except IOError as e:
+                print(e)
