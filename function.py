@@ -563,8 +563,8 @@ async def createAICaver(ctx):
     continue_process = config.getboolean('Values', 'queue')
     if not continue_process:
         print("temp3")
-        await wait_for_cuda_async()
-        await write_in_discord(ctx, "Начинаю обработку видео")
+        await wait_for_cuda_async("All")
+        await write_in_discord(ctx, "Начинаю обработку аудио")
         pool = multiprocessing.Pool(processes=2)
         pool.apply_async(prepare_audio_process_cuda, (ctx,))
         time.sleep(0.05)
@@ -582,7 +582,7 @@ async def createAICaver(ctx):
         with open("caversAI/queue.txt", "r") as reader:
             lines = reader.readlines()
             queue_position += len(lines)
-        await write_in_discord(ctx, "Видео добавлено в очередь. Место в очереди: " + str(queue_position))
+        await write_in_discord(ctx, "Аудио добавлено в очередь. Место в очереди: " + str(queue_position))
 
 
 async def getCaverPrms(line, ctx):
@@ -691,8 +691,8 @@ async def getCaverPrms(line, ctx):
 #     return f"python ../AICoverGen/src/main.py -i {filePath} -dir modelsRVC/{currentAIname} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
 def prepare_audio_process_cuda(ctx):
-    while not check_cuda() == 2:
-        time.sleep(0.5)
+    use_cuda(0)
+    use_cuda(1)
     asyncio.run(set_get_config_all('Values', 'device', "None"))
 
     while True:

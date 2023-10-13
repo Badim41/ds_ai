@@ -16,7 +16,7 @@ from pathlib import Path
 import sys
 import discord
 from discord.ext import commands
-from use_free_cuda import wait_for_cuda_async, check_cuda
+from use_free_cuda import check_cuda, use_cuda_async
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
@@ -131,7 +131,8 @@ async def __change_video(
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
                         max_value=1)
 ):
-    # await wait_for_cuda_async()
+    await use_cuda_async(0)
+    await use_cuda_async(1)
     await ctx.defer()
     config.read('config.ini')
     voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
@@ -193,7 +194,8 @@ async def __image(ctx,
                                                    default=1, min_value=0,
                                                    max_value=1)
                   ):
-    await wait_for_cuda_async()
+    await use_cuda_async(0)
+    await use_cuda_async(1)
     await set_get_config_all("Image1", "result", "None")
     await ctx.defer()
     if await set_get_config_all("Image1", "model_loaded", None) == "False":
@@ -411,7 +413,8 @@ async def __tts(
 ):
     await ctx.defer()
     await ctx.respond('Выполнение...')
-    await wait_for_cuda_async()
+    await use_cuda_async(0)
+    await use_cuda_async(1)
     config.read('config.ini')
     voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
     if ai_voice not in voices:
@@ -739,13 +742,16 @@ if __name__ == "__main__":
                 wait_for_load_images = True
             if wait_for_load_moders == "gpt":
                 wait_for_load_gpt = True
+            if wait_for_load_moders == "img":
+                wait_for_load_images = True
     else:
         # raise error & exit
         print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
         exit(-1)
     # load models
     from GPT_runner import run
-    from image_create_cuda0 import generate_picture
+    from image_create_cuda0 import generate_picture0
+    from image_create_cuda1 import generate_picture1
 
     print("load gpt model")
     pool1 = multiprocessing.Pool(processes=1)
@@ -759,13 +765,25 @@ if __name__ == "__main__":
 
     print("load image model")
     pool2 = multiprocessing.Pool(processes=1)
-    pool2.apply_async(generate_picture)
+    pool2.apply_async(generate_picture0)
     pool2.close()
     if wait_for_load_images:
         while True:
             config.read('config.ini')
             if config.getboolean("Image1", "model_loaded"):
                 break
+
+    # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
+    if check_cuda(1):
+        print("load image model-2")
+        pool3 = multiprocessing.Pool(processes=1)
+        pool3.apply_async(generate_picture1)
+        pool3.close()
+        if wait_for_load_images:
+            while True:
+                config.read('config.ini')
+                if config.getboolean("Image2", "model_loaded"):
+                    break
 
     print("load bot")
     bot.run(discord_token)
@@ -777,9 +795,4 @@ if __name__ == "__main__":
     #         asyncio.sleep(5)
     #         break
     # print("second image model")
-    # if check_cuda(1):
-    #     from image_create_cuda1 import generate_picture
-    #     pool3 = multiprocessing.Pool(processes=1)
-    #     pool3.apply_async(generate_picture)
-    #     pool3.close()
 

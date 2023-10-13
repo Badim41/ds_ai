@@ -41,7 +41,7 @@ async def get_image_dimensions(file_path):
         raise ValueError("Формат не поддерживается")
 
 
-def generate_picture():
+def generate_picture1():
     # test IMAGES 1
     print("image1")
 
