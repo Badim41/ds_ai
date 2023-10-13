@@ -10,7 +10,8 @@ import numpy as np
 import onnxruntime as ort
 import soundfile as sf
 from tqdm import tqdm
-from main import torch
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+import torch
 
 warnings.filterwarnings("ignore")
 stem_naming = {'Vocals': 'Instrumental', 'Other': 'Instruments', 'Instrumental': 'Vocals', 'Drums': 'Drumless',
@@ -256,10 +257,10 @@ class MDX:
         return self.segment(processed_batches, True, chunk)
 
 
-def run_mdx(cuda_number, model_params, output_dir, model_path, filename, exclude_main=False, exclude_inversion=False,
+def run_mdx(model_params, output_dir, model_path, filename, exclude_main=False, exclude_inversion=False,
             suffix=None,
             invert_suffix=None, denoise=False, keep_orig=True, m_threads=2):
-    print("DEV_TEMP_CUDA_USED: ", cuda_number)
+    print("DEV_TEMP_CUDA_USED: 1")
     # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number_global
     # import torch
     device = torch.device(f"cuda:0")
