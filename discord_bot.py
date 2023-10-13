@@ -513,7 +513,7 @@ async def __cover(
     if start != 0:
         params.append(f"-start {start}")
     param_string = ' '.join(params)
-
+    print("suc params")
     await run_main_with_settings(ctx, "робот протокол 13 " + param_string, False)
     # output..
 
