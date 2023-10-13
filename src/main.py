@@ -3,7 +3,8 @@ import configparser
 
 config = configparser.ConfigParser()
 config.read('config.ini')
-os.environ["CUDA_VISIBLE_DEVICES"] = config.get('Values', 'device')
+if not config.get('Values', 'device') is None:
+    os.environ["CUDA_VISIBLE_DEVICES"] = config.get('Values', 'device')
 import torch
 import argparse
 
@@ -418,7 +419,7 @@ if __name__ == '__main__':
     parser.add_argument('-write', '--write-in-queue', type=bool, default=True,
                         help='нужно ли записать в файл')
     args = parser.parse_args()
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda_number
+
     rvc_dirname = args.rvc_dirname
     if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
         raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')

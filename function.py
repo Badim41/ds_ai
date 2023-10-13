@@ -564,10 +564,9 @@ async def createAICaver(ctx):
     if not continue_process:
         print("temp3")
         await write_in_discord(ctx, "Начинаю обработку видео")
-        pool = multiprocessing.Pool(processes=3)
-        for i in range(check_cuda()):
-            pool.apply_async(prepare_audio_process_cuda, (ctx,))
-            time.sleep(0.05)
+        pool = multiprocessing.Pool(processes=2)
+        pool.apply_async(prepare_audio_process_cuda, (ctx,))
+        time.sleep(0.05)
         if not check_cuda() == 0:
             pool.apply_async(play_audio_process, (ctx,))
             pool.close()
@@ -691,7 +690,13 @@ async def getCaverPrms(line, ctx):
 #     return f"python ../AICoverGen/src/main.py -i {filePath} -dir modelsRVC/{currentAIname} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
 def prepare_audio_process_cuda(ctx):
-    cuda_index = use_cuda()
+    if not check_cuda() == 2:
+        cuda_index = use_cuda()
+        asyncio.run(set_get_config_all('Values', 'device', str(cuda_index)))
+    else:
+        cuda_index = "all"
+        asyncio.run(set_get_config_all('Values', 'device', str(cuda_index)))
+
     print(f"DEV_START_CUDA_{cuda_index}")
     while True:
         try:
@@ -717,19 +722,19 @@ def prepare_audio_process_cuda(ctx):
                     #     break
 
                     params = asyncio.run(getCaverPrms(line, ctx))
-                    params += f" -cuda {cuda_index}"
+                    params += "-half True"
                     asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
                     print("запуск AICoverGen")
                     print(params)
                     asyncio.run(console_command_runner(params, ctx))
                     time.sleep(0.05)
                 else:
-                    stop_use_cuda(cuda_index)
-                    if check_cuda() == 2:
-                        print("Больше нет ссылок")
-                        asyncio.run(set_get_config_all('Values', "queue", "False"))
-                        break
-                    asyncio.sleep(0.5)
+                    # stop_use_cuda(cuda_index)
+                    # if check_cuda() == 2:
+                    print("Больше нет ссылок")
+                    asyncio.run(set_get_config_all('Values', "queue", "False"))
+                    break
+                    # asyncio.sleep(0.5)
         except (IOError, KeyboardInterrupt):
             pass
 
