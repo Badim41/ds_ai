@@ -469,6 +469,7 @@ async def __cover(
     await ctx.respond('Выполнение...')
     await wait_for_cuda_async()
     params = []
+    print("1")
     if audio_path:
         filename = str(random.randint(1, 1000000)) + ".mp3"
         await audio_path.save(filename)
@@ -477,10 +478,12 @@ async def __cover(
         params.append(f"-url {url}")
     else:
         return ctx.respond('Не указана ссылка или аудиофайл')
+    print("2")
     if voice is None:
         voice = await set_get_config_default("currentAIname")
     if voice:
         params.append(f"-voice {voice}")
+    print("3")
     # если мужчина-мужчина, женщина-женщина, pitch не меняем
     pitch_int = 0
     # если женщина, но AI мужчина = 1,
@@ -492,20 +495,28 @@ async def __cover(
         if not await set_get_config_default("currentaipitch") == 0:
             pitch_int = -1
     params.append(f"-pitch {pitch_int}")
+    print("4")
     if time != -1:
         params.append(f"-time {time}")
+    print("5")
     if indexrate != 0.5:
         params.append(f"-indexrate {indexrate}")
+    print("6")
     if loudness != 0.2:
         params.append(f"-loudness {loudness}")
+    print("7")
     if main_vocal != 0:
         params.append(f"-vocal {main_vocal}")
+    print("8")
     if back_vocal != 0:
         params.append(f"-bvocal {back_vocal}")
+    print("9")
     if music != 0:
         params.append(f"-music {music}")
+    print("10")
     if roomsize != 0.2:
         params.append(f"-roomsize {roomsize}")
+    print("11")
     if wetness != 0.1:
         params.append(f"-wetness {wetness}")
     if dryness != 0.85:
