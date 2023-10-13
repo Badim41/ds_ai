@@ -84,7 +84,7 @@ async def __change_video(
         ctx,
         video_path: Option(discord.SlashCommandOptionType.attachment, description='Файл с видео',
                            required=True),
-        fps: Option(str, description='Частота кадров (ОЧЕНЬ влияет на время ожидания))', required=True,
+        fps: Option(int, description='Частота кадров (ОЧЕНЬ влияет на время ожидания))', required=True,
                     choices=["30", "15", "10", "6", "5", "3", "2", "1"]),
         extension: Option(str, description='Расширение (сильно влияет на время ожидания)', required=True,
                           choices=["144p", "240p", "360p", "480p"]),
