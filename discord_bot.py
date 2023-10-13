@@ -140,6 +140,9 @@ async def __image(ctx,
         image_path = await set_get_config_all("Image", "result", None)
         await asyncio.sleep(0.25)
     spent_time = await set_get_config_all("Image", "spent_time", None)
+    # убираем часы и миллисекунды
+    spent_time = spent_time[spent_time.find(":") + 1:]
+    spent_time = spent_time[:spent_time.find(".")]
     await ctx.respond("Вот как я изменил ваше изображение🖌. Потрачено " + spent_time)
     await send_file(ctx, image_path)
 
@@ -349,7 +352,7 @@ async def __cover(
         ctx,
         url: Option(str, description='Ссылка на видео', required=False),
         audio_path: Option(discord.SlashCommandOptionType.attachment, description='Аудиофайл',
-                      required=False),
+                           required=False),
         voice: Option(str, description='Голос для видео', required=False, default=None),
         pitch: Option(str, description='Кто говорит/поёт в видео?', required=False,
                       choices=['мужчина', 'женщина'], default=None),
@@ -639,12 +642,11 @@ if __name__ == "__main__":
         discord_token = arguments[1]
 
         # wait for models?
+        wait_for_load_moders = False
         if len(arguments) > 2:
             wait_for_load_moders = arguments[2]
             if wait_for_load_moders == "True":
                 wait_for_load_moders = True
-        else:
-            wait_for_load_moders = False
     else:
         # raise error & exit
         print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
