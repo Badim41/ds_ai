@@ -466,7 +466,6 @@ async def __cover(
 ):
     await ctx.defer()
     await ctx.respond('Выполнение...')
-    await wait_for_cuda_async()
     params = []
     print("1")
     if audio_path:
