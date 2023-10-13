@@ -394,7 +394,6 @@ async def __say(
 ):
     await ctx.defer()
     await ctx.respond('Выполнение...')
-    await wait_for_cuda_async()
     from function import replace_mat_in_sentence
     if await set_get_config_default("robot_name_need") == "False":
         text = await set_get_config_default("currentainame") + ", " + text

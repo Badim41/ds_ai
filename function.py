@@ -11,7 +11,7 @@ import os
 from gtts import gTTS
 from discord_bot import config
 from discord_bot import write_in_discord
-from use_free_cuda import use_cuda, stop_use_cuda, check_cuda
+from use_free_cuda import use_cuda, stop_use_cuda, check_cuda, wait_for_cuda_async
 
 
 class Color:
@@ -563,6 +563,7 @@ async def createAICaver(ctx):
     continue_process = config.getboolean('Values', 'queue')
     if not continue_process:
         print("temp3")
+        await wait_for_cuda_async()
         await write_in_discord(ctx, "Начинаю обработку видео")
         pool = multiprocessing.Pool(processes=2)
         pool.apply_async(prepare_audio_process_cuda, (ctx,))
