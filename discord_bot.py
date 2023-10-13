@@ -440,7 +440,7 @@ async def __cover(
         ctx,
         url: Option(str, description='Ссылка на видео', required=False),
         audio_path: Option(discord.SlashCommandOptionType.attachment, description='Аудиофайл',
-                           required=False),
+                           required=False, default=None),
         voice: Option(str, description='Голос для видео', required=False, default=None),
         pitch: Option(str, description='Кто говорит/поёт в видео?', required=False,
                       choices=['мужчина', 'женщина'], default=None),
