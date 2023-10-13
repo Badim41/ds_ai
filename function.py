@@ -280,30 +280,18 @@ async def voice_commands(sentence, ctx):
     #     restart_code()
     #     return True
 
-    # задержка / закратие
-    if any(keyword in sentence for keyword in ["код красный", "кот красный", "коды красный"]):
+    # задержка к закратие
+    if "код красный" in sentence:
         seconds_delay = await extract_number_after_keyword(sentence, "код красный")
-        if seconds_delay == 0:
-            await result_command_change("Завершение кода", Color.RED)
-            print("Завершение кода по протоколу")
+        if not seconds_delay == -1:
+            await result_command_change(f"Завершение кода через {seconds_delay}", Color.RED)
+            print(f"Завершение кода по протоколу через {seconds_delay}")
+            await asyncio.sleep(seconds_delay + 0.01)
             await exit_from_voice(ctx)
             await write_in_discord(ctx, "*выключение*")
             from discord_bot import disconnect
             await disconnect(ctx)
             sys.exit(0)
-        if seconds_delay == -1:
-            seconds_delay = await extract_number_after_keyword(sentence, "кот красный")
-            if seconds_delay == -1:
-                seconds_delay = await extract_number_after_keyword(sentence, "коды красный")
-                if seconds_delay == -1:
-                    seconds_delay = 10
-        try:
-            await result_command_change(f"Задержка кода {seconds_delay}", Color.RED)
-            time.sleep(seconds_delay)
-            await text_to_speech("Задержка прошла", False, ctx)
-        except Exception as e:
-            raise RuntimeError(e)
-        return True
 
     # админка
     # if any(keyword in sentence for keyword in ["+админ", "+admin"]):
