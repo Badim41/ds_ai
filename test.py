@@ -1,11 +1,22 @@
-from pydub import AudioSegment
-
-audio = AudioSegment.from_file("C:/Users/as280/Downloads/rawData4 [vocals].wav", format="wav")
-# делим аудиофайл на две части
-half_length = len(audio) // 2
-audio_part1 = audio[:half_length]
-audio_part2 = audio[half_length:]
-audio_part1.export("0.mp3", format="mp3")
-audio_part2.export("1.mp3", format="mp3")
-result = AudioSegment.from_file("0.mp3", format="mp3") + AudioSegment.from_file("1.mp3", format="mp3")
-result.export("all.mp3", format="mp3")
+input_int = list(input())
+if not len(input_int) == 16:
+    print("No")
+sum_num = 0
+i = 0
+for num in input_int:
+    i += 1
+    num = int(num)
+    if i % 2 == 0:
+        sum_num += num
+        continue
+    num *= 2
+    if num > 9:
+        num_new = 0
+        for num_in_2num in list(str(num)):
+            num_new += int(num_in_2num)
+        num = num_new
+    sum_num += num
+if sum_num % 10 == 0:
+    print("Yes")
+else:
+    print("No")

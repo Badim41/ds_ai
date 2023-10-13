@@ -16,9 +16,9 @@ config = configparser.ConfigParser()
 def set_get_config(key, value=None):
     config.read('config.ini')
     if value is None:
-        return config.get('Image0', key)
+        return config.get('Image1', key)
 
-    config.set('Image0', key, str(value))
+    config.set('Image1', key, str(value))
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
