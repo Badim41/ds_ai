@@ -46,16 +46,15 @@ def image_change(index, output_folder, prompt):
                 time.sleep(0.25)
 
 async def image_change_wrapper(output_folder, prompt):
-    tasks = []
     pool1 = multiprocessing.Pool(processes=1)
-    task1 = asyncio.get_event_loop().run_in_executor(pool1, image_change, 0, output_folder, prompt)
-    tasks.append(task1)
-
+    pool1.apply_async(image_change(0, output_folder, prompt, ))
+    pool1.close()
     pool2 = multiprocessing.Pool(processes=1)
-    task2 = asyncio.get_event_loop().run_in_executor(pool2, image_change, 1, output_folder, prompt)
-    tasks.append(task2)
-
-    await asyncio.gather(*tasks)
+    pool2.apply_async(image_change(1, output_folder, prompt, ))
+    pool2.close()
+    # wait for results
+    pool1.join()
+    pool2.join()
 
 async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
                          pitch, indexrate, loudness, main_vocal, back_vocal,
