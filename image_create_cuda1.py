@@ -1,6 +1,8 @@
+import os
 import struct
 import time
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import torch
 import numpy as np
 from diffusers import KandinskyV22PriorEmb2EmbPipeline, KandinskyV22ControlnetImg2ImgPipeline
@@ -15,12 +17,13 @@ config = configparser.ConfigParser()
 def set_get_config(key, value=None):
     config.read('config.ini')
     if value is None:
-        return config.get('Image', key)
+        return config.get('Image2', key)
 
-    config.set('Image', key, str(value))
+    config.set('Image2', key, str(value))
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
+
 
 async def get_image_dimensions(file_path):
     with open(file_path, 'rb') as file:
@@ -118,7 +121,7 @@ def generate_picture():
         end_time = datetime.datetime.now()
         current_time = end_time.time()
         print("Конец:", current_time)
-        
+
         spent_time = end_time - start_time
         print("Прошло времени:", spent_time)
         set_get_config("spent_time", spent_time)

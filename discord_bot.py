@@ -740,7 +740,7 @@ if __name__ == "__main__":
         exit(-1)
     # load models
     from GPT_runner import run
-    from image_create import generate_picture
+    from image_create_cuda0 import generate_picture
 
     print("load gpt model")
     pool1 = multiprocessing.Pool(processes=1)
@@ -764,3 +764,10 @@ if __name__ == "__main__":
 
     print("load bot")
     bot.run(discord_token)
+
+    # если доступна 2-ая видеокарта запускаем
+    while True:
+        config.read('config.ini')
+        if config.getboolean("Image", "model_loaded"):
+            break
+

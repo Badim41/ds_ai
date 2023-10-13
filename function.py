@@ -7,9 +7,11 @@ import re
 import time
 import threading
 import os
+
 from gtts import gTTS
 from discord_bot import config
 from discord_bot import write_in_discord
+from use_free_cuda import use_cuda, stop_use_cuda, check_cuda
 
 
 class Color:
@@ -706,8 +708,8 @@ async def getCaverPrms(line, ctx):
 # async def defaultRVCParams(filePath, pitch):
 #     return f"python ../AICoverGen/src/main.py -i {filePath} -dir modelsRVC/{currentAIname} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
-def prepare_audio_process_cuda_0(ctx):
-    print("DEV_START_CUDA_0")
+def prepare_audio_process_cuda(ctx, cuda_index):
+    print(f"DEV_START_CUDA_{cuda_index}")
     while True:
         try:
             with open("caversAI/audio_links.txt") as reader:
@@ -733,7 +735,7 @@ def prepare_audio_process_cuda_0(ctx):
                     #     break
 
                     params = asyncio.run(getCaverPrms(line, ctx))
-                    params += " -cuda 0"
+                    params += f" -cuda {cuda_index}"
                     asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
                     print("запуск AICoverGen")
                     print(params)
@@ -741,7 +743,7 @@ def prepare_audio_process_cuda_0(ctx):
                     time.sleep(0.05)
                 else:
                     config.read('config.ini')
-                    asyncio.run(set_get_config_all('Values', "cuda0_is_busy", "False"))
+                    stop_use_cuda(cuda_index)
                     continue_process = config.getboolean('Values', 'cuda1_is_busy')
                     if not continue_process:
                         print("Больше нет ссылок")

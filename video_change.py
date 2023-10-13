@@ -21,7 +21,6 @@ async def set_get_config_all(section, key, value):
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
-    return ' '.join([section, key, str(value)])
 
 
 async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
