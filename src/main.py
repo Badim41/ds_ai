@@ -207,6 +207,11 @@ def preprocess_song(song_input, mdx_model_params, song_id, input_type=None):
     result_main_vocals_dereverb = AudioSegment.from_file(main_vocals_dereverb_path1, format="mp3") + AudioSegment.from_file(main_vocals_dereverb_path2, format="mp3")
     result_main_vocals_dereverb.export(song_output_dir + "/main_vocals_dereverb.mp3", format="mp3")
 
+    # удаление временных файлов
+    # for result in results:
+    #     for file in result:
+    #         os.remove(file)
+
     return (
         orig_song_path,
         song_output_dir + "/vocals.mp3",
