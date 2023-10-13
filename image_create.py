@@ -120,7 +120,7 @@ def generate_picture():
         current_time = end_time.time()
         print("Конец:", current_time)
         
-        time_elapsed = end_time - start_time
-        print("Прошло времени:", time_elapsed)
-        set_get_config("spent_time", time_elapsed)
+        spent_time = end_time - start_time
+        print("Прошло времени:", spent_time)
+        set_get_config("spent_time", spent_time)
         set_get_config("result", images_filename)
