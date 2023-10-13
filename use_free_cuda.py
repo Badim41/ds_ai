@@ -20,6 +20,13 @@ def use_cuda(index=None):
         if not set_get_config_all("cuda1_is_busy"):
             set_get_config_all("cuda0_is_busy", True)
             return 1
+
+async def wait_for_cuda_async():
+    while True:
+        if not set_get_config_all("cuda0_is_busy"):
+            return 0
+        if not set_get_config_all("cuda1_is_busy"):
+            return 1
 def stop_use_cuda(index):
     set_get_config_all(f"cuda{index}_is_busy", False)
 def check_cuda(index=None):

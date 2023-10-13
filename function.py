@@ -578,7 +578,7 @@ async def createAICaver(ctx):
         await write_in_discord(ctx, "Начинаю обработку видео")
         pool = multiprocessing.Pool(processes=3)
         for i in range(check_cuda()):
-            pool.apply_async(prepare_audio_process_cuda, (ctx, i,))
+            pool.apply_async(prepare_audio_process_cuda, (ctx,))
             time.sleep(0.05)
         if not check_cuda() == 0:
             pool.apply_async(play_audio_process, (ctx,))
@@ -702,14 +702,14 @@ async def getCaverPrms(line, ctx):
 # async def defaultRVCParams(filePath, pitch):
 #     return f"python ../AICoverGen/src/main.py -i {filePath} -dir modelsRVC/{currentAIname} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
-def prepare_audio_process_cuda(ctx, cuda_index):
+def prepare_audio_process_cuda(ctx):
+    cuda_index = use_cuda()
     print(f"DEV_START_CUDA_{cuda_index}")
     while True:
         try:
             with open("caversAI/audio_links.txt") as reader:
                 line = reader.readline()
                 if not line == "" and not line is None:
-                    use_cuda(cuda_index)
                     if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
                         asyncio.run(text_to_speech("Видео должно быть с ютуба", False, ctx))
                         asyncio.run(result_command_change("Ссылка не с YT", Color.RED))
@@ -737,8 +737,7 @@ def prepare_audio_process_cuda(ctx, cuda_index):
                     time.sleep(0.05)
                 else:
                     stop_use_cuda(cuda_index)
-                    continue_process = check_cuda(cuda_index)
-                    if not continue_process:
+                    if check_cuda() == 2:
                         print("Больше нет ссылок")
                         asyncio.run(set_get_config_all('Values', "queue", "False"))
                         break

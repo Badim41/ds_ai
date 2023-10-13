@@ -1,4 +1,5 @@
 import datetime
+import multiprocessing
 import random
 import shutil
 import subprocess
@@ -22,6 +23,17 @@ async def set_get_config_all(section, key, value):
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
 
+async def image_change(index, output_folder, prompt):
+    for filename in sorted(os.listdir(output_folder)):
+        if filename.endswith('.png'):
+            await set_get_config_all(f"Image{index}", "result", "None")
+            await set_get_config_all(f"Image{index}", "input", filename)
+            await set_get_config_all(f"Image{index}", "prompt", prompt)
+            # wait for answer
+            while True:
+                if await set_get_config_all(f"Image{index}", "result", None):
+                    break
+                time.sleep(0.25)
 
 async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
                          pitch, indexrate, loudness, main_vocal, back_vocal,
@@ -99,16 +111,15 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
     cap.release()
 
     # === обработка изображений ===
-    for filename in sorted(os.listdir(output_folder)):
-        if filename.endswith('.png'):
-            await set_get_config_all("Image", "result", "None")
-            await set_get_config_all("Image", "input", filename)
-            await set_get_config_all("Image", "prompt", prompt)
-            # wait for answer
-            while True:
-                if await set_get_config_all("Image", "result", None):
-                    break
-                time.sleep(0.25)
+    pool1 = multiprocessing.Pool(processes=1)
+    pool1.apply_async(image_change(0, output_folder, prompt,))
+    pool1.close()
+    pool2 = multiprocessing.Pool(processes=1)
+    pool2.apply_async(image_change(1, output_folder, prompt, ))
+    pool2.close()
+    # wait for results
+    pool1.join()
+    pool2.join()
 
     # === обработка звука ===
     await set_get_config_all("voice", "generated", "None")
@@ -168,7 +179,8 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
     # подсчёт времени
     spent_time = end_time - start_time
     print("Прошло времени:", spent_time)
-    await set_get_config_all("Image", "spent_time", spent_time)
+    await set_get_config_all("Image1", "spent_time", spent_time)
+    await set_get_config_all("Image2", "spent_time", spent_time)
 
     # удаление временных файлов
     os.remove(video_path)

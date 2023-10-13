@@ -16,7 +16,7 @@ from pathlib import Path
 import sys
 import discord
 from discord.ext import commands
-from use_free_cuda import use_cuda, stop_use_cuda, check_cuda
+from use_free_cuda import wait_for_cuda_async, check_cuda
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
@@ -131,30 +131,30 @@ async def __change_video(
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
                         max_value=1)
 ):
+    await wait_for_cuda_async()
     config.read('config.ini')
     voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
     if voice not in voices:
         return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
-    if await set_get_config_all("Image", "model_loaded", None) == "False":
+    if await set_get_config_all("Image1", "model_loaded", None) == "False":
         return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
-    use_cuda()
     if video_path:
         filename = str(random.randint(1, 1000000)) + ".mp4"
         await video_path.save(filename)
     # loading params
-    await set_get_config_all("Image", "strength_negative_prompt", strength_negative_prompt)
-    await set_get_config_all("Image", "strength_prompt", strength_prompt)
-    await set_get_config_all("Image", "strength", strength)
-    await set_get_config_all("Image", "seed", seed)
-    await set_get_config_all("Image", "steps", steps)
-    await set_get_config_all("Image", "negative_prompt", negative_prompt)
+    await set_get_config_all("Image1", "strength_negative_prompt", strength_negative_prompt)
+    await set_get_config_all("Image1", "strength_prompt", strength_prompt)
+    await set_get_config_all("Image1", "strength", strength)
+    await set_get_config_all("Image1", "seed", seed)
+    await set_get_config_all("Image1", "steps", steps)
+    await set_get_config_all("Image1", "negative_prompt", negative_prompt)
     print("params suc")
     # wait for answer
     from video_change import video_pipeline
     video_path = await video_pipeline(video_path, fps, extension, prompt, voice, pitch,
                                       indexrate, loudness, main_vocal, back_vocal, music,
                                       roomsize, wetness, dryness)
-    spent_time = await set_get_config_all("Image", "spent_time", None)
+    spent_time = await set_get_config_all("Image1", "spent_time", None)
     # убираем миллисекунды
     spent_time = spent_time[:spent_time.find(".")]
     # отправляем
@@ -192,9 +192,10 @@ async def __image(ctx,
                                                    default=1, min_value=0,
                                                    max_value=1)
                   ):
-    await set_get_config_all("Image", "result", "None")
+    await wait_for_cuda_async()
+    await set_get_config_all("Image1", "result", "None")
     await ctx.defer()
-    if await set_get_config_all("Image", "model_loaded", None) == "False":
+    if await set_get_config_all("Image1", "model_loaded", None) == "False":
         return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
     input_image = "images/image" + str(random.randint(1, 1000000)) + ".png"
     await image.save(input_image)
@@ -205,23 +206,23 @@ async def __image(ctx,
     if not y % 64 == 0:
         y = ((y // 64) + 1) * 64
     # loading params
-    await set_get_config_all("Image", "strength_negative_prompt", strength_negative_prompt)
-    await set_get_config_all("Image", "strength_prompt", strength_prompt)
-    await set_get_config_all("Image", "strength", strength)
-    await set_get_config_all("Image", "seed", seed)
-    await set_get_config_all("Image", "steps", steps)
-    await set_get_config_all("Image", "negative_prompt", negative_prompt)
-    await set_get_config_all("Image", "prompt", prompt)
-    await set_get_config_all("Image", "x", x)
-    await set_get_config_all("Image", "y", y)
-    await set_get_config_all("Image", "input", input_image)
+    await set_get_config_all("Image1", "strength_negative_prompt", strength_negative_prompt)
+    await set_get_config_all("Image1", "strength_prompt", strength_prompt)
+    await set_get_config_all("Image1", "strength", strength)
+    await set_get_config_all("Image1", "seed", seed)
+    await set_get_config_all("Image1", "steps", steps)
+    await set_get_config_all("Image1", "negative_prompt", negative_prompt)
+    await set_get_config_all("Image1", "prompt", prompt)
+    await set_get_config_all("Image1", "x", x)
+    await set_get_config_all("Image1", "y", y)
+    await set_get_config_all("Image1", "input", input_image)
     print("params suc")
     # wait for answer
-    output_image = await set_get_config_all("Image", "result", None)
+    output_image = await set_get_config_all("Image1", "result", None)
     while output_image == "None":
-        output_image = await set_get_config_all("Image", "result", None)
+        output_image = await set_get_config_all("Image1", "result", None)
         await asyncio.sleep(0.25)
-    spent_time = await set_get_config_all("Image", "spent_time", None)
+    spent_time = await set_get_config_all("Image1", "spent_time", None)
     # убираем часы и миллисекунды
     spent_time = spent_time[spent_time.find(":") + 1:]
     spent_time = spent_time[:spent_time.find(".")]
@@ -393,6 +394,7 @@ async def __say(
 ):
     await ctx.defer()
     await ctx.respond('Выполнение...')
+    await wait_for_cuda_async()
     from function import replace_mat_in_sentence
     if await set_get_config_default("robot_name_need") == "False":
         text = await set_get_config_default("currentainame") + ", " + text
@@ -409,6 +411,7 @@ async def __tts(
 ):
     await ctx.defer()
     await ctx.respond('Выполнение...')
+    await wait_for_cuda_async()
     config.read('config.ini')
     voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
     if ai_voice not in voices:
@@ -464,6 +467,7 @@ async def __cover(
 ):
     await ctx.defer()
     await ctx.respond('Выполнение...')
+    await wait_for_cuda_async()
     params = []
     if audio_path:
         filename = str(random.randint(1, 1000000)) + ".mp3"
@@ -761,15 +765,21 @@ if __name__ == "__main__":
     if wait_for_load_images:
         while True:
             config.read('config.ini')
-            if config.getboolean("Image", "model_loaded"):
+            if config.getboolean("Image1", "model_loaded"):
                 break
 
     print("load bot")
     bot.run(discord_token)
 
-    # если доступна 2-ая видеокарта запускаем
+    # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
     while True:
         config.read('config.ini')
-        if config.getboolean("Image", "model_loaded"):
+        if config.getboolean("Image1", "model_loaded"):
             break
+    print("second image model")
+    if check_cuda(1):
+        from image_create_cuda1 import generate_picture
+        pool3 = multiprocessing.Pool(processes=1)
+        pool3.apply_async(generate_picture)
+        pool3.close()
 
