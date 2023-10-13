@@ -645,6 +645,7 @@ if __name__ == "__main__":
         wait_for_load_moders = False
         if len(arguments) > 2:
             wait_for_load_moders = arguments[2]
+            print("found 2 arg", wait_for_load_moders)
             if wait_for_load_moders == "True":
                 wait_for_load_moders = True
     else:
