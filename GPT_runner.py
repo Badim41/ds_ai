@@ -55,13 +55,15 @@ def run():
             )
             out = tokenizer.decode(output[0], skip_special_tokens=True)
             print("generated_prompt")
+            remove_tokens = ""
             if '\n\n' in out:
                 print("\\n\\n in sentence")
                 index = out.find('\n\n')
+                out = out[:index]
                 if len(out) - index > 50:
                     remove_tokens = str(index / len(out) * tokens)
-                    print(f"слишком много токенов, советуем убрать {remove_tokens[:remove_tokens.find('.')]} токенов")
-                out = out[:index]
+                    remove_tokens = remove_tokens[:remove_tokens.find('.')]
+                    out += f"\n||слишком много токенов, советуем убрать {remove_tokens} токенов||"
                 print("\\n\\n deleted")
             else:
                 print("\\n\\n не найден")
