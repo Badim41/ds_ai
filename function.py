@@ -140,7 +140,7 @@ async def is_robot_name(text, ctx):
     global robot_names
     for name in robot_names:
         if text.startswith(name):
-            print("TRUE!!")
+            print("имя робота найдено!")
             return True
     return False
 

@@ -54,8 +54,7 @@ def run():
                 # do_sample=True
             )
             out = tokenizer.decode(output[0], skip_special_tokens=True)
-            print("generated_prompt")
-            remove_tokens = ""
+            print("generated. DEV_TEMP_OUTPUT:", out)
             if '\n\n' in out:
                 print("\\n\\n in sentence")
                 index = out.find('\n\n')
@@ -68,4 +67,3 @@ def run():
             else:
                 print("\\n\\n не найден")
             set_get_config("gpt_result", out + "$$")
-            print("DEV_TEMP_OUTPUT:", out)
