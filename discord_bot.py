@@ -16,6 +16,7 @@ from pathlib import Path
 import sys
 import discord
 from discord.ext import commands
+from use_free_cuda import use_cuda, stop_use_cuda, check_cuda
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
@@ -136,6 +137,7 @@ async def __change_video(
         return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
     if await set_get_config_all("Image", "model_loaded", None) == "False":
         return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
+    use_cuda()
     if video_path:
         filename = str(random.randint(1, 1000000)) + ".mp4"
         await video_path.save(filename)

@@ -577,23 +577,17 @@ async def createAICaver(ctx):
         print("temp3")
         await write_in_discord(ctx, "Начинаю обработку видео")
         pool = multiprocessing.Pool(processes=3)
-        if not config.getboolean('Values', 'cuda0_is_busy'):
-            pool.apply_async(prepare_audio_process_cuda_0, (ctx,))
+        for i in range(check_cuda()):
+            pool.apply_async(prepare_audio_process_cuda, (ctx, i,))
             time.sleep(0.05)
-        if not config.getboolean('Values', 'cuda0_is_busy'):
-            pool.apply_async(prepare_audio_process_cuda_1, (ctx,))
-            time.sleep(0.05)
-        if config.getboolean('Values', 'cuda0_is_busy') or config.getboolean('Values', 'cuda1_is_busy'):
+        if not check_cuda() == 0:
             pool.apply_async(play_audio_process, (ctx,))
             pool.close()
             pool.join()
     else:
-        print("temp41")
-        queue_position = 0
-        if config.getboolean('Values', 'cuda0_is_busy'):
-            queue_position += 1
-        if config.getboolean('Values', 'cuda1_is_busy'):
-            queue_position += 1
+        print("temp4")
+        # добавляем те, которые сейчас обрабатываются
+        queue_position = check_cuda()
         with open("caversAI/audio_links.txt", "r") as reader:
             lines = reader.readlines()
             queue_position += len(lines)
@@ -715,7 +709,7 @@ def prepare_audio_process_cuda(ctx, cuda_index):
             with open("caversAI/audio_links.txt") as reader:
                 line = reader.readline()
                 if not line == "" and not line is None:
-                    asyncio.run(set_get_config_all('Values', "cuda0_is_busy", "True"))
+                    use_cuda(cuda_index)
                     if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
                         asyncio.run(text_to_speech("Видео должно быть с ютуба", False, ctx))
                         asyncio.run(result_command_change("Ссылка не с YT", Color.RED))
@@ -742,54 +736,8 @@ def prepare_audio_process_cuda(ctx, cuda_index):
                     asyncio.run(console_command_runner(params, ctx))
                     time.sleep(0.05)
                 else:
-                    config.read('config.ini')
                     stop_use_cuda(cuda_index)
-                    continue_process = config.getboolean('Values', 'cuda1_is_busy')
-                    if not continue_process:
-                        print("Больше нет ссылок")
-                        asyncio.run(set_get_config_all('Values', "queue", "False"))
-                        break
-                    asyncio.sleep(0.5)
-        except (IOError, KeyboardInterrupt):
-            pass
-
-
-def prepare_audio_process_cuda_1(ctx):
-    print("DEV_START_CUDA_1")
-    while True:
-        try:
-            with open("caversAI/audio_links.txt") as reader:
-                line = reader.readline()
-                if not line == "" and not line is None:
-                    asyncio.run(set_get_config_all('Values', "cuda1_is_busy", "True"))
-                    if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
-                        asyncio.run(text_to_speech("Видео должно быть с ютуба", False, ctx))
-                        asyncio.run(result_command_change("Ссылка не с YT", Color.RED))
-                        asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
-                        continue
-
-                    # url = line[line.index("https://"):].split()[0]
-                    # if " " in url:
-                    #     url = url[:url.index(" ")]
-
-                    # command = f"{youtube_dl_path} {url} --max-filesize {video_length * 2 + 2}m --min-views 50000 --no-playlist --buffer-size 8K"
-                    # if console_command_runner(command, ctx):
-                    #     print("Условия выполнены")
-                    # else:
-                    #     print("Условия не выполнены")
-                    #     await remove_line_from_txt("caversAI/audio_links.txt", 1)
-                    #     break
-
-                    params = asyncio.run(getCaverPrms(line, ctx))
-                    params += " -cuda 1"
-                    asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
-                    print("запуск AICoverGen")
-                    asyncio.run(console_command_runner(params, ctx))
-                    time.sleep(0.05)
-                else:
-                    config.read('config.ini')
-                    asyncio.run(set_get_config_all('Values', "cuda1_is_busy", "False"))
-                    continue_process = config.getboolean('Values', 'cuda0_is_busy')
+                    continue_process = check_cuda(cuda_index)
                     if not continue_process:
                         print("Больше нет ссылок")
                         asyncio.run(set_get_config_all('Values', "queue", "False"))

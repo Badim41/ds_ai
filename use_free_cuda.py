@@ -9,7 +9,10 @@ def set_get_config_all(key, value=None):
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
-def use_cuda():
+def use_cuda(index=None):
+    if not index is None:
+        set_get_config_all(f"cuda{index}_is_busy", True)
+        return
     while True:
         if not set_get_config_all("cuda0_is_busy"):
             set_get_config_all("cuda0_is_busy", True)
