@@ -146,12 +146,12 @@ async def __change_video(
     await video_path.save(filename)
     # loading params
     for i in range(2):
-        await set_get_config_all(f"Image{i + 1}", "strength_negative_prompt", strength_negative_prompt)
-        await set_get_config_all(f"Image{i + 1}", "strength_prompt", strength_prompt)
-        await set_get_config_all(f"Image{i + 1}", "strength", strength)
-        await set_get_config_all(f"Image{i + 1}", "seed", seed)
-        await set_get_config_all(f"Image{i + 1}", "steps", steps)
-        await set_get_config_all(f"Image{i + 1}", "negative_prompt", negative_prompt)
+        await set_get_config_all(f"Image{i+1}", "strength_negative_prompt", strength_negative_prompt)
+        await set_get_config_all(f"Image{i+1}", "strength_prompt", strength_prompt)
+        await set_get_config_all(f"Image{i+1}", "strength", strength)
+        await set_get_config_all(f"Image{i+1}", "seed", seed)
+        await set_get_config_all(f"Image{i+1}", "steps", steps)
+        await set_get_config_all(f"Image{i+1}", "negative_prompt", negative_prompt)
     print("params suc")
     # wait for answer
     from video_change import video_pipeline
@@ -736,84 +736,72 @@ async def get_image_dimensions(file_path):
         raise ValueError("Формат не поддерживается")
 
 
-def run_command(cmd):
-    print(cmd)
+if __name__ == "__main__":
+    print("update 2")
     try:
-        subprocess.Popen(["python", cmd])
-    except Exception as e:
-        print(f"Произошла ошибка при запуске команды: {e}")
-
-
-async def main(load_gpt, load_images):
-    try:
-        # == load GPT ==
+        # === args ===
+        arguments = sys.argv
+        if len(arguments) > 1:
+            discord_token = arguments[1]
+            # load models? (img, gpt, all)
+            load_gpt = False
+            load_images = False
+            if len(arguments) > 2:
+                wait_for_load_moders = arguments[2]
+                if wait_for_load_moders == "all":
+                    load_gpt = True
+                    load_images = True
+                if wait_for_load_moders == "gpt":
+                    load_gpt = True
+                if wait_for_load_moders == "img":
+                    load_images = True
+        else:
+            # raise error & exit
+            print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
+            exit(-1)
         if load_gpt:
             print("load gpt model")
-            pool1 = multiprocessing.Pool(processes=1)
-            pool1.apply_async(run_command("GPT_runner.py",))
-            pool1.close()
+            from GPT_runner import run
+            run()
 
             while True:
-                await asyncio.sleep(0.5)
+                time.sleep(0.5)
                 config.read('config.ini')
                 if config.getboolean("gpt", "gpt"):
                     break
         # == load images ==
         if load_images:
             print("load image model")
-            await set_get_config_all("Values", "device", "0")
-            pool2 = multiprocessing.Pool(processes=1)
-            pool2.apply_async(run_command("image_create.py",))
-            pool2.close()
+            asyncio.run(set_get_config_all("Values", "device", "0"))
+            time.sleep(0.1)
+
+            from image_create_cuda0 import generate_picture0
+            generate_picture0()
 
             while True:
-                await asyncio.sleep(0.5)
+                time.sleep(0.5)
                 config.read('config.ini')
                 if config.getboolean("Image1", "model_loaded"):
                     break
+
             # = load images-2 =
             # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
             if check_cuda(1) == "True":
                 print("load image model-2")
-                await set_get_config_all("Values", "device", "0")
-                pool3 = multiprocessing.Pool(processes=1)
-                pool3.apply_async(run_command("image_create.py",))
-                pool3.close()
+                asyncio.run(set_get_config_all("Values", "device", "1"))
+                time.sleep(0.1)
+
+                from image_create_cuda1 import generate_picture1
+                generate_picture1()
+
                 if load_images:
                     while True:
-                        await asyncio.sleep(0.5)
+                        time.sleep(0.5)
                         config.read('config.ini')
                         if config.getboolean("Image2", "model_loaded"):
                             break
         # === load bot ===
         print("load bot")
         bot.run(discord_token)
-
     except Exception as e:
         print(f"Произошла ошибка: {e}")
-
-
-if __name__ == "__main__":
-    print("update 2")
-    # === args ===
-    arguments = sys.argv
-    if len(arguments) > 1:
-        discord_token = arguments[1]
-        # load models? (img, gpt, all)
-        load_gpt = False
-        load_images = False
-        if len(arguments) > 2:
-            wait_for_load_moders = arguments[2]
-            if wait_for_load_moders == "all":
-                load_gpt = True
-                load_images = True
-            if wait_for_load_moders == "gpt":
-                load_gpt = True
-            if wait_for_load_moders == "img":
-                load_images = True
-    else:
-        # raise error & exit
-        print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
-        exit(-1)
-
-    asyncio.run(main(load_gpt, load_images))

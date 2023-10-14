@@ -2,10 +2,8 @@ import os
 import struct
 import time
 import configparser
-
-config = configparser.ConfigParser()
-config.read('config.ini')
-os.environ["CUDA_VISIBLE_DEVICES"] = config.get("Values", "device")
+cuda_number = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
 import torch
 import numpy as np
 from diffusers import KandinskyV22PriorEmb2EmbPipeline, KandinskyV22ControlnetImg2ImgPipeline
@@ -13,13 +11,14 @@ from diffusers.utils import load_image
 from transformers import pipeline
 import datetime
 
+config = configparser.ConfigParser()
 
 def set_get_config(key, value=None):
     config.read('config.ini')
     if value is None:
-        return config.get('Image1', key)
+        return config.get(f'Image{cuda_number}', key)
 
-    config.set('Image1', key, str(value))
+    config.set(f'Image{cuda_number}', key, str(value))
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
@@ -41,7 +40,7 @@ async def get_image_dimensions(file_path):
         raise ValueError("Формат не поддерживается")
 
 
-def generate_picture():
+def generate_picture1():
     # test IMAGES 1
     print("image1")
 
@@ -70,10 +69,10 @@ def generate_picture():
     # loop update image prompt
     while True:
         try:
-            print("check prompt0")
+            print(f"check prompt{cuda_number}")
             prompt = set_get_config("prompt")
             if prompt == "None":
-                time.sleep(10)
+                time.sleep(1)
                 continue
             set_get_config("prompt", "None")
             start_time = datetime.datetime.now()
