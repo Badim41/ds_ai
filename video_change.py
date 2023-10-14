@@ -43,15 +43,15 @@ def image_change(index, output_folder, prompt):
             i += 1
             if i % 2 == index:
                 print("changing...", filename)
-                set_get_config_all_not_async(f"Image{index}", "result", "None")
-                set_get_config_all_not_async(f"Image{index}", "input", filename)
-                set_get_config_all_not_async(f"Image{index}", "prompt", prompt)
+                set_get_config_all_not_async(f"Image{index + 1}", "result", "None")
+                set_get_config_all_not_async(f"Image{index + 1}", "input", filename)
+                set_get_config_all_not_async(f"Image{index + 1}", "prompt", prompt)
                 # wait for answer
                 while True:
-                    if not set_get_config_all_not_async(f"Image{index}", "result", None) == "None":
+                    if not set_get_config_all_not_async(f"Image{index + 1}", "result", None) == "None":
                         break
                     time.sleep(0.25)
-    set_get_config_all_not_async(f"Video{index}", "result", True)
+    set_get_config_all_not_async(f"Video{index + 1}", "result", True)
 
 
 async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
