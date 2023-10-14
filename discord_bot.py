@@ -146,12 +146,12 @@ async def __change_video(
     await video_path.save(filename)
     # loading params
     for i in range(2):
-        await set_get_config_all(f"Image{i+1}", "strength_negative_prompt", strength_negative_prompt)
-        await set_get_config_all(f"Image{i+1}", "strength_prompt", strength_prompt)
-        await set_get_config_all(f"Image{i+1}", "strength", strength)
-        await set_get_config_all(f"Image{i+1}", "seed", seed)
-        await set_get_config_all(f"Image{i+1}", "steps", steps)
-        await set_get_config_all(f"Image{i+1}", "negative_prompt", negative_prompt)
+        await set_get_config_all(f"Image{i + 1}", "strength_negative_prompt", strength_negative_prompt)
+        await set_get_config_all(f"Image{i + 1}", "strength_prompt", strength_prompt)
+        await set_get_config_all(f"Image{i + 1}", "strength", strength)
+        await set_get_config_all(f"Image{i + 1}", "seed", seed)
+        await set_get_config_all(f"Image{i + 1}", "steps", steps)
+        await set_get_config_all(f"Image{i + 1}", "negative_prompt", negative_prompt)
     print("params suc")
     # wait for answer
     from video_change import video_pipeline
@@ -759,50 +759,27 @@ async def run_command_async(cmd):
     except Exception as e:
         print(f"Произошла ошибка: {e}")
 
-if __name__ == "__main__":
-    print("update 2")
-    try:
-        # === args ===
-        arguments = sys.argv
-        if len(arguments) > 1:
-            discord_token = arguments[1]
-            # load models? (img, gpt, all)
-            load_gpt = False
-            load_images = False
-            if len(arguments) > 2:
-                wait_for_load_moders = arguments[2]
-                if wait_for_load_moders == "all":
-                    load_gpt = True
-                    load_images = True
-                if wait_for_load_moders == "gpt":
-                    load_gpt = True
-                if wait_for_load_moders == "img":
-                    load_images = True
-        else:
-            # raise error & exit
-            print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
-            exit(-1)
-        # === load models ===
 
+async def main(load_gpt, load_images):
+    try:
         # == load GPT ==
         if load_gpt:
             print("load gpt model")
             asyncio.run(run_command_async("python GPT_runner.py"))
 
             while True:
-                time.sleep(0.5)
+                await asyncio.sleep(0.5)
                 config.read('config.ini')
                 if config.getboolean("gpt", "gpt"):
                     break
         # == load images ==
         if load_images:
             print("load image model")
-            asyncio.run(set_get_config_all("Values", "device", "0"))
-            time.sleep(0.1)
+            await set_get_config_all("Values", "device", "0")
             asyncio.run(run_command_async("python image_create.py"))
 
             while True:
-                time.sleep(0.5)
+                await asyncio.sleep(0.5)
                 config.read('config.ini')
                 if config.getboolean("Image1", "model_loaded"):
                     break
@@ -810,17 +787,43 @@ if __name__ == "__main__":
             # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
             if check_cuda(1) == "True":
                 print("load image model-2")
-                asyncio.run(set_get_config_all("Values", "device", "1"))
-                time.sleep(0.1)
+                await set_get_config_all("Values", "device", "0")
                 asyncio.run(run_command_async("python image_create.py"))
                 if load_images:
                     while True:
-                        time.sleep(0.5)
+                        await asyncio.sleep(0.5)
                         config.read('config.ini')
                         if config.getboolean("Image2", "model_loaded"):
                             break
         # === load bot ===
         print("load bot")
         bot.run(discord_token)
+
     except Exception as e:
         print(f"Произошла ошибка: {e}")
+
+
+if __name__ == "__main__":
+    print("update 2")
+    # === args ===
+    arguments = sys.argv
+    if len(arguments) > 1:
+        discord_token = arguments[1]
+        # load models? (img, gpt, all)
+        load_gpt = False
+        load_images = False
+        if len(arguments) > 2:
+            wait_for_load_moders = arguments[2]
+            if wait_for_load_moders == "all":
+                load_gpt = True
+                load_images = True
+            if wait_for_load_moders == "gpt":
+                load_gpt = True
+            if wait_for_load_moders == "img":
+                load_images = True
+    else:
+        # raise error & exit
+        print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
+        exit(-1)
+
+    asyncio.run(main(load_gpt, load_images))
