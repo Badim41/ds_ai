@@ -749,16 +749,24 @@ if __name__ == "__main__":
             discord_token = arguments[1]
             # load models? (img, gpt, all)
             load_gpt = False
-            load_images = False
+            load_images1 = False
+            load_images2 = False
             if len(arguments) > 2:
                 wait_for_load_moders = arguments[2]
                 if wait_for_load_moders == "all":
                     load_gpt = True
-                    load_images = True
+                    load_images1 = True
+                    load_images2 = True
                 if wait_for_load_moders == "gpt":
                     load_gpt = True
-                if wait_for_load_moders == "img":
-                    load_images = True
+                if wait_for_load_moders == "img1":
+                    load_images1 = True
+                if wait_for_load_moders == "img2":
+                    load_images1 = True
+                    load_images2 = True
+                if wait_for_load_moders == "gpt_img1":
+                    load_gpt = True
+                    load_images1 = True
         else:
             # raise error & exit
             print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
@@ -779,7 +787,7 @@ if __name__ == "__main__":
                 if config.getboolean("gpt", "gpt"):
                     break
         # == load images ==
-        if load_images:
+        if load_images1:
             print("load image model")
 
             from image_create_cuda0 import generate_picture0
@@ -792,24 +800,22 @@ if __name__ == "__main__":
                 if config.getboolean("Image1", "model_loaded"):
                     break
 
-            # = load images-2 =
-            # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
+        # = load images-2 =
+        # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
+        if load_images2:
             cuda1_is_avaible = check_cuda(1)
             print("second cuda", cuda1_is_avaible)
             if cuda1_is_avaible == "False":
                 print("load image model-2")
-
                 from image_create_cuda1 import generate_picture1
                 pool = multiprocessing.Pool(processes=1)
                 pool.apply_async(generate_picture1)
                 pool.close()
-
-                if load_images:
-                    while True:
-                        time.sleep(0.5)
-                        config.read('config.ini')
-                        if config.getboolean("Image2", "model_loaded"):
-                            break
+                while True:
+                    time.sleep(0.5)
+                    config.read('config.ini')
+                    if config.getboolean("Image2", "model_loaded"):
+                        break
         # ==== load bot ====
         print("====load bot====")
         bot.run(discord_token)

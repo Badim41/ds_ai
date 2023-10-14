@@ -36,6 +36,23 @@ def set_get_config_all_not_async(section, key, value):
 
 
 def image_change(index, output_folder, prompt):
+    # 1 GPU
+    if index is None:
+        print("image changing...")
+        for filename in sorted(os.listdir(output_folder)):
+            if filename.endswith('.png'):
+                print("changing...", filename)
+                set_get_config_all_not_async(f"Image1", "result", "None")
+                set_get_config_all_not_async(f"Image1", "input", os.path.join("images" + filename))
+                set_get_config_all_not_async(f"Image1", "prompt", prompt)
+                # wait for answer
+                while True:
+                    if not set_get_config_all_not_async(f"Image1", "result", None) == "None":
+                        break
+                    time.sleep(0.25)
+        set_get_config_all_not_async(f"Video1", "result", True)
+        return
+    # 2 GPU
     i = 0
     print("image changing...")
     for filename in sorted(os.listdir(output_folder)):
@@ -130,21 +147,36 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
         cap.release()
 
         # === обработка изображений ===
-        await set_get_config_all(f"Video1", "result", False)
-        await set_get_config_all(f"Video2", "result", False)
-        pool1 = multiprocessing.Pool(processes=1)
-        pool1.apply_async(image_change(0, output_folder, prompt, ))
-        pool1.close()
-        pool2 = multiprocessing.Pool(processes=1)
-        pool2.apply_async(image_change(1, output_folder, prompt, ))
-        pool2.close()
-        # wait for results
-        while True:
-            continue1 = await set_get_config_all(f"Video1", "result", None) == "True"
-            continue2 = await set_get_config_all(f"Video2", "result", None) == "True"
-            if continue1 and continue2:
-                break
-            await asyncio.sleep(0.1)
+        if await set_get_config_all("Image1", "model_loaded", None) == "True":
+            # 2 GPU
+            await set_get_config_all(f"Video1", "result", False)
+            await set_get_config_all(f"Video2", "result", False)
+            pool1 = multiprocessing.Pool(processes=1)
+            pool1.apply_async(image_change(0, output_folder, prompt, ))
+            pool1.close()
+            pool2 = multiprocessing.Pool(processes=1)
+            pool2.apply_async(image_change(1, output_folder, prompt, ))
+            pool2.close()
+            # wait for results
+            while True:
+                continue1 = await set_get_config_all(f"Video1", "result", None) == "True"
+                continue2 = await set_get_config_all(f"Video2", "result", None) == "True"
+                if continue1 and continue2:
+                    break
+                await asyncio.sleep(0.1)
+        else:
+            # 1 GPU
+            await set_get_config_all(f"Video1", "result", False)
+            pool1 = multiprocessing.Pool(processes=1)
+            pool1.apply_async(image_change(None, output_folder, prompt, ))
+            pool1.close()
+            # wait for results
+            while True:
+                continue1 = await set_get_config_all(f"Video1", "result", None) == "True"
+                if continue1:
+                    break
+                await asyncio.sleep(0.1)
+
 
         # === обработка звука ===
         if not voice is None:

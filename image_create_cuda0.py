@@ -89,26 +89,26 @@ def generate_picture0():
             strength_negative_prompt = float(set_get_config("strength_negative_prompt"))
             image_name = set_get_config("input")
             # create pipes
-            print("image_generate1")
+            print(f"image_generate(1/5), GPU:{cuda_number}")
             pipe_prior = pipe_prior.to("cuda")
             pipe = pipe.to("cuda")
-            print("image_generate2")
+            print(f"image_generate(2/5), GPU:{cuda_number}")
 
             # create generator
             generator = torch.Generator(device="cuda").manual_seed(seed)
-            print("image_generate3")
+            print(f"image_generate(3/5), GPU:{cuda_number}")
 
             # make hint
             img = load_image(image_name).resize((x, y))
             depth_estimator = pipeline("depth-estimation")
             hint = make_hint(img, depth_estimator).unsqueeze(0).half().to("cuda")
-            print("image_generate4")
+            print(f"image_generate(4/5), GPU:{cuda_number}")
 
             # run prior pipeline
             img_emb = pipe_prior(prompt=prompt, image=img, strength=strength_prompt, generator=generator)
             negative_emb = pipe_prior(prompt=negative_prompt, image=img, strength=strength_negative_prompt,
                                       generator=generator)
-            print("image_generate5")
+            print(f"image_generate(5/5), GPU:{cuda_number}")
             # run controlnet img2img pipeline
             images = pipe(
                 image=img,
