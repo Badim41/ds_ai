@@ -789,7 +789,7 @@ if __name__ == "__main__":
 
             # = load images-2 =
             # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
-            if check_cuda(1) == "False":
+            if check_cuda(1) == "True":
                 print("load image model-2")
 
                 from image_create_cuda1 import generate_picture1
