@@ -583,6 +583,7 @@ async def __add_voice(
 @bot.command(aliases=['cmd'], help="командная строка")
 async def command_line(ctx, *args):
     text = " ".join(args)
+    print("command line:", text)
     try:
         process = subprocess.Popen(text, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         stdout, stderr = process.communicate()
