@@ -199,7 +199,7 @@ async def __image(ctx,
                                                    default=1, min_value=0,
                                                    max_value=1)
                   ):
-    cuda_used = await use_cuda_async()
+    cuda_used = int(await use_cuda_async()) + 1
     await set_get_config_all("Image1", "result", "None")
     await ctx.defer()
     if await set_get_config_all("Image1", "model_loaded", None) == "False":
@@ -243,7 +243,7 @@ async def __image(ctx,
     # удаляем временные файлы
     os.remove(output_image)
     # перестаём использовать видеокарту
-    await stop_use_cuda_async(cuda_used)
+    await stop_use_cuda_async(cuda_used - 1)
 
 
 @bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
