@@ -1,5 +1,6 @@
 import asyncio
 import configparser
+import time
 
 config = configparser.ConfigParser()
 
@@ -35,6 +36,7 @@ def use_cuda(index=None):
         if not set_get_config_all("cuda1_is_busy"):
             set_get_config_all("cuda0_is_busy", True)
             return 1
+        time.sleep(0.25)
 
 
 async def use_cuda_async(index=None):
@@ -48,6 +50,7 @@ async def use_cuda_async(index=None):
         if not await set_get_config_all_async("cuda1_is_busy"):
             await set_get_config_all_async("cuda0_is_busy", True)
             return 1
+        await asyncio.sleep(0.25)
 
 
 async def wait_for_cuda_async(suffix=None):
@@ -67,6 +70,9 @@ async def wait_for_cuda_async(suffix=None):
 
 def stop_use_cuda(index):
     set_get_config_all(f"cuda{index}_is_busy", False)
+
+async def stop_use_cuda_async(index):
+    await set_get_config_all_async(f"cuda{index}_is_busy", False)
 
 
 def check_cuda(index=None):
