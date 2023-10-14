@@ -44,13 +44,11 @@ def image_change(index, output_folder, prompt):
             if i % 2 == index:
                 print("changing...", filename)
                 set_get_config_all_not_async(f"Image{index + 1}", "result", "None")
-                set_get_config_all_not_async(f"Image{index + 1}", "input", filename)
+                set_get_config_all_not_async(f"Image{index + 1}", "input", os.path.join("images" + filename))
                 set_get_config_all_not_async(f"Image{index + 1}", "prompt", prompt)
                 # wait for answer
                 while True:
-                    result = set_get_config_all_not_async(f"Image{index + 1}", "result", None)
-                    print(result, "result")
-                    if not result == "None":
+                    if not set_get_config_all_not_async(f"Image{index + 1}", "result", None) == "None":
                         break
                     time.sleep(0.25)
     set_get_config_all_not_async(f"Video{index + 1}", "result", True)
