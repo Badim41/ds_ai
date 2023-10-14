@@ -737,7 +737,7 @@ async def get_image_dimensions(file_path):
 
 
 if __name__ == "__main__":
-    print("update 2")
+    print("update 1")
     try:
         # === args ===
         arguments = sys.argv
@@ -759,12 +759,13 @@ if __name__ == "__main__":
             # raise error & exit
             print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
             exit(-1)
+        # == load gpt ==
         if load_gpt:
             print("load gpt model")
             from GPT_runner import run
 
             pool = multiprocessing.Pool(processes=1)
-            pool.apply_async(run())
+            pool.apply_async(run)
             pool.close()
             print("process")
 
@@ -779,7 +780,7 @@ if __name__ == "__main__":
 
             from image_create_cuda0 import generate_picture0
             pool = multiprocessing.Pool(processes=1)
-            pool.apply_async(generate_picture0())
+            pool.apply_async(generate_picture0)
             pool.close()
             print("process")
             while True:
@@ -795,7 +796,7 @@ if __name__ == "__main__":
 
                 from image_create_cuda1 import generate_picture1
                 pool = multiprocessing.Pool(processes=1)
-                pool.apply_async(generate_picture1())
+                pool.apply_async(generate_picture1)
                 pool.close()
                 print("process")
 
