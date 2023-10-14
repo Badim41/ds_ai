@@ -99,7 +99,7 @@ async def __change_video(
                      min_value=1,
                      max_value=1000000),
         strength: Option(float, description='насколько сильны будут изменения', required=False,
-                         default=0.5, min_value=0,
+                         default=0.15, min_value=0,
                          max_value=1),
         strength_prompt: Option(float,
                                 description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется положительный промпт',
