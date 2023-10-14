@@ -726,7 +726,7 @@ async def get_image_dimensions(file_path):
 
 
 if __name__ == "__main__":
-    print("update 1")
+    print("update 2")
     arguments = sys.argv
 
     if len(arguments) > 1:
