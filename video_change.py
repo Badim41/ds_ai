@@ -48,7 +48,9 @@ def image_change(index, output_folder, prompt):
                 set_get_config_all_not_async(f"Image{index + 1}", "prompt", prompt)
                 # wait for answer
                 while True:
-                    if not set_get_config_all_not_async(f"Image{index + 1}", "result", None) == "None":
+                    result = set_get_config_all_not_async(f"Image{index + 1}", "result", None)
+                    print(result, "result")
+                    if not result == "None":
                         break
                     time.sleep(0.25)
     set_get_config_all_not_async(f"Video{index + 1}", "result", True)
