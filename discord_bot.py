@@ -6,7 +6,6 @@ import subprocess
 import configparser
 import asyncio
 import time
-import wave
 
 from pydub import AudioSegment
 
@@ -213,7 +212,7 @@ async def __image(ctx,
         await use_cuda_async(0)
         cuda_used = 1
 
-    print(cuda_used)
+    print("GPU:", cuda_used)
     await set_get_config_all(f"Image{cuda_used}", "result", "None")
     await ctx.defer()
     if await set_get_config_all(f"Image{cuda_used}", "model_loaded", None) == "False":
