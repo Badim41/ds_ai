@@ -737,6 +737,7 @@ async def get_image_dimensions(file_path):
 
 
 async def run_command_async(cmd):
+    print(cmd)
     process = await asyncio.create_subprocess_shell(
         cmd,
         stdout=asyncio.subprocess.PIPE,
