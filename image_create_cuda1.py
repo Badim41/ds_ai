@@ -64,7 +64,7 @@ def generate_picture1():
         "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
     )
 
-    print("==========Images Model Loaded0!==========")
+    print(f"==========Images Model Loaded{cuda_number}!==========")
     set_get_config("model_loaded", True)
     # loop update image prompt
     while True:
@@ -72,7 +72,7 @@ def generate_picture1():
             print(f"check prompt{cuda_number}")
             prompt = set_get_config("prompt")
             if prompt == "None":
-                time.sleep(1)
+                time.sleep(10)
                 continue
             set_get_config("prompt", "None")
             start_time = datetime.datetime.now()

@@ -767,7 +767,6 @@ if __name__ == "__main__":
             pool = multiprocessing.Pool(processes=1)
             pool.apply_async(run)
             pool.close()
-            print("process")
 
             while True:
                 time.sleep(0.5)
@@ -782,7 +781,6 @@ if __name__ == "__main__":
             pool = multiprocessing.Pool(processes=1)
             pool.apply_async(generate_picture0)
             pool.close()
-            print("process")
             while True:
                 time.sleep(0.5)
                 config.read('config.ini')
@@ -798,7 +796,6 @@ if __name__ == "__main__":
                 pool = multiprocessing.Pool(processes=1)
                 pool.apply_async(generate_picture1)
                 pool.close()
-                print("process")
 
                 if load_images:
                     while True:
