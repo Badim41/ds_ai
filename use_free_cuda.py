@@ -44,10 +44,10 @@ async def use_cuda_async(index=None):
         await set_get_config_all_async(f"cuda{index}_is_busy", True)
         return
     while True:
-        if not await set_get_config_all_async("cuda0_is_busy"):
+        if await set_get_config_all_async("cuda0_is_busy") == "False":
             await set_get_config_all_async("cuda0_is_busy", True)
             return 0
-        if not await set_get_config_all_async("cuda1_is_busy"):
+        if await set_get_config_all_async("cuda1_is_busy") == "False":
             await set_get_config_all_async("cuda0_is_busy", True)
             return 1
         await asyncio.sleep(0.25)
@@ -56,14 +56,14 @@ async def use_cuda_async(index=None):
 async def wait_for_cuda_async(suffix=None):
     if suffix == "All":
         while True:
-            if not await set_get_config_all_async("cuda0_is_busy"):
-                if not await set_get_config_all_async("cuda1_is_busy"):
+            if await set_get_config_all_async("cuda0_is_busy") == "False":
+                if await set_get_config_all_async("cuda1_is_busy") == "False":
                     return
             await asyncio.sleep(0.1)
     while True:
-        if not await set_get_config_all_async("cuda0_is_busy"):
+        if await set_get_config_all_async("cuda0_is_busy") == "False":
             return 0
-        if not await set_get_config_all_async("cuda1_is_busy"):
+        if await set_get_config_all_async("cuda1_is_busy") == "False":
             return 1
         await asyncio.sleep(0.1)
 
