@@ -2,7 +2,7 @@ import os
 import struct
 import time
 import configparser
-cuda_number = "1"
+cuda_number = "0,1"
 os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
 import torch
 import numpy as np

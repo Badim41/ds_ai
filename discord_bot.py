@@ -775,7 +775,7 @@ if __name__ == "__main__":
                 if wait_for_load_moders == "img1":
                     load_images1 = True
                 if wait_for_load_moders == "img2":
-                    load_images1 = True
+                    # load_images1 = True
                     load_images2 = True
                 if wait_for_load_moders == "gpt_img1":
                     load_gpt = True
@@ -817,7 +817,7 @@ if __name__ == "__main__":
         # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
         if load_images2:
             cuda1_is_avaible = check_cuda(1)
-            print("second cuda", cuda1_is_avaible)
+            print("second GPU is available:", cuda1_is_avaible)
             if cuda1_is_avaible == "False":
                 print("load image model-2")
                 from image_create_cuda1 import generate_picture1

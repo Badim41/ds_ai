@@ -177,7 +177,6 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
                     break
                 await asyncio.sleep(0.1)
 
-
         # === обработка звука ===
         if not voice is None:
             await set_get_config_all("voice", "generated", "None")
