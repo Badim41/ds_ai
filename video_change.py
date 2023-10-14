@@ -43,7 +43,7 @@ def image_change(index, output_folder, prompt):
             if filename.endswith('.png'):
                 print("changing...", filename)
                 set_get_config_all_not_async(f"Image1", "result", "None")
-                set_get_config_all_not_async(f"Image1", "input", "images/" + filename)
+                set_get_config_all_not_async(f"Image1", "input", "frames/" + filename)
                 set_get_config_all_not_async(f"Image1", "prompt", prompt)
                 # wait for answer
                 while True:
@@ -61,7 +61,7 @@ def image_change(index, output_folder, prompt):
             if i % 2 == index:
                 print("changing...", filename)
                 set_get_config_all_not_async(f"Image{index + 1}", "result", "None")
-                set_get_config_all_not_async(f"Image{index + 1}", "input", "images/" + filename)
+                set_get_config_all_not_async(f"Image{index + 1}", "input", "frames/" + filename)
                 set_get_config_all_not_async(f"Image{index + 1}", "prompt", prompt)
                 # wait for answer
                 while True:
