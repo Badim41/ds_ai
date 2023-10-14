@@ -738,9 +738,8 @@ async def get_image_dimensions(file_path):
 
 def run_command(cmd):
     print(cmd)
-    cmd = cmd.split(" ")
     try:
-        subprocess.Popen([cmd])
+        subprocess.Popen(["python", cmd])
     except Exception as e:
         print(f"Произошла ошибка при запуске команды: {e}")
 
@@ -751,7 +750,7 @@ async def main(load_gpt, load_images):
         if load_gpt:
             print("load gpt model")
             pool1 = multiprocessing.Pool(processes=1)
-            pool1.apply_async(run_command("python GPT_runner.py",))
+            pool1.apply_async(run_command("GPT_runner.py",))
             pool1.close()
 
             while True:
@@ -764,7 +763,7 @@ async def main(load_gpt, load_images):
             print("load image model")
             await set_get_config_all("Values", "device", "0")
             pool2 = multiprocessing.Pool(processes=1)
-            pool2.apply_async(run_command("python image_create.py",))
+            pool2.apply_async(run_command("image_create.py",))
             pool2.close()
 
             while True:
@@ -778,7 +777,7 @@ async def main(load_gpt, load_images):
                 print("load image model-2")
                 await set_get_config_all("Values", "device", "0")
                 pool3 = multiprocessing.Pool(processes=1)
-                pool3.apply_async(run_command("python image_create.py",))
+                pool3.apply_async(run_command("image_create.py",))
                 pool3.close()
                 if load_images:
                     while True:
