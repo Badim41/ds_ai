@@ -772,8 +772,6 @@ if __name__ == "__main__":
         # == load images ==
         if load_images:
             print("load image model")
-            asyncio.run(set_get_config_all("Values", "device", "0"))
-            time.sleep(0.1)
 
             from image_create_cuda0 import generate_picture0
             generate_picture0()
@@ -788,8 +786,6 @@ if __name__ == "__main__":
             # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
             if check_cuda(1) == "True":
                 print("load image model-2")
-                asyncio.run(set_get_config_all("Values", "device", "1"))
-                time.sleep(0.1)
 
                 from image_create_cuda1 import generate_picture1
                 generate_picture1()

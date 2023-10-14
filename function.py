@@ -693,7 +693,6 @@ async def getCaverPrms(line, ctx):
 def prepare_audio_process_cuda(ctx):
     use_cuda(0)
     use_cuda(1)
-    asyncio.run(set_get_config_all('Values', 'device', "None"))
 
     while True:
         try:
