@@ -111,7 +111,7 @@ async def __change_video(
                                          required=False,
                                          default=1, min_value=0,
                                          max_value=1),
-        voice: Option(str, description='Голос для видео', required=False, default=None),
+        voice: Option(str, description='Голос для видео', required=False, default="None"),
         pitch: Option(str, description='Кто говорит/поёт в видео?', required=False,
                       choices=['мужчина', 'женщина'], default=None),
         indexrate: Option(float, description='Индекс голоса (от 0 до 1)', required=False, default=0.5, min_value=0,

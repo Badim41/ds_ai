@@ -61,7 +61,7 @@ def image_change(index, output_folder, prompt):
             if i % 2 == index:
                 print("changing...", filename)
                 set_get_config_all_not_async(f"Image{index + 1}", "result", "None")
-                set_get_config_all_not_async(f"Image{index + 1}", "input", os.path.join("images" + filename))
+                set_get_config_all_not_async(f"Image{index + 1}", "input", "images/" + filename)
                 set_get_config_all_not_async(f"Image{index + 1}", "prompt", prompt)
                 # wait for answer
                 while True:
@@ -147,7 +147,7 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
         cap.release()
 
         # === обработка изображений ===
-        if await set_get_config_all("Image1", "model_loaded", None) == "True":
+        if await set_get_config_all("Image2", "model_loaded", None) == "True":
             # 2 GPU
             await set_get_config_all(f"Video1", "result", False)
             await set_get_config_all(f"Video2", "result", False)
