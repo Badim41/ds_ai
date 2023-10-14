@@ -199,7 +199,12 @@ async def __image(ctx,
                                                    default=1, min_value=0,
                                                    max_value=1)
                   ):
-    cuda_used = int(await use_cuda_async()) + 1
+    if await set_get_config_all("Image2", "model_loaded", None) == "True":
+        cuda_used = int(await use_cuda_async()) + 1
+    else:
+        await use_cuda_async(0)
+        cuda_used = 1
+
     print(cuda_used)
     await set_get_config_all(f"Image{cuda_used}", "result", "None")
     await ctx.defer()
