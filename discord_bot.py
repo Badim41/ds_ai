@@ -731,57 +731,57 @@ if __name__ == "__main__":
 
     if len(arguments) > 1:
         discord_token = arguments[1]
-
         # wait for models? (True, gpt)
-        wait_for_load_gpt = False
-        wait_for_load_images = False
+        load_gpt = False
+        load_images = False
         if len(arguments) > 2:
             wait_for_load_moders = arguments[2]
-            if wait_for_load_moders == "True":
-                wait_for_load_gpt = True
-                wait_for_load_images = True
+            if wait_for_load_moders == "all":
+                load_gpt = True
+                load_images = True
             if wait_for_load_moders == "gpt":
-                wait_for_load_gpt = True
+                load_gpt = True
             if wait_for_load_moders == "img":
-                wait_for_load_images = True
+                load_images = True
     else:
         # raise error & exit
         print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
         exit(-1)
     # load models
-    from GPT_runner import run
+    if load_gpt:
+        from GPT_runner import run
+        print("load gpt model")
+        pool = multiprocessing.Pool(processes=1)
+        pool.apply_async(run)
 
-    print("load gpt model")
-    pool = multiprocessing.Pool(processes=1)
-    pool.apply_async(run)
-    if wait_for_load_gpt:
         while True:
             config.read('config.ini')
             if config.getboolean("gpt", "gpt"):
                 break
 
-    from image_create_cuda0 import generate_picture0
-    print("load image model")
-    pool = multiprocessing.Pool(processes=1)
-    pool.apply_async(generate_picture0)
-    if wait_for_load_images:
+    if load_images:
+        from image_create_cuda0 import generate_picture0
+        print("load image model")
+        pool = multiprocessing.Pool(processes=1)
+        pool.apply_async(generate_picture0)
+
         while True:
             config.read('config.ini')
             if config.getboolean("Image1", "model_loaded"):
                 break
 
-    # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
-    if check_cuda(1) == "True":
-        from image_create_cuda1 import generate_picture1
-        print("load image model-2")
-        pool3 = multiprocessing.Pool(processes=1)
-        pool3.apply_async(generate_picture1)
-        pool3.close()
-        if wait_for_load_images:
-            while True:
-                config.read('config.ini')
-                if config.getboolean("Image2", "model_loaded"):
-                    break
+        # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
+        if check_cuda(1) == "True":
+            from image_create_cuda1 import generate_picture1
+            print("load image model-2")
+            pool3 = multiprocessing.Pool(processes=1)
+            pool3.apply_async(generate_picture1)
+            pool3.close()
+            if load_images:
+                while True:
+                    config.read('config.ini')
+                    if config.getboolean("Image2", "model_loaded"):
+                        break
 
     print("load bot")
     bot.run(discord_token)
