@@ -200,9 +200,10 @@ async def __image(ctx,
                                                    max_value=1)
                   ):
     cuda_used = int(await use_cuda_async()) + 1
-    await set_get_config_all("Image1", "result", "None")
+    print(cuda_used)
+    await set_get_config_all(f"Image{cuda_used}", "result", "None")
     await ctx.defer()
-    if await set_get_config_all("Image1", "model_loaded", None) == "False":
+    if await set_get_config_all(f"Image{cuda_used}", "model_loaded", None) == "False":
         return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
     input_image = "images/image" + str(random.randint(1, 1000000)) + ".png"
     await image.save(input_image)
