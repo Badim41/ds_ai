@@ -750,8 +750,6 @@ if __name__ == "__main__":
         exit(-1)
     # load models
     from GPT_runner import run
-    from image_create_cuda0 import generate_picture0
-    from image_create_cuda1 import generate_picture1
 
     print("load gpt model")
     pool = multiprocessing.Pool(processes=1)
@@ -762,6 +760,7 @@ if __name__ == "__main__":
             if config.getboolean("gpt", "gpt"):
                 break
 
+    from image_create_cuda0 import generate_picture0
     print("load image model")
     pool = multiprocessing.Pool(processes=1)
     pool.apply_async(generate_picture0)
@@ -773,6 +772,7 @@ if __name__ == "__main__":
 
     # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
     if check_cuda(1) == "True":
+        from image_create_cuda1 import generate_picture1
         print("load image model-2")
         pool3 = multiprocessing.Pool(processes=1)
         pool3.apply_async(generate_picture1)
