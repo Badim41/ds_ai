@@ -41,9 +41,6 @@ async def get_image_dimensions(file_path):
 
 
 def generate_picture1():
-    # test IMAGES 1
-    print("image1")
-
     def make_hint(image, depth_estimator):
         image = depth_estimator(image)["depth"]
         image = np.array(image)
@@ -54,12 +51,11 @@ def generate_picture1():
         print("image-Hint")
         return hint
 
-    print("image2")
+    print("image model loading... GPU:", cuda_number)
     pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
         "kandinsky-community/kandinsky-2-2-prior", torch_dtype=torch.float16
     )
 
-    print("image3")
     pipe = KandinskyV22ControlnetImg2ImgPipeline.from_pretrained(
         "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
     )
