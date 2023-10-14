@@ -546,6 +546,8 @@ async def __add_voice(
 ):
     await ctx.defer()
     await ctx.respond('Выполнение...')
+    if name == "None" or ";" in name or "/" in name or "\\" in name:
+        await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
     # !python download_model_with_link_AICoverGen.py {url} {dir_name} {gender} {info}
     command = None
     if gender == "женщина":
