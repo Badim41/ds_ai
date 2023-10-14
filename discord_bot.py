@@ -829,6 +829,9 @@ if __name__ == "__main__":
                     config.read('config.ini')
                     if config.getboolean("Image1", "model_loaded"):
                         break
+            else:
+                print("Не найдена вторая идеокарта!")
+                exit(1)
         # ==== load bot ====
         print("====load bot====")
         bot.run(discord_token)
