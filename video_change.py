@@ -25,7 +25,7 @@ async def set_get_config_all(section, key, value):
         config.write(configfile)
 
 
-async def set_get_config_all_not_async(section, key, value):
+def set_get_config_all_not_async(section, key, value):
     config.read('config.ini')
     if value is None:
         return config.get(section, key)
