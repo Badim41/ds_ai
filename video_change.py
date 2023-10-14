@@ -214,7 +214,7 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
                 image = cv2.imread(os.path.join(output_folder, filename))
                 resized_image = cv2.resize(image, (old_width, old_height))
                 # добавляем кадр
-                images.append(imageio.imread(resized_image))
+                images.append(resized_image)
         output_video_path = video_id + '.mp4'
 
         # Создание видео

@@ -17,9 +17,9 @@ config = configparser.ConfigParser()
 def set_get_config(key, value=None):
     config.read('config.ini')
     if value is None:
-        return config.get(f'Image{int(cuda_number) + 1}', key)
+        return config.get(f'Image1', key)
 
-    config.set(f'Image{int(cuda_number) + 1}', key, str(value))
+    config.set(f'Image1', key, str(value))
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
@@ -52,7 +52,7 @@ def generate_picture1():
         print("image-Hint")
         return hint
 
-    print("image model loading... GPU:", cuda_number)
+    print("image model loading... GPU: Both")
     pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
         "kandinsky-community/kandinsky-2-2-prior", torch_dtype=torch.float16
     )
@@ -61,15 +61,15 @@ def generate_picture1():
         "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
     )
 
-    print(f"==========Images Model Loaded{cuda_number}!==========")
+    print(f"==========Images Model Loaded Both!==========")
     set_get_config("model_loaded", True)
     # loop update image prompt
     while True:
         try:
-            print(f"check prompt{cuda_number}")
+            # print(f"check prompt{cuda_number}")
             prompt = set_get_config("prompt")
             if prompt == "None":
-                time.sleep(10)
+                time.sleep(0.1)
                 continue
             set_get_config("prompt", "None")
             start_time = datetime.datetime.now()
@@ -86,26 +86,26 @@ def generate_picture1():
             strength_negative_prompt = float(set_get_config("strength_negative_prompt"))
             image_name = set_get_config("input")
             # create pipes
-            print(f"image_generate(1/5), GPU:{cuda_number}")
+            print(f"image_generate(1/5), GPU:Both")
             pipe_prior = pipe_prior.to("cuda")
             pipe = pipe.to("cuda")
-            print(f"image_generate(2/5), GPU:{cuda_number}")
+            print(f"image_generate(2/5), GPU:Both")
 
             # create generator
             generator = torch.Generator(device="cuda").manual_seed(seed)
-            print(f"image_generate(3/5), GPU:{cuda_number}")
+            print(f"image_generate(3/5), GPU:Both")
 
             # make hint
             img = load_image(image_name).resize((x, y))
             depth_estimator = pipeline("depth-estimation")
             hint = make_hint(img, depth_estimator).unsqueeze(0).half().to("cuda")
-            print(f"image_generate(4/5), GPU:{cuda_number}")
+            print(f"image_generate(4/5), GPU:Both")
 
             # run prior pipeline
             img_emb = pipe_prior(prompt=prompt, image=img, strength=strength_prompt, generator=generator)
             negative_emb = pipe_prior(prompt=negative_prompt, image=img, strength=strength_negative_prompt,
                                       generator=generator)
-            print(f"image_generate(5/5), GPU:{cuda_number}")
+            print(f"image_generate(5/5), GPU:Both")
             # run controlnet img2img pipeline
             images = pipe(
                 image=img,
