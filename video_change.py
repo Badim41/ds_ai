@@ -143,7 +143,7 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
             frame = cv2.resize(frame, (new_width, new_height))
             frame_filename = os.path.join(output_folder, f'{frame_number:09d}.png')
             cv2.imwrite(frame_filename, frame)
-        print(f"saved {frame_number / fps_output} frames!")
+        print(f"saved {frame_number / save_img_step} frames!")
         cap.release()
 
         # === обработка изображений ===
