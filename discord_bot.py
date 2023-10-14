@@ -132,8 +132,13 @@ async def __change_video(
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
                         max_value=1)
 ):
-    await use_cuda_async(0)
-    await use_cuda_async(1)
+    if await set_get_config_all("Image2", "model_loaded", None) == "True":
+        cuda_used_number = 2
+        await use_cuda_async(0)
+        await use_cuda_async(1)
+    else:
+        cuda_used_number = 1
+        await use_cuda_async(0)
     await ctx.defer()
     config.read('config.ini')
     voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
@@ -145,7 +150,7 @@ async def __change_video(
     print(filename)
     await video_path.save(filename)
     # loading params
-    for i in range(2):
+    for i in range(cuda_used_number):
         await set_get_config_all(f"Image{i+1}", "strength_negative_prompt", strength_negative_prompt)
         await set_get_config_all(f"Image{i+1}", "strength_prompt", strength_prompt)
         await set_get_config_all(f"Image{i+1}", "strength", strength)
@@ -165,8 +170,11 @@ async def __change_video(
     await ctx.respond("Вот как я изменил ваше видео🖌. Потрачено " + spent_time)
     await send_file(ctx, video_path)
     # усвобождаем видеокарты
-    await stop_use_cuda_async(0)
-    await stop_use_cuda_async(1)
+    if cuda_used_number == 2:
+        await stop_use_cuda_async(0)
+        await stop_use_cuda_async(1)
+    else:
+        await stop_use_cuda_async(0)
 
 
 @bot.slash_command(name="change_image", description='изменить изображение нейросетью')
