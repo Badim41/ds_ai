@@ -37,10 +37,12 @@ async def set_get_config_all_not_async(section, key, value):
 
 def image_change(index, output_folder, prompt):
     i = 0
+    print("image changing...")
     for filename in sorted(os.listdir(output_folder)):
         if filename.endswith('.png'):
             i += 1
             if i % 2 == index:
+                print("changing...", filename)
                 set_get_config_all_not_async(f"Image{index}", "result", "None")
                 set_get_config_all_not_async(f"Image{index}", "input", filename)
                 set_get_config_all_not_async(f"Image{index}", "prompt", prompt)
