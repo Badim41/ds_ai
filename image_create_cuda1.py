@@ -4,6 +4,7 @@ import time
 import configparser
 cuda_number = "0,1"
 os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
+cuda_number = "0"
 import torch
 import numpy as np
 from diffusers import KandinskyV22PriorEmb2EmbPipeline, KandinskyV22ControlnetImg2ImgPipeline
