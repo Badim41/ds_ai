@@ -762,7 +762,10 @@ if __name__ == "__main__":
         if load_gpt:
             print("load gpt model")
             from GPT_runner import run
-            run()
+
+            pool = multiprocessing.Pool(processes=1)
+            pool.apply_async(run())
+            pool.close()
 
             while True:
                 time.sleep(0.5)
@@ -774,7 +777,9 @@ if __name__ == "__main__":
             print("load image model")
 
             from image_create_cuda0 import generate_picture0
-            generate_picture0()
+            pool = multiprocessing.Pool(processes=1)
+            pool.apply_async(generate_picture0())
+            pool.close()
 
             while True:
                 time.sleep(0.5)
@@ -788,7 +793,9 @@ if __name__ == "__main__":
                 print("load image model-2")
 
                 from image_create_cuda1 import generate_picture1
-                generate_picture1()
+                pool = multiprocessing.Pool(processes=1)
+                pool.apply_async(generate_picture1())
+                pool.close()
 
                 if load_images:
                     while True:
