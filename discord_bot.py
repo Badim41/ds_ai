@@ -759,9 +759,10 @@ if __name__ == "__main__":
             # raise error & exit
             print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
             exit(-1)
+        # === load models ===
         # == load gpt ==
         if load_gpt:
-            print("load gpt model")
+            print("===load gpt model===")
             from GPT_runner import run
 
             pool = multiprocessing.Pool(processes=1)
@@ -775,7 +776,7 @@ if __name__ == "__main__":
                     break
         # == load images ==
         if load_images:
-            print("load image model")
+            print("===load image model===")
 
             from image_create_cuda0 import generate_picture0
             pool = multiprocessing.Pool(processes=1)
@@ -790,7 +791,7 @@ if __name__ == "__main__":
             # = load images-2 =
             # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
             if check_cuda(1) == "True":
-                print("load image model-2")
+                print("==load image model-2==")
 
                 from image_create_cuda1 import generate_picture1
                 pool = multiprocessing.Pool(processes=1)
@@ -803,8 +804,8 @@ if __name__ == "__main__":
                         config.read('config.ini')
                         if config.getboolean("Image2", "model_loaded"):
                             break
-        # === load bot ===
-        print("load bot")
+        # ==== load bot ====
+        print("====load bot====")
         bot.run(discord_token)
     except Exception as e:
         print(f"Произошла ошибка: {e}")
