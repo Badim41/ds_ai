@@ -147,30 +147,33 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
             await asyncio.sleep(0.1)
 
         # === обработка звука ===
-        await set_get_config_all("voice", "generated", "None")
-        command = [
-            "python",
-            "src/main.py",
-            "-i", extracted_audio_path,
-            "-dir", voice,
-            "-p", str(pitch),
-            "-ir", str(indexrate),
-            "-fr", str(loudness),
-            "-mv", str(main_vocal),
-            "-bv", str(back_vocal),
-            "-iv", str(music),
-            "-rsize", str(roomsize),
-            "-rwet", str(wetness),
-            "-rdry", str(dryness)
-        ]
-        subprocess.run(command, check=True)
+        if not voice is None:
+            await set_get_config_all("voice", "generated", "None")
+            command = [
+                "python",
+                "src/main.py",
+                "-i", extracted_audio_path,
+                "-dir", voice,
+                "-p", str(pitch),
+                "-ir", str(indexrate),
+                "-fr", str(loudness),
+                "-mv", str(main_vocal),
+                "-bv", str(back_vocal),
+                "-iv", str(music),
+                "-rsize", str(roomsize),
+                "-rwet", str(wetness),
+                "-rdry", str(dryness)
+            ]
+            subprocess.run(command, check=True)
 
-        # wait for result
-        while True:
-            audio_path = await set_get_config_all('voice', 'generated', None)
-            if not audio_path == "None":
-                break
-            time.sleep(0.25)
+            # wait for result
+            while True:
+                audio_path = await set_get_config_all('voice', 'generated', None)
+                if not audio_path == "None":
+                    break
+                time.sleep(0.25)
+        else:
+            audio_path = extracted_audio_path
 
         # === Снова создаём видео ===
         images = []
