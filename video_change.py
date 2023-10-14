@@ -48,7 +48,7 @@ def image_change(index, output_folder, prompt):
                 set_get_config_all_not_async(f"Image{index}", "prompt", prompt)
                 # wait for answer
                 while True:
-                    if set_get_config_all_not_async(f"Image{index}", "result", None):
+                    if not set_get_config_all_not_async(f"Image{index}", "result", None) == "None":
                         break
                     time.sleep(0.25)
     set_get_config_all_not_async(f"Video{index}", "result", True)
@@ -126,7 +126,7 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
             frame = cv2.resize(frame, (new_width, new_height))
             frame_filename = os.path.join(output_folder, f'{frame_number:09d}.png')
             cv2.imwrite(frame_filename, frame)
-        print(f"saved {frame_number // fps_output} frames!")
+        print(f"saved {frame_number / fps_output} frames!")
         cap.release()
 
         # === обработка изображений ===
