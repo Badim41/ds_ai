@@ -24,6 +24,7 @@ async def set_get_config_all(section, key, value):
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
 
+
 async def set_get_config_all_not_async(section, key, value):
     config.read('config.ini')
     if value is None:
@@ -33,18 +34,23 @@ async def set_get_config_all_not_async(section, key, value):
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
 
+
 def image_change(index, output_folder, prompt):
+    i = 0
     for filename in sorted(os.listdir(output_folder)):
         if filename.endswith('.png'):
-            set_get_config_all_not_async(f"Image{index}", "result", "None")
-            set_get_config_all_not_async(f"Image{index}", "input", filename)
-            set_get_config_all_not_async(f"Image{index}", "prompt", prompt)
-            # wait for answer
-            while True:
-                if set_get_config_all_not_async(f"Image{index}", "result", None):
-                    break
-                time.sleep(0.25)
+            i += 1
+            if i % 2 == index:
+                set_get_config_all_not_async(f"Image{index}", "result", "None")
+                set_get_config_all_not_async(f"Image{index}", "input", filename)
+                set_get_config_all_not_async(f"Image{index}", "prompt", prompt)
+                # wait for answer
+                while True:
+                    if set_get_config_all_not_async(f"Image{index}", "result", None):
+                        break
+                    time.sleep(0.25)
     set_get_config_all_not_async(f"Video{index}", "result", True)
+
 
 async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
                          pitch, indexrate, loudness, main_vocal, back_vocal,
