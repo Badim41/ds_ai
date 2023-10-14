@@ -43,7 +43,7 @@ def image_change(index, output_folder, prompt):
             if filename.endswith('.png'):
                 print("changing...", filename)
                 set_get_config_all_not_async(f"Image1", "result", "None")
-                set_get_config_all_not_async(f"Image1", "input", os.path.join("images/" + filename))
+                set_get_config_all_not_async(f"Image1", "input", "images/" + filename)
                 set_get_config_all_not_async(f"Image1", "prompt", prompt)
                 # wait for answer
                 while True:
