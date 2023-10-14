@@ -827,7 +827,7 @@ if __name__ == "__main__":
                 while True:
                     time.sleep(0.5)
                     config.read('config.ini')
-                    if config.getboolean("Image2", "model_loaded"):
+                    if config.getboolean("Image1", "model_loaded"):
                         break
         # ==== load bot ====
         print("====load bot====")
