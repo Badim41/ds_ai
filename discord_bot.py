@@ -5,6 +5,7 @@ import struct
 import subprocess
 import configparser
 import asyncio
+import time
 import wave
 
 from pydub import AudioSegment
@@ -725,13 +726,23 @@ async def get_image_dimensions(file_path):
         raise ValueError("Формат не поддерживается")
 
 
+async def run_command_async(cmd):
+    process = await asyncio.create_subprocess_shell(
+        cmd,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
+
+    await process.communicate()
+
+
 if __name__ == "__main__":
     print("update 2")
+    # === args ===
     arguments = sys.argv
-
     if len(arguments) > 1:
         discord_token = arguments[1]
-        # wait for models? (True, gpt)
+        # load models? (img, gpt, all)
         load_gpt = False
         load_images = False
         if len(arguments) > 2:
@@ -747,42 +758,44 @@ if __name__ == "__main__":
         # raise error & exit
         print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
         exit(-1)
-    # load models
+    # === load models ===
+
+    # == load GPT ==
     if load_gpt:
-        from GPT_runner import run
         print("load gpt model")
-        pool = multiprocessing.Pool(processes=1)
-        pool.apply_async(run)
+        asyncio.run(run_command_async("python GPT_runner.py"))
 
         while True:
+            asyncio.sleep(0.5)
             config.read('config.ini')
             if config.getboolean("gpt", "gpt"):
                 break
-
+    # == load images ==
     if load_images:
-        from image_create_cuda0 import generate_picture0
         print("load image model")
-        pool = multiprocessing.Pool(processes=1)
-        pool.apply_async(generate_picture0)
+        asyncio.run(set_get_config_all("Values", "device", "0"))
+        time.sleep(0.1)
+        asyncio.run(run_command_async("python image_create.py"))
 
         while True:
+            asyncio.sleep(0.5)
             config.read('config.ini')
             if config.getboolean("Image1", "model_loaded"):
                 break
-
+        # = load images-2 =
         # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
         if check_cuda(1) == "True":
-            from image_create_cuda1 import generate_picture1
             print("load image model-2")
-            pool3 = multiprocessing.Pool(processes=1)
-            pool3.apply_async(generate_picture1)
-            pool3.close()
+            asyncio.run(set_get_config_all("Values", "device", "1"))
+            time.sleep(0.1)
+            asyncio.run(run_command_async("python image_create.py"))
             if load_images:
                 while True:
+                    asyncio.sleep(0.5)
                     config.read('config.ini')
                     if config.getboolean("Image2", "model_loaded"):
                         break
-
+    # === load bot ===
     print("load bot")
     bot.run(discord_token)
 

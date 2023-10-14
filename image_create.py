@@ -1,16 +1,17 @@
 import os
 import struct
 import time
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+import configparser
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+os.environ["CUDA_VISIBLE_DEVICES"] = config.get("Values", "device")
 import torch
 import numpy as np
 from diffusers import KandinskyV22PriorEmb2EmbPipeline, KandinskyV22ControlnetImg2ImgPipeline
 from diffusers.utils import load_image
 from transformers import pipeline
 import datetime
-import configparser
-
-config = configparser.ConfigParser()
 
 
 def set_get_config(key, value=None):
@@ -40,8 +41,7 @@ async def get_image_dimensions(file_path):
         raise ValueError("Формат не поддерживается")
 
 
-
-def generate_picture0():
+def generate_picture():
     # test IMAGES 1
     print("image1")
 
