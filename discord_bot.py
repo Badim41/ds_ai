@@ -738,6 +738,7 @@ async def get_image_dimensions(file_path):
 
 def run_command(cmd):
     print(cmd)
+    cmd = cmd.split(" ")
     try:
         subprocess.Popen([cmd])
     except Exception as e:
