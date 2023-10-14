@@ -737,27 +737,14 @@ async def get_image_dimensions(file_path):
 
 
 async def run_command_async(cmd):
-    try:
-        print(cmd)
-        process = await asyncio.create_subprocess_shell(
-            cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
+    print(cmd)
+    process = await asyncio.create_subprocess_shell(
+        cmd,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
 
-        stdout, stderr = await process.communicate()
-
-        # Вывести stdout и stderr в консоль
-        if stdout:
-            print(f"Стандартный вывод:\n{stdout.decode()}")
-        if stderr:
-            print(f"Ошибка стандартного вывода:\n{stderr.decode()}")
-        if process.returncode == 0:
-            print("Процесс успешно завершен.")
-        else:
-            print(f"Процесс завершился с кодом {process.returncode}.")
-    except Exception as e:
-        print(f"Произошла ошибка: {e}")
+    await process.communicate()
 
 
 async def main(load_gpt, load_images):
