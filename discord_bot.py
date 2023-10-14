@@ -736,15 +736,12 @@ async def get_image_dimensions(file_path):
         raise ValueError("Формат не поддерживается")
 
 
-async def run_command_async(cmd):
+def run_command_async(cmd):
     print(cmd)
-    process = await asyncio.create_subprocess_shell(
-        cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
-    )
-
-    await process.communicate()
+    try:
+        subprocess.Popen([cmd])
+    except Exception as e:
+        print(f"Произошла ошибка при запуске команды: {e}")
 
 
 async def main(load_gpt, load_images):
@@ -752,7 +749,9 @@ async def main(load_gpt, load_images):
         # == load GPT ==
         if load_gpt:
             print("load gpt model")
-            asyncio.run(run_command_async("python GPT_runner.py"))
+            pool1 = multiprocessing.Pool(processes=1)
+            pool1.apply_async(run_command_async("python GPT_runner.py",))
+            pool1.close()
 
             while True:
                 await asyncio.sleep(0.5)
@@ -763,7 +762,9 @@ async def main(load_gpt, load_images):
         if load_images:
             print("load image model")
             await set_get_config_all("Values", "device", "0")
-            asyncio.run(run_command_async("python image_create.py"))
+            pool2 = multiprocessing.Pool(processes=1)
+            pool2.apply_async(run_command_async("python image_create.py",))
+            pool2.close()
 
             while True:
                 await asyncio.sleep(0.5)
@@ -775,7 +776,9 @@ async def main(load_gpt, load_images):
             if check_cuda(1) == "True":
                 print("load image model-2")
                 await set_get_config_all("Values", "device", "0")
-                asyncio.run(run_command_async("python image_create.py"))
+                pool3 = multiprocessing.Pool(processes=1)
+                pool3.apply_async(run_command_async("python image_create.py",))
+                pool3.close()
                 if load_images:
                     while True:
                         await asyncio.sleep(0.5)
