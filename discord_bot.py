@@ -227,8 +227,10 @@ async def __image(ctx,
         y = ((y // 64) + 1) * 64
     # во избежания ошибок из-за нехватки памяти, ограничим изборажение 640x512
     while x * y > 327680:
-        x -= 64
-        y -= 64
+        if not x == 64:
+            x -= 64
+        if not y == 64
+            y -= 64
     # loading params
     await set_get_config_all(f"Image{cuda_used}", "strength_negative_prompt", strength_negative_prompt)
     await set_get_config_all(f"Image{cuda_used}", "strength_prompt", strength_prompt)
