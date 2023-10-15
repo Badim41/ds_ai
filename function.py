@@ -218,10 +218,10 @@ async def replace_mat_in_sentence(sentence):
 #     executor_service.shutdown()
 
 
-async def exit_from_voice(ctx):
-    from discord_bot import disconnect
-    await disconnect(ctx)
-    await result_command_change("выход из войса", Color.RED)
+# async def exit_from_voice(ctx):
+#     from discord_bot import disconnect
+#     await disconnect(ctx)
+#     await result_command_change("выход из войса", Color.RED)
 
 
 async def translate(text):
@@ -286,7 +286,7 @@ async def voice_commands(sentence, ctx):
             await result_command_change(f"Завершение кода через {seconds_delay}", Color.RED)
             print(f"Завершение кода по протоколу через {seconds_delay}")
             await asyncio.sleep(seconds_delay + 0.01)
-            await exit_from_voice(ctx)
+            # await exit_from_voice(ctx)
             await write_in_discord(ctx, "*выключение*")
             from discord_bot import disconnect
             await disconnect(ctx)

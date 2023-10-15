@@ -1,16 +1,25 @@
-import os
-from gtts import gTTS
-
-# from project_code_counter import list_python_files
-
-file_name = "1.mp3"
-
-if os.path.exists(file_name):
-    os.remove(file_name)
-# на вход идёт всегда русский текст, так что переводим его
-try:
-    voiceFile = gTTS('вот такое например', lang="ru")
-    # Сохранение в файл
-    voiceFile.save("1.mp3")
-except Exception as e:
-    print(f"Произошла ошибка при синтезе речи: {str(e)}")
+# import os
+# from gtts import gTTS
+#
+# # from project_code_counter import list_python_files
+#
+# file_name = "1.mp3"
+#
+# if os.path.exists(file_name):
+#     os.remove(file_name)
+# # на вход идёт всегда русский текст, так что переводим его
+# try:
+#     voiceFile = gTTS('вот такое например', lang="ru")
+#     # Сохранение в файл
+#     voiceFile.save("1.mp3")
+# except Exception as e:
+#     print(f"Произошла ошибка при синтезе речи: {str(e)}")
+string_input = ("В майнкрафте Badim42 и Keklol45, два друзей нашли крафт,\
+Их приключения в мире блоков, несомненно, были на вафле,\
+С драконами сразились, словно рыцари в доспехах,\
+Их дружба была крепче, чем алмаз в игре, точно в крепах.\
+В пещерах глубоких и таинственных они искали сокровища,\
+Светофоры из красного и зеленого света, как гирлянды на рождество,\
+И каждый раз, когда в майнкрафте они встречались вновь,\
+Их истории становились легендой, словно старинные сказки на руси вновь.")
+print(len(string_input))

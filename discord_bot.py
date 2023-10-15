@@ -756,11 +756,14 @@ async def get_image_dimensions(file_path):
 if __name__ == "__main__":
     print("update 1")
     try:
+
         # === args ===
+
         arguments = sys.argv
+
         if len(arguments) > 1:
             discord_token = arguments[1]
-            # load models? (img, gpt, all)
+            # load models? (img1, img2, gpt, gpt_img1, all)
             load_gpt = False
             load_images1 = False
             load_images2 = False
