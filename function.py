@@ -946,6 +946,17 @@ async def gtts(tts, language, output_file):
 
 async def remove_unavaible_voice_token():
     tokens = (await set_get_config_all("voice", "avaible_tokens")).split(";")
+    avaible_tokens = ""
+    skip_first = True
+    for token in tokens
+        if skip_first:
+            skip_first = False
+            continue
+        avaible_tokens += token
+    await set_get_config_all("voice", "avaible_tokens", avaible_tokens)
+
+
+
 
 async def setModelWithLanguage(language, model_type):
     if model_type == "tts":
