@@ -380,8 +380,8 @@ async def voice_commands(sentence, ctx):
             if not admin:
                 await text_to_speech("нужны права администратора", False, ctx)
                 return True
-            if sentence.strip():
-                await text_to_speech(sentence, False, ctx)
+            if not spoken_text_temp is None:
+                await text_to_speech(spoken_text_temp, False, ctx)
                 return True
             else:
                 await text_to_speech("Вы ничего не сказали", False, ctx)
