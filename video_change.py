@@ -163,7 +163,7 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
                 continue2 = await set_get_config_all(f"Video2", "result", None) == "True"
                 if continue1 and continue2:
                     break
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(10)
         else:
             # 1 GPU
             await set_get_config_all(f"Video1", "result", False)
@@ -175,7 +175,7 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
                 continue1 = await set_get_config_all(f"Video1", "result", None) == "True"
                 if continue1:
                     break
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(10)
 
         # === обработка звука ===
         if not voice == "None":
@@ -202,7 +202,7 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
                 audio_path = await set_get_config_all('voice', 'generated', None)
                 if not audio_path == "None":
                     break
-                time.sleep(0.25)
+                time.sleep(2.5)
         else:
             audio_path = extracted_audio_path
 
