@@ -883,7 +883,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     else:
         voice = "Bella"
     audio = generate(
-        text="Я сейчас читаю как сделать более реалистичный голос, а не...",
+        text=tts,
         model='eleven_multilingual_v2',
         voice=voice
     )
@@ -898,6 +898,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     if ai_dictionary == "None":
         await playSoundFile(file_name, -1, 0, ctx)
         print(f"tts(No RVC): {tts}")
+        return
 
     # используем RVC
     successful = True
