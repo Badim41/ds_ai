@@ -3,7 +3,7 @@ import struct
 import time
 import configparser
 cuda_number = "0"
-os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
 import torch
 import numpy as np
 from diffusers import KandinskyV22PriorEmb2EmbPipeline, KandinskyV22ControlnetImg2ImgPipeline
@@ -86,18 +86,18 @@ def generate_picture0():
             image_name = set_get_config("input")
             # create pipes
             print(f"image_generate(1/5), GPU:{cuda_number}")
-            pipe_prior = pipe_prior.to("cuda")
-            pipe = pipe.to("cuda")
+            pipe_prior = pipe_prior.to("cuda:0")
+            pipe = pipe.to("cuda:0")
             print(f"image_generate(2/5), GPU:{cuda_number}")
 
             # create generator
-            generator = torch.Generator(device="cuda").manual_seed(seed)
+            generator = torch.Generator(device="cuda:0").manual_seed(seed)
             print(f"image_generate(3/5), GPU:{cuda_number}")
 
             # make hint
             img = load_image(image_name).resize((x, y))
             depth_estimator = pipeline("depth-estimation")
-            hint = make_hint(img, depth_estimator).unsqueeze(0).half().to("cuda")
+            hint = make_hint(img, depth_estimator).unsqueeze(0).half().to("cuda:0")
             print(f"image_generate(4/5), GPU:{cuda_number}")
 
             # run prior pipeline
