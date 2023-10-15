@@ -818,7 +818,7 @@ if __name__ == "__main__":
         if load_images2:
             cuda1_is_avaible = check_cuda(1)
             print("second cuda", cuda1_is_avaible)
-            if cuda1_is_avaible == "True":
+            if cuda1_is_avaible == "False":
                 print("load image model-2")
                 from image_create_cuda1 import generate_picture1
                 pool = multiprocessing.Pool(processes=1)

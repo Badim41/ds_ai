@@ -5,10 +5,9 @@ from translate import Translator
 import subprocess
 import re
 import time
-import threading
 import os
 
-from gtts import gTTS
+from elevenlabs import generate, play, save
 from discord_bot import config
 from discord_bot import write_in_discord
 from use_free_cuda import use_cuda, stop_use_cuda, check_cuda, wait_for_cuda_async
@@ -878,36 +877,38 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
 
     if os.path.exists(file_name):
         os.remove(file_name)
-    # обновляем язык во избежания проблем
-    global language
-    config.read('config.ini')
-    language = config.get('Default', 'language')
-    # на вход идёт всегда русский текст, так что переводим его
-    if language != "russian":
-        tts = translate(tts)
-    try:
-        voiceFile = gTTS(tts, lang=language[:2])
-        # Сохранение в файл
-        voiceFile.save("1.mp3")
-    except Exception as e:
-        print(f"Произошла ошибка при синтезе речи: {str(e)}")
+    # заменяем на TTS в зависимости от пола
+    if currentAIpitch == 0:
+        voice = "Arnold"
+    else:
+        voice = "Bella"
+    audio = generate(
+        text="Я сейчас читаю как сделать более реалистичный голос, а не...",
+        model='eleven_multilingual_v2',
+        voice=voice
+    )
 
-    except (IOError, subprocess.CalledProcessError) as e:
-        print(e)
+    save(audio, file_name)
 
-    pitch = currentAIpitch - 1
-    if language == "russian":
-        pitch -= 1
+    # pitch = currentAIpitch - 1
+    # if language == "russian":
+    #     pitch -= 1
+
+    # если голос не выставлен
+    if ai_dictionary == "None":
+        await playSoundFile(file_name, -1, 0, ctx)
+        print(f"tts(No RVC): {tts}")
+
     # используем RVC
     successful = True
     try:
         command = [
             "python",
             "src/only_voice_change.py",
-            "-i", "1.mp3",
+            "-i", file_name,
             "-o", "2.mp3",
             "-dir", str(ai_dictionary),
-            "-p", str(pitch),
+            "-p", "0",
             "-ir", "0.5",
             "-fr", "3",
             "-rms", "0.3",
