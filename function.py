@@ -877,7 +877,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
 
     if os.path.exists(file_name):
         os.remove(file_name)
-    language = set_get_config_all("Default", "language") 
+    language = await set_get_config_all("Default", "language") 
     if len(tts) > 200 or await set_get_config_all("voice", "avaible_tokens") == "None":
         print("gtts1")
         await gtts(tts, language[:-2], file_name)
@@ -951,7 +951,8 @@ async def remove_unavaible_voice_token():
     tokens = (await set_get_config_all("voice", "avaible_tokens")).split(";")
     avaible_tokens = ""
     if len(tokens):
-        return await set_get_config_all("voice", "avaible_tokens", "None")
+        await set_get_config_all("voice", "avaible_tokens", "None")
+        return
     skip_first = True
     for token in tokens:
         if skip_first:
