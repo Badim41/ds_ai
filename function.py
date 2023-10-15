@@ -947,6 +947,8 @@ async def gtts(tts, language, output_file):
 async def remove_unavaible_voice_token():
     tokens = (await set_get_config_all("voice", "avaible_tokens")).split(";")
     avaible_tokens = ""
+    if len(tokens):
+        return await set_get_config_all("voice", "avaible_tokens", "None")
     skip_first = True
     for token in tokens
         if skip_first:
