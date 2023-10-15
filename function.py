@@ -951,7 +951,7 @@ async def remove_unavaible_voice_token():
     if len(tokens):
         return await set_get_config_all("voice", "avaible_tokens", "None")
     skip_first = True
-    for token in tokens
+    for token in tokens:
         if skip_first:
             skip_first = False
             continue
