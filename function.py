@@ -877,23 +877,25 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
 
     if os.path.exists(file_name):
         os.remove(file_name)
+    language = set_get_config_all("Default", "language") 
+    if False:
+        gtts(tts, language[-2:], file_name)
     # заменяем на TTS в зависимости от пола
-    if currentAIpitch == 0:
-        voice = "Arnold"
-    else:
-        voice = "Bella"
-    audio = generate(
-        text=tts,
-        model='eleven_multilingual_v2',
-        voice=voice
-    )
+    try:
+        if currentAIpitch == 0:
+            voice = "Arnold"
+        else:
+            voice = "Bella"
+        audio = generate(
+            text=tts,
+            model='eleven_multilingual_v2',
+            voice=voice
+        )
 
-    save(audio, file_name)
-
-    # pitch = currentAIpitch - 1
-    # if language == "russian":
-    #     pitch -= 1
-
+        save(audio, file_name)
+    except Exception as e:
+        print(f"Ошибка при выполнении команды: {e}")
+        gtts(tts, language[-2:], file_name)
     # если голос не выставлен
     if ai_dictionary == "None":
         await playSoundFile(file_name, -1, 0, ctx)
@@ -924,6 +926,9 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         print("done RVC")
         await playSoundFile("2.mp3", -1, 0, ctx)
         print(f"tts: {tts}")
+
+def gtts(tts, language, output_file):
+        
 
 
 async def setModelWithLanguage(language, model_type):
