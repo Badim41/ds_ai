@@ -24,3 +24,4 @@ imageio
 imageio[ffmpeg]
 moviepy
 elevenlabs
+gTTS
