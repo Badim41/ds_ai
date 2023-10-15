@@ -880,7 +880,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     language = await set_get_config_all("Default", "language") 
     if len(tts) > 200 or await set_get_config_all("voice", "avaible_tokens") == "None":
         print("gtts1")
-        await gtts(tts, language[:-2], file_name)
+        await gtts(tts, language[:2], file_name)
         return
     try:
         # голос TTS в зависимости от пола
@@ -897,10 +897,10 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         save(audio, file_name)
     except Exception as e:
         print(f"Ошибка при выполнении команды: {e}")
-        await remove_unavaible_token()
-        await text_to_speech(tts, False, ctx, ai_dictionary=currentainame)
+        await remove_unavaible_voice_token()
+        await text_to_speech(tts, False, ctx, ai_dictionary=ai_dictionary)
         return
-        #gtts(tts, language[:-2], file_name)
+        #gtts(tts, language[:2], file_name)
     # если голос не выставлен
     if ai_dictionary == "None":
         await playSoundFile(file_name, -1, 0, ctx)
