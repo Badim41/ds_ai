@@ -88,7 +88,7 @@ async def __change_video(
         fps: Option(int, description='Частота кадров (ОЧЕНЬ влияет на время ожидания))', required=True,
                     choices=[30, 15, 10, 6, 5, 3, 2, 1]),
         extension: Option(str, description='Расширение (сильно влияет на время ожидания)', required=True,
-                          choices=["144p", "240p", "360p", "480p"]),
+                          choices=["144p", "240p", "360p", "480p", "720p"]),
         prompt: Option(str, description='запрос', required=True),
         negative_prompt: Option(str, description='негативный запрос', default="NSFW", required=False),
         steps: Option(int, description='число шагов', required=False,
@@ -761,7 +761,7 @@ async def get_image_dimensions(file_path):
 
 
 if __name__ == "__main__":
-    print("update 1")
+    print("update 2")
     try:
 
         # === args ===
@@ -770,29 +770,21 @@ if __name__ == "__main__":
 
         if len(arguments) > 1:
             discord_token = arguments[1]
-            # load models? (img1, img2, gpt, gpt_img1, all)
+            # load models? (img, gpt, all)
             load_gpt = False
-            load_images1 = False
-            load_images2 = False
+            load_images = False
             if len(arguments) > 2:
                 wait_for_load_moders = arguments[2]
                 if wait_for_load_moders == "all":
                     load_gpt = True
-                    load_images1 = True
-                    load_images2 = True
+                    load_images = True
                 if wait_for_load_moders == "gpt":
                     load_gpt = True
-                if wait_for_load_moders == "img1":
-                    load_images1 = True
-                if wait_for_load_moders == "img2":
-                    load_images1 = True
-                    load_images2 = True
-                if wait_for_load_moders == "gpt_img1":
-                    load_gpt = True
-                    load_images1 = True
+                if wait_for_load_moders == "img":
+                    load_images = True
         else:
             # raise error & exit
-            print("Укажите discord_TOKEN и True/False (ждать или не ждать загрузку моделей)")
+            print("Укажите discord_TOKEN")
             exit(-1)
         # === load models ===
         # == load gpt ==
@@ -809,8 +801,9 @@ if __name__ == "__main__":
                 config.read('config.ini')
                 if config.getboolean("gpt", "gpt"):
                     break
+
         # == load images ==
-        if load_images1:
+        if load_images:
             print("load image model")
 
             from image_create_cuda0 import generate_picture
