@@ -10,7 +10,7 @@ import os
 from elevenlabs import generate, play, save
 from discord_bot import config
 from discord_bot import write_in_discord
-from use_free_cuda import use_cuda, stop_use_cuda, check_cuda, wait_for_cuda_async
+from use_free_cuda import use_cuda, stop_use_cuda, check_cuda, wait_for_cuda_async, stop_use_cuda_async, use_cuda_async
 
 
 class Color:
@@ -562,15 +562,17 @@ async def createAICaver(ctx):
     continue_process = config.getboolean('Values', 'queue')
     if not continue_process:
         print("temp3")
-        await wait_for_cuda_async("All")
+        await use_cuda_async(0)
+        await use_cuda_async(1)
         await write_in_discord(ctx, "Начинаю обработку аудио")
-        pool = multiprocessing.Pool(processes=2)
+        pool = multiprocessing.Pool(processes=1)
         pool.apply_async(prepare_audio_process_cuda, (ctx,))
-        time.sleep(0.05)
-        if not check_cuda() == 0:
-            pool.apply_async(play_audio_process, (ctx,))
-            pool.close()
-            pool.join()
+        pool.close()
+        pool.join()
+        print("ready audios")
+        # освобождаем видеокарты
+        await stop_use_cuda_async(0)
+        await stop_use_cuda_async(1)
     else:
         print("temp4")
         # добавляем те, которые сейчас обрабатываются
