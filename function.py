@@ -546,44 +546,47 @@ async def removePunctuation(input, chars):
 
 
 async def createAICaver(ctx):
-    global spokenText
-    message = spokenText
-    print("DEV_TEMP_SPOKEN_TEXT:", spokenText)
-    lines = message.split("\n")
-    if not os.path.exists("caversAI/audio_links.txt"):
-        with open("caversAI/audio_links.txt", "w"):
-            pass
-    print("temp1")
-    with open("caversAI/audio_links.txt", "a") as writer:
-        for line in lines:
-            writer.write(line + "\n")
-    print("temp2")
-    config.read('config.ini')
-    continue_process = config.getboolean('Values', 'queue')
-    if not continue_process:
-        print("temp3")
-        await use_cuda_async(0)
-        await use_cuda_async(1)
-        await write_in_discord(ctx, "Начинаю обработку аудио")
-        pool = multiprocessing.Pool(processes=1)
-        pool.apply_async(prepare_audio_process_cuda, (ctx,))
-        pool.close()
-        pool.join()
-        print("ready audios")
-        # освобождаем видеокарты
-        await stop_use_cuda_async(0)
-        await stop_use_cuda_async(1)
-    else:
-        print("temp4")
-        # добавляем те, которые сейчас обрабатываются
-        queue_position = check_cuda()
-        with open("caversAI/audio_links.txt", "r") as reader:
-            lines = reader.readlines()
-            queue_position += len(lines)
-        with open("caversAI/queue.txt", "r") as reader:
-            lines = reader.readlines()
-            queue_position += len(lines)
-        await write_in_discord(ctx, "Аудио добавлено в очередь. Место в очереди: " + str(queue_position))
+    try:
+        global spokenText
+        message = spokenText
+        print("DEV_TEMP_SPOKEN_TEXT:", spokenText)
+        lines = message.split("\n")
+        if not os.path.exists("caversAI/audio_links.txt"):
+            with open("caversAI/audio_links.txt", "w"):
+                pass
+        print("temp1")
+        with open("caversAI/audio_links.txt", "a") as writer:
+            for line in lines:
+                writer.write(line + "\n")
+        print("temp2")
+        config.read('config.ini')
+        continue_process = config.getboolean('Values', 'queue')
+        if not continue_process:
+            print("temp3")
+            await use_cuda_async(0)
+            await use_cuda_async(1)
+            await write_in_discord(ctx, "Начинаю обработку аудио")
+            pool = multiprocessing.Pool(processes=1)
+            pool.apply_async(prepare_audio_process_cuda, (ctx,))
+            pool.close()
+            pool.join()
+            print("ready audios")
+            # освобождаем видеокарты
+            await stop_use_cuda_async(0)
+            await stop_use_cuda_async(1)
+        else:
+            print("temp4")
+            # добавляем те, которые сейчас обрабатываются
+            queue_position = check_cuda()
+            with open("caversAI/audio_links.txt", "r") as reader:
+                lines = reader.readlines()
+                queue_position += len(lines)
+            with open("caversAI/queue.txt", "r") as reader:
+                lines = reader.readlines()
+                queue_position += len(lines)
+            await write_in_discord(ctx, "Аудио добавлено в очередь. Место в очереди: " + str(queue_position))
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
 
 
 async def getCaverPrms(line, ctx):
