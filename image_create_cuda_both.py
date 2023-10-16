@@ -62,8 +62,6 @@ def generate_picture0():
     )
 
     print(f"==========Images Model Loaded0,1!==========")
-    set_get_config("model_loaded", True, 0)
-    set_get_config("model_loaded", True, 1)
     # loop update image prompt
     pool = multiprocessing.Pool(processes=2)
     pool.apply_async(use_both_GPU_to_generate_images(pipe_prior, pipe, 0))
@@ -72,6 +70,7 @@ def generate_picture0():
     pool.join()
 
 def use_both_GPU_to_generate_images(pipe_prior, pipe, cuda_number):
+    set_get_config("model_loaded", cuda_number, "True")
     while True:
         try:
             # print(f"check prompt{cuda_number}")
