@@ -432,7 +432,6 @@ async def __say(
         ctx,
         text: Option(str, description='Сам текст/команда. Список команд: \\help-say', required=True)
 ):
-    await ctx.defer()
     await ctx.respond('Выполнение...')
     from function import replace_mat_in_sentence
     if await set_get_config_default("robot_name_need") == "False":
