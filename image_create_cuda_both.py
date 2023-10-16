@@ -63,12 +63,14 @@ def generate_picture0():
 
     print(f"==========Images Model Loaded0,1!==========")
     # loop update image prompt
-    pool = multiprocessing.Pool(processes=2)
-    pool.apply_async(use_both_GPU_to_generate_images(pipe_prior, pipe, 0))
-    pool.apply_async(use_both_GPU_to_generate_images(pipe_prior, pipe, 1))
-    pool.close()
-    pool.join()
-
+    try:
+        pool = multiprocessing.Pool(processes=2)
+        pool.apply_async(use_both_GPU_to_generate_images(pipe_prior, pipe, 0))
+        pool.apply_async(use_both_GPU_to_generate_images(pipe_prior, pipe, 1))
+        pool.close()
+        pool.join()
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
 def use_both_GPU_to_generate_images(pipe_prior, pipe, cuda_number):
     set_get_config("model_loaded", cuda_number, "True")
     while True:
