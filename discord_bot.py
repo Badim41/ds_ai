@@ -239,8 +239,10 @@ async def __image(ctx,
         y = ((y // 64) + 1) * 64
     # во избежания ошибок из-за нехватки памяти, ограничим изборажение 640x512
     while x * y > 327680:
-        x -= 64
-        y -= 64
+        if not x == 64:
+            x -= 64
+        if not y == 64:
+            y -= 64
     # loading params
     await set_get_config_all(f"Image{cuda_used}", "strength_negative_prompt", strength_negative_prompt)
     await set_get_config_all(f"Image{cuda_used}", "strength_prompt", strength_prompt)
@@ -638,7 +640,9 @@ async def run_main_with_settings(ctx, spokenText, writeAnswer):
 
 
 async def write_in_discord(ctx, text):
-    # await run_main_with_settings(ctx, text, True)
+    # await run_main_with_settings(ctx, text, True
+    if text == "":
+        text = "Ошибка. Если вы пытаетесь что-то сказать боту, повысьте длину ответа командой /lenght"
     await ctx.send(text)
 
 
@@ -790,7 +794,7 @@ if __name__ == "__main__":
                 if wait_for_load_moders == "img1":
                     load_images1 = True
                 if wait_for_load_moders == "img2":
-                    load_images1 = True
+                    # load_images1 = True
                     load_images2 = True
                 if wait_for_load_moders == "gpt_img1":
                     load_gpt = True
