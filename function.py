@@ -695,9 +695,6 @@ async def getCaverPrms(line, ctx):
 #     return f"python ../AICoverGen/src/main.py -i {filePath} -dir modelsRVC/{currentAIname} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
 def prepare_audio_process_cuda(ctx):
-    use_cuda(0)
-    use_cuda(1)
-
     while True:
         try:
             with open("caversAI/audio_links.txt") as reader:
@@ -728,12 +725,9 @@ def prepare_audio_process_cuda(ctx):
                     asyncio.run(console_command_runner(params, ctx))
                     time.sleep(0.05)
                 else:
-                    # stop_use_cuda(cuda_index)
-                    # if check_cuda() == 2:
                     print("Больше нет ссылок")
                     asyncio.run(set_get_config_all('Values', "queue", "False"))
                     break
-                    # asyncio.sleep(0.5)
         except (IOError, KeyboardInterrupt):
             pass
 
