@@ -849,7 +849,7 @@ async def console_command_runner(command, ctx):
 
 async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     await result_command_change(tts, Color.GRAY)
-
+    tts = await replace_mat_in_sentence(tts)
     if ai_dictionary is None:
         global currentAIname
         ai_dictionary = currentAIname
@@ -942,7 +942,7 @@ async def gtts(tts, language, output_file):
     try:
         voiceFile = gTTS(tts, lang=language)
         # Сохранение в файл
-        voiceFile.save(file_name)
+        voiceFile.save(output_file)
     except Exception as e:
         print(f"Произошла ошибка при синтезе речи: {str(e)}")
 
