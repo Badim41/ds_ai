@@ -65,10 +65,10 @@ def generate_picture0():
     # loop update image prompt
     while True:
         try:
-            print(f"check prompt{cuda_number}")
+            # print(f"check prompt{cuda_number}")
             prompt = set_get_config("prompt")
             if prompt == "None":
-                time.sleep(10)
+                time.sleep(0.1)
                 continue
             set_get_config("prompt", "None")
             start_time = datetime.datetime.now()

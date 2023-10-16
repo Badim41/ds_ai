@@ -51,7 +51,7 @@ def generate_picture1():
         print("image-Hint")
         return hint
 
-    print("image model loading... GPU:0,1")
+    print("image model loading... GPU:{cuda_number}")
     pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
         "kandinsky-community/kandinsky-2-2-prior", torch_dtype=torch.float16
     )
@@ -86,18 +86,18 @@ def generate_picture1():
             image_name = set_get_config("input")
             # create pipes
             print(f"image_generate(1/5), GPU:{cuda_number}")
-            pipe_prior = pipe_prior.to("cuda:0")
-            pipe = pipe.to("cuda:0")
+            pipe_prior = pipe_prior.to("cuda")
+            pipe = pipe.to("cuda")
             print(f"image_generate(2/5), GPU:{cuda_number}")
 
             # create generator
-            generator = torch.Generator(device="cuda:0").manual_seed(seed)
+            generator = torch.Generator(device="cuda").manual_seed(seed)
             print(f"image_generate(3/5), GPU:{cuda_number}")
 
             # make hint
             img = load_image(image_name).resize((x, y))
             depth_estimator = pipeline("depth-estimation")
-            hint = make_hint(img, depth_estimator).unsqueeze(0).half().to("cuda:0")
+            hint = make_hint(img, depth_estimator).unsqueeze(0).half().to("cuda")
             print(f"image_generate(4/5), GPU:{cuda_number}")
 
             # run prior pipeline
