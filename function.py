@@ -591,10 +591,9 @@ async def getCaverPrms(line, ctx):
     # SONG_INPUT
     url = "."
     if "-url" in line:
-        if "https" in line:
-            url = line[line.index("https"):]
-            if " " in url:
-                url = url[:url.index(" ")]
+        url = line[line.index("-url") + 5:]
+        if " " in url:
+            url = url[:url.index(" ")]
 
     # RVC_DIRNAME
     voice = currentAIname
