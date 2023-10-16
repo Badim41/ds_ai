@@ -6,12 +6,11 @@ import shutil
 import subprocess
 import time
 
-import cv2
-from moviepy.editor import VideoFileClip, AudioFileClip
+from PIL import Image
 import imageio
 import os
 
-
+from moviepy.editor import VideoFileClip, AudioFileClip
 
 try:
     start_time = datetime.datetime.now()
@@ -22,19 +21,18 @@ try:
     video_extension = "480p"
     fps_output = 60
 
-    # === разбиваем видео на карды ===
+    # === разбиваем видео на кадры ===
     output_folder = 'frames'
     os.makedirs(output_folder, exist_ok=True)
     video_id = str(random.randint(1, 1000000))
 
     # считаем FPS
-    cap = cv2.VideoCapture(video_path)
-    original_fps = cap.get(cv2.CAP_PROP_FPS)
+    video_clip = VideoFileClip(video_path)
+    original_fps = video_clip.fps
     print(original_fps)
 
     # Извлекаем аудио
     extracted_audio_path = video_id + ".mp3"
-    video_clip = VideoFileClip(video_path)
     audio_clip = video_clip.audio
     audio_clip.write_audiofile(extracted_audio_path)
 
@@ -76,26 +74,24 @@ try:
     save_img_step = original_fps / fps_output
 
     frame_number = 0
-    while True:
+    video_clip = VideoFileClip(video_path)
+    for frame in video_clip.iter_frames(fps=original_fps):
         frame_number += 1
-        ret, frame = cap.read()
         if not frame_number % save_img_step == 0:
             continue
-        if not ret:
-            break
-        frame = cv2.resize(frame, (new_width, new_height))
+        frame_image = Image.fromarray(frame)
+        frame_image = frame_image.resize((new_width, new_height))
         frame_filename = os.path.join(output_folder, f'{frame_number:09d}.png')
-        cv2.imwrite(frame_filename, frame)
+        frame_image.save(frame_filename)
     print(f"saved {frame_number // save_img_step} frames!")
-    cap.release()
 
     # === Снова создаём видео ===
     images = []
     for filename in sorted(os.listdir(output_folder)):
         if filename.endswith('.png'):
             # изменяем размер под нужное расширение
-            image = cv2.imread(os.path.join(output_folder, filename))
-            resized_image = cv2.resize(image, (old_width, old_height))
+            image = Image.open(os.path.join(output_folder, filename))
+            resized_image = image.resize((old_width, old_height))
             # добавляем кадр
             images.append(resized_image)
     output_video_path = video_id + '.mp4'
@@ -119,9 +115,10 @@ try:
     print("Прошло времени:", spent_time)
 
     # удаление временных файлов
-    # os.remove(video_path)
+    os.remove(video_path)
     os.remove(output_video_path)
     os.remove(extracted_audio_path)
-    # shutil.rmtree(output_folder)
+    shutil.rmtree(output_folder)
+
 except Exception as e:
     print(f"Произошла ошибка: {e}")

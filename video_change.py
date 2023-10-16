@@ -5,8 +5,7 @@ import random
 import shutil
 import subprocess
 import time
-
-import cv2
+from PIL import Image
 from moviepy.editor import VideoFileClip, AudioFileClip
 import configparser
 import imageio
@@ -85,8 +84,8 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
         video_id = str(random.randint(1, 1000000))
 
         # считаем FPS
-        cap = cv2.VideoCapture(video_path)
-        original_fps = cap.get(cv2.CAP_PROP_FPS)
+        video_clip = VideoFileClip(video_path)
+        original_fps = video_clip.fps
         print(original_fps)
 
         # Извлекаем аудио
@@ -133,18 +132,16 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
         save_img_step = original_fps / fps_output
 
         frame_number = 0
-        while True:
+        video_clip = VideoFileClip(video_path)
+        for frame in video_clip.iter_frames(fps=original_fps):
             frame_number += 1
-            ret, frame = cap.read()
             if not frame_number % save_img_step == 0:
                 continue
-            if not ret:
-                break
-            frame = cv2.resize(frame, (new_width, new_height))
+            frame_image = Image.fromarray(frame)
+            frame_image = frame_image.resize((new_width, new_height))
             frame_filename = os.path.join(output_folder, f'{frame_number:09d}.png')
-            cv2.imwrite(frame_filename, frame)
+            frame_image.save(frame_filename)
         print(f"saved {frame_number // save_img_step} frames!")
-        cap.release()
 
         # === обработка изображений ===
         if await set_get_config_all("Image2", "model_loaded", None) == "True":
@@ -211,8 +208,8 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
         for filename in sorted(os.listdir(output_folder)):
             if filename.endswith('.png'):
                 # изменяем размер под нужное расширение
-                image = cv2.imread(os.path.join(output_folder, filename))
-                resized_image = cv2.resize(image, (old_width, old_height))
+                image = Image.open(os.path.join(output_folder, filename))
+                resized_image = image.resize((old_width, old_height))
                 # добавляем кадр
                 images.append(resized_image)
         output_video_path = video_id + '.mp4'
