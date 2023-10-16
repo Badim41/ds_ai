@@ -566,10 +566,7 @@ async def createAICaver(ctx):
             await use_cuda_async(0)
             await use_cuda_async(1)
             await write_in_discord(ctx, "Начинаю обработку аудио")
-            pool = multiprocessing.Pool(processes=1)
-            pool.apply_async(prepare_audio_process_cuda, (ctx,))
-            pool.close()
-            pool.join()
+            await prepare_audio_process_cuda(ctx)
             print("ready audios")
             # освобождаем видеокарты
             await stop_use_cuda_async(0)
@@ -694,7 +691,7 @@ async def getCaverPrms(line, ctx):
 # async def defaultRVCParams(filePath, pitch):
 #     return f"python ../AICoverGen/src/main.py -i {filePath} -dir modelsRVC/{currentAIname} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
-def prepare_audio_process_cuda(ctx):
+async def prepare_audio_process_cuda(ctx):
     print("prepare_audio1")
     while True:
         try:
@@ -719,15 +716,15 @@ def prepare_audio_process_cuda(ctx):
                     #     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     #     break
                     print("prepare_audio1")
-                    params = asyncio.run(getCaverPrms(line, ctx))
-                    asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
+                    params = await getCaverPrms(line, ctx)
+                    await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     print("запуск AICoverGen")
                     print(params)
-                    asyncio.run(console_command_runner(params, ctx))
+                    await console_command_runner(params, ctx)
                     time.sleep(0.05)
                 else:
                     print("Больше нет ссылок")
-                    asyncio.run(set_get_config_all('Values', "queue", "False"))
+                    await set_get_config_all('Values', "queue", "False")
                     break
         except (IOError, KeyboardInterrupt):
             pass
