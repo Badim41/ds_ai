@@ -40,7 +40,7 @@ async def get_image_dimensions(file_path):
         raise ValueError("Формат не поддерживается")
 
 
-def generate_picture1():
+def generate_picture0():
     def make_hint(image, depth_estimator):
         image = depth_estimator(image)["depth"]
         image = np.array(image)
