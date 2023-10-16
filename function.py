@@ -695,16 +695,17 @@ async def getCaverPrms(line, ctx):
 #     return f"python ../AICoverGen/src/main.py -i {filePath} -dir modelsRVC/{currentAIname} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
 def prepare_audio_process_cuda(ctx):
+    print("prepare_audio1")
     while True:
         try:
             with open("caversAI/audio_links.txt") as reader:
                 line = reader.readline()
                 if not line == "" and not line is None:
-                    if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
-                        asyncio.run(text_to_speech("Видео должно быть с ютуба", False, ctx))
-                        asyncio.run(result_command_change("Ссылка не с YT", Color.RED))
-                        asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
-                        continue
+                    # if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
+                    #     asyncio.run(text_to_speech("Видео должно быть с ютуба", False, ctx))
+                    #     asyncio.run(result_command_change("Ссылка не с YT", Color.RED))
+                    #     asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
+                    #     continue
 
                     # url = line[line.index("https://"):].split()[0]
                     # if " " in url:
@@ -717,7 +718,7 @@ def prepare_audio_process_cuda(ctx):
                     #     print("Условия не выполнены")
                     #     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     #     break
-
+                    print("prepare_audio1")
                     params = asyncio.run(getCaverPrms(line, ctx))
                     asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
                     print("запуск AICoverGen")
