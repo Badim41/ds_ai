@@ -1,3 +1,4 @@
+import datetime
 import multiprocessing
 import os
 import random
@@ -131,6 +132,17 @@ async def __change_video(
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
                         max_value=1)
 ):
+    # выкидываем исключения
+    config.read('config.ini')
+    voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
+    if voice not in voices:
+        return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
+    if await set_get_config_all("Image1", "model_loaded", None) == "False":
+        return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
+    if not video_path:
+        return
+
+    # используем видеокарты
     if await set_get_config_all("Image2", "model_loaded", None) == "True":
         cuda_used_number = 2
         await use_cuda_async(0)
@@ -138,13 +150,11 @@ async def __change_video(
     else:
         cuda_used_number = 1
         await use_cuda_async(0)
+
     await ctx.defer()
-    config.read('config.ini')
-    voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
-    if voice not in voices:
-        return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
-    if await set_get_config_all("Image1", "model_loaded", None) == "False":
-        return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
+    # run timer
+    start_time = datetime.datetime.now()
+    # save
     filename = str(random.randint(1, 1000000)) + ".mp4"
     print(filename)
     await video_path.save(filename)
@@ -162,13 +172,15 @@ async def __change_video(
     video_path = await video_pipeline(filename, fps, extension, prompt, voice, pitch,
                                       indexrate, loudness, main_vocal, back_vocal, music,
                                       roomsize, wetness, dryness)
-    spent_time = await set_get_config_all("Image1", "spent_time", None)
+    # count time
+    end_time = datetime.datetime.now()
+    spent_time = end_time - start_time
     # убираем миллисекунды
     spent_time = spent_time[:spent_time.find(".")]
     # отправляем
     await ctx.respond("Вот как я изменил ваше видео🖌. Потрачено " + spent_time)
     await send_file(ctx, video_path)
-    # усвобождаем видеокарты
+    # освобождаем видеокарты
     if cuda_used_number == 2:
         await stop_use_cuda_async(0)
         await stop_use_cuda_async(1)
@@ -806,7 +818,7 @@ if __name__ == "__main__":
         if load_images1:
             print("load image model")
 
-            from image_create_cuda0 import generate_picture0
+            from image_create_cuda_both import generate_picture0
             pool = multiprocessing.Pool(processes=1)
             pool.apply_async(generate_picture0)
             pool.close()
@@ -823,7 +835,7 @@ if __name__ == "__main__":
             print("second cuda", cuda1_is_avaible)
             if cuda1_is_avaible == "False":
                 print("load image model-2")
-                from image_create_cuda1 import generate_picture1
+                from image_create_cuda0 import generate_picture1
                 pool = multiprocessing.Pool(processes=1)
                 pool.apply_async(generate_picture1)
                 pool.close()
