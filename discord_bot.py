@@ -137,19 +137,13 @@ async def __change_video(
     voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
     if voice not in voices:
         return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
-    if await set_get_config_all("Image1", "model_loaded", None) == "False":
+    if await set_get_config_all("Image", "model_loaded", None) == "False":
         return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
     if not video_path:
         return
 
     # используем видеокарты
-    if await set_get_config_all("Image2", "model_loaded", None) == "True":
-        cuda_used_number = 2
-        await use_cuda_async(0)
-        await use_cuda_async(1)
-    else:
-        cuda_used_number = 1
-        await use_cuda_async(0)
+    await use_cuda_async(0)
 
     await ctx.defer()
     # run timer
@@ -159,13 +153,12 @@ async def __change_video(
     print(filename)
     await video_path.save(filename)
     # loading params
-    for i in range(cuda_used_number):
-        await set_get_config_all(f"Image{i+1}", "strength_negative_prompt", strength_negative_prompt)
-        await set_get_config_all(f"Image{i+1}", "strength_prompt", strength_prompt)
-        await set_get_config_all(f"Image{i+1}", "strength", strength)
-        await set_get_config_all(f"Image{i+1}", "seed", seed)
-        await set_get_config_all(f"Image{i+1}", "steps", steps)
-        await set_get_config_all(f"Image{i+1}", "negative_prompt", negative_prompt)
+    await set_get_config_all(f"Image", "strength_negative_prompt", strength_negative_prompt)
+    await set_get_config_all(f"Image", "strength_prompt", strength_prompt)
+    await set_get_config_all(f"Image", "strength", strength)
+    await set_get_config_all(f"Image", "seed", seed)
+    await set_get_config_all(f"Image", "steps", steps)
+    await set_get_config_all(f"Image", "negative_prompt", negative_prompt)
     print("params suc")
     # wait for answer
     from video_change import video_pipeline
@@ -174,18 +167,14 @@ async def __change_video(
                                       roomsize, wetness, dryness)
     # count time
     end_time = datetime.datetime.now()
-    spent_time = end_time - start_time
+    spent_time = str(end_time - start_time)
     # убираем миллисекунды
     spent_time = spent_time[:spent_time.find(".")]
     # отправляем
     await ctx.respond("Вот как я изменил ваше видео🖌. Потрачено " + spent_time)
     await send_file(ctx, video_path)
-    # освобождаем видеокарты
-    if cuda_used_number == 2:
-        await stop_use_cuda_async(0)
-        await stop_use_cuda_async(1)
-    else:
-        await stop_use_cuda_async(0)
+    # освобождаем видеокарту
+    await stop_use_cuda_async(0)
 
 
 @bot.slash_command(name="change_image", description='изменить изображение нейросетью')
@@ -204,6 +193,16 @@ async def __image(ctx,
                                default=random.randint(1, 1000000),
                                min_value=1,
                                max_value=1000000),
+                  x: Option(int,
+                            description='изменить размер картинки по x (до 768*768)',
+                            required=False,
+                            default=None, min_value=64,
+                            max_value=768),
+                  y: Option(int,
+                            description='изменить размер картинки по y (до 768*768)',
+                            required=False,
+                            default=None, min_value=64,
+                            max_value=768),
                   strength: Option(float, description='насколько сильны будут изменения', required=False,
                                    default=0.5, min_value=0,
                                    max_value=1),
@@ -218,49 +217,51 @@ async def __image(ctx,
                                                    default=1, min_value=0,
                                                    max_value=1)
                   ):
-    if await set_get_config_all("Image2", "model_loaded", None) == "True":
-        cuda_used = int(await use_cuda_async()) + 1
-    else:
-        await use_cuda_async(0)
-        cuda_used = 1
-
-    print("GPU:", cuda_used)
-    await set_get_config_all(f"Image{cuda_used}", "result", "None")
+    await use_cuda_async(0)
+    await set_get_config_all(f"Image", "result", "None")
     await ctx.defer()
-    if await set_get_config_all(f"Image{cuda_used}", "model_loaded", None) == "False":
+    # throw extensions
+    if await set_get_config_all(f"Image", "model_loaded", None) == "False":
         return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
+    # run timer
+    start_time = datetime.datetime.now()
     input_image = "images/image" + str(random.randint(1, 1000000)) + ".png"
     await image.save(input_image)
     # get image size and round to 64
-    x, y = await get_image_dimensions(input_image)
+    if x is None and y is None:
+        x, y = await get_image_dimensions(input_image)
     if not x % 64 == 0:
         x = ((x // 64) + 1) * 64
     if not y % 64 == 0:
         y = ((y // 64) + 1) * 64
-    # во избежания ошибок из-за нехватки памяти, ограничим изборажение 640x512
-    while x * y > 327680:
+    # во избежания ошибок из-за нехватки памяти, ограничим изображение 768x768
+    while x * y > 589824:
         if not x == 64:
             x -= 64
         if not y == 64:
             y -= 64
     # loading params
-    await set_get_config_all(f"Image{cuda_used}", "strength_negative_prompt", strength_negative_prompt)
-    await set_get_config_all(f"Image{cuda_used}", "strength_prompt", strength_prompt)
-    await set_get_config_all(f"Image{cuda_used}", "strength", strength)
-    await set_get_config_all(f"Image{cuda_used}", "seed", seed)
-    await set_get_config_all(f"Image{cuda_used}", "steps", steps)
-    await set_get_config_all(f"Image{cuda_used}", "negative_prompt", negative_prompt)
-    await set_get_config_all(f"Image{cuda_used}", "prompt", prompt)
-    await set_get_config_all(f"Image{cuda_used}", "x", x)
-    await set_get_config_all(f"Image{cuda_used}", "y", y)
-    await set_get_config_all(f"Image{cuda_used}", "input", input_image)
+    await set_get_config_all(f"Image", "strength_negative_prompt", strength_negative_prompt)
+    await set_get_config_all(f"Image", "strength_prompt", strength_prompt)
+    await set_get_config_all(f"Image", "strength", strength)
+    await set_get_config_all(f"Image", "seed", seed)
+    await set_get_config_all(f"Image", "steps", steps)
+    await set_get_config_all(f"Image", "negative_prompt", negative_prompt)
+    await set_get_config_all(f"Image", "prompt", prompt)
+    await set_get_config_all(f"Image", "x", x)
+    await set_get_config_all(f"Image", "y", y)
+    await set_get_config_all(f"Image", "input", input_image)
     print("params suc")
     # wait for answer
-    output_image = await set_get_config_all(f"Image{cuda_used}", "result", None)
-    while output_image == "None":
-        output_image = await set_get_config_all(f"Image{cuda_used}", "result", None)
+    while True:
+        output_image = await set_get_config_all(f"Image", "result", None)
+        if output_image == "None":
+            break
         await asyncio.sleep(0.25)
-    spent_time = await set_get_config_all(f"Image{cuda_used}", "spent_time", None)
+
+    # count time
+    end_time = datetime.datetime.now()
+    spent_time = str(end_time - start_time)
     # убираем часы и миллисекунды
     spent_time = spent_time[spent_time.find(":") + 1:]
     spent_time = spent_time[:spent_time.find(".")]
@@ -270,7 +271,7 @@ async def __image(ctx,
     # удаляем временные файлы
     os.remove(output_image)
     # перестаём использовать видеокарту
-    await stop_use_cuda_async(cuda_used - 1)
+    await stop_use_cuda_async(0)
 
 
 @bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
@@ -624,15 +625,6 @@ async def command_line(ctx, *args):
         await ctx.send(f"Произошла неизвестная ошибка: {e}")
 
 
-@bot.command(aliases=['прослушай_кеклола'], help="ХАВХВАХВАХВАХВАХ")
-async def i_hear_you(ctx):  # if you're using commands.Bot, this will also work.
-    await ctx.send("Получаю базу данных пользователей")
-    await asyncio.sleep(1)
-    await ctx.send("Пользователь <@920404602317324388> найден!")
-    await asyncio.sleep(1)
-    await ctx.send("Получен аудиопоток микрофона!")
-
-
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
     from function import start_bot
     await start_bot(ctx, spokenText, writeAnswer)
@@ -821,32 +813,16 @@ if __name__ == "__main__":
         if load_images1:
             print("load image model")
 
-            from image_create_cuda0 import generate_picture0
+            from image_create_cuda0 import generate_picture
+
             pool = multiprocessing.Pool(processes=1)
-            pool.apply_async(generate_picture0)
+            pool.apply_async(generate_picture)
             pool.close()
             while True:
                 time.sleep(0.5)
                 config.read('config.ini')
-                if config.getboolean("Image1", "model_loaded"):
+                if config.getboolean("Image", "model_loaded"):
                     break
-
-        # = load images-2 =
-        # если доступна 2-ая видеокарта запускаем 2-ой обработчик картинок
-        if load_images2:
-            cuda1_is_avaible = check_cuda(1)
-            print("second cuda", cuda1_is_avaible)
-            if cuda1_is_avaible == "False":
-                print("load image model-2")
-                from image_create_cuda1 import generate_picture1
-                pool = multiprocessing.Pool(processes=1)
-                pool.apply_async(generate_picture1)
-                pool.close()
-                while True:
-                    time.sleep(0.5)
-                    config.read('config.ini')
-                    if config.getboolean("Image2", "model_loaded"):
-                        break
         # ==== load bot ====
         print("====load bot====")
         bot.run(discord_token)
