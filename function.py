@@ -489,6 +489,7 @@ async def setAIvoice(name, ttsNeed, ctx):
             else:
                 await set_config("currentaipitch", -1)
     else:
+        print("curentainame:", currentainame)
         await text_to_speech("голос не найден", False, ctx)
 
 
@@ -591,16 +592,15 @@ async def getCaverPrms(line, ctx):
     # SONG_INPUT
     url = "."
     if "-url" in line:
-        if "https" in line:
-            url = line[line.index("https"):]
-            if " " in url:
-                url = url[:url.index(" ")]
+        url = line[line.index("-url") + 5:]
+        if " " in url:
+            url = url[:url.index(" ")]
 
     # RVC_DIRNAME
     voice = currentAIname
     if "-voice" in line:
         voice = line[line.index("-voice") + 7:]
-        voice = voice[0, voice.index(" "):]
+        voice = voice[0: voice.index(" ")]
         currentAInameWas = currentAIname
         await setAIvoice(voice, False, ctx)
         voice = currentAIname
@@ -764,22 +764,22 @@ async def file_was_filler(folder, file_list):
         print(e)
 
 
-def play_audio_process(ctx):
+async def play_audio_process(ctx):
     try:
-        asyncio.run(set_get_config_all('Values', "queue", "True"))
+        awair set_get_config_all('Values', "queue", "True")
         while True:
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
                 if not line is None:
                     print("Playing: " + line)
-                    params = asyncio.run(getCaverPrms(line, ctx))
-                    time = asyncio.run(extract_number_after_keyword(params, "-time"))
-                    stop_milliseconds = asyncio.run(extract_number_after_keyword(params, "-start"))
+                    params = await getCaverPrms(line, ctx)
+                    time = await extract_number_after_keyword(params, "-time")
+                    stop_milliseconds = await extract_number_after_keyword(params, "-start")
                     audio_path = line.split()[0]
 
-                    asyncio.run(result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN))
-                    asyncio.run(playSoundFile(audio_path, time, stop_milliseconds, ctx))
-                    asyncio.run(remove_line_from_txt("caversAI/queue.txt", 1))
+                    await result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
+                    await playSoundFile(audio_path, time, stop_milliseconds, ctx)
+                    await remove_line_from_txt("caversAI/queue.txt", 1)
                 else:
                     config.read('config.ini')
                     continue_process = config.getboolean('Values', 'queue')
