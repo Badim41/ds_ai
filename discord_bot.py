@@ -571,7 +571,6 @@ async def __add_voice(
                              default=False)
 ):
     await ctx.defer()
-    await ctx.defer()
     await ctx.respond('Выполнение...')
     if name == "None" or ";" in name or "/" in name or "\\" in name:
         await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
