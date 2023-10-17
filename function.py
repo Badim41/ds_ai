@@ -86,7 +86,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     global robot_names
     robot_names = ["robot", "robots", "робот", "нейросеть", "hello", "роботы", "ропот"]
 
-    print("RowInput:", spokenText)
+    await result_command_change(f"RowInput:{spokenText}", Color.GRAY)
     temp_spokenText = spokenText
 
     while "стоп" in temp_spokenText:
@@ -97,9 +97,8 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     if await is_robot_name(temp_spokenText, ctx):
         await result_command_change("Обработка...", Color.BLACK)
         try:
-            print("check... Голосовая команда")
             if await voice_commands(temp_spokenText.lower(), ctx):
-                print("Голосовая команда")
+                await result_command_change(f"Голосовая команда", Color.CYAN)
                 return
         except Exception as ex:
             raise ex
@@ -107,7 +106,6 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
         try:
             file_path = "texts/memories/" + str(currentAIname) + ".txt"
             if not os.path.exists(file_path):
-                print("File doesn't exist, creating a new one.")
                 with open(file_path, "w") as create_file:
                     create_file.write("Человек: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n")
             # Open the file
@@ -142,8 +140,8 @@ async def is_robot_name(text, ctx):
     global robot_names
     for name in robot_names:
         if text.startswith(name):
-            print("имя робота найдено!")
             return True
+    await result_command_change(f"Имя робота не найдено", Color.RED)
     return False
 
 
@@ -233,11 +231,10 @@ async def translate(text):
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     config.read('config.ini')
     gpt_loaded = config.getboolean('gpt', 'gpt')
-    print("DEV_TEMP_gpt_loaded:", gpt_loaded)
     if not gpt_loaded:
         await write_in_discord(ctx, "модель чат-бота не загрузилась, подождите пару минут")
         return
-    print('generating answer')
+    await result_command_change(f"Генерация ответа...", Color.GRAY)
     await set_get_config_all("gpt", "gpt_prompt", prompt)
     result = "None"
     while result == "None":
@@ -272,8 +269,6 @@ async def voice_commands(sentence, ctx):
         [char.lower() if char.isalpha() or char.isdigit() or char.isspace() else ' ' for char in sentence])
     sentence = sentence.replace("ё", "е")
 
-    print("Input:", sentence)
-
     # перезапуск
     # if any(keyword in sentence for keyword in ["код синий", "кот синий", "коды синий", "синий"]):
     #     result_command_change("restart", Color.BLUE)
@@ -285,7 +280,6 @@ async def voice_commands(sentence, ctx):
         seconds_delay = await extract_number_after_keyword(sentence, "код красный")
         if not seconds_delay == -1:
             await result_command_change(f"Завершение кода через {seconds_delay}", Color.RED)
-            print(f"Завершение кода по протоколу через {seconds_delay}")
             await asyncio.sleep(seconds_delay + 0.01)
             # await exit_from_voice(ctx)
             await write_in_discord(ctx, "*выключение*")
@@ -335,7 +329,6 @@ async def voice_commands(sentence, ctx):
     if "протокол " in sentence:
         protocol_number = await extract_number_after_keyword(sentence, "протокол")
         if protocol_number != -1:
-            print("Протокол", protocol_number)
             await result_command_change(f"Протокол {protocol_number}", Color.GRAY)
         sentence = sentence[sentence.index(str(protocol_number)) + len(str(protocol_number)):]
         spoken_text_temp = spokenText[spokenText.index(str(protocol_number)) + len(str(protocol_number)):]
@@ -352,7 +345,7 @@ async def voice_commands(sentence, ctx):
                         "Человек: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n")
                 await text_to_speech("отчищена память", False, ctx)
             except Exception as e:
-                print("Error:", e)
+                await result_command_change(f"Ошибка: {e}", Color.RED)
             return True
         # текущий файл, найденный с помощью 34
         elif protocol_number == 228:
@@ -453,7 +446,7 @@ async def voice_commands(sentence, ctx):
 
     if "измени" in sentence and "голос на" in sentence:
         sentence = sentence[sentence.index("голос на") + 9:]
-        await setAIvoice(sentence, True, ctx)
+        await setAIvoice(sentence, ctx)
         return True
 
     if ("измени" in sentence or "смени" in sentence) and "язык на" in sentence:
@@ -478,20 +471,27 @@ async def voice_commands(sentence, ctx):
     return False
 
 
-async def setAIvoice(name, ttsNeed, ctx):
+async def setAIvoice(name, ctx):
     global currentAIname, currentAIinfo, currentAIpitch
     if os.path.exists(f"rvc_models/{name}"):
-        currentAIname = name
+
+        # Info
         with open(os.path.join(f"rvc_models/{name}/info.txt")) as file:
             await set_config(currentAIinfo, file.read())
+
+        # Name
+        currentAIname = name
         await set_config("currentainame", name)
+
+        # Pitch
         with open(os.path.join(f"rvc_models/{name}/gender.txt")) as file:
             if file.read().lower() == "female":
-                await set_config("currentaipitch", 0)
+                await set_config("currentaipitch", 1)
             else:
-                await set_config("currentaipitch", -1)
+                await set_config("currentaipitch", 0)
+
     else:
-        print("curentainame:", currentAIname)
+        await result_command_change(f"curentainame: {currentAIname}", Color.GRAY)
         await text_to_speech("голос не найден", False, ctx)
 
 
@@ -503,7 +503,7 @@ async def textInDiscord(message, ctx):
         user = await getUserName(message, "пользовател")
         message = await replaceWords(message, "пользовател", user)
         message = await removePunctuation(message, 3)
-    print("writing " + message)
+    await result_command_change(f"writing:{message}", Color.GRAY)
     await write_in_discord(ctx, message)
 
 
@@ -552,30 +552,25 @@ async def createAICaver(ctx):
     try:
         global spokenText
         message = spokenText
-        print("DEV_TEMP_SPOKEN_TEXT:", spokenText)
         lines = message.split("\n")
         if not os.path.exists("caversAI/audio_links.txt"):
             with open("caversAI/audio_links.txt", "w"):
                 pass
-        print("temp1")
         with open("caversAI/audio_links.txt", "a") as writer:
             for line in lines:
                 writer.write(line + "\n")
-        print("temp2")
         config.read('config.ini')
         continue_process = config.getboolean('Values', 'queue')
         if not continue_process:
-            print("temp3")
             await use_cuda_async(0)
             await use_cuda_async(1)
             await write_in_discord(ctx, "Начинаю обработку аудио")
             await asyncio.gather(play_audio_process(ctx), prepare_audio_process_cuda(ctx))
-            print("ready audios")
+            await result_command_change(f"ready audios", Color.GRAY)
             # освобождаем видеокарты
             await stop_use_cuda_async(0)
             await stop_use_cuda_async(1)
         else:
-            print("temp4")
             # добавляем те, которые сейчас обрабатываются
             queue_position = check_cuda()
             with open("caversAI/audio_links.txt", "r") as reader:
@@ -586,7 +581,7 @@ async def createAICaver(ctx):
                 queue_position += len(lines)
             await write_in_discord(ctx, "Аудио добавлено в очередь. Место в очереди: " + str(queue_position))
     except Exception as e:
-        print(f"Произошла ошибка: {e}")
+        await result_command_change(f"Произошла ошибка: {e}", Color.RED)
 
 
 async def getCaverPrms(line, ctx):
@@ -604,9 +599,9 @@ async def getCaverPrms(line, ctx):
         voice = line[line.index("-voice") + 7:]
         voice = voice[0: voice.index(" ")]
         currentAInameWas = currentAIname
-        await setAIvoice(voice, False, ctx)
+        await setAIvoice(voice, ctx)
         voice = currentAIname
-        await setAIvoice(currentAInameWas, False, ctx)
+        await setAIvoice(currentAInameWas, ctx)
 
     # PITCH_CHANGE
     pitch = 0
@@ -717,12 +712,12 @@ async def prepare_audio_process_cuda(ctx):
                     #     print("Условия не выполнены")
                     #     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     #     break
-                    print("prepare_audio1")
+                    print("prepare_audio2")
                     params = await getCaverPrms(line, ctx)
                     await remove_line_from_txt("caversAI/audio_links.txt", 1)
-                    print("запуск AICoverGen")
+                    await result_command_change(f"запуск AICoverGen", Color.CYAN)
                     print("Params:", params)
-                    await console_command_runner(params, ctx)
+                    await command_runner(params, ctx)
                     time.sleep(0.05)
                 else:
                     print("Больше нет ссылок")
@@ -732,10 +727,26 @@ async def prepare_audio_process_cuda(ctx):
             pass
 
 
+async def execute_command(command, ctx):
+    try:
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        stdout, stderr = process.communicate()
+        for line in stdout.decode().split('\n'):
+            if line.strip():
+                await ctx.send(line)
+        for line in stderr.decode().split('\n'):
+            if line.strip():
+                await ctx.send(line)
+    except subprocess.CalledProcessError as e:
+        await ctx.send(f"Ошибка выполнения команды: {e}")
+    except Exception as e:
+        await ctx.send(f"Произошла неизвестная ошибка: {e}")
+
+
 async def remove_line_from_txt(file_path, delete_line):
     try:
         if not os.path.exists(file_path):
-            print(f"File not found: {file_path}")
+            await result_command_change(f"Файл не найден: {file_path}", Color.RED)
             return
 
         lines = []
@@ -743,7 +754,7 @@ async def remove_line_from_txt(file_path, delete_line):
             i = 1
             for line in reader:
                 if i == delete_line:
-                    print(f"Line removed: {line}")
+                    await result_command_change(f"Line removed: {line}", Color.GRAY)
                 else:
                     lines.append(line)
                 i += 1
@@ -752,7 +763,7 @@ async def remove_line_from_txt(file_path, delete_line):
             for line in lines:
                 writer.write(line)
     except IOError as e:
-        print(e)
+        await result_command_change(f"Ошибка {e}", Color.RED)
 
 
 async def file_was_filler(folder, file_list):
@@ -763,7 +774,7 @@ async def file_was_filler(folder, file_list):
                     file_list.append(os.path.join(root, file))
         return file_list
     except IOError as e:
-        print(e)
+        await result_command_change(f"Ошибка {e}", Color.RED)
 
 
 async def play_audio_process(ctx):
@@ -774,7 +785,6 @@ async def play_audio_process(ctx):
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
                 if not line is None:
-                    print("Играет: " + line)
                     params = await getCaverPrms(line, ctx)
                     time = await extract_number_after_keyword(params, "-time")
                     stop_milliseconds = await extract_number_after_keyword(params, "-start")
@@ -787,7 +797,7 @@ async def play_audio_process(ctx):
                     config.read('config.ini')
                     continue_process = config.getboolean('Values', 'queue')
                     if not continue_process:
-                        print("file_have_links - False")
+                        await result_command_change(f"file_have_links - False", Color.CYAN)
                         break
     except (IOError, KeyboardInterrupt):
         pass
@@ -994,7 +1004,7 @@ async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
     from pydub import AudioSegment
     from discord_bot import playSoundFileDiscord
 
-    if not await wait_for_file(audio_file_path, 500, 100):
+    if not await wait_for_file(audio_file_path, 100, 10):
         print("Файл недоступен")
         return
 
