@@ -105,17 +105,18 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             raise ex
 
         try:
-            # file_path = "texts/memories/" + str(currentAIname) + ".txt"
-            # if not os.path.exists(file_path):
-            #     print("File doesn't exist, creating a new one.")
-            #     with open(file_path, "w") as create_file:
-            #         create_file.write(
-            #             await utf_code("Человек: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n"))
+            file_path = "texts/memories/" + str(currentAIname) + ".txt"
+            if not os.path.exists(file_path):
+                print("File doesn't exist, creating a new one.")
+                with open(file_path, "w") as create_file:
+                    create_file.write("Человек: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n")
             # Open the file
-            # with open(file_path, "r") as file:
-            #     file_content = file.read()
+            with open(file_path, "r") as file:
+                file_content = file.read()
             # prompt = f"Напиши ответ человеку, он говорит:\""
-            prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}. Тебе пишут: {temp_spokenText}. Ответ:"
+            prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}.\
+             У тебя есть воспоминания:\"{file_content}\".\
+              Тебе пишут: {temp_spokenText}. Ответ:"
             # prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}." \
             #          f"Тебе нужно вести диалог. Ты не говоришь, что какую-либо выполняешь роль (Например: " \
             #          f"я не могу выполнить такие действия, так как это нарушает мою роль). " \
@@ -720,7 +721,7 @@ async def prepare_audio_process_cuda(ctx):
                     params = await getCaverPrms(line, ctx)
                     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     print("запуск AICoverGen")
-                    print(params)
+                    print("Params:", params)
                     await console_command_runner(params, ctx)
                     time.sleep(0.05)
                 else:
@@ -772,7 +773,7 @@ async def play_audio_process(ctx):
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
                 if not line is None:
-                    print("Playing: " + line)
+                    print("Играет: " + line)
                     params = await getCaverPrms(line, ctx)
                     time = await extract_number_after_keyword(params, "-time")
                     stop_milliseconds = await extract_number_after_keyword(params, "-start")
@@ -851,7 +852,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     if ai_dictionary is None:
         global currentAIname
         ai_dictionary = currentAIname
-        print(currentAIname)
+        print("TTS_voice:", currentAIname)
     if write_in_memory:
         try:
             with open(f"texts/memories/{ai_dictionary}.txt", 'a') as writer2:
