@@ -481,6 +481,7 @@ async def voice_commands(sentence, ctx):
 async def setAIvoice(name, ttsNeed, ctx):
     global currentAIname, currentAIinfo, currentAIpitch
     if os.path.exists(f"rvc_models/{name}"):
+        currentAIname = name
         with open(os.path.join(f"rvc_models/{name}/info.txt")) as file:
             await set_config(currentAIinfo, file.read())
         await set_config("currentainame", name)
