@@ -7,7 +7,7 @@ import re
 import time
 import os
 
-from elevenlabs import generate, play, save
+from elevenlabs import generate, play, save, set_api_key
 from discord_bot import config
 from discord_bot import write_in_discord
 from use_free_cuda import use_cuda, stop_use_cuda, check_cuda, wait_for_cuda_async, stop_use_cuda_async, use_cuda_async
@@ -567,6 +567,7 @@ async def createAICaver(ctx):
             await use_cuda_async(0)
             await use_cuda_async(1)
             await write_in_discord(ctx, "Начинаю обработку аудио")
+            asyncio.run(play_audio_process(ctx))
             await prepare_audio_process_cuda(ctx)
             print("ready audios")
             # освобождаем видеокарты
@@ -766,7 +767,7 @@ async def file_was_filler(folder, file_list):
 
 async def play_audio_process(ctx):
     try:
-        awair set_get_config_all('Values', "queue", "True")
+        await set_get_config_all('Values', "queue", "True")
         while True:
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
@@ -874,7 +875,13 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
 
     if os.path.exists(file_name):
         os.remove(file_name)
-    language = await set_get_config_all("Default", "language") 
+    language = await set_get_config_all("Default", "language")
+
+    # получаем ключ для elevenlab
+    keys = (await set_get_config_all("voice", "avaible_tokens")).split(";")
+    key = keys[0]
+    if not key == "Free":
+        set_api_key(key)
     if len(tts) > 200 or await set_get_config_all("voice", "avaible_tokens") == "None":
         print("gtts1")
         await gtts(tts, language[:2], file_name)
