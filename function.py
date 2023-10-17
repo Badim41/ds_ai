@@ -289,8 +289,8 @@ async def voice_commands(sentence, ctx):
             await asyncio.sleep(seconds_delay + 0.01)
             # await exit_from_voice(ctx)
             await write_in_discord(ctx, "*выключение*")
-            from discord_bot import disconnect
-            await disconnect(ctx)
+            # from discord_bot import disconnect
+            # await disconnect(ctx)
             sys.exit(0)
 
     # админка
