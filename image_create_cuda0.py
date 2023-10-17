@@ -53,6 +53,7 @@ def make_hint(image, depth_estimator):
 
 
 def generate_picture():
+    cuda_2_is_avaible = True
     print("image model loading... GPU:0")
     pipe_prior_0 = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
         "kandinsky-community/kandinsky-2-2-prior", torch_dtype=torch.float16
@@ -61,21 +62,22 @@ def generate_picture():
     pipe_0 = KandinskyV22ControlnetImg2ImgPipeline.from_pretrained(
         "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
     )
+    if cuda_2_is_avaible:
+        print("image model loading... GPU:1")
+        pipe_prior_1 = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
+            "kandinsky-community/kandinsky-2-2-prior", torch_dtype=torch.float16
+        )
 
-    print("image model loading... GPU:1")
-    pipe_prior_1 = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
-        "kandinsky-community/kandinsky-2-2-prior", torch_dtype=torch.float16
-    )
-
-    pipe_1 = KandinskyV22ControlnetImg2ImgPipeline.from_pretrained(
-        "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
-    )
+        pipe_1 = KandinskyV22ControlnetImg2ImgPipeline.from_pretrained(
+            "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
+        )
 
     # Wrap the pipelines with DataParallel
     pipe_prior_0 = torch.nn.DataParallel(pipe_prior_0)
     pipe_0 = torch.nn.DataParallel(pipe_0)
-    pipe_prior_1 = torch.nn.DataParallel(pipe_prior_1)
-    pipe_1 = torch.nn.DataParallel(pipe_1)
+    if cuda_2_is_avaible:
+        pipe_prior_1 = torch.nn.DataParallel(pipe_prior_1)
+        pipe_1 = torch.nn.DataParallel(pipe_1)
 
     print(f"==========Images Model Loaded!==========")
     set_get_config("model_loaded", True)
@@ -107,14 +109,16 @@ def generate_picture():
             pipe_0 = pipe_0.to("cuda:0")
             print(f"image_generate(2/5), GPU:0")
 
-            print(f"image_generate(1/5), GPU:1")
-            pipe_prior_1 = pipe_prior_1.to("cuda:1")
-            pipe_1 = pipe_1.to("cuda:1")
-            print(f"image_generate(2/5), GPU:1")
+            if cuda_2_is_avaible:
+                print(f"image_generate(1/5), GPU:1")
+                pipe_prior_1 = pipe_prior_1.to("cuda:1")
+                pipe_1 = pipe_1.to("cuda:1")
+                print(f"image_generate(2/5), GPU:1")
 
             # create generator
             generator_0 = torch.Generator(device="cuda:0").manual_seed(seed)
-            generator_1 = torch.Generator(device="cuda:1").manual_seed(seed)
+            if cuda_2_is_avaible:
+                generator_1 = torch.Generator(device="cuda:1").manual_seed(seed)
             print(f"image_generate(3/5), GPU:0")
 
             # make hint
@@ -125,11 +129,13 @@ def generate_picture():
 
             # run prior pipeline
             img_emb_0 = pipe_prior_0(prompt=prompt, image=img, strength=strength_prompt, generator=generator_0)
-            img_emb_1 = pipe_prior_1(prompt=prompt, image=img, strength=strength_prompt, generator=generator_1)
+            if cuda_2_is_avaible:
+                img_emb_1 = pipe_prior_1(prompt=prompt, image=img, strength=strength_prompt, generator=generator_1)
             negative_emb_0 = pipe_prior_0(prompt=negative_prompt, image=img, strength=strength_negative_prompt,
                                           generator=generator_0)
-            negative_emb_1 = pipe_prior_1(prompt=negative_prompt, image=img, strength=strength_negative_prompt,
-                                          generator=generator_1)
+            if cuda_2_is_avaible:
+                negative_emb_1 = pipe_prior_1(prompt=negative_prompt, image=img, strength=strength_negative_prompt,
+                                              generator=generator_1)
             print(f"image_generate(5/5), GPU:0")
             # run controlnet img2img pipeline
             images_0 = pipe_0(
@@ -143,21 +149,22 @@ def generate_picture():
                 height=y,
                 width=x,
             ).images
-
-            images_1 = pipe_1(
-                image=img,
-                strength=strength,
-                image_embeds=img_emb_1.image_embeds,
-                negative_image_embeds=negative_emb_1.image_embeds,
-                hint=hint,
-                num_inference_steps=steps,
-                generator=generator_1,
-                height=y,
-                width=x,
-            ).images
+            if cuda_2_is_avaible:
+                images_1 = pipe_1(
+                    image=img,
+                    strength=strength,
+                    image_embeds=img_emb_1.image_embeds,
+                    negative_image_embeds=negative_emb_1.image_embeds,
+                    hint=hint,
+                    num_inference_steps=steps,
+                    generator=generator_1,
+                    height=y,
+                    width=x,
+                ).images
 
             images_0[0].save(image_name)
-            images_1[0].save(image_name)
+            if cuda_2_is_avaible:
+                images_1[0].save(image_name + "2")
 
             end_time = datetime.datetime.now()
             current_time = end_time.time()
