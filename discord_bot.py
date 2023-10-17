@@ -132,49 +132,54 @@ async def __change_video(
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
                         max_value=1)
 ):
-    # выкидываем исключения
-    config.read('config.ini')
-    voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
-    if voice not in voices:
-        return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
-    if await set_get_config_all("Image", "model_loaded", None) == "False":
-        return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
-    if not video_path:
-        return
+    try:
+        # ошибки входных данных
+        config.read('config.ini')
+        voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
+        if voice not in voices:
+            return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
+        if await set_get_config_all("Image", "model_loaded", None) == "False":
+            return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
+        if not video_path:
+            return
 
-    # используем видеокарты
-    await use_cuda_async(0)
+        # используем видеокарты
+        await use_cuda_async(0)
 
-    await ctx.defer()
-    # run timer
-    start_time = datetime.datetime.now()
-    # save
-    filename = str(random.randint(1, 1000000)) + ".mp4"
-    print(filename)
-    await video_path.save(filename)
-    # loading params
-    await set_get_config_all(f"Image", "strength_negative_prompt", strength_negative_prompt)
-    await set_get_config_all(f"Image", "strength_prompt", strength_prompt)
-    await set_get_config_all(f"Image", "strength", strength)
-    await set_get_config_all(f"Image", "seed", seed)
-    await set_get_config_all(f"Image", "steps", steps)
-    await set_get_config_all(f"Image", "negative_prompt", negative_prompt)
-    print("params suc")
-    # wait for answer
-    from video_change import video_pipeline
-    video_path = await video_pipeline(filename, fps, extension, prompt, voice, pitch,
-                                      indexrate, loudness, main_vocal, back_vocal, music,
-                                      roomsize, wetness, dryness)
-    # count time
-    end_time = datetime.datetime.now()
-    spent_time = str(end_time - start_time)
-    # убираем миллисекунды
-    spent_time = spent_time[:spent_time.find(".")]
-    # отправляем
-    await ctx.respond("Вот как я изменил ваше видео🖌. Потрачено " + spent_time)
-    await send_file(ctx, video_path)
-    # освобождаем видеокарту
-    await stop_use_cuda_async(0)
+        await ctx.defer()
+        # run timer
+        start_time = datetime.datetime.now()
+        # save
+        filename = str(random.randint(1, 1000000)) + ".mp4"
+        print(filename)
+        await video_path.save(filename)
+        # loading params
+        await set_get_config_all(f"Image", "strength_negative_prompt", strength_negative_prompt)
+        await set_get_config_all(f"Image", "strength_prompt", strength_prompt)
+        await set_get_config_all(f"Image", "strength", strength)
+        await set_get_config_all(f"Image", "seed", seed)
+        await set_get_config_all(f"Image", "steps", steps)
+        await set_get_config_all(f"Image", "negative_prompt", negative_prompt)
+        print("params suc")
+        # wait for answer
+        from video_change import video_pipeline
+        video_path = await video_pipeline(filename, fps, extension, prompt, voice, pitch,
+                                          indexrate, loudness, main_vocal, back_vocal, music,
+                                          roomsize, wetness, dryness)
+        # count time
+        end_time = datetime.datetime.now()
+        spent_time = str(end_time - start_time)
+        # убираем миллисекунды
+        spent_time = spent_time[:spent_time.find(".")]
+        # отправляем
+        await ctx.respond("Вот как я изменил ваше видео🖌. Потрачено " + spent_time)
+        await send_file(ctx, video_path)
+        # освобождаем видеокарту
+        await stop_use_cuda_async(0)
+    except Exception as e:
+        await ctx.respond(f"Ошибка при изменении длины запроса (с параметрами\
+                          {fps, extension, prompt, negative_prompt, steps, seed, strength, strength_prompt, voice, pitch, indexrate, loudness, main_vocal, back_vocal, music, roomsize, wetness, dryness}\
+                          ): {e}")
 
 
 @bot.slash_command(name="change_image", description='изменить изображение нейросетью')
@@ -217,61 +222,67 @@ async def __image(ctx,
                                                    default=1, min_value=0,
                                                    max_value=1)
                   ):
-    await use_cuda_async(0)
-    await set_get_config_all(f"Image", "result", "None")
-    await ctx.defer()
-    # throw extensions
-    if await set_get_config_all(f"Image", "model_loaded", None) == "False":
-        return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
-    # run timer
-    start_time = datetime.datetime.now()
-    input_image = "images/image" + str(random.randint(1, 1000000)) + ".png"
-    await image.save(input_image)
-    # get image size and round to 64
-    if x is None and y is None:
-        x, y = await get_image_dimensions(input_image)
-    if not x % 64 == 0:
-        x = ((x // 64) + 1) * 64
-    if not y % 64 == 0:
-        y = ((y // 64) + 1) * 64
-    # во избежания ошибок из-за нехватки памяти, ограничим изображение 768x768
-    while x * y > 589824:
-        if not x == 64:
-            x -= 64
-        if not y == 64:
-            y -= 64
-    # loading params
-    await set_get_config_all(f"Image", "strength_negative_prompt", strength_negative_prompt)
-    await set_get_config_all(f"Image", "strength_prompt", strength_prompt)
-    await set_get_config_all(f"Image", "strength", strength)
-    await set_get_config_all(f"Image", "seed", seed)
-    await set_get_config_all(f"Image", "steps", steps)
-    await set_get_config_all(f"Image", "negative_prompt", negative_prompt)
-    await set_get_config_all(f"Image", "prompt", prompt)
-    await set_get_config_all(f"Image", "x", x)
-    await set_get_config_all(f"Image", "y", y)
-    await set_get_config_all(f"Image", "input", input_image)
-    print("params suc")
-    # wait for answer
-    while True:
-        output_image = await set_get_config_all(f"Image", "result", None)
-        if output_image == "None":
-            break
-        await asyncio.sleep(0.25)
+    try:
+        await use_cuda_async(0)
+        await set_get_config_all(f"Image", "result", "None")
+        await ctx.defer()
+        # throw extensions
+        if await set_get_config_all(f"Image", "model_loaded", None) == "False":
+            return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
+        # run timer
+        start_time = datetime.datetime.now()
+        input_image = "images/image" + str(random.randint(1, 1000000)) + ".png"
+        await image.save(input_image)
+        # get image size and round to 64
+        if x is None and y is None:
+            x, y = await get_image_dimensions(input_image)
+        if not x % 64 == 0:
+            x = ((x // 64) + 1) * 64
+        if not y % 64 == 0:
+            y = ((y // 64) + 1) * 64
+        # во избежания ошибок из-за нехватки памяти, ограничим изображение 768x768
+        while x * y > 589824:
+            if not x == 64:
+                x -= 64
+            if not y == 64:
+                y -= 64
+        # loading params
+        await set_get_config_all(f"Image", "strength_negative_prompt", strength_negative_prompt)
+        await set_get_config_all(f"Image", "strength_prompt", strength_prompt)
+        await set_get_config_all(f"Image", "strength", strength)
+        await set_get_config_all(f"Image", "seed", seed)
+        await set_get_config_all(f"Image", "steps", steps)
+        await set_get_config_all(f"Image", "negative_prompt", negative_prompt)
+        await set_get_config_all(f"Image", "prompt", prompt)
+        await set_get_config_all(f"Image", "x", x)
+        await set_get_config_all(f"Image", "y", y)
+        await set_get_config_all(f"Image", "input", input_image)
+        print("params suc")
+        # wait for answer
+        while True:
+            output_image = await set_get_config_all(f"Image", "result", None)
+            if output_image == "None":
+                break
+            await asyncio.sleep(0.25)
 
-    # count time
-    end_time = datetime.datetime.now()
-    spent_time = str(end_time - start_time)
-    # убираем часы и миллисекунды
-    spent_time = spent_time[spent_time.find(":") + 1:]
-    spent_time = spent_time[:spent_time.find(".")]
-    # отправляем
-    await ctx.respond("Вот как я изменил ваше изображение🖌. Потрачено " + spent_time)
-    await send_file(ctx, output_image)
-    # удаляем временные файлы
-    os.remove(output_image)
-    # перестаём использовать видеокарту
-    await stop_use_cuda_async(0)
+        # count time
+        end_time = datetime.datetime.now()
+        spent_time = str(end_time - start_time)
+        # убираем часы и миллисекунды
+        spent_time = spent_time[spent_time.find(":") + 1:]
+        spent_time = spent_time[:spent_time.find(".")]
+        # отправляем
+        await ctx.respond("Вот как я изменил ваше изображение🖌. Потрачено " + spent_time)
+        await send_file(ctx, output_image)
+        # удаляем временные файлы
+        os.remove(output_image)
+        # перестаём использовать видеокарту
+        await stop_use_cuda_async(0)
+    except Exception as e:
+        await ctx.respond(f"Ошибка при изменении длины запроса (с параметрами\
+                          {prompt, negative_prompt, steps, x, y, strength, strength_prompt, strength_negative_prompt}): {e}")
+        # перестаём использовать видеокарту
+        await stop_use_cuda_async(0)
 
 
 @bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
@@ -281,82 +292,97 @@ async def __config(
         key: Option(str, description='ключ', required=True),
         value: Option(str, description='значение', required=False, default=None)
 ):
-    await ctx.defer()
-    await ctx.respond(await set_get_config_all(section, key, value))
+    try:
+        await ctx.defer()
+        await ctx.respond(await set_get_config_all(section, key, value))
+    except Exception as e:
+        await ctx.respond(f"Ошибка при изменении конфига (с параметрами{section},{key},{value}): {e}")
 
 
 @bot.slash_command(name="join", description='присоединиться к голосовому каналу')
 async def join(ctx):
-    await ctx.defer()
-    voice = ctx.author.voice
-    if not voice:
-        await ctx.respond(voiceChannelErrorText)
-        return
+    try:
+        await ctx.defer()
+        voice = ctx.author.voice
+        if not voice:
+            await ctx.respond(voiceChannelErrorText)
+            return
 
-    voice_channel = voice.channel
+        voice_channel = voice.channel
 
-    if ctx.voice_client is not None:
-        return await ctx.voice_client.move_to(voice_channel)
+        if ctx.voice_client is not None:
+            return await ctx.voice_client.move_to(voice_channel)
 
-    await voice_channel.connect()
-    await ctx.respond("присоединяюсь")
+        await voice_channel.connect()
+        await ctx.respond("присоединяюсь")
+    except Exception as e:
+        await ctx.respond(f"Ошибка при присоединении: {e}")
 
 
 @bot.slash_command(name="record", description='воспринимать команды из микрофона')
 async def record(ctx):  # if you're using commands.Bot, this will also work.
-    voice = ctx.author.voice
-    voice_channel = voice.channel
-    # добавляем ключ к connetions
-    if ctx.guild.id not in connections:
-        connections[ctx.guild.id] = []
+    try:
+        voice = ctx.author.voice
+        voice_channel = voice.channel
+        # добавляем ключ к connetions
+        if ctx.guild.id not in connections:
+            connections[ctx.guild.id] = []
 
-    if not voice:
-        return await ctx.respond(voiceChannelErrorText)
+        if not voice:
+            return await ctx.respond(voiceChannelErrorText)
 
-    if ctx.voice_client is None:
-        # если бота НЕТ в войс-чате
-        vc = await voice_channel.connect()
-    else:
-        # если бот УЖЕ в войс-чате
-        vc = ctx.voice_client
-    # если уже записывает
-    if vc in connections[ctx.guild.id]:
-        return await ctx.respond("Уже записываю ваш голос🎤")
-    stream_sink.set_user(ctx.author.id)
-    connections[ctx.guild.id].append(vc)
+        if ctx.voice_client is None:
+            # если бота НЕТ в войс-чате
+            vc = await voice_channel.connect()
+        else:
+            # если бот УЖЕ в войс-чате
+            vc = ctx.voice_client
+        # если уже записывает
+        if vc in connections[ctx.guild.id]:
+            return await ctx.respond("Уже записываю ваш голос🎤")
+        stream_sink.set_user(ctx.author.id)
+        connections[ctx.guild.id].append(vc)
 
-    # Начинаем запись
-    vc.start_recording(
-        stream_sink,  # the sink type to use.
-        once_done,  # what to do once done.
-        ctx.channel  # the channel to disconnect from.
-    )
-    await set_get_config(value=True)
-    await ctx.respond("Started listening.")
-    await recognize(ctx)
+        # Начинаем запись
+        vc.start_recording(
+            stream_sink,  # the sink type to use.
+            once_done,  # what to do once done.
+            ctx.channel  # the channel to disconnect from.
+        )
+        await set_get_config(value=True)
+        await ctx.respond("Started listening.")
+        await recognize(ctx)
+    except Exception as e:
+        await ctx.respond(f"Ошибка при записи звука из микрофона: {e}")
 
 
 @bot.slash_command(name="stop_recording", description='перестать воспринимать команды из микрофона')
 async def stop_recording(ctx):
-    if ctx.guild.id in connections:
-        vc = connections[ctx.guild.id][0]  # Получаем элемент списка
-        vc.stop_recording()
-        del connections[ctx.guild.id]
-    else:
-        await ctx.respond("Я и так тебя не слушал ._.")
+    try:
+        if ctx.guild.id in connections:
+            vc = connections[ctx.guild.id][0]  # Получаем элемент списка
+            vc.stop_recording()
+            del connections[ctx.guild.id]
+        else:
+            await ctx.respond("Я и так тебя не слушал ._.")
+    except Exception as e:
+        await ctx.respond(f"Ошибка при остановки записи микрофона: {e}")
 
 
 @bot.slash_command(name="disconnect", description='выйти из войс-чата')
 async def disconnect(ctx):
-    await ctx.defer()
-    voice = ctx.voice_client
-    if voice:
-        await voice.disconnect(force=True)
-        await ctx.respond("выхожу")
-    else:
-        await ctx.respond("Я не в войсе")
-    if ctx.guild.id in connections:
-        del connections[ctx.guild.id]  # remove the guild from the cache.
+    try:
+        await ctx.defer()
+        voice = ctx.voice_client
+        if voice:
+            await voice.disconnect(force=True)
+            await ctx.respond("выхожу")
+        else:
+            await ctx.respond("Я не в войсе")
+        if ctx.guild.id in connections:
+            del connections[ctx.guild.id]  # remove the guild from the cache.
+    except Exception as e:
+        await ctx.respond(f"Ошибка при выходе из войс-чата: {e}")
 
 
 # @bot.command(help="сказать роботу текст")
@@ -388,30 +414,36 @@ async def disconnect(ctx):
 
 @bot.slash_command(name="pause", description='пауза/воспроизведение')
 async def pause(ctx):
-    await ctx.defer()
-    await ctx.respond('Выполнение...')
-    voice_client = ctx.voice_client
-    if voice_client.is_playing():
-        voice_client.pause()
-        await ctx.respond("Пауза ⏸")
-    elif voice_client.is_paused():
-        voice_client.resume()
-        await ctx.respond("Продолжаем воспроизведение ▶️")
-    else:
-        await ctx.respond("Нет активного аудио для приостановки или продолжения.")
+    try:
+        await ctx.defer()
+        await ctx.respond('Выполнение...')
+        voice_client = ctx.voice_client
+        if voice_client.is_playing():
+            voice_client.pause()
+            await ctx.respond("Пауза ⏸")
+        elif voice_client.is_paused():
+            voice_client.resume()
+            await ctx.respond("Продолжаем воспроизведение ▶️")
+        else:
+            await ctx.respond("Нет активного аудио для приостановки или продолжения.")
+    except Exception as e:
+        await ctx.respond(f"Ошибка при паузе: {e}")
 
 
 @bot.slash_command(name="skip", description='пропуск аудио')
 async def skip(ctx):
-    await ctx.defer()
-    await ctx.respond('Выполнение...')
-    voice_client = ctx.voice_client
-    if voice_client.is_playing():
-        voice_client.stop()
-        await ctx.respond("Текущий трек пропущен ⏭️")
-        await set_get_config("stop_milliseconds", 0)
-    else:
-        await ctx.respond("Нет активного аудио для пропуска.")
+    try:
+        await ctx.defer()
+        await ctx.respond('Выполнение...')
+        voice_client = ctx.voice_client
+        if voice_client.is_playing():
+            voice_client.stop()
+            await ctx.respond("Текущий трек пропущен ⏭️")
+            await set_get_config("stop_milliseconds", 0)
+        else:
+            await ctx.respond("Нет активного аудио для пропуска.")
+    except Exception as e:
+        await ctx.respond(f"Ошибка при пропуске: {e}")
 
 
 @bot.slash_command(name="lenght", description='Длина запроса')
@@ -420,12 +452,15 @@ async def __lenght(
         number: Option(int, description='Длина запроса для GPT (Число от 1 до 1000)', required=True, min_value=1,
                        max_value=1000)
 ):
-    await ctx.defer()
-    await ctx.respond('Выполнение...')
-    # for argument in (number,"""boolean, member, text, choice"""):
-    print(f'{number} ({type(number).__name__})\n')
-    await run_main_with_settings(ctx, f"робот длина запроса {number}", True)
-    await ctx.respond(f"Длина запроса: {number}")
+    try:
+        await ctx.defer()
+        await ctx.respond('Выполнение...')
+        # for argument in (number,"""boolean, member, text, choice"""):
+        print(f'{number} ({type(number).__name__})\n')
+        await run_main_with_settings(ctx, f"робот длина запроса {number}", True)
+        await ctx.respond(f"Длина запроса: {number}")
+    except Exception as e:
+        await ctx.respond(f"Ошибка при изменении длины запроса (с параметрами{number}): {e}")
 
 
 @bot.slash_command(name="say", description='Сказать роботу что-то')
@@ -433,13 +468,16 @@ async def __say(
         ctx,
         text: Option(str, description='Сам текст/команда. Список команд: \\help-say', required=True)
 ):
-    await ctx.respond('Выполнение...')
-    from function import replace_mat_in_sentence
-    if await set_get_config_default("robot_name_need") == "False":
-        text = await set_get_config_default("currentainame") + ", " + text
-    text = await replace_mat_in_sentence(text)
-    print(f'{text} ({type(text).__name__})\n')
-    await run_main_with_settings(ctx, text, True)
+    try:
+        await ctx.respond('Выполнение...')
+        from function import replace_mat_in_sentence
+        if await set_get_config_default("robot_name_need") == "False":
+            text = await set_get_config_default("currentainame") + ", " + text
+        text = await replace_mat_in_sentence(text)
+        print(f'{text} ({type(text).__name__})\n')
+        await run_main_with_settings(ctx, text, True)
+    except Exception as e:
+        await ctx.respond(f"Ошибка при команде say (с параметрами{text}): {e}")
 
 
 @bot.slash_command(name="tts", description='_Заставить_ бота говорить всё, что захочешь')
@@ -448,32 +486,41 @@ async def __tts(
         text: Option(str, description='Текст для озвучки', required=True),
         ai_voice: Option(str, description='Голос для озвучки', required=False, default="None")
 ):
-    await ctx.defer()
-    await ctx.respond('Выполнение...')
-    await use_cuda_async(0)
-    config.read('config.ini')
-    voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
-    if ai_voice not in voices:
-        return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
-    from function import replace_mat_in_sentence, mat_found
-    text = await replace_mat_in_sentence(text)
-    if mat_found:
-        await ctx.respond("Такое нельзя произносить!")
-        return
-    print(f'{text} ({type(text).__name__})\n')
-    # меняем голос
-    ai_voice_temp = await set_get_config_default("currentainame")
-    if ai_voice == "None":
-        ai_voice = await set_get_config_default("currentainame")
-        print(await set_get_config_default("currentainame"))
-    await set_get_config_default("currentainame", ai_voice)
-    # запускаем TTS
-    await run_main_with_settings(ctx, f"робот протокол 24 {text}",
-                                 False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
-    # возращаем голос
-    await set_get_config_default("currentainame", ai_voice_temp)
-    # перестаём использовать видеокарту
-    await stop_use_cuda_async(0)
+    ai_voice_temp = None
+    try:
+        await ctx.defer()
+        await ctx.respond('Выполнение...')
+        await use_cuda_async(0)
+        config.read('config.ini')
+        voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
+        if ai_voice not in voices:
+            return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
+        from function import replace_mat_in_sentence, mat_found
+        text = await replace_mat_in_sentence(text)
+        if mat_found:
+            await ctx.respond("Такое нельзя произносить!")
+            return
+        print(f'{text} ({type(text).__name__})\n')
+        # меняем голос
+        ai_voice_temp = await set_get_config_default("currentainame")
+        if ai_voice == "None":
+            ai_voice = await set_get_config_default("currentainame")
+            print(await set_get_config_default("currentainame"))
+        await set_get_config_default("currentainame", ai_voice)
+        # запускаем TTS
+        await run_main_with_settings(ctx, f"робот протокол 24 {text}",
+                                     False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
+        # возращаем голос
+        await set_get_config_default("currentainame", ai_voice_temp)
+        # перестаём использовать видеокарту
+        await stop_use_cuda_async(0)
+    except Exception as e:
+        await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
+        # возращаем голос
+        if not ai_voice_temp is None:
+            await set_get_config_default("currentainame", ai_voice_temp)
+        # перестаём использовать видеокарту
+        await stop_use_cuda_async(0)
 
 
 @bot.slash_command(name="ai_cover", description='_Заставить_ бота озвучить видео/спеть песню')
@@ -506,56 +553,60 @@ async def __cover(
         start: Option(int, description='Начать воспроизводить с (в секундах)', required=False, default=0, min_value=0),
         output: Option(bool, description='Отправить результат в архиве', required=False, default=False)
 ):
-    await ctx.defer()
-    await ctx.respond('Выполнение...')
-    params = []
-    if audio_path:
-        filename = str(random.randint(1, 1000000)) + ".mp3"
-        await audio_path.save(filename)
-        params.append(f"-url {filename}")
-    elif url:
-        params.append(f"-url {url}")
-    else:
-        return ctx.respond('Не указана ссылка или аудиофайл')
-    if voice is None:
-        voice = await set_get_config_default("currentAIname")
-    if voice:
-        params.append(f"-voice {voice}")
-    # если мужчина-мужчина, женщина-женщина, pitch не меняем
-    pitch_int = 0
-    # если женщина, но AI мужчина = 1,
-    if pitch == 'женщина':
-        if not await set_get_config_default("currentaipitch") == 1:
-            pitch_int = 1
-    # если мужчина, но AI женщина = -1,
-    elif pitch == 'мужчина':
-        if not await set_get_config_default("currentaipitch") == 0:
-            pitch_int = -1
-    params.append(f"-pitch {pitch_int}")
-    if time != -1:
-        params.append(f"-time {time}")
-    if indexrate != 0.5:
-        params.append(f"-indexrate {indexrate}")
-    if loudness != 0.2:
-        params.append(f"-loudness {loudness}")
-    if main_vocal != 0:
-        params.append(f"-vocal {main_vocal}")
-    if back_vocal != 0:
-        params.append(f"-bvocal {back_vocal}")
-    if music != 0:
-        params.append(f"-music {music}")
-    if roomsize != 0.2:
-        params.append(f"-roomsize {roomsize}")
-    if wetness != 0.1:
-        params.append(f"-wetness {wetness}")
-    if dryness != 0.85:
-        params.append(f"-dryness {dryness}")
-    if start != 0:
-        params.append(f"-start {start}")
-    param_string = ' '.join(params)
-    print("suc params")
-    await run_main_with_settings(ctx, "робот протокол 13 " + param_string, False)
-    # output..
+    param_string = None
+    try:
+        await ctx.defer()
+        await ctx.respond('Выполнение...')
+        params = []
+        if audio_path:
+            filename = str(random.randint(1, 1000000)) + ".mp3"
+            await audio_path.save(filename)
+            params.append(f"-url {filename}")
+        elif url:
+            params.append(f"-url {url}")
+        else:
+            return ctx.respond('Не указана ссылка или аудиофайл')
+        if voice is None:
+            voice = await set_get_config_default("currentAIname")
+        if voice:
+            params.append(f"-voice {voice}")
+        # если мужчина-мужчина, женщина-женщина, pitch не меняем
+        pitch_int = 0
+        # если женщина, но AI мужчина = 1,
+        if pitch == 'женщина':
+            if not await set_get_config_default("currentaipitch") == 1:
+                pitch_int = 1
+        # если мужчина, но AI женщина = -1,
+        elif pitch == 'мужчина':
+            if not await set_get_config_default("currentaipitch") == 0:
+                pitch_int = -1
+        params.append(f"-pitch {pitch_int}")
+        if time != -1:
+            params.append(f"-time {time}")
+        if indexrate != 0.5:
+            params.append(f"-indexrate {indexrate}")
+        if loudness != 0.2:
+            params.append(f"-loudness {loudness}")
+        if main_vocal != 0:
+            params.append(f"-vocal {main_vocal}")
+        if back_vocal != 0:
+            params.append(f"-bvocal {back_vocal}")
+        if music != 0:
+            params.append(f"-music {music}")
+        if roomsize != 0.2:
+            params.append(f"-roomsize {roomsize}")
+        if wetness != 0.1:
+            params.append(f"-wetness {wetness}")
+        if dryness != 0.85:
+            params.append(f"-dryness {dryness}")
+        if start != 0:
+            params.append(f"-start {start}")
+        param_string = ' '.join(params)
+        print("suc params")
+        await run_main_with_settings(ctx, "робот протокол 13 " + param_string, False)
+        # output..
+    except Exception as e:
+        await ctx.respond(f"Ошибка при изменении голоса (с параметрами {param_string}): {e}")
 
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
