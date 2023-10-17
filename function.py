@@ -599,7 +599,7 @@ async def getCaverPrms(line, ctx):
     voice = currentAIname
     if "-voice" in line:
         voice = line[line.index("-voice") + 7:]
-        voice = voice[0, voice.index(" "):]
+        voice = voice[0: voice.index(" ")]
         currentAInameWas = currentAIname
         await setAIvoice(voice, False, ctx)
         voice = currentAIname
