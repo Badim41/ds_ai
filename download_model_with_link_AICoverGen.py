@@ -58,7 +58,7 @@ def download_online_model(url, dir_name, gender, info):
 
         urllib.request.urlretrieve(url, zip_name)
 
-        print('[~] Extracting zip...')
+        print('[~] Разархивация...')
         extract_zip(extraction_folder, zip_name, gender, info)
         print(f'[+] {dir_name} модель успешна установлена!')
 
