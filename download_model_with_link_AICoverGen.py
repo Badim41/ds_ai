@@ -2,7 +2,7 @@ import os
 import sys
 import zipfile
 import shutil
-import urllib.request
+import requests
 
 BASE_DIR = os.getcwd()
 rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
@@ -37,11 +37,10 @@ def extract_zip(extraction_folder, zip_name, gender, info):
     if index_filepath:
         os.rename(index_filepath, os.path.join(extraction_folder, os.path.basename(index_filepath)))
 
-    # Удалено, так как вызывает ошибку на kaggle
     # remove any unnecessary nested folders
-    # for filepath in os.listdir(extraction_folder):
-    #     if os.path.isdir(os.path.join(extraction_folder, filepath)):
-    #         shutil.rmtree(os.path.join(extraction_folder, filepath))
+    for filepath in os.listdir(extraction_folder):
+        if os.path.isdir(os.path.join(extraction_folder, filepath)):
+            shutil.rmtree(os.path.join(extraction_folder, filepath))
 
 
 def download_online_model(url, dir_name, gender, info):
@@ -56,11 +55,14 @@ def download_online_model(url, dir_name, gender, info):
         if 'pixeldrain.com' in url:
             url = f'https://pixeldrain.com/api/file/{zip_name}'
 
-        urllib.request.urlretrieve(url, zip_name)
+        response = requests.get(url, stream=True)
+        with open(zip_name, 'wb') as file:
+            for chunk in response.iter_content(chunk_size=8192):
+                file.write(chunk)
 
         print('[~] Разархивация...')
         extract_zip(extraction_folder, zip_name, gender, info)
-        print(f'[+] {dir_name} модель успешна установлена!')
+        print(f'[+] {dir_name} модель успешно установлена!')
 
     except Exception as e:
         raise Exception(str(e))
