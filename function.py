@@ -569,8 +569,7 @@ async def createAICaver(ctx):
             await use_cuda_async(0)
             await use_cuda_async(1)
             await write_in_discord(ctx, "Начинаю обработку аудио")
-            asyncio.run(play_audio_process(ctx))
-            await prepare_audio_process_cuda(ctx)
+            await asyncio.gather(play_audio_process(ctx), prepare_audio_process_cuda(ctx))
             print("ready audios")
             # освобождаем видеокарты
             await stop_use_cuda_async(0)
@@ -768,6 +767,7 @@ async def file_was_filler(folder, file_list):
 
 
 async def play_audio_process(ctx):
+    await asyncio.sleep(0.5)
     try:
         await set_get_config_all('Values', "queue", "True")
         while True:
