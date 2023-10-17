@@ -763,22 +763,22 @@ async def file_was_filler(folder, file_list):
         print(e)
 
 
-def play_audio_process(ctx):
+async def play_audio_process(ctx):
     try:
-        asyncio.run(set_get_config_all('Values', "queue", "True"))
+        awair set_get_config_all('Values', "queue", "True")
         while True:
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
                 if not line is None:
                     print("Playing: " + line)
-                    params = asyncio.run(getCaverPrms(line, ctx))
-                    time = asyncio.run(extract_number_after_keyword(params, "-time"))
-                    stop_milliseconds = asyncio.run(extract_number_after_keyword(params, "-start"))
+                    params = await getCaverPrms(line, ctx)
+                    time = await extract_number_after_keyword(params, "-time")
+                    stop_milliseconds = await extract_number_after_keyword(params, "-start")
                     audio_path = line.split()[0]
 
-                    asyncio.run(result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN))
-                    asyncio.run(playSoundFile(audio_path, time, stop_milliseconds, ctx))
-                    asyncio.run(remove_line_from_txt("caversAI/queue.txt", 1))
+                    await result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
+                    await playSoundFile(audio_path, time, stop_milliseconds, ctx)
+                    await remove_line_from_txt("caversAI/queue.txt", 1)
                 else:
                     config.read('config.ini')
                     continue_process = config.getboolean('Values', 'queue')
