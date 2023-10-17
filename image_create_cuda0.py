@@ -2,7 +2,6 @@ import os
 import struct
 import time
 import configparser
-
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
 import torch
 import numpy as np
@@ -12,7 +11,6 @@ from transformers import pipeline
 import datetime
 
 config = configparser.ConfigParser()
-
 
 def set_get_config(key, value=None):
     config.read('config.ini')
@@ -41,43 +39,25 @@ async def get_image_dimensions(file_path):
         raise ValueError("Формат не поддерживается")
 
 
-def make_hint(image, depth_estimator):
-    image = depth_estimator(image)["depth"]
-    image = np.array(image)
-    image = image[:, :, None]
-    image = np.concatenate([image, image, image], axis=2)
-    detected_map = torch.from_numpy(image).float() / 255.0
-    hint = detected_map.permute(2, 0, 1)
-    print("image-Hint")
-    return hint
-
-
 def generate_picture():
-    cuda_2_is_avaible = True
+    def make_hint(image, depth_estimator):
+        image = depth_estimator(image)["depth"]
+        image = np.array(image)
+        image = image[:, :, None]
+        image = np.concatenate([image, image, image], axis=2)
+        detected_map = torch.from_numpy(image).float() / 255.0
+        hint = detected_map.permute(2, 0, 1)
+        print("image-Hint")
+        return hint
+
     print("image model loading... GPU:0")
-    pipe_prior_0 = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
+    pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
         "kandinsky-community/kandinsky-2-2-prior", torch_dtype=torch.float16
     )
 
-    pipe_0 = KandinskyV22ControlnetImg2ImgPipeline.from_pretrained(
+    pipe = KandinskyV22ControlnetImg2ImgPipeline.from_pretrained(
         "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
     )
-    if cuda_2_is_avaible:
-        print("image model loading... GPU:1")
-        pipe_prior_1 = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
-            "kandinsky-community/kandinsky-2-2-prior", torch_dtype=torch.float16
-        )
-
-        pipe_1 = KandinskyV22ControlnetImg2ImgPipeline.from_pretrained(
-            "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=torch.float16
-        )
-
-    # Wrap the pipelines with DataParallel
-    pipe_prior_0 = torch.nn.DataParallel(pipe_prior_0)
-    pipe_0 = torch.nn.DataParallel(pipe_0)
-    if cuda_2_is_avaible:
-        pipe_prior_1 = torch.nn.DataParallel(pipe_prior_1)
-        pipe_1 = torch.nn.DataParallel(pipe_1)
 
     print(f"==========Images Model Loaded!==========")
     set_get_config("model_loaded", True)
@@ -105,20 +85,12 @@ def generate_picture():
             image_name = set_get_config("input")
             # create pipes
             print(f"image_generate(1/5), GPU:0")
-            pipe_prior_0 = pipe_prior_0.to("cuda:0")
-            pipe_0 = pipe_0.to("cuda:0")
+            pipe_prior = pipe_prior.to("cuda")
+            pipe = pipe.to("cuda")
             print(f"image_generate(2/5), GPU:0")
 
-            if cuda_2_is_avaible:
-                print(f"image_generate(1/5), GPU:1")
-                pipe_prior_1 = pipe_prior_1.to("cuda:1")
-                pipe_1 = pipe_1.to("cuda:1")
-                print(f"image_generate(2/5), GPU:1")
-
             # create generator
-            generator_0 = torch.Generator(device="cuda:0").manual_seed(seed)
-            if cuda_2_is_avaible:
-                generator_1 = torch.Generator(device="cuda:1").manual_seed(seed)
+            generator = torch.Generator(device="cuda").manual_seed(seed)
             print(f"image_generate(3/5), GPU:0")
 
             # make hint
@@ -128,43 +100,24 @@ def generate_picture():
             print(f"image_generate(4/5), GPU:0")
 
             # run prior pipeline
-            img_emb_0 = pipe_prior_0(prompt=prompt, image=img, strength=strength_prompt, generator=generator_0)
-            if cuda_2_is_avaible:
-                img_emb_1 = pipe_prior_1(prompt=prompt, image=img, strength=strength_prompt, generator=generator_1)
-            negative_emb_0 = pipe_prior_0(prompt=negative_prompt, image=img, strength=strength_negative_prompt,
-                                          generator=generator_0)
-            if cuda_2_is_avaible:
-                negative_emb_1 = pipe_prior_1(prompt=negative_prompt, image=img, strength=strength_negative_prompt,
-                                              generator=generator_1)
+            img_emb = pipe_prior(prompt=prompt, image=img, strength=strength_prompt, generator=generator)
+            negative_emb = pipe_prior(prompt=negative_prompt, image=img, strength=strength_negative_prompt,
+                                      generator=generator)
             print(f"image_generate(5/5), GPU:0")
             # run controlnet img2img pipeline
-            images_0 = pipe_0(
+            images = pipe(
                 image=img,
                 strength=strength,
-                image_embeds=img_emb_0.image_embeds,
-                negative_image_embeds=negative_emb_0.image_embeds,
+                image_embeds=img_emb.image_embeds,
+                negative_image_embeds=negative_emb.image_embeds,
                 hint=hint,
                 num_inference_steps=steps,
-                generator=generator_0,
+                generator=generator,
                 height=y,
                 width=x,
             ).images
-            if cuda_2_is_avaible:
-                images_1 = pipe_1(
-                    image=img,
-                    strength=strength,
-                    image_embeds=img_emb_1.image_embeds,
-                    negative_image_embeds=negative_emb_1.image_embeds,
-                    hint=hint,
-                    num_inference_steps=steps,
-                    generator=generator_1,
-                    height=y,
-                    width=x,
-                ).images
 
-            images_0[0].save(image_name)
-            if cuda_2_is_avaible:
-                images_1[0].save(image_name + "2")
+            images[0].save(image_name)
 
             end_time = datetime.datetime.now()
             current_time = end_time.time()
