@@ -489,6 +489,7 @@ async def setAIvoice(name, ttsNeed, ctx):
             else:
                 await set_config("currentaipitch", -1)
     else:
+        print("curentainame:", currentainame)
         await text_to_speech("голос не найден", False, ctx)
 
 
