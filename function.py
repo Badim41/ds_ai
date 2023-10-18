@@ -8,10 +8,24 @@ import time
 import os
 import g4f
 _providers = [
-    g4f.Provider.Aichat,
-    g4f.Provider.Phind,
-    g4f.Provider.Raycast,
-    g4f.Provider.GeekGpt,
+g4f.Provider.GeekGpt,
+g4f.Provider.AItianhuSpace,
+g4f.Provider.AiAsk,
+g4f.Provider.ChatBase,
+g4f.Provider.ChatForAi,
+g4f.Provider.Chatgpt4Online,
+g4f.Provider.ChatgptAi,
+g4f.Provider.ChatgptDemo,
+g4f.Provider.ChatgptLogin,
+g4f.Provider.ChatgptX,
+g4f.Provider.FreeGpt,
+g4f.Provider.GPTalk,
+g4f.Provider.GptForLove,
+g4f.Provider.GptGo,
+g4f.Provider.GptGod,
+g4f.Provider.Llama2,
+g4f.Provider.NoowAi,
+g4f.Provider.Opchatgpts
 ]
 
 from elevenlabs import generate, play, save, set_api_key
@@ -268,7 +282,7 @@ async def translate(text):
     return translator.translate(text)
 
 gpt_errors = 0
-async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0):
+async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0, gpt_model="gpt-4"):
     global currentAIname, gpt_errors
 
     config.read('config.ini')
@@ -293,7 +307,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
         try:
             # Set with provider
             result = g4f.ChatCompletion.create(
-                model="gpt-4",
+                model=gpt_model,
                 provider=_providers[provider_number],
                 messages=[{"role": "user", "content": prompt}]
             )
@@ -310,8 +324,8 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
                 if gpt_errors > 3:
                     provider_number += 1
                     gpt_errors = 0
-                    print("change provider")
-                await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=provider_number)
+                    print("change provider:", _providers[provider_number])
+                await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=provider_number, gpt_model="gpt")
                 return
             result = "Ошибка при получении запроса"
     # if not language == "russian":
