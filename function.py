@@ -120,8 +120,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                 prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}." \
                          f"Тебе нужно вести диалог. " \
                          f"Отвечай как можно короче. " \
-                         f"Вот история предыдущих запросов:\"{file_content}\".\
-                          Если запрос повторяется, тебе нужно дать другой ответ. " \
+                         f"Вот история предыдущих запросов:\"{file_content}\""\
                          f"Напиши ответ пользователю, он говорит:\""
                 prompt += temp_spokenText + "\""
         except Exception as ex:
@@ -904,7 +903,8 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     if write_in_memory:
         try:
             with open(f"texts/memories/{ai_dictionary}.txt", 'a') as writer2:
-                writer2.write(f"{ai_dictionary}: {tts}\n")
+                tts_no_n = tts.replace("\n", " ")
+                writer2.write(f"{ai_dictionary}: {tts_no_n}\n")
         except IOError as ex:
             raise RuntimeError(ex)
 
