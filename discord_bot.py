@@ -824,13 +824,12 @@ if __name__ == "__main__":
             load_gpt = False
             load_images = False
             if len(arguments) > 2:
-                wait_for_load_moders = arguments[2]
-                if wait_for_load_moders == "all":
+                args = arguments[2]
+                if "gpt_local" in args:
                     load_gpt = True
-                    load_images = True
-                if wait_for_load_moders == "gpt":
-                    load_gpt = True
-                if wait_for_load_moders == "img":
+                if "gpt_4" in args:
+                    asyncio.run(set_get_config_all("gpt", "use_gpt_provider", "True"))
+                if "img" in args:
                     load_images = True
         else:
             # raise error & exit
