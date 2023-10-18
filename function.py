@@ -8,8 +8,8 @@ import time
 import os
 import g4f
 _providers = [
-g4f.Provider.AItianhuSpace,
-g4f.Provider.AiAsk,
+# g4f.Provider.AItianhuSpace, - COOKIES
+# g4f.Provider.AiAsk,
 g4f.Provider.ChatBase,
 g4f.Provider.ChatForAi,
 g4f.Provider.Chatgpt4Online,
