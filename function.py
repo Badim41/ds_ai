@@ -297,13 +297,9 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
                 provider=_providers[provider_number],
                 messages=[{"role": "user", "content": prompt}]
             )
-            result_new = ""
-            for line in result.split("\n"):
-                print("LINE:", line)
-                if currentAIname in line:
-                    result_new += line[line.find(currentAIname) + len(currentAIname) + 2:]
-                else:
-                    result_new += line
+
+            if currentAIname in result:
+                result += result[result.find(currentAIname) + len(currentAIname) + 2:]
 
         except Exception as e:
             if not provider_number == len(_providers) - 1:
