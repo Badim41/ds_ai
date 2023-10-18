@@ -19,6 +19,7 @@ g4f.Provider.ChatForAi,
 # g4f.Provider.ChatgptX, error
 # g4f.Provider.FreeGpt, wrong language
 g4f.Provider.GPTalk,
+g4f.Provider.GeekGpt,
 # g4f.Provider.GptForLove, error no module
 # g4f.Provider.GptGo, error 403
 # g4f.Provider.GptGod, error list
