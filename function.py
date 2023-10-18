@@ -299,7 +299,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
             )
 
             if currentAIname in result:
-                result += result[result.find(currentAIname) + len(currentAIname) + 2:]
+                result = result[result.find(currentAIname) + len(currentAIname) + 2:]
 
         except Exception as e:
             if not provider_number == len(_providers) - 1:
