@@ -317,10 +317,10 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
         except Exception as e:
             if not provider_number == len(_providers) - 1:
                 print("Ошибка получения ответа:", e)
-                await asyncio.sleep(3)
+                await asyncio.sleep(0.5)
 
                 gpt_errors += 1
-                if gpt_errors > 3:
+                if gpt_errors > 2:
                     provider_number += 1
                     gpt_errors = 0
                     print("change provider:", _providers[provider_number])
