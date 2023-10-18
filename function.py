@@ -262,6 +262,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
             stream=True
         )
         i = 0
+        limit = 15
         result = ""
         for message in response:
             message_changed = message
