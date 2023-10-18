@@ -13,11 +13,11 @@ _providers = [
 # g4f.Provider.ChatBase, - bad
 # g4f.Provider.ChatForAi, - GOOD
 # g4f.Provider.Chatgpt4Online, - bad
-g4f.Provider.ChatgptAi,
-g4f.Provider.ChatgptDemo,
-g4f.Provider.ChatgptLogin,
-g4f.Provider.ChatgptX,
-g4f.Provider.FreeGpt,
+# g4f.Provider.ChatgptAi, - error ID
+# g4f.Provider.ChatgptDemo, error 403
+# g4f.Provider.ChatgptLogin, error 403
+# g4f.Provider.ChatgptX, error
+# g4f.Provider.FreeGpt, wrong language
 g4f.Provider.GPTalk,
 g4f.Provider.GptForLove,
 g4f.Provider.GptGo,
