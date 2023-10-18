@@ -249,7 +249,6 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
         await set_get_config_all("gpt", "gpt_result", "None")
     else:
         import g4f
-        import os
 
         from g4f.Provider import (
             GeekGpt
@@ -259,7 +258,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
         response = g4f.ChatCompletion.create(
             model="gpt-4",
             provider=g4f.Provider.GeekGpt,
-            messages=[{"role": "user", "content": f"Вот история предыдущих запросов:{memories}" + "\nТеперь напиши ответ на этот вопрос:\n" + text,}],
+            messages=[{"role": "user", "content": prompt}],
             stream=True
         )
         i = 0
