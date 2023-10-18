@@ -264,12 +264,12 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
             await asyncio.sleep(0.05)
         await set_get_config_all("gpt", "gpt_result", "None")
     else:
-        import g4f
-
-        from g4f.Provider import (
-            GeekGpt
-        )
         try:
+            import g4f
+
+            from g4f.Provider import (
+                GeekGpt
+            )
             # Set with provider
             response = g4f.ChatCompletion.create(
                 model="gpt-4",
@@ -277,25 +277,27 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
                 messages=[{"role": "user", "content": prompt}],
                 stream=True
             )
+
+            i = 0
+            limit = 15
+            result = ""
+            for message in response:
+                message_changed = message
+                i += 1
+                if "\n" in message:
+                    i = 0
+                if i > limit and " " in message:
+                    message_changed = message.replace(" ", "")
+                    print("\n")
+                    i = 0
+                print(message_changed, end="")
+                result += message
+                result = result.replace(currentAIname + ": ", "").replace(currentAIname + ", ", "")
+
         except Exception as e:
             print("Ошибка получения ответа:", e)
             await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer)
             return
-        i = 0
-        limit = 15
-        result = ""
-        for message in response:
-            message_changed = message
-            i += 1
-            if "\n" in message:
-                i = 0
-            if i > limit and " " in message:
-                message_changed = message.replace(" ", "")
-                print("\n")
-                i = 0
-            print(message_changed, end="")
-            result += message
-        result = result.replace(currentAIname + ": ", "").replace(currentAIname + ", ", "")
     # if not language == "russian":
     #    translator = Translator(from_lang="ru", to_lang=language[:2].lower())
     #    result = translator.translate(result)
