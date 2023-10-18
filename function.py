@@ -290,7 +290,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
             response = g4f.ChatCompletion.create(
                 model="gpt-4",
                 provider=g4f.Provider.GeekGpt,
-                messages=[{"role": "user", "content": prompt}],
+                messages=[{"role": currentAIname, "content": prompt}],
                 stream=True
             )
 
