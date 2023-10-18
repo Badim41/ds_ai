@@ -8,7 +8,7 @@ import time
 import os
 import g4f
 _providers = [
-g4f.Provider.GeekGpt,
+g4f.Provider.Vercel,
 g4f.Provider.AItianhuSpace,
 g4f.Provider.AiAsk,
 g4f.Provider.ChatBase,
@@ -282,7 +282,7 @@ async def translate(text):
     return translator.translate(text)
 
 gpt_errors = 0
-async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0, gpt_model="gpt-4"):
+async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0, gpt_model="gpt-4-0613"):
     global currentAIname, gpt_errors
 
     config.read('config.ini')
@@ -325,7 +325,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
                     provider_number += 1
                     gpt_errors = 0
                     print("change provider:", _providers[provider_number])
-                await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=provider_number, gpt_model="gpt")
+                await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=provider_number, gpt_model="gpt-3.5-turbo")
                 return
             result = "Ошибка при получении запроса"
     # if not language == "russian":
