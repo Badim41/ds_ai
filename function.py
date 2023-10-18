@@ -9,11 +9,9 @@ import os
 import g4f
 _providers = [
     g4f.Provider.Aichat,
-    g4f.Provider.ChatBase,
-    g4f.Provider.Bing,
-    g4f.Provider.GptGo,
-    g4f.Provider.You,
-    g4f.Provider.Yqcloud,
+    g4f.Provider.Liaobots,
+    g4f.Provider.Phind,
+    g4f.Provider.Raycast,
     g4f.Provider.GeekGpt,
 ]
 
@@ -328,6 +326,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
                 gpt_errors += 1
                 if gpt_errors > 3:
                     provider_number += 1
+                    gpt_errors = 0
                     print("change provider")
                 await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=provider_number)
                 return
