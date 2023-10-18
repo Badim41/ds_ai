@@ -245,6 +245,13 @@ async def translate(text):
 
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
+    global currentAIname
+    if write_in_memory:
+        try:
+            with open(f"texts/memories/{currentAIname}.txt", 'a') as writer2:
+                writer2.write(f"Пользователь: {prompt}\n")
+        except IOError as ex:
+            raise RuntimeError(ex)
     config.read('config.ini')
     gpt_provider = config.getboolean('gpt', 'use_gpt_provider')
     if not gpt_provider:
