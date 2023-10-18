@@ -11,20 +11,20 @@ _providers = [
 # g4f.Provider.AItianhuSpace, - COOKIES
 # g4f.Provider.AiAsk, - rate limit
 # g4f.Provider.ChatBase, - bad
-# g4f.Provider.ChatForAi, - GOOD
+g4f.Provider.ChatForAi,
 # g4f.Provider.Chatgpt4Online, - bad
 # g4f.Provider.ChatgptAi, - error ID
 # g4f.Provider.ChatgptDemo, error 403
 # g4f.Provider.ChatgptLogin, error 403
 # g4f.Provider.ChatgptX, error
 # g4f.Provider.FreeGpt, wrong language
-#g4f.Provider.GPTalk, GOOD
+g4f.Provider.GPTalk,
 # g4f.Provider.GptForLove, error no module
 # g4f.Provider.GptGo, error 403
 # g4f.Provider.GptGod, error list
 # g4f.Provider.Llama2, no gpt3.5 turbo
 # g4f.Provider.NoowAi, bad
-g4f.Provider.Opchatgpts
+#g4f.Provider.Opchatgpts bad
 ]
 
 from elevenlabs import generate, play, save, set_api_key
