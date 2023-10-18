@@ -116,6 +116,13 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             # Open the file
             with open(file_path, "r") as file:
                 file_content = file.read()
+            # memories
+            try:
+                with open(f"texts/memories/{currentAIname}.txt", 'a') as writer2:
+                    writer2.write(f"Пользователь: {temp_spokenText}\n")
+            except IOError as ex:
+                raise RuntimeError(ex)
+
             # Локальный GPT нормально отвечает, если в конце добавить "Ответ:"
             custom_prompt = await set_get_config_all("gpt", "gpt_custom_prompt", None)
             if custom_prompt == "None":
@@ -252,12 +259,7 @@ async def translate(text):
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     global currentAIname
-    if write_in_memory:
-        try:
-            with open(f"texts/memories/{currentAIname}.txt", 'a') as writer2:
-                writer2.write(f"Пользователь: {prompt}\n")
-        except IOError as ex:
-            raise RuntimeError(ex)
+
     config.read('config.ini')
     gpt_provider = config.getboolean('gpt', 'use_gpt_provider')
     if not gpt_provider:
