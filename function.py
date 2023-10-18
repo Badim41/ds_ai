@@ -120,8 +120,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                       Тебе пишут: {temp_spokenText}. Ответ:"
                 else:
                     prompt = f"Я хочу, чтобы ты вел себя как {currentAIname}." \
-                             f" Я хочу, чтобы вы ответили так же, как {currentAIname}, используя тот тон," \
-                             f"манеру и словарный запас, который использовал бы {currentAIname}. {currentAIinfo}" \
+                             f" Я хочу, чтобы ты попытался ответить так же, как {currentAIname}. {currentAIinfo}" \
                              f"Вот история предыдущих запросов:\"{file_content}\"" \
                              f"Вы должны знать все знания о {currentAIname}. \nОтветь ТОЛЬКО на следующий запрос:\"{temp_spokenText}\""
             elif custom_prompt == "True":
