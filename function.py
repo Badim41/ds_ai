@@ -312,6 +312,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
 
         except Exception as e:
             print("Ошибка получения ответа:", e)
+            await asyncio.sleep(3)
             await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer)
             return
     # if not language == "russian":
