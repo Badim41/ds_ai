@@ -107,21 +107,23 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             file_path = "texts/memories/" + str(currentAIname) + ".txt"
             if not os.path.exists(file_path):
                 with open(file_path, "w") as create_file:
-                    create_file.write("Человек: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n")
+                    create_file.write("Пользователь: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n")
             # Open the file
             with open(file_path, "r") as file:
                 file_content = file.read()
-            # prompt = f"Напиши ответ человеку, он говорит:\""
-            prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}.\
-             У тебя есть воспоминания:\"{file_content}\".\
-              Тебе пишут: {temp_spokenText}. Ответ:"
-            # prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}." \
-            #          f"Тебе нужно вести диалог. Ты не говоришь, что какую-либо выполняешь роль (Например: " \
-            #          f"я не могу выполнить такие действия, так как это нарушает мою роль). " \
-            #          f"Отвечай как можно короче. " \
-            #          f"У тебя ({currentAIname}) есть воспоминания:\"{file_content}\". " \
-            #          f"Напиши ответ человеку, он говорит:\""
-            # prompt += temp_spokenText + "\". Ответ: "
+            # Локальный GPT нормально отвечает, если в конце добавить "Ответ:"
+            if await set_get_config_all("gpt", "use_gpt_provider", None) == "False":
+                prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}.\
+                 У тебя есть воспоминания:\"{file_content}\".\
+                  Тебе пишут: {temp_spokenText}. Ответ:"
+            else:
+                prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}." \
+                         f"Тебе нужно вести диалог. Ты не говоришь, что какую-либо выполняешь роль (Например: " \
+                         f"я не могу выполнить такие действия, так как это нарушает мою роль). " \
+                         f"Отвечай как можно короче. " \
+                         f"Вот история предыдущих запросов:\"{file_content}\". " \
+                         f"Напиши ответ пользователю, он говорит:\""
+                prompt += temp_spokenText + "\""
         except Exception as ex:
             raise ex
 
@@ -253,14 +255,18 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
         from g4f.Provider import (
             GeekGpt
         )
-
-        # Set with provider
-        response = g4f.ChatCompletion.create(
-            model="gpt-4",
-            provider=g4f.Provider.GeekGpt,
-            messages=[{"role": "user", "content": prompt}],
-            stream=True
-        )
+        try:
+            # Set with provider
+            response = g4f.ChatCompletion.create(
+                model="gpt-4",
+                provider=g4f.Provider.GeekGpt,
+                messages=[{"role": "user", "content": prompt}],
+                stream=True
+            )
+        except Exception as e:
+            print("Ошибка получения ответа:", e)
+            await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer)
+            return
         i = 0
         limit = 15
         result = ""
@@ -371,7 +377,7 @@ async def voice_commands(sentence, ctx):
             try:
                 with open(f"texts/memories/{currentAIname}.txt", "w") as create_file:
                     create_file.write(
-                        "Человек: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n")
+                        "Пользователь: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n")
                 await text_to_speech("отчищена память", False, ctx)
             except Exception as e:
                 await result_command_change(f"Ошибка: {e}", Color.RED)
@@ -746,7 +752,7 @@ async def prepare_audio_process_cuda(ctx):
                     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     await result_command_change(f"запуск AICoverGen", Color.CYAN)
                     print("Params:", params)
-                    await command_runner(params, ctx)
+                    await execute_command(params, ctx)
                     time.sleep(0.05)
                 else:
                     print("Больше нет ссылок")
@@ -900,7 +906,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         except IOError as ex:
             raise RuntimeError(ex)
 
-        while os.path.getsize(f"texts/memories/{ai_dictionary}.txt") > 500:
+        while os.path.getsize(f"texts/memories/{ai_dictionary}.txt") > 2000:
             try:
                 with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
                     lines = reader.readlines()
