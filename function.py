@@ -11,7 +11,7 @@ _providers = [
 # g4f.Provider.AItianhuSpace, - COOKIES
 # g4f.Provider.AiAsk, - rate limit
 # g4f.Provider.ChatBase, - bad
-g4f.Provider.ChatForAi,
+# g4f.Provider.ChatForAi, - GOOD
 g4f.Provider.Chatgpt4Online,
 g4f.Provider.ChatgptAi,
 g4f.Provider.ChatgptDemo,
