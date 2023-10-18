@@ -282,7 +282,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
                 i = 0
             print(message_changed, end="")
             result += message
-        result.replace(currentAIname + ":", "")
+        result = result.replace(currentAIname + ": ", "")
     #if not language == "russian":
     #    translator = Translator(from_lang="ru", to_lang=language[:2].lower())
     #    result = translator.translate(result)
