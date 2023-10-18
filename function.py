@@ -228,7 +228,7 @@ async def translate(text):
     return translator.translate(text)
 
 
-async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer)
+async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
     config.read('config.ini') 
     gpt_provider = config.getboolean('gpt', 'use_gpt_provider')
     if not gpt_provider:
