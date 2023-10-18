@@ -118,8 +118,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                   Тебе пишут: {temp_spokenText}. Ответ:"
             else:
                 prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}." \
-                         f"Тебе нужно вести диалог. Ты не говоришь, что какую-либо выполняешь роль (Например: " \
-                         f"я не могу выполнить такие действия, так как это нарушает мою роль). " \
+                         f"Тебе нужно вести диалог. " \
                          f"Отвечай как можно короче. " \
                          f"Вот история предыдущих запросов:\"{file_content}\". " \
                          f"Напиши ответ пользователю, он говорит:\""
@@ -128,6 +127,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             raise ex
 
         try:
+            await result_command_change("Prompt" + prompt, Color.GRAY)
             await chatgpt_get_result(True, prompt, ctx, writeAnswer)
         except Exception as ex:
             raise ex
