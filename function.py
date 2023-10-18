@@ -81,7 +81,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     name = config.get('Default', 'currentainame')
     if name == "None":
         currentAIname = "Дискорд-бот"
-        spokenText = spokenText.replace("None", "Дискорд-бот")
+        spokenText = spokenText.replace("none", "Дискорд-бот")
     else:
         currentAIname = name
     global currentAIinfo
