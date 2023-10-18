@@ -312,7 +312,8 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
                     i = 0
                 print(message_changed, end="")
                 result += message
-                result = result.replace(currentAIname + ": ", "").replace(currentAIname + ", ", "")
+                if currentAIname in result:
+                    result = result[result.find(currentAIname) + len(currentAIname) + 2:]
 
         except Exception as e:
             print("Ошибка получения ответа:", e)
