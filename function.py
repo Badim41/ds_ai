@@ -9,8 +9,8 @@ import os
 import g4f
 _providers = [
 # g4f.Provider.AItianhuSpace, - COOKIES
-# g4f.Provider.AiAsk,
-g4f.Provider.ChatBase,
+# g4f.Provider.AiAsk, - rate limit
+# g4f.Provider.ChatBase, - bad
 g4f.Provider.ChatForAi,
 g4f.Provider.Chatgpt4Online,
 g4f.Provider.ChatgptAi,
