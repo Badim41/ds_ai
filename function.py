@@ -78,7 +78,12 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     global video_length
     video_length = config.getint('Default', 'video_length')
     global currentAIname
-    currentAIname = config.get('Default', 'currentainame')
+    name = config.get('Default', 'currentainame')
+    if name == "None":
+        currentAIname = "Дискорд-бот"
+        spokenText = spokenText.replace("None", "Дискорд-бот")
+    else:
+        currentAIname = name
     global currentAIinfo
     currentAIinfo = config.get('Default', 'currentaiinfo')
     global currentAIpitch
@@ -548,7 +553,7 @@ async def setAIvoice(name, ctx):
                 await set_config("currentaipitch", 0)
 
     else:
-        await result_command_change(f"curentainame: {currentAIname}", Color.GRAY)
+        await result_command_change(f"currentainame: {currentAIname}", Color.GRAY)
         await text_to_speech("голос не найден", False, ctx)
 
 
