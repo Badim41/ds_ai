@@ -229,10 +229,9 @@ async def translate(text):
 
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer)
-config.read('config.ini') 
-gpt_= config.getboolean('gpt', 'use_gpt_provider')
-
-    if await set_get_config
+    config.read('config.ini') 
+    gpt_provider = config.getboolean('gpt', 'use_gpt_provider')
+    if not gpt_provider:
         gpt_loaded = config.getboolean('gpt', 'gpt')
         if not gpt_loaded:
             await write_in_discord(ctx, "модель чат-бота не загрузилась, подождите пару минут")
@@ -248,10 +247,37 @@ gpt_= config.getboolean('gpt', 'use_gpt_provider')
                 break
             await asyncio.sleep(0.05)
         await set_get_config_all("gpt", "gpt_result", "None")
-    
-    if not language == "russian":
-        translator = Translator(from_lang="ru", to_lang=language[:2].lower())
-        result = translator.translate(result)
+    else:
+        import g4f
+        import os
+
+        from g4f.Provider import (
+            GeekGpt
+        )
+
+        # Set with provider
+        response = g4f.ChatCompletion.create(
+            model="gpt-4",
+            provider=g4f.Provider.GeekGpt,
+            messages=[{"role": "user", "content": f"Вот история предыдущих запросов:{memories}" + "\nТеперь напиши ответ на этот вопрос:\n" + text,}],
+            stream=True
+        )
+        i = 0
+        result = ""
+        for message in response:
+            message_changed = message
+            i+=1
+            if "\n" in message:
+                i = 0
+            if i > limit and " " in message:
+                message_changed = message.replace(" ", "")
+                print("\n")
+                i = 0
+            print(message_changed, end="")
+            result += message
+    #if not language == "russian":
+    #    translator = Translator(from_lang="ru", to_lang=language[:2].lower())
+    #    result = translator.translate(result)
     if writeAnswer:
         await write_in_discord(ctx, result)
     await text_to_speech(result, write_in_memory, ctx)
