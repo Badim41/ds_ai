@@ -109,6 +109,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             raise ex
 
         try:
+            # memories
             file_path = "texts/memories/" + str(currentAIname) + ".txt"
             if not os.path.exists(file_path):
                 with open(file_path, "w") as create_file:
@@ -116,7 +117,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             # Open the file
             with open(file_path, "r") as file:
                 file_content = file.read()
-            # memories
+
             try:
                 with open(f"texts/memories/{currentAIname}.txt", 'a') as writer2:
                     writer2.write(f"Пользователь: {temp_spokenText}\n")
@@ -133,10 +134,10 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                 else:
                     prompt = f"Я хочу, чтобы ты вел себя как {currentAIname}." \
                              f" Я хочу, чтобы ты попытался ответить так же, как {currentAIname}. {currentAIinfo}" \
-                             f"Вот история предыдущих запросов:\"{file_content}\"" \
+                             f"У тебя есть воспоминания:\"{file_content}\"" \
                              f"\nОтветь ТОЛЬКО на следующий запрос:\"{temp_spokenText}\""
             elif custom_prompt == "True":
-                prompt = f"Вот история предыдущих запросов:\"{file_content}\"" \
+                prompt = f"У тебя есть воспоминания:\"{file_content}\"" \
                          f"Напиши ответ пользователю, он говорит:\"{temp_spokenText}\""
             else:
                 if os.path.exists(f"texts/prompts/{custom_prompt}.txt"):
@@ -942,7 +943,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
             lines = reader.readlines()
             lines_number = len(lines)
-        while lines_number > 4:
+        while lines_number > 100:
             try:
                 with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
                     lines = reader.readlines()
