@@ -135,7 +135,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                     prompt = f"Я хочу, чтобы ты вел себя как {currentAIname}." \
                              f" Я хочу, чтобы ты попытался ответить так же, как {currentAIname}. {currentAIinfo}" \
                              f"У тебя есть воспоминания:\"{file_content}\"" \
-                             f"\nОтветь ТОЛЬКО на следующий запрос:\"{temp_spokenText}\""
+                             f"\nСделай или ответь только на то, что говорят в следующем запрос:\"{temp_spokenText}\""
             elif custom_prompt == "True":
                 prompt = f"У тебя есть воспоминания:\"{file_content}\"" \
                          f"Напиши ответ пользователю, он говорит:\"{temp_spokenText}\""
