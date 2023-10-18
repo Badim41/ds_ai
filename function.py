@@ -123,8 +123,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                              f" Я хочу, чтобы вы ответили так же, как {currentAIname}, используя тот тон," \
                              f"манеру и словарный запас, который использовал бы {currentAIname}. {currentAIinfo}" \
                              f"Вот история предыдущих запросов:\"{file_content}\"" \
-                             f"Не пишите никаких объяснений. Отвечайте только в образе {currentAIname}." \
-                             f"Вы должны знать все знания о {currentAIname}. Ответь ТОЛЬКО на следующий запрос, если нужно опираясь на предыдущие:\"{temp_spokenText}\""
+                             f"Вы должны знать все знания о {currentAIname}. Ответь ТОЛЬКО на следующий запрос, если нужно, опираясь на предыдущие:\"{temp_spokenText}\""
             elif custom_prompt == "True":
                 prompt = f"Вот история предыдущих запросов:\"{file_content}\"" \
                          f"Напиши ответ пользователю, он говорит:\"{temp_spokenText}\""
@@ -931,7 +930,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         except IOError as ex:
             raise RuntimeError(ex)
 
-        while os.path.getsize(f"texts/memories/{ai_dictionary}.txt") > 2000:
+        while os.path.getsize(f"texts/memories/{ai_dictionary}.txt") > 500:
             try:
                 with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
                     lines = reader.readlines()
