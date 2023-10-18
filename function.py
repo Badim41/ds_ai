@@ -9,7 +9,6 @@ import os
 import g4f
 _providers = [
     g4f.Provider.Aichat,
-    g4f.Provider.Liaobots,
     g4f.Provider.Phind,
     g4f.Provider.Raycast,
     g4f.Provider.GeekGpt,
@@ -294,29 +293,14 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
     else:
         try:
             # Set with provider
-            response = g4f.ChatCompletion.create(
+            result = g4f.ChatCompletion.create(
                 model="gpt-4",
                 provider=_providers[provider_number],
-                messages=[{"role": currentAIname, "content": prompt}],
-                stream=True
+                messages=[{"role": currentAIname, "content": prompt}]
             )
 
-            i = 0
-            limit = 15
-            result = ""
-            for message in response:
-                message_changed = message
-                i += 1
-                if "\n" in message:
-                    i = 0
-                if i > limit and " " in message:
-                    message_changed = message.replace(" ", "")
-                    print("\n")
-                    i = 0
-                print(message_changed, end="")
-                result += message
-                if currentAIname in result:
-                    result = result[result.find(currentAIname) + len(currentAIname) + 2:]
+            if currentAIname in result:
+                result = result[result.find(currentAIname) + len(currentAIname) + 2:]
 
         except Exception as e:
             if not provider_number == len(_providers) - 1:
