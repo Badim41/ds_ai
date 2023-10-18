@@ -112,17 +112,30 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             with open(file_path, "r") as file:
                 file_content = file.read()
             # Локальный GPT нормально отвечает, если в конце добавить "Ответ:"
-            if await set_get_config_all("gpt", "use_gpt_provider", None) == "False":
-                prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}.\
-                 У тебя есть воспоминания:\"{file_content}\".\
-                  Тебе пишут: {temp_spokenText}. Ответ:"
+            custom_prompt = await set_get_config_all("gpt", "gpt_custom_prompt", None)
+            if custom_prompt == "None":
+                if await set_get_config_all("gpt", "use_gpt_provider", None) == "False":
+                    prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}.\
+                     У тебя есть воспоминания:\"{file_content}\".\
+                      Тебе пишут: {temp_spokenText}. Ответ:"
+                else:
+                    prompt = f"Я хочу, чтобы ты вел себя как {currentAIname}." \
+                             f" Я хочу, чтобы вы ответили так же, как {currentAIname}, используя тот тон," \
+                             f"манеру и словарный запас, который использовал бы {currentAIname}. {currentAIinfo}" \
+                             f"Вот история предыдущих запросов:\"{file_content}\"" \
+                             f"Не пишите никаких объяснений. Отвечайте только в образе {currentAIname}." \
+                             f"Вы должны знать все знания о {currentAIname}. Мое первое предложение:\"{temp_spokenText}\""
+            elif custom_prompt == "True":
+                prompt = f"Вот история предыдущих запросов:\"{file_content}\"" \
+                         f"Напиши ответ пользователю, он говорит:\"{temp_spokenText}\""
             else:
-                prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}." \
-                         f"Тебе нужно вести диалог. " \
-                         f"Отвечай как можно короче. " \
-                         f"Вот история предыдущих запросов:\"{file_content}\""\
-                         f"Напиши ответ пользователю, он говорит:\""
-                prompt += temp_spokenText + "\""
+                if os.path.exists(f"texts/prompts/{custom_prompt}.txt"):
+                    with open(file_path, "w") as reader:
+                        prompt = reader.read()
+                    await voice_commands("робот протокол 998", ctx)
+                else:
+                    await text_to_speech("Промпт не найден!", False, ctx)
+                    return
         except Exception as ex:
             raise ex
 
@@ -179,7 +192,8 @@ mat_found = False
 
 # источник: https://matershinik.narod.ru/
 mat_massive = {
-    "апездал", "апездошенная", "блядь", "блять", "бля", "блядство", "выебон", "выебать", "вхуюжить", "гомосек", "долбоёб",
+    "апездал", "апездошенная", "блядь", "блять", "бля", "блядство", "выебон", "выебать", "вхуюжить", "гомосек",
+    "долбоёб",
     "ебло", "еблище", "ебать", "ебическая", "ебунок", "еблан", "ёбнуть", "ёболызнуть", "ебош", "заебал",
     "заебатый", "злаебучий", "заёб", "хуй", "колдоебина", "манда", "мандовошка", "мокрощелка", "наебка",
     "наебал", "наебаловка", "напиздеть", "отъебись", "охуеть", "отхуевертить", "опизденеть", "охуевший",
@@ -187,7 +201,7 @@ mat_massive = {
     "подзалупный", "пизденыш", "припиздак", "разъебать", "распиздяй", "разъебанный", "сука", "трахать",
     "уебок", "уебать", "угондошить", "уебан", "хитровыебанный", "хуйня", "хуета", "хуево", "хуесос",
     "хуеть", "хуевертить", "хуеглот", "хуистика", "членосос", "членоплет", "шлюха", "fuck", "тест_мат",
-    "порно", "секс", "черножопая",  "нахуй"
+    "порно", "секс", "черножопая", "нахуй"
 }
 
 
@@ -231,7 +245,7 @@ async def translate(text):
 
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
-    config.read('config.ini') 
+    config.read('config.ini')
     gpt_provider = config.getboolean('gpt', 'use_gpt_provider')
     if not gpt_provider:
         gpt_loaded = config.getboolean('gpt', 'gpt')
@@ -272,7 +286,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
         result = ""
         for message in response:
             message_changed = message
-            i+=1
+            i += 1
             if "\n" in message:
                 i = 0
             if i > limit and " " in message:
@@ -282,7 +296,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
             print(message_changed, end="")
             result += message
         result = result.replace(currentAIname + ": ", "")
-    #if not language == "russian":
+    # if not language == "russian":
     #    translator = Translator(from_lang="ru", to_lang=language[:2].lower())
     #    result = translator.translate(result)
     if writeAnswer:
@@ -953,7 +967,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         await remove_unavaible_voice_token()
         await text_to_speech(tts, False, ctx, ai_dictionary=ai_dictionary)
         return
-        #gtts(tts, language[:2], file_name)
+        # gtts(tts, language[:2], file_name)
     # если голос не выставлен
     if ai_dictionary == "None":
         await playSoundFile(file_name, -1, 0, ctx)
@@ -990,7 +1004,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
 
 async def gtts(tts, language, output_file):
     from gtts import gTTS
-    
+
     # на вход идёт всегда русский текст, так что переводим его
     try:
         voiceFile = gTTS(tts, lang=language)
@@ -1013,8 +1027,6 @@ async def remove_unavaible_voice_token():
             continue
         avaible_tokens += token
     await set_get_config_all("voice", "avaible_tokens", avaible_tokens)
-
-
 
 
 async def setModelWithLanguage(language, model_type):
