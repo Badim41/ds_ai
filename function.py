@@ -8,7 +8,6 @@ import time
 import os
 import g4f
 _providers = [
-g4f.Provider.Vercel,
 g4f.Provider.AItianhuSpace,
 g4f.Provider.AiAsk,
 g4f.Provider.ChatBase,
@@ -282,7 +281,7 @@ async def translate(text):
     return translator.translate(text)
 
 gpt_errors = 0
-async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0, gpt_model="gpt-4-0613"):
+async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0, gpt_model="gpt-3.5-turbo"):
     global currentAIname, gpt_errors
 
     config.read('config.ini')
