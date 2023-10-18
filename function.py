@@ -18,7 +18,7 @@ _providers = [
 # g4f.Provider.ChatgptLogin, error 403
 # g4f.Provider.ChatgptX, error
 # g4f.Provider.FreeGpt, wrong language
-g4f.Provider.GPTalk,
+#g4f.Provider.GPTalk, GOOD
 g4f.Provider.GptForLove,
 g4f.Provider.GptGo,
 g4f.Provider.GptGod,
