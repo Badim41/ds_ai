@@ -306,7 +306,7 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
     else:
         try:
             # Set with provider
-            result = g4f.ChatCompletion.create(
+            result = await g4f.ChatCompletion.create_async(
                 model=gpt_model,
                 provider=_providers[provider_number],
                 messages=[{"role": "user", "content": prompt}]
