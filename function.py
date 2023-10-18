@@ -938,8 +938,11 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
                 writer2.write(f"{ai_dictionary}: {tts_no_n}\n")
         except IOError as ex:
             raise RuntimeError(ex)
-
-        while os.path.getsize(f"texts/memories/{ai_dictionary}.txt") > 10000:
+        lines_number = 0
+        with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
+            lines = reader.readlines()
+            lines_number = len(lines)
+        while lines_number > 6:
             try:
                 with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
                     lines = reader.readlines()
