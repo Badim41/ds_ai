@@ -19,11 +19,11 @@ _providers = [
 # g4f.Provider.ChatgptX, error
 # g4f.Provider.FreeGpt, wrong language
 #g4f.Provider.GPTalk, GOOD
-g4f.Provider.GptForLove,
-g4f.Provider.GptGo,
-g4f.Provider.GptGod,
-g4f.Provider.Llama2,
-g4f.Provider.NoowAi,
+# g4f.Provider.GptForLove, error no module
+# g4f.Provider.GptGo, error 403
+# g4f.Provider.GptGod, error list
+# g4f.Provider.Llama2, no gpt3.5 turbo
+# g4f.Provider.NoowAi, bad
 g4f.Provider.Opchatgpts
 ]
 
