@@ -26,3 +26,15 @@ moviepy
 elevenlabs
 gTTS
 g4f
+pycryptodome
+curl_cffi
+aiohttp
+certifi
+browser_cookie3
+websockets
+js2py
+flask
+flask-cors
+typing-extensions
+PyExecJS
+duckduckgo-search
