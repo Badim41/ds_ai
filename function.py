@@ -942,7 +942,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
             lines = reader.readlines()
             lines_number = len(lines)
-        while lines_number > 6:
+        while lines_number > 4:
             try:
                 with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
                     lines = reader.readlines()
