@@ -228,24 +228,27 @@ async def translate(text):
     return translator.translate(text)
 
 
-async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
-    config.read('config.ini')
-    gpt_loaded = config.getboolean('gpt', 'gpt')
-    if not gpt_loaded:
-        await write_in_discord(ctx, "модель чат-бота не загрузилась, подождите пару минут")
-        return
-    await result_command_change(f"Генерация ответа...", Color.GRAY)
-    await set_get_config_all("gpt", "gpt_prompt", prompt)
-    result = "None"
-    while result == "None":
-        result = await set_get_config_all("gpt", "gpt_result")
-        if result.endswith('$$'):
-            index_answer = result.index("Ответ:")
-            if not index_answer == -1:
-                result = result[index_answer + 6:-2]
-            break
-        await asyncio.sleep(0.05)
-    await set_get_config_all("gpt", "gpt_result", "None")
+async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer)
+config.read('config.ini') 
+gpt_= config.getboolean('gpt', 'use_gpt_provider')
+
+    if await set_get_config
+        gpt_loaded = config.getboolean('gpt', 'gpt')
+        if not gpt_loaded:
+            await write_in_discord(ctx, "модель чат-бота не загрузилась, подождите пару минут")
+            return
+        await result_command_change(f"Генерация ответа...", Color.GRAY)
+        await set_get_config_all("gpt", "gpt_prompt", prompt)
+        while True:
+            result = await set_get_config_all("gpt", "gpt_result")
+            if result.endswith('$$'):
+                index_answer = result.index("Ответ:")
+                if not index_answer == -1:
+                    result = result[index_answer + 6:-2]
+                break
+            await asyncio.sleep(0.05)
+        await set_get_config_all("gpt", "gpt_result", "None")
+    
     if not language == "russian":
         translator = Translator(from_lang="ru", to_lang=language[:2].lower())
         result = translator.translate(result)
