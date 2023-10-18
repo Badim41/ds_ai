@@ -6,6 +6,16 @@ import subprocess
 import re
 import time
 import os
+import g4f
+_providers = [
+    g4f.Provider.Aichat,
+    g4f.Provider.ChatBase,
+    g4f.Provider.Bing,
+    g4f.Provider.GptGo,
+    g4f.Provider.You,
+    g4f.Provider.Yqcloud,
+    g4f.Provider.GeekGpt,
+]
 
 from elevenlabs import generate, play, save, set_api_key
 from discord_bot import config
@@ -261,9 +271,9 @@ async def translate(text):
     translator = Translator(from_lang="ru", to_lang=language[:2].lower())
     return translator.translate(text)
 
-
-async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
-    global currentAIname
+gpt_errors = 0
+async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0):
+    global currentAIname, gpt_errors
 
     config.read('config.ini')
     gpt_provider = config.getboolean('gpt', 'use_gpt_provider')
@@ -285,15 +295,10 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
         await set_get_config_all("gpt", "gpt_result", "None")
     else:
         try:
-            import g4f
-
-            from g4f.Provider import (
-                GeekGpt
-            )
             # Set with provider
             response = g4f.ChatCompletion.create(
                 model="gpt-4",
-                provider=g4f.Provider.GeekGpt,
+                provider=_providers[provider_number],
                 messages=[{"role": currentAIname, "content": prompt}],
                 stream=True
             )
@@ -316,10 +321,17 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer):
                     result = result[result.find(currentAIname) + len(currentAIname) + 2:]
 
         except Exception as e:
-            print("Ошибка получения ответа:", e)
-            await asyncio.sleep(3)
-            await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer)
-            return
+            if not provider_number == len(_providers) - 1:
+                print("Ошибка получения ответа:", e)
+                await asyncio.sleep(3)
+
+                gpt_errors += 1
+                if gpt_errors > 3:
+                    provider_number += 1
+                    print("change provider")
+                await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=provider_number)
+                return
+            result = "Ошибка при получении запроса"
     # if not language == "russian":
     #    translator = Translator(from_lang="ru", to_lang=language[:2].lower())
     #    result = translator.translate(result)
