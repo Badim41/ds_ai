@@ -304,7 +304,9 @@ async def remove_last_format_simbols(text):
         return corrected_text
     return text
 
-async def one_gpt_run(provider, prompt, delay_for_gpt):
+async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name="."):
+    if not provider_name in provider:
+        return None
     try:
         gpt_model = "gpt-3.5-turbo"
         if "GeekGpt" in str(provider):
@@ -336,7 +338,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
                 model=gpt_model,
                 provider=provider,
                 messages=[{"role": "user", "content": prompt}],
-                # фальшивый cookie поможет для некоторых провердеров
+                # фальшивый cookie поможет для некоторых провайдеров
                 cookies={"Fake": ""},
                 auth=True
             )
@@ -374,7 +376,14 @@ async def run_all_gpt(prompt, mode):
             if not result is None and not result.replace("\n", "").replace(" ", "") == "":
                 new_results.append(result)
         return '\n\n\n'.join(new_results)
-    return f"Не найден мод {mode} для GPT"
+    else:
+        functions = [one_gpt_run(provider, prompt, 1, provider_name=mode) for provider in _providers]  # список функций
+        results = await asyncio.gather(*functions)  # результаты всех функций
+        new_results = []
+        for i, result in enumerate(results):
+            if not result is None and not result.replace("\n", "").replace(" ", "") == "":
+                new_results.append(result)
+
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0, gpt_model="gpt-3.5-turbo"):
     global currentAIname#, gpt_errors
     config.read('config.ini')
