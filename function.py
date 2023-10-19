@@ -347,8 +347,6 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
                     provider=_providers[provider_number],
                     messages=[{"role": "user", "content": prompt}]
                 )
-                if currentAIname in result:
-                    result = result[result.find(currentAIname) + len(currentAIname) + 2:]
             except Exception as e:
                 if not provider_number == len(_providers) - 1:
                     print("Ошибка получения ответа:", e)
@@ -362,6 +360,8 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
 
                     return
                 result = "Ошибка при получении запроса"
+        if currentAIname in result:
+            result = result[result.find(currentAIname) + len(currentAIname) + 2:]
         # if not language == "russian":
         #    translator = Translator(from_lang="ru", to_lang=language[:2].lower())
         #    result = translator.translate(result)
