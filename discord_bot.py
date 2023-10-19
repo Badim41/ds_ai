@@ -682,7 +682,9 @@ async def run_main_with_settings(ctx, spokenText, writeAnswer):
 
 async def write_in_discord(ctx, text):
     if text == "" or text is None:
-        text = "*None*\n||робот выводит пустрой текст||"
+        from function import result_command_change, Color
+        await result_command_change("ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
+        return
     if len(text) <= 2000:
         await ctx.send(text)
     else:
