@@ -182,8 +182,8 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                 if os.path.exists(f"texts/prompts/{custom_prompt}.txt"):
                     #/content/ds_ai/texts/prompts/roleplay.txt
                     with open(f"texts/prompts/{custom_prompt}.txt", "r") as reader:
-                        prompt = reader.read().replace("\n", " ")
-                    await voice_commands("робот протокол 998", ctx)
+                        prompt = reader.read()
+                    # await voice_commands("робот протокол 998", ctx)
                 else:
                     await text_to_speech("Промпт не найден!", False, ctx)
                     return
@@ -191,6 +191,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             raise ex
 
         try:
+            print("temp1")
             await result_command_change("Prompt" + prompt, Color.GRAY)
             await chatgpt_get_result(True, prompt, ctx, writeAnswer)
         except Exception as ex:
