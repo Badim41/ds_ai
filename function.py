@@ -157,7 +157,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                                 Продолжайте вести себя как {currentAIname}, насколько это возможно. \
                                 {currentAIinfo} \
                              У {currentAIname} есть воспоминания:\"{file_content}\" \
-                             Когда я задаю вам вопрос, отвечайте как GPT и {currentAIname}, как показано ниже.\
+                             Когда я задаю вам вопрос, отвечайте как {currentAIname}, как показано ниже.\
                               {currentAIname}: [так, как ответил бы {currentAIname}]\
                               Вопрос:{temp_spokenText}")
                     while "  " in prompt:
