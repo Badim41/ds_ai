@@ -298,7 +298,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
             provider=provider,
             messages=[{"role": "user", "content": prompt}]
         )
-        if result.replace("\n", "") == "" or result is None:
+        if result is None or result.replace("\n", "") == "":
             # делаем задержку, чтобы не вывелся пустой результат
             await asyncio.sleep(delay_for_gpt)
         # заменяем на имя провайдера
