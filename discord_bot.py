@@ -240,11 +240,12 @@ async def __image(ctx,
             x = ((x // 64) + 1) * 64
         if not y % 64 == 0:
             y = ((y // 64) + 1) * 64
+        print("X", x, "Y", y)
         # во избежания ошибок из-за нехватки памяти, ограничим изображение 768x768
         while x * y > 589824:
-            if not x == 64:
+            if x > 64:
                 x -= 64
-            if not y == 64:
+            if y > 64:
                 y -= 64
         # loading params
         await set_get_config_all(f"Image", "strength_negative_prompt", strength_negative_prompt)
