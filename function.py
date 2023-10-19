@@ -10,7 +10,6 @@ import g4f
 _providers = [
 g4f.Provider.ChatForAi,
 g4f.Provider.GPTalk,
-g4f.Provider.Llama2, # no gpt3.5 turbo
 g4f.Provider.AiAsk, #- rate limit
 g4f.Provider.GeekGpt, # short answer
 g4f.Provider.ChatgptAi,# - error ID
@@ -26,6 +25,7 @@ g4f.Provider.ChatgptX,# error
 #g4f.Provider.Opchatgpts bad
 # g4f.Provider.Chatgpt4Online, - bad
 # g4f.Provider.ChatBase, - bad
+#g4f.Provider.Llama2, # no model
 ]
 
 from elevenlabs import generate, play, save, set_api_key
@@ -287,8 +287,6 @@ async def translate(text):
 
 async def one_gpt_run(provider, prompt):
     gpt_model = "gpt-3.5-turbo"
-    if "Llama2" in str(provider):
-        gpt_model = "Llama-13B"
     if "GeekGpt" in str(provider):
         gpt_model = "gpt-4"
     result = await g4f.ChatCompletion.create_async(
