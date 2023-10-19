@@ -684,9 +684,12 @@ async def write_in_discord(ctx, text):
     # await run_main_with_settings(ctx, text, True
     if text == "":
         text = "Ошибка. Если вы пытаетесь что-то сказать боту, повысьте длину ответа командой /lenght"
-    while len(text) > 4000:
-        await ctx.send(text[:4000])
-        text = text[:4000]
+    while len(text) > 2000:
+        if len(text) > 10000:
+            await ctx.send(f"Я хочу вывести {len(text)} символов, но этот текст всё ровно никто не прочитает")
+            return
+        await ctx.send(text[:2000])
+        text = text[:2000]
     await ctx.send(text)
 
 
