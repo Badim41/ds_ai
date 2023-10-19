@@ -325,6 +325,7 @@ async def run_all_gpt(prompt, mode):
             if not result is None:
                 new_results.append(result)
         return '\n\n\n'.join(results)
+    return f"Не найден мод {mode} для GPT"
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0, gpt_model="gpt-3.5-turbo"):
     global currentAIname#, gpt_errors
     config.read('config.ini')
@@ -348,8 +349,8 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
     else:
         gpt_mode = await set_get_config_all("gpt", "gpt_mode", None)
         # запуск сразу всех GPT
-        if gpt_mode == "fast":
-            result = await run_all_gpt(prompt)
+        if not gpt_mode == "None":
+            result = await run_all_gpt(prompt, gpt_mode)
         # Запуск в начале более качественных (не рекомендовано)
         else:
             try:
