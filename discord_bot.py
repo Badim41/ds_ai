@@ -8,6 +8,7 @@ import configparser
 import asyncio
 import time
 
+from PIL import Image
 from pydub import AudioSegment
 
 from discord import Option
@@ -236,6 +237,8 @@ async def __image(ctx,
         # get image size and round to 64
         if x is None and y is None:
             x, y = await get_image_dimensions(input_image)
+            x = int(x)
+            y = int(y)
         print("1X", x, "1Y", y)
         if not x % 64 == 0:
             x = ((x // 64) + 1) * 64
@@ -836,19 +839,9 @@ async def recognize(ctx):
 
 
 async def get_image_dimensions(file_path):
-    with open(file_path, 'rb') as file:
-        data = file.read(24)
-
-    if data.startswith(b'\x89PNG\r\n\x1a\n'):
-        return struct.unpack('>ii', data[16:24])
-    elif data[:6] in (b'GIF87a', b'GIF89a') and data[10:12] == b'\x00\x00':
-        return struct.unpack('<HH', data[6:10])
-    elif data.startswith(b'\xff\xd8\xff\xe0') and data[6:10] == b'JFIF':
-        return struct.unpack('>H', data[7:9])[0], struct.unpack('>H', data[9:11])[0]
-    elif data.startswith(b'\xff\xd8\xff\xe1') and data[6:10] == b'Exif':
-        return struct.unpack('<HH', data[10:14])[0], struct.unpack('<HH', data[14:18])[0]
-    else:
-        raise ValueError("Формат не поддерживается")
+    with Image.open(file_path) as img:
+        sizes = img.size
+    return str(sizes).replace("(", "").replace(")", "").replace(" ", "").split(",")
 
 
 if __name__ == "__main__":
