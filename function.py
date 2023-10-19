@@ -304,7 +304,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
             provider=provider,
             messages=[{"role": "user", "content": prompt}]
         )
-        if result is None or result.replace("\n", "") == "":
+        if result is None or result.replace("\n", "").replace(" ", "") == "":
             # делаем задержку, чтобы не вывелся пустой результат
             await asyncio.sleep(delay_for_gpt)
         result = await remove_last_format_simbols(result)
