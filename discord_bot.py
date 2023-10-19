@@ -236,11 +236,12 @@ async def __image(ctx,
         # get image size and round to 64
         if x is None and y is None:
             x, y = await get_image_dimensions(input_image)
+        print("1X", x, "1Y", y)
         if not x % 64 == 0:
             x = ((x // 64) + 1) * 64
         if not y % 64 == 0:
             y = ((y // 64) + 1) * 64
-        print("X", x, "Y", y)
+        print("2X", x, "2Y", y)
         # во избежания ошибок из-за нехватки памяти, ограничим изображение 768x768
         while x * y > 589824:
             if x > 64:
