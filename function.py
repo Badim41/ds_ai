@@ -298,8 +298,10 @@ async def one_gpt_run(provider, prompt):
             provider=provider,
             messages=[{"role": "user", "content": prompt}]
         )
-        result = result + f"\nПровайдер: {provider}"
-        return result
+        if result == "" or result is None:
+            # делаем задержку, чтобы не вывелся пустой результат
+            await asyncio.sleep(120)
+        return result + f"\n||Провайдер: {provider}||"
     except Exception as e:
         await result_command_change(f"Error: {e}\n Provider: {provider}", Color.YELLOW)
         # даём 120 секунд каждому GPT на ответ
