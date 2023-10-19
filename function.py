@@ -340,7 +340,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
                 cookies={"Fake": ""},
                 auth=True
             )
-        if "ChatForAi" in str(provider):
+        if "GptGod" in str(provider):
             result = await g4f.ChatCompletion.create_async(
                 model=gpt_model,
                 provider=provider,
