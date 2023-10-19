@@ -261,7 +261,7 @@ async def __image(ctx,
         # wait for answer
         while True:
             output_image = await set_get_config_all(f"Image", "result", None)
-            if output_image == "None":
+            if not output_image == "None":
                 break
             await asyncio.sleep(0.25)
 
