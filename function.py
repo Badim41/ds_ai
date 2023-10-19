@@ -303,7 +303,8 @@ async def one_gpt_run(provider, prompt):
             await asyncio.sleep(120)
         # заменяем на имя провайдера
         provider = str(provider)
-        provider = provider[provider.find("'"):]
+        provider = provider[provider.find("'") + 1:]
+        provider = provider[:provider.find("'")]
         return result + f"\n||Провайдер: {provider}, Модель: {gpt_model}||"
     except Exception as e:
         await result_command_change(f"Error: {e}\n Provider: {provider}", Color.YELLOW)
