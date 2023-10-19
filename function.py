@@ -18,7 +18,6 @@ g4f.Provider.ChatgptLogin,# error 403
 g4f.Provider.GptGo,# error 403
 g4f.Provider.ChatgptX,# error
 g4f.Provider.NoowAi,
-g4f.Provider.Opchatgpts,
 g4f.Provider.You,
 
 # g4f.Provider.FreeGpt, wrong language

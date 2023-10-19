@@ -716,6 +716,8 @@ async def write_in_discord(ctx, text):
 
         # отправляем по частям
         for part in message_parts:
+            if part == "" or part is None:
+                continue
             await ctx.send(part)
 
 
