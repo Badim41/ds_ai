@@ -176,7 +176,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                     while "  " in prompt:
                         prompt = prompt.replace("  "," ")
             elif custom_prompt == "True":
-                prompt = f"У тебя есть воспоминания:\"{file_content}\"" \
+                prompt = f"ОПИРАЙСЯ НА ПРЕДЫДУЩИЕ ЗАПРОСЫ. Они даны в формате Человек:[запрос], GPT:[ответ на запрос]:\"{file_content}\"" \
                          f"Напиши ответ пользователю, он говорит:\"{temp_spokenText}\""
             else:
                 if os.path.exists(f"texts/prompts/{custom_prompt}.txt"):
@@ -184,7 +184,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                     with open(f"texts/prompts/{custom_prompt}.txt", "r") as reader:
                         prompt = reader.read()
                         print(prompt)
-                    # await voice_commands("робот протокол 998", ctx)
+                    await voice_commands("робот протокол 998", ctx)
                 else:
                     await text_to_speech("Промпт не найден!", False, ctx)
                     return
@@ -1065,7 +1065,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         try:
             with open(f"texts/memories/{ai_dictionary}.txt", 'a') as writer2:
                 tts_no_n = tts.replace("\n", " ")
-                writer2.write(f"{ai_dictionary}: {tts_no_n}\n")
+                writer2.write(f"GPT: {tts_no_n}\n")
         except IOError as ex:
             raise RuntimeError(ex)
         lines_number = 0
