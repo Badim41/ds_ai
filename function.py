@@ -1088,15 +1088,16 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         os.remove(file_name)
     language = await set_get_config_all("Default", "language")
 
+    if len(tts) > 200 or await set_get_config_all("voice", "avaible_tokens") == "None":
+        await result_command_change("gtts1", Color.CYAN)
+        await gtts(tts, language[:2], file_name)
+        return
+
     # получаем ключ для elevenlab
     keys = (await set_get_config_all("voice", "avaible_tokens")).split(";")
     key = keys[0]
     if not key == "Free":
         set_api_key(key)
-    if len(tts) > 200 or await set_get_config_all("voice", "avaible_tokens") == "None":
-        await result_command_change("gtts1", Color.CYAN)
-        await gtts(tts, language[:2], file_name)
-        return
     try:
         # голос TTS в зависимости от пола
         if currentAIpitch == 0:
@@ -1149,7 +1150,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
 
 async def gtts(tts, language, output_file):
     from gtts import gTTS
-
+    print("GTTS_fun")
     # на вход идёт всегда русский текст, так что переводим его
     try:
         voiceFile = gTTS(tts, lang=language)
