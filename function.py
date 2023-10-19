@@ -1010,6 +1010,8 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         try:
             with open(f"texts/memories/{ai_dictionary}.txt", 'a') as writer2:
                 tts_no_n = tts.replace("\n", " ")
+                if "||" in tts_no_n:
+                    tts_no_n = tts_no_n[:tts_no_n.find("||")]
                 writer2.write(f"{ai_dictionary}: {tts_no_n}\n")
         except IOError as ex:
             raise RuntimeError(ex)
@@ -1026,7 +1028,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
                     writer.writelines(lines)
             except IOError as e:
                 await result_command_change(f"Ошибка при выполнении команды: {e}", Color.RED)
-    
+
     if not ctx.voice_client:
         await result_command_change("skip tts", Color.CYAN)
         return
