@@ -286,16 +286,18 @@ async def translate(text):
 # gpt_errors = 0
 
 async def one_gpt_run(provider, prompt):
-    gpt_model = "gpt-3.5-turbo"
-    if "GeekGpt" in str(provider):
-        gpt_model = "gpt-4"
-    result = await g4f.ChatCompletion.create_async(
-        model=gpt_model,
-        provider=provider,
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return result + f"\n||{provider}||"
-
+    try:
+        gpt_model = "gpt-3.5-turbo"
+        if "GeekGpt" in str(provider):
+            gpt_model = "gpt-4"
+        result = await g4f.ChatCompletion.create_async(
+            model=gpt_model,
+            provider=provider,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return result + f"\n||{provider}||"
+    except Exception as e:
+        print(f"Error{e}, Provider:{provider}")
 async def run_all_gpt(prompt):
     numbers = [one_gpt_run(provider, prompt) for provider in _providers]  # список функций
     done, _ = await asyncio.wait(numbers, return_when=asyncio.FIRST_COMPLETED)
