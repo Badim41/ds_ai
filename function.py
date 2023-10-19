@@ -307,7 +307,11 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
         if result is None or result.replace("\n", "").replace(" ", "") == "":
             # делаем задержку, чтобы не вывелся пустой результат
             await asyncio.sleep(delay_for_gpt)
+        # если больше 3 "```" (форматов)
         result = await remove_last_format_simbols(result)
+        # убираем имя из результата
+        if currentAIname in result:
+            result = result[result.find(currentAIname) + len(currentAIname) + 2:]
         # заменяем на имя провайдера
         provider = str(provider)
         provider = provider[provider.find("'") + 1:]
@@ -381,8 +385,6 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
 
                     return
                 result = "Ошибка при получении запроса"
-        if currentAIname in result:
-            result = result[result.find(currentAIname) + len(currentAIname) + 2:]
         # if not language == "russian":
         #    translator = Translator(from_lang="ru", to_lang=language[:2].lower())
         #    result = translator.translate(result)
