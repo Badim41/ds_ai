@@ -288,6 +288,13 @@ async def translate(text):
 
 # gpt_errors = 0
 
+async def remove_last_format_simbols(text):
+    parts = text.split('```')
+    if len(parts) == 4:
+        corrected_text = '```'.join(parts[:3]) + parts[3]
+        return corrected_text
+    return text
+
 async def one_gpt_run(provider, prompt, delay_for_gpt):
     try:
         gpt_model = "gpt-3.5-turbo"
@@ -301,6 +308,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
         if result is None or result.replace("\n", "") == "":
             # делаем задержку, чтобы не вывелся пустой результат
             await asyncio.sleep(delay_for_gpt)
+        result = await remove_last_format_simbols(result)
         # заменяем на имя провайдера
         provider = str(provider)
         provider = provider[provider.find("'") + 1:]
