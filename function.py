@@ -159,7 +159,9 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                              У {currentAIname} есть воспоминания:\"{file_content}\" \
                              Когда я задаю вам вопрос, отвечайте как GPT и {currentAIname}, как показано ниже.\
                               {currentAIname}: [так, как ответил бы {currentAIname}]\
-                              Вопрос:{temp_spokenText})")
+                              Вопрос:{temp_spokenText}")
+                    while "  " in prompt:
+                        prompt = prompt.replace("  "," ")
             elif custom_prompt == "True":
                 prompt = f"У тебя есть воспоминания:\"{file_content}\"" \
                          f"Напиши ответ пользователю, он говорит:\"{temp_spokenText}\""
