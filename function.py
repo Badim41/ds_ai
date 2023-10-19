@@ -327,7 +327,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
             result = await g4f.ChatCompletion.create_async(
                 model=gpt_model,
                 provider=provider,
-                messages=prompt,
+                messages=[{"content": prompt}],
                 cookies={key: value for key, value in cookie_data.items()},
                 auth=True
             )
@@ -346,6 +346,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
         if result is None or result.replace("\n", "").replace(" ", "") == "":
             # делаем задержку, чтобы не вывелся пустой результат
             await asyncio.sleep(delay_for_gpt)
+            return
         # если больше 3 "```" (форматов)
         result = await remove_last_format_simbols(result)
         # убираем имя из результата
