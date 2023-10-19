@@ -691,7 +691,7 @@ async def write_in_discord(ctx, text):
             await ctx.send(f"Я хочу вывести {len(text)} символов, но этот текст всё ровно никто не прочитает")
             return
         await ctx.send(text[:2000])
-        text = text[:2000]
+        text = text[2000:]
     await ctx.send(text)
 
 
