@@ -327,7 +327,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
             result = await g4f.ChatCompletion.create_async(
                 model=gpt_model,
                 provider=provider,
-                messages=[{"role": "user", "content": prompt}],
+                messages=prompt,
                 cookies={key: value for key, value in cookie_data.items()},
                 auth=True
             )
