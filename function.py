@@ -298,11 +298,12 @@ async def one_gpt_run(provider, prompt):
             provider=provider,
             messages=[{"role": "user", "content": prompt}]
         )
+        result = result + f"\n{provider}"
         return result
     except Exception as e:
         await result_command_change(f"Error: {e}\n Provider: {provider}", Color.YELLOW)
-        # даём 60 секунд каждому GPT на ответ
-        await asyncio.sleep(60)
+        # даём 120 секунд каждому GPT на ответ
+        await asyncio.sleep(120)
 async def run_all_gpt(prompt):
     numbers = [one_gpt_run(provider, prompt) for provider in _providers]  # список функций
     done, _ = await asyncio.wait(numbers, return_when=asyncio.FIRST_COMPLETED)
