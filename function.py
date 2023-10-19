@@ -288,7 +288,7 @@ async def translate(text):
 async def one_gpt_run(provider, prompt):
     gpt_model = "gpt-3.5-turbo"
     if "Llama2" in str(provider):
-        gpt_model = "gpt-3.5"
+        gpt_model = "gpt-3.5-turbo"
     if "GeekGpt" in str(provider):
         gpt_model = "gpt-4"
     result = await g4f.ChatCompletion.create_async(
