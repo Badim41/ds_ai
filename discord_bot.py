@@ -685,7 +685,7 @@ async def write_in_discord(ctx, text):
         from function import result_command_change, Color
         await result_command_change("ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
         return
-    if len(text) <= 2000:
+    if len(text) < 2000:
         await ctx.send(text)
     else:
         message_parts = []

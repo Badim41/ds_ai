@@ -297,10 +297,10 @@ async def translate(text):
 
 # gpt_errors = 0
 
-async def remove_last_format_simbols(text):
-    parts = text.split('```')
+async def remove_last_format_simbols(text, format="```"):
+    parts = text.split(format)
     if len(parts) == 4:
-        corrected_text = '```'.join(parts[:3]) + parts[3]
+        corrected_text = format.join(parts[:3]) + parts[3]
         return corrected_text
     return text
 
@@ -1045,17 +1045,23 @@ async def console_command_runner(command, ctx):
 
 async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     await result_command_change(tts, Color.GRAY)
+    # убираем маты
     tts = await replace_mat_in_sentence(tts)
+
+    # убираем текст до коментария
+    if "||" in tts:
+        tts = tts[:tts.find("||")]
+
+    # меняем голос на текущий
     if ai_dictionary is None:
         global currentAIname
         ai_dictionary = currentAIname
         print("TTS_voice:", currentAIname)
+    # записываем в память
     if write_in_memory:
         try:
             with open(f"texts/memories/{ai_dictionary}.txt", 'a') as writer2:
                 tts_no_n = tts.replace("\n", " ")
-                if "||" in tts_no_n:
-                    tts_no_n = tts_no_n[:tts_no_n.find("||")]
                 writer2.write(f"{ai_dictionary}: {tts_no_n}\n")
         except IOError as ex:
             raise RuntimeError(ex)
@@ -1063,7 +1069,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
             lines = reader.readlines()
             lines_number = len(lines)
-        while lines_number > 100:
+        while lines_number > 10:
             try:
                 with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
                     lines = reader.readlines()
