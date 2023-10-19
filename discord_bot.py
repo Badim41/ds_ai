@@ -682,6 +682,8 @@ async def run_main_with_settings(ctx, spokenText, writeAnswer):
 
 async def write_in_discord(ctx, text):
     # await run_main_with_settings(ctx, text, True
+    if text is None:
+        text = "*Пустой текст*"
     if text == "":
         text = "Ошибка. Если вы пытаетесь что-то сказать боту, повысьте длину ответа командой /lenght"
     while len(text) > 2000:
