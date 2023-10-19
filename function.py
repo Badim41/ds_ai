@@ -933,7 +933,7 @@ async def execute_command(command, ctx):
         await ctx.send(f"Произошла неизвестная ошибка: {e}")
 
 
-async def remove_line_from_txt(file_path, delete_line):
+async def remove_line_from_txt(file_path, delete_liКne):
     try:
         if not os.path.exists(file_path):
             await result_command_change(f"Файл не найден: {file_path}", Color.RED)
@@ -1073,7 +1073,8 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
             lines = reader.readlines()
             lines_number = len(lines)
-        while lines_number > 10:
+        while lines_number > 3:
+            lines_number-=1
             try:
                 with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
                     lines = reader.readlines()
