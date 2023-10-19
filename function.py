@@ -1092,6 +1092,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     if len(tts) > 200 or await set_get_config_all("voice", "avaible_tokens") == "None":
         await result_command_change("gtts1", Color.CYAN)
         await gtts(tts, language[:2], file_name)
+        await playSoundFile(file_name, -1, 0, ctx)
         return
 
     # получаем ключ для elevenlab
@@ -1150,8 +1151,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
 
 
 async def gtts(tts, language, output_file):
-    print("GTTS_fun")
-    # на вход идёт всегда русский текст, так что переводим его
+    print("GTTS_fun", language, output_file)
     try:
         voiceFile = gTTS(tts, lang=language)
         # Сохранение в файл
