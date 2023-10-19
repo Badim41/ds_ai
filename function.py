@@ -310,8 +310,11 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
         # если больше 3 "```" (форматов)
         result = await remove_last_format_simbols(result)
         # убираем имя из результата
-        if currentAIname in result:
-            result = result[result.find(currentAIname) + len(currentAIname) + 2:]
+        if result.startswith(currentAIname):
+            if result.startswith(currentAIname + ":"):
+                result = result[len(currentAIname) + 1:]
+            else:
+                result = result[len(currentAIname):]
         # заменяем на имя провайдера
         provider = str(provider)
         provider = provider[provider.find("'") + 1:]
