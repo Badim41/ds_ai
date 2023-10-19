@@ -340,6 +340,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
                 cookies={"Fake": ""},
                 auth=True
             )
+        print(type(result))
         if isinstance(result, list):
             result = ''.join(result)
         if result is None or result.replace("\n", "").replace(" ", "") == "":
