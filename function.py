@@ -340,22 +340,15 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
                 cookies={"Fake": ""},
                 auth=True
             )
-        print(type(result))
-        if isinstance(result, list):
-            result = ''.join(result)
         if result is None or result.replace("\n", "").replace(" ", "") == "":
             # делаем задержку, чтобы не вывелся пустой результат
             await asyncio.sleep(delay_for_gpt)
-            print("EMPTY")
             return
         # если больше 3 "```" (форматов)
         result = await remove_last_format_simbols(result)
         # убираем имя из результата
-        if result.startswith(currentAIname):
-            if result.startswith(currentAIname + ":"):
-                result = result[len(currentAIname) + 1:]
-            else:
-                result = result[len(currentAIname):]
+        if result.startswith(currentAIname + ":"):
+            result = result[len(currentAIname) + 1:]
         # заменяем на имя провайдера
         provider = str(provider)
         provider = provider[provider.find("'") + 1:]
