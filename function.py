@@ -318,7 +318,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
         if "Raycast" in str(provider):
             gpt_model = "gpt-4"
         if "Vercel" in str(provider):
-            gpt_model = "gpt-4"
+            gpt_model = "gpt-4-0613"
         # получаем cookie
         if os.path.exists('cookies.json'):
             with open('cookies.json', 'r') as file:
