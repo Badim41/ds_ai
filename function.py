@@ -330,33 +330,36 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
         await set_get_config_all("gpt", "gpt_result", "None")
     else:
         gpt_mode = await set_get_config_all("gpt", "gpt_mode", None)
+        # запуск сразу всех GPT
         if gpt_mode == "fast":
-            await run_all_gpt(prompt)
-        try:
-            # Set with provider
-            result = await g4f.ChatCompletion.create_async(
-                model=gpt_model,
-                provider=_providers[provider_number],
-                messages=[{"role": "user", "content": prompt}]
-            )
-            if currentAIname in result:
-                result = result[result.find(currentAIname) + len(currentAIname) + 2:]
-        except Exception as e:
-            if not provider_number == len(_providers) - 1:
-                print("Ошибка получения ответа:", e)
-                # gpt_errors += 1
-                # if gpt_errors > 2:
-                provider_number += 1
-                # gpt_errors = 0
-                print("change provider:", _providers[provider_number])
+            result = await run_all_gpt(prompt)
+        # Запуск в начале более качественных (не рекомендовано)
+        else:
+            try:
+                # Set with provider
+                result = await g4f.ChatCompletion.create_async(
+                    model=gpt_model,
+                    provider=_providers[provider_number],
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                if currentAIname in result:
+                    result = result[result.find(currentAIname) + len(currentAIname) + 2:]
+            except Exception as e:
+                if not provider_number == len(_providers) - 1:
+                    print("Ошибка получения ответа:", e)
+                    # gpt_errors += 1
+                    # if gpt_errors > 2:
+                    provider_number += 1
+                    # gpt_errors = 0
+                    print("change provider:", _providers[provider_number])
 
-                await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=provider_number, gpt_model=gpt_model)
+                    await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=provider_number, gpt_model=gpt_model)
 
-                return
-            result = "Ошибка при получении запроса"
-    # if not language == "russian":
-    #    translator = Translator(from_lang="ru", to_lang=language[:2].lower())
-    #    result = translator.translate(result)
+                    return
+                result = "Ошибка при получении запроса"
+        # if not language == "russian":
+        #    translator = Translator(from_lang="ru", to_lang=language[:2].lower())
+        #    result = translator.translate(result)
     if writeAnswer:
         await write_in_discord(ctx, result)
     await text_to_speech(result, write_in_memory, ctx)
