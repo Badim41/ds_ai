@@ -1,4 +1,5 @@
 import asyncio
+import json
 import multiprocessing
 import sys
 from translate import Translator
@@ -299,11 +300,28 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
         gpt_model = "gpt-3.5-turbo"
         if "GeekGpt" in str(provider):
             gpt_model = "gpt-4"
-        result = await g4f.ChatCompletion.create_async(
-            model=gpt_model,
-            provider=provider,
-            messages=[{"role": "user", "content": prompt}]
-        )
+        # получаем cookie
+        if os.path.exists('cookies.json'):
+            with open('cookies.json', 'r') as file:
+                cookie_data = json.load(file)
+            auth = True
+        else:
+            auth = False
+        # в зависимости от аутефикации получаем ответ
+        if auth:
+            result = await g4f.ChatCompletion.create_async(
+                model=gpt_model,
+                provider=provider,
+                messages=[{"role": "user", "content": prompt}],
+                cookies={key: value for key, value in cookie_data.items()},
+                auth=True
+            )
+        else:
+            result = await g4f.ChatCompletion.create_async(
+                model=gpt_model,
+                provider=provider,
+                messages=[{"role": "user", "content": prompt}]
+            )
         if result is None or result.replace("\n", "").replace(" ", "") == "":
             # делаем задержку, чтобы не вывелся пустой результат
             await asyncio.sleep(delay_for_gpt)
