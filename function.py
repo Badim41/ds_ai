@@ -311,14 +311,10 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
             gpt_model = "gpt-4"
         if "Bing" in str(provider):
             gpt_model = "gpt-4"
-        if "Liaobots" in str(provider):
-            gpt_model = "gpt-4"
         if "Phind" in str(provider):
             gpt_model = "gpt-4"
         if "Raycast" in str(provider):
             gpt_model = "gpt-4"
-        if "Vercel" in str(provider):
-            gpt_model = "gpt-4-0613"
         # получаем cookie
         if os.path.exists('cookies.json'):
             with open('cookies.json', 'r') as file:
@@ -344,7 +340,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
                 cookies={"Fake": ""},
                 auth=True
             )
-        if "GptGod" in str(provider):
+        if "ChatForAi" in str(provider):
             result = await g4f.ChatCompletion.create_async(
                 model=gpt_model,
                 provider=provider,
