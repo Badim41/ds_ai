@@ -297,7 +297,7 @@ async def one_gpt_run(provider, prompt):
         )
         return result + f"\n||{provider}||"
     except Exception as e:
-        print(f"Error{e}, Provider:{provider}")
+        await result_command_change(f"Error: {e}\n Provider: {provider}", Color.YELLOW)
 async def run_all_gpt(prompt):
     numbers = [one_gpt_run(provider, prompt) for provider in _providers]  # список функций
     done, _ = await asyncio.wait(numbers, return_when=asyncio.FIRST_COMPLETED)
@@ -987,9 +987,9 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
                 with open(f"texts/memories/{ai_dictionary}.txt", 'w') as writer:
                     writer.writelines(lines)
             except IOError as e:
-                print(e)
+                await result_command_change(f"Ошибка при выполнении команды: {e}", Color.RED)
     if not ctx.voice_client:
-        print(f"skip_tts: {tts}")
+        await result_command_change("skip tts", Color.CYAN)
         return
     file_name = "1.mp3"
 
@@ -1003,7 +1003,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     if not key == "Free":
         set_api_key(key)
     if len(tts) > 200 or await set_get_config_all("voice", "avaible_tokens") == "None":
-        print("gtts1")
+        await result_command_change("gtts1", Color.CYAN)
         await gtts(tts, language[:2], file_name)
         return
     try:
@@ -1020,7 +1020,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
 
         save(audio, file_name)
     except Exception as e:
-        print(f"Ошибка при выполнении команды: {e}")
+        await result_command_change(f"Ошибка при выполнении команды: {e}", Color.YELLOW)
         await remove_unavaible_voice_token()
         await text_to_speech(tts, False, ctx, ai_dictionary=ai_dictionary)
         return
@@ -1028,11 +1028,10 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     # если голос не выставлен
     if ai_dictionary == "None":
         await playSoundFile(file_name, -1, 0, ctx)
-        print(f"tts(No RVC): {tts}")
+        await result_command_change(f"tts(No RVC)", Color.CYAN)
         return
 
     # используем RVC
-    successful = True
     try:
         command = [
             "python",
@@ -1049,14 +1048,12 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         print("run RVC, AIName:", ai_dictionary)
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
-        print(f"Ошибка при выполнении команды: {e}")
+        await result_command_change(f"Ошибка при выполнении команды: {e}", Color.RED)
         await playSoundFile("1.mp3", -1, 0, ctx)
-        successful = False
         return
-    if successful:
-        print("done RVC")
-        await playSoundFile("2.mp3", -1, 0, ctx)
-        print(f"tts: {tts}")
+    await result_command_change("done RVC", Color.GREEN)
+    await playSoundFile("2.mp3", -1, 0, ctx)
+    await result_command_change(f"tts: {tts}", Color.GRAY)
 
 
 async def gtts(tts, language, output_file):
@@ -1068,14 +1065,15 @@ async def gtts(tts, language, output_file):
         # Сохранение в файл
         voiceFile.save(output_file)
     except Exception as e:
-        print(f"Произошла ошибка при синтезе речи: {str(e)}")
+        await result_command_change(f"Ошибка при синтезе речи: {e}", Color.YELLOW)
 
 
 async def remove_unavaible_voice_token():
     tokens = (await set_get_config_all("voice", "avaible_tokens")).split(";")
     avaible_tokens = ""
-    if len(tokens):
+    if len(tokens) == 1:
         await set_get_config_all("voice", "avaible_tokens", "None")
+        await result_command_change("==БОЛЬШЕ НЕТ ТОКЕНОВ ДЛЯ СИНТЕЗА ГОЛОСА==", Color.YELLOW)
         return
     skip_first = True
     for token in tokens:
@@ -1111,7 +1109,7 @@ async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
     from discord_bot import playSoundFileDiscord
 
     if not await wait_for_file(audio_file_path, 100, 10):
-        print("Файл недоступен")
+        await result_command_change("Файл недоступен", Color.RED)
         return
 
     # Проверяем, чтобы ничего не играло
