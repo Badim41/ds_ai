@@ -310,6 +310,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
         await result_command_change(f"Error: {e}\n Provider: {provider}", Color.YELLOW)
         # даём время каждому GPT на ответ
         await asyncio.sleep(delay_for_gpt)
+        return ""
 async def run_all_gpt(prompt, mode):
     if mode == "fast":
         functions = [one_gpt_run(provider, prompt, 120) for provider in _providers]  # список функций
