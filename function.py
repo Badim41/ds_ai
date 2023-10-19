@@ -184,6 +184,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                     with open(f"texts/prompts/{custom_prompt}.txt", "r") as reader:
                         prompt = reader.read()
                     # await voice_commands("робот протокол 998", ctx)
+                    await set_get_config_all("gpt", "gpt_custom_prompt", "None")
                 else:
                     await text_to_speech("Промпт не найден!", False, ctx)
                     return
