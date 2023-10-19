@@ -15,13 +15,13 @@ g4f.Provider.GeekGpt, # short answer
 #g4f.Provider.ChatgptAi,# - error ID
 g4f.Provider.ChatgptDemo,# error 403
 g4f.Provider.ChatgptLogin,# error 403
-g4f.Provider.GptGo,# error 403
+#g4f.Provider.GptGo,# error 403
 g4f.Provider.ChatgptX,# error
 g4f.Provider.NoowAi,
 g4f.Provider.You,
 
-# g4f.Provider.FreeGpt, wrong language
-# g4f.Provider.GptGod, error list
+# g4f.Provider.FreeGpt,# wrong language
+g4f.Provider.GptGod,# error list
 # g4f.Provider.GptForLove, error no module
 # g4f.Provider.NoowAi, bad
 #g4f.Provider.Opchatgpts bad
