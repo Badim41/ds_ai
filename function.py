@@ -12,12 +12,11 @@ g4f.Provider.ChatForAi,
 g4f.Provider.GPTalk,
 g4f.Provider.AiAsk, #- rate limit
 g4f.Provider.GeekGpt, # short answer
-g4f.Provider.ChatgptAi,# - error ID
+#g4f.Provider.ChatgptAi,# - error ID
 g4f.Provider.ChatgptDemo,# error 403
 g4f.Provider.ChatgptLogin,# error 403
 g4f.Provider.GptGo,# error 403
 g4f.Provider.ChatgptX,# error
-g4f.Provider.Yqcloud,
 g4f.Provider.NoowAi,
 g4f.Provider.Opchatgpts,
 g4f.Provider.You,
@@ -299,7 +298,8 @@ async def one_gpt_run(provider, prompt):
             provider=provider,
             messages=[{"role": "user", "content": prompt}]
         )
-        return result + f"\n||{provider}||"
+        result = result + f"\n||{provider}||"
+        return result
     except Exception as e:
         await result_command_change(f"Error: {e}\n Provider: {provider}", Color.YELLOW)
 async def run_all_gpt(prompt):
