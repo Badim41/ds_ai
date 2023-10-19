@@ -383,6 +383,7 @@ async def run_all_gpt(prompt, mode):
         for i, result in enumerate(results):
             if not result is None and not result.replace("\n", "").replace(" ", "") == "":
                 new_results.append(result)
+        return '\n\n\n'.join(new_results)
 
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0, gpt_model="gpt-3.5-turbo"):
     global currentAIname#, gpt_errors
