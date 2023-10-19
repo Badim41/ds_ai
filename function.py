@@ -330,9 +330,9 @@ async def run_all_gpt(prompt, mode):
         results = await asyncio.gather(*functions)  # результаты всех функций
         new_results = []
         for i, result in enumerate(results):
-            if not result is None:
+            if not result is None and not result.replace("\n", "").replace(" ", "") == "":
                 new_results.append(result)
-        return '\n\n\n'.join(results)
+        return '\n\n\n'.join(new_results)
     return f"Не найден мод {mode} для GPT"
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0, gpt_model="gpt-3.5-turbo"):
     global currentAIname#, gpt_errors
