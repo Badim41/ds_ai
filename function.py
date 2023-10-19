@@ -288,7 +288,7 @@ async def translate(text):
 
 # gpt_errors = 0
 
-async def one_gpt_run(provider, prompt):
+async def one_gpt_run(provider, prompt, delay_for_gpt):
     try:
         gpt_model = "gpt-3.5-turbo"
         if "GeekGpt" in str(provider):
@@ -300,7 +300,7 @@ async def one_gpt_run(provider, prompt):
         )
         if result == "" or result is None:
             # делаем задержку, чтобы не вывелся пустой результат
-            await asyncio.sleep(120)
+            await asyncio.sleep(delay_for_gpt)
         # заменяем на имя провайдера
         provider = str(provider)
         provider = provider[provider.find("'") + 1:]
@@ -308,14 +308,23 @@ async def one_gpt_run(provider, prompt):
         return result + f"\n||Провайдер: {provider}, Модель: {gpt_model}||"
     except Exception as e:
         await result_command_change(f"Error: {e}\n Provider: {provider}", Color.YELLOW)
-        # даём 120 секунд каждому GPT на ответ
-        await asyncio.sleep(120)
-async def run_all_gpt(prompt):
-    numbers = [one_gpt_run(provider, prompt) for provider in _providers]  # список функций
-    done, _ = await asyncio.wait(numbers, return_when=asyncio.FIRST_COMPLETED)
-    for task in done:
-        result = await task
-        return result
+        # даём время каждому GPT на ответ
+        await asyncio.sleep(delay_for_gpt)
+async def run_all_gpt(prompt, mode):
+    if mode == "fast":
+        functions = [one_gpt_run(provider, prompt, 120) for provider in _providers]  # список функций
+        done, _ = await asyncio.wait(functions, return_when=asyncio.FIRST_COMPLETED)
+        for task in done:
+            result = await task
+            return result
+    if mode == "all":
+        functions = [one_gpt_run(provider, prompt, 1) for provider in _providers]  # список функций
+        results = await asyncio.gather(*functions)  # результаты всех функций
+        new_results = []
+        for i, result in enumerate(results):
+            if not result is None:
+                new_results.append(result)
+        return '\n\n\n'.join(results)
 async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0, gpt_model="gpt-3.5-turbo"):
     global currentAIname#, gpt_errors
     config.read('config.ini')
