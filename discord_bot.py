@@ -830,7 +830,7 @@ if __name__ == "__main__":
                 args = arguments[2]
                 if "gpt_local" in args:
                     load_gpt = True
-                if "gpt_4" in args:
+                if "gpt_provider" in args:
                     asyncio.run(set_get_config_all("gpt", "use_gpt_provider", "True"))
                 if "img" in args:
                     load_images = True
