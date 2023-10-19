@@ -40,6 +40,7 @@ g4f.Provider.GptGod,# error list
 #g4f.Provider.Llama2, # no model
 ]
 
+from gtts import gTTS
 from elevenlabs import generate, play, save, set_api_key
 from discord_bot import config
 from discord_bot import write_in_discord
@@ -1149,7 +1150,6 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
 
 
 async def gtts(tts, language, output_file):
-    from gtts import gTTS
     print("GTTS_fun")
     # на вход идёт всегда русский текст, так что переводим его
     try:
