@@ -340,13 +340,8 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
                 cookies={"Fake": ""},
                 auth=True
             )
-        if "GptGod" in str(provider):
-            result = await g4f.ChatCompletion.create_async(
-                model=gpt_model,
-                provider=provider,
-                messages=prompt,
-                auth=True
-            )
+        if isinstance(result, list):
+            result = ''.join(result)
         if result is None or result.replace("\n", "").replace(" ", "") == "":
             # делаем задержку, чтобы не вывелся пустой результат
             await asyncio.sleep(delay_for_gpt)
