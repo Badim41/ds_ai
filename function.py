@@ -21,6 +21,15 @@ g4f.Provider.ChatgptX,# error
 g4f.Provider.NoowAi,
 g4f.Provider.You,
 
+# AUTH
+g4f.Provider.Raycast,
+g4f.Provider.Phind,
+g4f.Provider.Liaobots,
+g4f.Provider.Bing,
+g4f.Provider.OpenaiChat,
+g4f.Provider.Vercel,
+g4f.Provider.Theb,
+
 # g4f.Provider.FreeGpt,# wrong language
 g4f.Provider.GptGod,# error list
 # g4f.Provider.GptForLove, error no module
@@ -299,6 +308,8 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
     try:
         gpt_model = "gpt-3.5-turbo"
         if "GeekGpt" in str(provider):
+            gpt_model = "gpt-4"
+        if "Bing" in str(provider):
             gpt_model = "gpt-4"
         # получаем cookie
         if os.path.exists('cookies.json'):
