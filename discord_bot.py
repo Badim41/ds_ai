@@ -690,35 +690,31 @@ async def write_in_discord(ctx, text):
             code_block_start = text.find("```")
             spoiler_start = text.find("||")
 
-            # Находим первую пару символов "```" или "||"
+            # первая пара
             min_start = min(code_block_start, spoiler_start) if code_block_start >= 0 and spoiler_start >= 0 else max(
                 code_block_start, spoiler_start)
 
             if min_start == -1:
-                # Если не найдено больше символов "```" или "||", разделяем оставшуюся часть текста
                 message_parts.append(text[:2000])
                 text = text[2000:]
             else:
-                # Находим соответствующий конец символов "```" или "||"
                 if text[min_start:min_start + 3] == "```":
                     code_block_end = text[min_start + 3:].find("```")
                     if code_block_end != -1:
-                        code_block_end += 6  # Учитываем символы "```"
-                        message_part = text[:min_start + code_block_end]
+                        message_part = text[:min_start + code_block_end + 6]
                     else:
                         message_part = text[:2000]
                 else:
                     spoiler_end = text[min_start + 2:].find("||")
                     if spoiler_end != -1:
-                        spoiler_end += 4  # Учитываем символы "||"
-                        message_part = text[:min_start + spoiler_end]
+                        message_part = text[:min_start + spoiler_end + 4]
                     else:
                         message_part = text[:2000]
 
                 message_parts.append(message_part)
                 text = text[len(message_part):]
 
-        # Отправляем каждую часть сообщения
+        # отправляем по частям
         for part in message_parts:
             await ctx.send(part)
 
