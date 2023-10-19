@@ -8,24 +8,24 @@ import time
 import os
 import g4f
 _providers = [
-# g4f.Provider.AItianhuSpace, - COOKIES
-g4f.Provider.AiAsk, #- rate limit
-# g4f.Provider.ChatBase, - bad
 g4f.Provider.ChatForAi,
-# g4f.Provider.Chatgpt4Online, - bad
-# g4f.Provider.ChatgptAi, - error ID
-# g4f.Provider.ChatgptDemo, error 403
-# g4f.Provider.ChatgptLogin, error 403
-# g4f.Provider.ChatgptX, error
-# g4f.Provider.FreeGpt, wrong language
 g4f.Provider.GPTalk,
-g4f.Provider.GeekGpt,
-# g4f.Provider.GptForLove, error no module
-# g4f.Provider.GptGo, error 403
+g4f.Provider.Llama2, # no gpt3.5 turbo
+g4f.Provider.AiAsk, #- rate limit
+g4f.Provider.GeekGpt, # short answer
+g4f.Provider.ChatgptAi,# - error ID
+g4f.Provider.ChatgptDemo,# error 403
+g4f.Provider.ChatgptLogin,# error 403
+g4f.Provider.GptGo,# error 403
+g4f.Provider.ChatgptX,# error
+
+# g4f.Provider.FreeGpt, wrong language
 # g4f.Provider.GptGod, error list
-# g4f.Provider.Llama2, no gpt3.5 turbo
+# g4f.Provider.GptForLove, error no module
 # g4f.Provider.NoowAi, bad
 #g4f.Provider.Opchatgpts bad
+# g4f.Provider.Chatgpt4Online, - bad
+# g4f.Provider.ChatBase, - bad
 ]
 
 from elevenlabs import generate, play, save, set_api_key
@@ -283,10 +283,29 @@ async def translate(text):
     translator = Translator(from_lang="ru", to_lang=language[:2].lower())
     return translator.translate(text)
 
-gpt_errors = 0
-async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0, gpt_model="gpt-3.5-turbo"):
-    global currentAIname, gpt_errors
+# gpt_errors = 0
 
+async def one_gpt_run(provider, prompt):
+    gpt_model = "gpt-3.5-turbo"
+    if "Llama2" in provider:
+        gpt_model = "gpt-3.5"
+    if "GeekGpt" in provider:
+        gpt_model = "gpt-4"
+    result = await g4f.ChatCompletion.create_async(
+        model=gpt_model,
+        provider=provider,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return result + f"\n||{provider}||"
+
+async def run_all_gpt(prompt):
+    numbers = [one_gpt_run(provider, prompt) for provider in _providers]  # список функций
+    done, _ = await asyncio.wait(numbers, return_when=asyncio.FIRST_COMPLETED)
+    for task in done:
+        result = await task
+        return result
+async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0, gpt_model="gpt-3.5-turbo"):
+    global currentAIname#, gpt_errors
     config.read('config.ini')
     gpt_provider = config.getboolean('gpt', 'use_gpt_provider')
     if not gpt_provider:
@@ -306,6 +325,9 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
             await asyncio.sleep(0.05)
         await set_get_config_all("gpt", "gpt_result", "None")
     else:
+        gpt_mode = await set_get_config_all("gpt", "gpt_mode", None)
+        if gpt_mode == "fast":
+            await run_all_gpt(prompt)
         try:
             # Set with provider
             result = await g4f.ChatCompletion.create_async(
@@ -313,21 +335,19 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
                 provider=_providers[provider_number],
                 messages=[{"role": "user", "content": prompt}]
             )
-
             if currentAIname in result:
                 result = result[result.find(currentAIname) + len(currentAIname) + 2:]
-
         except Exception as e:
             if not provider_number == len(_providers) - 1:
                 print("Ошибка получения ответа:", e)
-                await asyncio.sleep(0.5)
+                # gpt_errors += 1
+                # if gpt_errors > 2:
+                provider_number += 1
+                # gpt_errors = 0
+                print("change provider:", _providers[provider_number])
 
-                gpt_errors += 1
-                if gpt_errors > 2:
-                    provider_number += 1
-                    gpt_errors = 0
-                    print("change provider:", _providers[provider_number])
-                await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=provider_number, gpt_model="gpt-3.5-turbo")
+                await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=provider_number, gpt_model=gpt_model)
+
                 return
             result = "Ошибка при получении запроса"
     # if not language == "russian":
