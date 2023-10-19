@@ -298,7 +298,6 @@ async def one_gpt_run(provider, prompt):
             provider=provider,
             messages=[{"role": "user", "content": prompt}]
         )
-        print("PROVIDER_BEST:", provider)
         return result
     except Exception as e:
         await result_command_change(f"Error: {e}\n Provider: {provider}", Color.YELLOW)
