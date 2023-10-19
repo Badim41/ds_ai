@@ -169,7 +169,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                     prompt = (f"Привет, chatGPT. Вы собираетесь притвориться {currentAIname}. \
                                 Продолжайте вести себя как {currentAIname}, насколько это возможно. \
                                 {currentAIinfo} \
-                             У {currentAIname} есть воспоминания:\"{file_content}\" \
+                             ОПИРАЙСЯ НА ПРЕДЫДУЩИЕ ЗАПРОСЫ. Они даны в формате Человек:[запрос], GPT:[ответ на запрос]:\"{file_content}\"\
                              Когда я задаю вам вопрос, отвечайте как {currentAIname}, как показано ниже.\
                               {currentAIname}: [так, как ответил бы {currentAIname}]\
                               Вопрос:{temp_spokenText}")
