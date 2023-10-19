@@ -339,7 +339,10 @@ async def one_gpt_run(provider, prompt, delay_for_gpt):
             result = await g4f.ChatCompletion.create_async(
                 model=gpt_model,
                 provider=provider,
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
+                # фальшивый cookie поможет для некоторых провердеров
+                cookies={"Fake": ""},
+                auth=True
             )
         if result is None or result.replace("\n", "").replace(" ", "") == "":
             # делаем задержку, чтобы не вывелся пустой результат
