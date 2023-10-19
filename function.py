@@ -182,7 +182,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                 if os.path.exists(f"texts/prompts/{custom_prompt}.txt"):
                     #/content/ds_ai/texts/prompts/roleplay.txt
                     with open(f"texts/prompts/{custom_prompt}.txt", "r") as reader:
-                        prompt = reader.read()
+                        prompt = reader.read().replace("\n", " ")
                     await voice_commands("робот протокол 998", ctx)
                 else:
                     await text_to_speech("Промпт не найден!", False, ctx)

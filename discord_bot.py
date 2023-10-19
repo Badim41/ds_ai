@@ -468,7 +468,7 @@ async def __say(
         ctx,
         text: Option(str, description='Сам текст/команда. Список команд: \\help-say', required=True)
 ):
-    # try:
+    try:
         await ctx.respond('Выполнение...')
         from function import replace_mat_in_sentence
         if await set_get_config_default("robot_name_need") == "False":
@@ -476,8 +476,8 @@ async def __say(
         text = await replace_mat_in_sentence(text)
         print(f'{text} ({type(text).__name__})\n')
         await run_main_with_settings(ctx, text, True)
-    # except Exception as e:
-    #     await ctx.respond(f"Ошибка при команде say (с параметрами{text}): {e}")
+    except Exception as e:
+        await ctx.respond(f"Ошибка при команде say (с параметрами{text}): {e}")
 
 
 @bot.slash_command(name="tts", description='_Заставить_ бота говорить всё, что захочешь')
