@@ -305,7 +305,7 @@ async def remove_last_format_simbols(text):
     return text
 
 async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name="."):
-    if not provider_name in provider:
+    if not provider_name in str(provider):
         return None
     try:
         gpt_model = "gpt-3.5-turbo"
