@@ -706,10 +706,10 @@ async def check_messages(ctx, *args):
         if "-" in content:
             content.split("-")
             start = int(content[0])
-            end = int(content[0]) - int(content[1])
+            end = int(content[1])
         else:
             start = int(content)
-            end = 1
+            end = int(content)
 
         messages = []
         async for message in ctx.channel.history(limit=start):
