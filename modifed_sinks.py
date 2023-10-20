@@ -1,3 +1,6 @@
+import audiosegment
+import numpy as np
+
 from discord.sinks.core import Filters, Sink, default_filters
 from pydub import AudioSegment
 from queue import Queue
@@ -59,25 +62,17 @@ class StreamBuffer:
 
     def write(self, data, user):
         self.byte_buffer += data  # data is a bytearray object
-        # checking amount of data in the buffer
-        if len(self.byte_buffer) > self.buff_lim:
-            # grabbing slice from the buffer to work with
+
+        while len(self.byte_buffer) >= self.buff_lim:
             byte_slice = self.byte_buffer[:self.buff_lim]
-
-            # creating AudioSegment object with the slice
-            audio_segment = AudioSegment(data=byte_slice,
-                                         sample_width=self.sample_width,
-                                         frame_rate=self.sample_rate,
-                                         channels=self.channels,
-                                         )
-
-            # removing the old stinky trash data from buffer - ew get it out of there already
             self.byte_buffer = self.byte_buffer[self.buff_lim:]
-            # ok much better now
 
-            # adding AudioSegment to the queue
+            audio_segment = Audiosegment.from_mono_pcm(np.array(byte_slice), self.sample_rate, self.sample_width)
             self.segment_buffer.put(audio_segment)
 
-            # temporary for validating process
-            audio_segment.export(f"output{self.ct}.wav", format="wav")
             self.ct += 1
+
+        # Если после цикла данных все равно не хватает, заполняем тишиной
+        if len(self.byte_buffer) < self.buff_lim:
+            silence_data = bytearray(b'\x00' * (self.buff_lim - len(self.byte_buffer)))
+            self.byte_buffer += silence_data
