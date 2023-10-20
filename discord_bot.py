@@ -698,6 +698,7 @@ async def command_line(ctx, *args):
 
 @bot.command()
 async def check_messages(ctx):
+    print("histoty")
     async for message in ctx.channel.history(limit=10):
         print(f"Сообщение от {message.author.name}: {message.content}")
 
