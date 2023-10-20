@@ -2,6 +2,7 @@ import datetime
 import multiprocessing
 import os
 import random
+import re
 import struct
 import subprocess
 import configparser
@@ -81,7 +82,10 @@ async def on_message(message):
             # получение, на какое сообщение ответили
             if message.reference:
                 referenced_message = await message.channel.fetch_message(message.reference.message_id)
-                text += f"(Пользователь отвечает на ваше сообщение \"{referenced_message.content}\")"
+                reply_on_message = referenced_message.content
+                if "||" in reply_on_message:
+                    reply_on_message = re.sub(r'\|\|.*?\|\|', '', reply_on_message)
+                text += f"(Пользователь отвечает на ваше сообщение \"{reply_on_message}\")"
             from function import replace_mat_in_sentence
             if await set_get_config_default("robot_name_need") == "False":
                 text = await set_get_config_default("currentainame") + ", " + text

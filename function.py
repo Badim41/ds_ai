@@ -1071,7 +1071,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
 
     # убираем текст до коментария
     if "||" in tts:
-        tts = tts[:tts.find("||")]
+        tts = re.sub(r'\|\|.*?\|\|', '', tts)
 
     # меняем голос на текущий
     if ai_dictionary is None:
