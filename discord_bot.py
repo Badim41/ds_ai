@@ -13,6 +13,7 @@ from PIL import Image
 from pydub import AudioSegment
 
 from discord import Option
+from function import chatgpt_get_result
 from modifed_sinks import StreamSink
 import speech_recognition as sr
 from pathlib import Path
@@ -95,6 +96,7 @@ async def on_message(message):
         except Exception as e:
             await ctx.send(f"Ошибка при команде say с параметрами {message}: {e}")
     await bot.process_commands(message)
+
 
 @bot.slash_command(name="change_video",
                    description='перерисовать и переозвучить видео. Бот также предложит вам название')
@@ -696,11 +698,19 @@ async def command_line(ctx, *args):
     except Exception as e:
         await ctx.send(f"Произошла неизвестная ошибка: {e}")
 
+
 @bot.command(aliases=['check'], help="командная строка")
-async def check_messages(ctx):
-    print("histoty")
-    async for message in ctx.channel.history(limit=10):
-        print(f"Сообщение от {message.author.name}: {message.content}")
+async def check_messages(ctx, *args):
+    try:
+        message = int("".join(args))
+        messages = []
+        async for message in ctx.channel.history(limit=message):
+            messages.append(f"Сообщение от {message.author.name}: {message.content}")
+        await chatgpt_get_result(f"Кратко перескажи о чём говорили в чате, "\
+                                 f"в конце сделай небольшой свой комментарий, например: этот пользователь заслуживает наказания"\
+                                 f"Вот история сообщений:{messages}")
+    except Exception as e:
+        await ctx.send(f"Произошла ошибка: {e}")
 
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
@@ -796,6 +806,7 @@ async def max_volume(audio_file_path):
     print(max_dBFS, type(max_dBFS))
     return max_dBFS
 
+
 last_speaking = 0
 
 
@@ -847,7 +858,8 @@ async def recognize(ctx):
                 # вызов function
                 if not text is None:
                     from function import replace_mat_in_sentence, replace_numbers_in_sentence
-                    text = await set_get_config_default("currentainame") + ", " + await replace_numbers_in_sentence(text)
+                    text = await set_get_config_default("currentainame") + ", " + await replace_numbers_in_sentence(
+                        text)
                     text = await replace_mat_in_sentence(text)
                     print(text)
                     await set_get_config_default("user_name", value=ctx.author.name)
