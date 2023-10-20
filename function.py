@@ -1062,6 +1062,9 @@ async def console_command_runner(command, ctx):
 
 
 async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
+    if tts is None or not tts.replace("\n", "").replace(" ", "") == "":
+        await result_command_change(f"Пустой текст \"{tts}\"", Color.RED)
+        return
     await result_command_change(tts, Color.GRAY)
     # убираем маты
     tts = await replace_mat_in_sentence(tts)
