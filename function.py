@@ -409,7 +409,7 @@ async def run_all_gpt(prompt, mode):
         results = await asyncio.gather(*functions)  # результаты всех функций
         new_results = []
         for i, result in enumerate(results):
-            if not result is None and not result.replace("\n", "").replace(" ", "") == "":
+            if not result is None and not result.replace("\n", "").replace(" ", "") == "" or result == "None":
                 new_results.append(result)
         return '\n\n\n'.join(new_results)
     else:
@@ -456,7 +456,7 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0, gpt_model="gpt-3.5-
                     provider=_providers[provider_number],
                     messages=[{"role": "user", "content": prompt}]
                 )
-                if result is None or result.replace("\n", "").replace(" ", "") == "":
+                if result is None or result.replace("\n", "").replace(" ", "") == "" or result == "None":
                     raise Exception("Пустой текст")
             except Exception as e:
                 if not provider_number == len(_providers) - 1:
