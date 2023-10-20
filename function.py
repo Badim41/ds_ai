@@ -195,7 +195,6 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             raise ex
 
         try:
-            print("temp1")
             await result_command_change("Prompt" + prompt, Color.GRAY)
             result = await chatgpt_get_result(prompt, ctx)
             if writeAnswer:
