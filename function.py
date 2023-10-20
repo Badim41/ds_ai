@@ -458,6 +458,7 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0, gpt_model="gpt-3.5-
                 )
                 if result is None or result.replace("\n", "").replace(" ", "") == "" or result == "None":
                     raise Exception("Пустой текст")
+                print("RESULT:", result)
             except Exception as e:
                 if not provider_number == len(_providers) - 1:
                     # Удаление ссылок
