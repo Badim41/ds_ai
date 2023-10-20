@@ -71,7 +71,8 @@ async def on_ready():
 
 
 @bot.event
-async def on_message(ctx, message):
+async def on_message(message):
+    ctx = message.ctx
     if message.author == bot:
         return
     if bot.user in message.mentions:
