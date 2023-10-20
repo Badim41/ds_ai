@@ -75,9 +75,13 @@ async def on_message(message):
     if message.author.bot:
         return
     if bot.user in message.mentions:
+        text = message.content
         ctx = await bot.get_context(message)
         try:
-            text = message.content
+            # получение, на какое сообщение ответили
+            if message.reference:
+                referenced_message = await message.channel.fetch_message(message.reference.message_id)
+                text += f"(Пользователь отвечает на ваше сообщение \"{referenced_message.content}\")"
             from function import replace_mat_in_sentence
             if await set_get_config_default("robot_name_need") == "False":
                 text = await set_get_config_default("currentainame") + ", " + text
