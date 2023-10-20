@@ -878,7 +878,12 @@ async def recognize(ctx):
                     await run_main_with_settings(ctx, text, True)
 
             continue
-        if await max_volume(file_found) > int(await set_get_config_all("Sound", "min_volume", None)):
+        loudness = await max_volume(file_found)
+        if loudness == float('-inf'):
+            Path(file_found).unlink()
+            print("skip")
+            continue
+        if loudness > int(await set_get_config_all("Sound", "min_volume", None)):
             last_speaking = 0
         result = AudioSegment.from_file(wav_filename, format="wav") + AudioSegment.from_file(file_found, format="wav")
         try:
