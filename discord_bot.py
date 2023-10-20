@@ -839,6 +839,7 @@ async def recognize(ctx):
                 if filename.startswith("output") and filename.endswith(".wav"):
                     Path(filename).unlink()
                     break
+            print("Deleted all output files!")
         # проверяем наличие временных файлов
         for filename in file_list:
             if filename.startswith("output") and filename.endswith(".wav"):
@@ -888,7 +889,6 @@ async def recognize(ctx):
         loudness = await max_volume(file_found)
         if loudness == float('-inf'):
             Path(file_found).unlink()
-            print("skip")
             continue
         if loudness > int(await set_get_config_all("Sound", "min_volume", None)):
             last_speaking = 0
