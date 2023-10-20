@@ -456,9 +456,15 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0, gpt_model="gpt-3.5-
                     provider=_providers[provider_number],
                     messages=[{"role": "user", "content": prompt}]
                 )
+                if result is None or result.replace("\n", "").replace(" ", "") == "":
+                    raise Exception("Пустой текст")
             except Exception as e:
                 if not provider_number == len(_providers) - 1:
-                    print("Ошибка получения ответа:", e)
+                    # Удаление ссылок
+                    link_pattern = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+                    e = re.sub(link_pattern, '', str(e))
+                    await result_command_change(f"Error: {e}\n Provider: {_providers[provider_number]}", Color.GRAY)
+
                     provider_number += 1
                     print("change provider:", _providers[provider_number])
 
