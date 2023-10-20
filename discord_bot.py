@@ -712,7 +712,7 @@ async def check_messages(ctx, *args):
             end = ""
 
         messages = []
-        async for message in ctx.channel.history(limit=message):
+        async for message in ctx.channel.history(limit=start):
             messages.append(f"Сообщение от {message.author.name}: {message.content}")
         print(messages)
         result = await chatgpt_get_result(f"Кратко перескажи о чём говорили в чате, "\
