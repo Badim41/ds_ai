@@ -83,8 +83,15 @@ async def on_message(message):
             text = await set_get_config_default("currentainame") + ", " + text
         text = await replace_mat_in_sentence(text)
         user = text[:text.find(":")]
+        if "[" in text and "]" in text:
+            text = re.sub(r'[.*?]', '', text)
         await set_get_config_default("user_name", value=user)
+        # info
+        info_was = await set_get_config_default("currentaiinnfo")
+        await set_get_config_default("currentaiinnfo", "Ты сейчас играешь на сервере майнкрафт GoldenFire и отвечаешь на сообщения игроков из чата")
         await run_main_with_settings(ctx, text, True)
+        # info2
+        await set_get_config_default("currentaiinnfo", info_was)
         return
 
     # other users
