@@ -706,9 +706,9 @@ async def check_messages(ctx, *args):
         messages = []
         async for message in ctx.channel.history(limit=message):
             messages.append(f"Сообщение от {message.author.name}: {message.content}")
-        result = await chatgpt_get_result(ctx, f"Кратко перескажи о чём говорили в чате, "\
+        result = await chatgpt_get_result(f"Кратко перескажи о чём говорили в чате, "\
                                  f"в конце сделай небольшой свой комментарий, например: этот пользователь заслуживает наказания"\
-                                 f"Вот история сообщений:{messages}")
+                                 f"Вот история сообщений:{messages}", ctx)
         await ctx.send(result)
     except Exception as e:
         await ctx.send(f"Произошла ошибка: {e}")
