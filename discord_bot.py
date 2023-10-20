@@ -787,11 +787,11 @@ def max_volume(audio_file_path):
     max_dBFS = audio.max_dBFS
     return max_dBFS
 
-file_not_found_in_raw = 0
+last_speaking = 0
 
 
 async def recognize(ctx):
-    global file_not_found_in_raw
+    global last_speaking
     wav_filename = "out_all.wav"
     recognizer = sr.Recognizer()
     while True:
@@ -807,9 +807,9 @@ async def recognize(ctx):
                 break
         if file_found is None:
             await asyncio.sleep(0.1)
-            file_not_found_in_raw += 1
+            last_speaking += 1
             # если долго не было файлов (человек перестал говорить)
-            if file_not_found_in_raw > float(await set_get_config("delay_record")) * 10:
+            if last_speaking > float(await set_get_config("delay_record")) * 10:
                 text = None
                 # очищаем поток
                 stream_sink.cleanup()
@@ -844,7 +844,8 @@ async def recognize(ctx):
                     await run_main_with_settings(ctx, "робот, " + text, True)
 
             continue
-        print(max_volume(file_found))
+        if max_volume(file_found) > -40:
+            last_speaking = 0
         result = AudioSegment.from_file(wav_filename, format="wav") + AudioSegment.from_file(file_found, format="wav")
         try:
             result.export(wav_filename, format="wav")
