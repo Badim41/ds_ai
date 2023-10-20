@@ -207,7 +207,7 @@ async def __image(ctx,
                   prompt: Option(str, description='запрос', required=True),
                   negative_prompt: Option(str, description='негативный запрос', default="NSFW", required=False),
                   steps: Option(int, description='число шагов', required=False,
-                                default=30,
+                                default=60,
                                 min_value=1,
                                 max_value=500),
                   seed: Option(int, description='сид изображения', required=False,
@@ -244,7 +244,7 @@ async def __image(ctx,
         await ctx.defer()
         # throw extensions
         if await set_get_config_all(f"Image", "model_loaded", None) == "False":
-            return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
+            return await ctx.respond("модель для картинок не загруженп")
         # run timer
         start_time = datetime.datetime.now()
         input_image = "images/image" + str(random.randint(1, 1000000)) + ".png"
@@ -852,7 +852,7 @@ async def recognize(ctx):
             result.export(wav_filename, format="wav")
         except Exception as e:
             print(f"Ошибка при экспорте аудио: {e}")
-        print("recognize_saved")
+        # print("recognize_saved")
         # удаление временного файла
         try:
             Path(file_found).unlink()

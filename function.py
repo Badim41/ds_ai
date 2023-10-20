@@ -1,6 +1,8 @@
 import asyncio
+import datetime
 import json
 import multiprocessing
+import random
 import sys
 from translate import Translator
 import subprocess
@@ -44,7 +46,7 @@ _providers = [
 
 from gtts import gTTS
 from elevenlabs import generate, play, save, set_api_key
-from discord_bot import config
+from discord_bot import config, send_file
 from discord_bot import write_in_discord
 from use_free_cuda import use_cuda, stop_use_cuda, check_cuda, wait_for_cuda_async, stop_use_cuda_async, use_cuda_async
 
@@ -593,6 +595,7 @@ async def voice_commands(sentence, ctx):
                 return True
             if spoken_text_temp is None:
                 spoken_text_temp = "вы ничего не сказали"
+                return True
             await textInDiscord(spoken_text_temp, ctx)
             return True
         # AICoverGen
@@ -601,6 +604,50 @@ async def voice_commands(sentence, ctx):
                 await text_to_speech("нужны права администратора", False, ctx)
                 return True
             await createAICaver(ctx)
+            return True
+        elif protocol_number == 12:
+            # throw extensions
+            if await set_get_config_all(f"Image", "model_loaded", None) == "False":
+                return await ctx.respond("модель для картинок не загружена")
+            if spoken_text_temp is None:
+                spoken_text_temp = " "
+            await use_cuda_async(0)
+            await set_get_config_all(f"Image", "result", "None")
+            # run timer
+            start_time = datetime.datetime.now()
+
+            # loading params
+            await set_get_config_all(f"Image", "strength_negative_prompt", "1")
+            await set_get_config_all(f"Image", "strength_prompt", "0.85")
+            await set_get_config_all(f"Image", "strength", "1")
+            await set_get_config_all(f"Image", "seed", random.randint(1, 1000000))
+            await set_get_config_all(f"Image", "steps", "60")
+            await set_get_config_all(f"Image", "negative_prompt", "NSFW")
+            await set_get_config_all(f"Image", "prompt", spoken_text_temp)
+            await set_get_config_all(f"Image", "x", "512")
+            await set_get_config_all(f"Image", "y", "512")
+            await set_get_config_all(f"Image", "input", "empty.png")
+            print("params suc")
+            # wait for answer
+            while True:
+                output_image = await set_get_config_all(f"Image", "result", None)
+                if not output_image == "None":
+                    break
+                await asyncio.sleep(0.25)
+
+            # count time
+            end_time = datetime.datetime.now()
+            spent_time = str(end_time - start_time)
+            # убираем часы и миллисекунды
+            spent_time = spent_time[spent_time.find(":") + 1:]
+            spent_time = spent_time[:spent_time.find(".")]
+            # отправляем
+            await ctx.respond("Вот как я нарисовал ваше изображение🖌. Потрачено " + spent_time)
+            await send_file(ctx, output_image)
+            # удаляем временные файлы
+            os.remove(output_image)
+            # перестаём использовать видеокарту
+            await stop_use_cuda_async(0)
             return True
         await text_to_speech("Протокол не найден.", False, ctx)
         return True
