@@ -703,23 +703,15 @@ async def check_messages(ctx, *args):
     from function import chatgpt_get_result
     try:
         content = "".join(args)
-        if "-" in content:
-            content.split("-")
-            # не считаем последнее сообщение, поэтому +1
-            start = int(content[0]) + 1
-            end = int(content[1])
-        else:
-            # не считаем последнее сообщение, поэтому +1
-            start = int(content) + 1
-            end = int(content)
+        number = int(content) + 1
 
         messages = []
-        async for message in ctx.channel.history(limit=start):
+        async for message in ctx.channel.history(limit=number):
             messages.append(f"Сообщение от {message.author.name}: {message.content}")
         # От начала до конца
         messages = messages[::-1]
         # убираем последнее / последние сообщения
-        messages = messages[:end]
+        messages = messages[:number - 1]
         print(messages)
         result = await chatgpt_get_result(f"Кратко перескажи о чём говорили в чате, "\
                                  f"в конце сделай небольшой свой комментарий, например: этот пользователь заслуживает наказания"\
