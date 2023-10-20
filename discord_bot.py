@@ -838,10 +838,10 @@ async def recognize(ctx):
                 # вызов function
                 if not text is None:
                     from function import replace_mat_in_sentence, replace_numbers_in_sentence
-                    text = await replace_numbers_in_sentence(text)
+                    text = await set_get_config_default("currentainame") + ", " + await replace_numbers_in_sentence(text)
                     text = await replace_mat_in_sentence(text)
                     print(text)
-                    await run_main_with_settings(ctx, await set_get_config_default("currentainame") + ", " + text, True)
+                    await run_main_with_settings(ctx, text, True)
 
             continue
         if max_volume(file_found) > -40:
