@@ -327,6 +327,7 @@ async def __read_messages(
                                                    max_value=100),
         prompt: Option(str, description='Промпт для GPT. Какой вывод сделать по сообщениям (перевести, пересказать)', required=True)
 ):
+    await ctx.defer()
     from function import chatgpt_get_result
     try:
         messages = []
@@ -338,9 +339,9 @@ async def __read_messages(
         messages = messages[:number - 1]
         print(messages)
         result = await chatgpt_get_result(f"{prompt}. Вот история сообщений:{messages}", ctx)
-        await ctx.send(result)
+        await ctx.respond(result)
     except Exception as e:
-        await ctx.send(f"Произошла ошибка: {e}")
+        await ctx.respond(f"Произошла ошибка: {e}")
 
 @bot.slash_command(name="join", description='присоединиться к голосовому каналу')
 async def join(ctx):
