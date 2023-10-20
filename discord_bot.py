@@ -484,7 +484,7 @@ async def skip(ctx):
         voice_client = ctx.voice_client
         if voice_client.is_playing():
             voice_client.stop()
-            await ctx.respond("Текущий трек пропущен ⏭️")
+            await ctx.respond("Аудио пропущено ⏭️")
             await set_get_config("stop_milliseconds", 0)
         else:
             await ctx.respond("Нет активного аудио для пропуска.")
