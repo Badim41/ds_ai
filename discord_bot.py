@@ -732,7 +732,7 @@ async def write_in_discord(ctx, text):
         from function import result_command_change, Color
         await result_command_change("ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
         return
-    if len(text) < 2000:
+    if len(text) < 1990:
         await ctx.send(text)
     else:
         message_parts = []
@@ -746,21 +746,21 @@ async def write_in_discord(ctx, text):
                 code_block_start, spoiler_start)
 
             if min_start == -1:
-                message_parts.append(text[:2000])
-                text = text[2000:]
+                message_parts.append(text[:1990])
+                text = text[1990:]
             else:
                 if text[min_start:min_start + 3] == "```":
                     code_block_end = text[min_start + 3:].find("```")
                     if code_block_end != -1:
                         message_part = text[:min_start + code_block_end + 6]
                     else:
-                        message_part = text[:2000]
+                        message_part = text[:1990]
                 else:
                     spoiler_end = text[min_start + 2:].find("||")
                     if spoiler_end != -1:
                         message_part = text[:min_start + spoiler_end + 4]
                     else:
-                        message_part = text[:2000]
+                        message_part = text[:1990]
 
                 message_parts.append(message_part)
                 text = text[len(message_part):]
