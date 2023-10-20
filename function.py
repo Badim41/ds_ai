@@ -426,6 +426,7 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0, gpt_model="gpt-3.5-
     global currentAIname  # , gpt_errors
     config.read('config.ini')
     gpt_provider = config.getboolean('gpt', 'use_gpt_provider')
+    result = "result"
     if not gpt_provider:
         gpt_loaded = config.getboolean('gpt', 'gpt')
         if not gpt_loaded:
