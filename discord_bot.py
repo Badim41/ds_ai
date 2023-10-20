@@ -708,7 +708,7 @@ async def check_messages(ctx, *args):
             start = int(content[0])
             end = int(content[1])
         else:
-            start = int(content)
+            start = int(content) + 1
             end = int(content)
 
         messages = []
