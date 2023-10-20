@@ -35,10 +35,10 @@ _providers = [
     # g4f.Provider.FreeGpt,# wrong language
     g4f.Provider.ChatgptAi,  # - error ID
     g4f.Provider.GptGo,  # error 403
-    g4f.Provider.GptForLove,  # error no module
+    #g4f.Provider.GptForLove,  # error no module
     g4f.Provider.Opchatgpts,  # bad
     g4f.Provider.Chatgpt4Online,  # - bad
-    g4f.Provider.ChatBase,  # - bad
+    #g4f.Provider.ChatBase,  # - bad
     # g4f.Provider.Llama2, # no model
 ]
 
@@ -149,7 +149,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             file_path = "texts/memories/" + str(currentAIname) + ".txt"
             if not os.path.exists(file_path):
                 with open(file_path, "w") as create_file:
-                    create_file.write("Пользователь: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n")
+                    create_file.write("")
             # Open the file
             with open(file_path, "r") as file:
                 file_content = file.read()
@@ -168,8 +168,8 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                                 Продолжайте вести себя как {currentAIname}, насколько это возможно. \
                                 {currentAIinfo} \
                              ОПИРАЙСЯ НА ПРЕДЫДУЩИЕ ЗАПРОСЫ. Они даны в формате Человек:[запрос], GPT:[ответ на запрос]:\"{file_content}\"\
-                             Когда я задаю вам вопрос, отвечайте как {currentAIname}, как показано ниже.\
-                              {currentAIname}: [так, как ответил бы {currentAIname}]\
+                             Когда я задаю вам вопрос, отвечайте как {currentAIname}, как показано ниже.\n\
+                              {currentAIname}: [так, как ответил бы {currentAIname}]\n\
                               Вопрос:{temp_spokenText}")
                     while "  " in prompt:
                         prompt = prompt.replace("  ", " ")
