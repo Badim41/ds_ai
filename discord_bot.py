@@ -705,9 +705,11 @@ async def check_messages(ctx, *args):
         content = "".join(args)
         if "-" in content:
             content.split("-")
-            start = int(content[0])
+            # не считаем последнее сообщение, поэтому +1
+            start = int(content[0]) + 1
             end = int(content[1])
         else:
+            # не считаем последнее сообщение, поэтому +1
             start = int(content) + 1
             end = int(content)
 
