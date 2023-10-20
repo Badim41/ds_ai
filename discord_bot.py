@@ -782,7 +782,7 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
     print("Stopped listening.")
 
 
-def max_volume(audio_file_path):
+async def max_volume(audio_file_path):
     audio = AudioSegment.from_file(audio_file_path)
     max_dBFS = audio.max_dBFS
     print(max_dBFS, type(max_dBFS))
@@ -845,7 +845,7 @@ async def recognize(ctx):
                     await run_main_with_settings(ctx, text, True)
 
             continue
-        if max_volume(file_found) > -40:
+        if await max_volume(file_found) > -40:
             last_speaking = 0
         result = AudioSegment.from_file(wav_filename, format="wav") + AudioSegment.from_file(file_found, format="wav")
         try:
