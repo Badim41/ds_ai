@@ -700,13 +700,13 @@ async def command_line(ctx, *args):
 
 @bot.command(aliases=['check'], help="командная строка")
 async def check_messages(ctx, *args):
+    from function import chatgpt_get_result
     try:
-        from function import chatgpt_get_result
         message = int("".join(args))
         messages = []
         async for message in ctx.channel.history(limit=message):
             messages.append(f"Сообщение от {message.author.name}: {message.content}")
-        result = await chatgpt_get_result(f"Кратко перескажи о чём говорили в чате, "\
+        result = await chatgpt_get_result(ctx, f"Кратко перескажи о чём говорили в чате, "\
                                  f"в конце сделай небольшой свой комментарий, например: этот пользователь заслуживает наказания"\
                                  f"Вот история сообщений:{messages}")
         await ctx.send(result)
