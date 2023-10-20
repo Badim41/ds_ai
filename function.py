@@ -166,7 +166,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                 if await set_get_config_all("gpt", "use_gpt_provider", None) == "False":
                     prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}.\
                      У тебя есть воспоминания:\"{file_content}\".\
-                      Тебе пишут: {temp_spokenText}. Ответ:"
+                      Напиши ответ пользователю с именем {user_name}, он говорит: {temp_spokenText}. Ответ:"
                 else:
                     # GPT провайдер
                     prompt = (f"Привет, chatGPT. Вы собираетесь притвориться {currentAIname}. \
@@ -175,12 +175,12 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                              ОПИРАЙСЯ НА ПРЕДЫДУЩИЕ ЗАПРОСЫ. Они даны в формате Человек:[запрос], GPT:[ответ на запрос]:\"{file_content}\"\
                              Когда я задаю вам вопрос, отвечайте как {currentAIname}, как показано ниже.\n\
                               {currentAIname}: [так, как ответил бы {currentAIname}]\n\
-                              Вопрос:{temp_spokenText}")
+                              Напиши ответ пользователю с именем {user_name}, он говорит::{temp_spokenText}")
                     while "  " in prompt:
                         prompt = prompt.replace("  ", " ")
             elif custom_prompt == "True":
                 prompt = f"ОПИРАЙСЯ НА ПРЕДЫДУЩИЕ ЗАПРОСЫ. Они даны в формате Человек:[запрос], GPT:[ответ на запрос]:\"{file_content}\"" \
-                         f"Напиши ответ {user_name}, он говорит:\"{temp_spokenText}\""
+                         f"Напиши ответ пользователю с именем {user_name}, он говорит:\"{temp_spokenText}\""
             else:
                 if os.path.exists(f"texts/prompts/{custom_prompt}.txt"):
                     # /content/ds_ai/texts/prompts/roleplay.txt
