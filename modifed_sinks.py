@@ -50,7 +50,7 @@ class StreamBuffer:
         self.channels = 2
         self.sample_rate = 48000
         self.bytes_ps = 192000  # bytes added to buffer per second
-        self.block_len = 0.5  # how long you want each audio block to be in seconds
+        self.block_len = 1  # how long you want each audio block to be in seconds
         # min len to pull bytes from buffer
         self.buff_lim = int(self.bytes_ps * self.block_len)
 
