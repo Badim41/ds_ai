@@ -87,11 +87,11 @@ async def on_message(message):
             text = re.sub(r'[.*?]', '', text)
         await set_get_config_default("user_name", value=user)
         # info
-        info_was = await set_get_config_default("currentaiinnfo")
-        await set_get_config_default("currentaiinnfo", "Ты сейчас играешь на сервере майнкрафт GoldenFire и отвечаешь на сообщения игроков из чата")
+        info_was = await set_get_config_default("currentaiinfo")
+        await set_get_config_default("currentaiinfo", "Ты сейчас играешь на сервере майнкрафт GoldenFire и отвечаешь на сообщения игроков из чата")
         await run_main_with_settings(ctx, text, True)
         # info2
-        await set_get_config_default("currentaiinnfo", info_was)
+        await set_get_config_default("currentaiinfo", info_was)
         return
 
     # other users
