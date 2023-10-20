@@ -813,7 +813,7 @@ async def recognize(ctx):
                 text = None
                 # очищаем поток
                 stream_sink.cleanup()
-                file_not_found_in_raw = 0
+                last_speaking = 0
                 # распознание речи
                 try:
                     with sr.AudioFile(wav_filename) as source:
@@ -841,7 +841,7 @@ async def recognize(ctx):
                     text = await replace_numbers_in_sentence(text)
                     text = await replace_mat_in_sentence(text)
                     print(text)
-                    await run_main_with_settings(ctx, "робот, " + text, True)
+                    await run_main_with_settings(ctx, await set_get_config_default("currentainame") + ", " + text, True)
 
             continue
         if max_volume(file_found) > -40:
