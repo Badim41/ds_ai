@@ -73,6 +73,21 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
+    # minecraft chat bot
+    if message.author.id == 1152731363502477374:
+        text = message.content
+        ctx = await bot.get_context(message)
+        from function import replace_mat_in_sentence
+
+        if await set_get_config_default("robot_name_need") == "False":
+            text = await set_get_config_default("currentainame") + ", " + text
+        text = await replace_mat_in_sentence(text)
+        user = text[:text.find(":")]
+        await set_get_config_default("user_name", value=user)
+        await run_main_with_settings(ctx, text, True)
+        return
+
+    # other users
     if message.author.bot:
         return
     if bot.user in message.mentions:

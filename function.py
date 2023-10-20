@@ -176,7 +176,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                              ОПИРАЙСЯ НА ПРЕДЫДУЩИЕ ЗАПРОСЫ. Они даны в формате Человек:[запрос], GPT:[ответ на запрос]:\"{file_content}\"\
                              Когда я задаю вам вопрос, отвечайте как {currentAIname}, как показано ниже.\n\
                               {currentAIname}: [так, как ответил бы {currentAIname}]\n\
-                              Напиши ответ пользователю с именем {user_name}, он говорит::{temp_spokenText}")
+                              Напиши ответ пользователю с именем {user_name}, он говорит:{temp_spokenText}")
                     while "  " in prompt:
                         prompt = prompt.replace("  ", " ")
             elif custom_prompt == "True":
