@@ -1003,7 +1003,7 @@ async def execute_command(command, ctx):
         await ctx.send(f"Произошла неизвестная ошибка: {e}")
 
 
-async def remove_line_from_txt(file_path, delete_liКne):
+async def remove_line_from_txt(file_path, delete_line):
     try:
         if not os.path.exists(file_path):
             await result_command_change(f"Файл не найден: {file_path}", Color.RED)
