@@ -696,6 +696,11 @@ async def command_line(ctx, *args):
     except Exception as e:
         await ctx.send(f"Произошла неизвестная ошибка: {e}")
 
+@bot.command()
+async def check_messages(ctx):
+    async for message in ctx.channel.history(limit=100):
+        print(f"Сообщение от {message.author.name}: {message.content}")
+
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
     from function import start_bot
