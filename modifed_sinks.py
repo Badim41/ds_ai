@@ -1,5 +1,6 @@
 import audiosegment
 import numpy as np
+import pydub
 
 from discord.sinks.core import Filters, Sink, default_filters
 from pydub import AudioSegment
@@ -67,9 +68,14 @@ class StreamBuffer:
             byte_slice = self.byte_buffer[:self.buff_lim]
             self.byte_buffer = self.byte_buffer[self.buff_lim:]
 
-            audio_segment = Audiosegment.from_mono_pcm(np.array(byte_slice), self.sample_rate, self.sample_width)
-            self.segment_buffer.put(audio_segment)
+            audio_segment = pydub.AudioSegment(
+                data=byte_slice,
+                sample_width=self.sample_width,
+                frame_rate=self.sample_rate,
+                channels=self.channels
+            )
 
+            self.segment_buffer.put(audio_segment)
             self.ct += 1
 
         # Если после цикла данных все равно не хватает, заполняем тишиной
