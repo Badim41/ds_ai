@@ -13,7 +13,6 @@ from PIL import Image
 from pydub import AudioSegment
 
 from discord import Option
-from function import chatgpt_get_result
 from modifed_sinks import StreamSink
 import speech_recognition as sr
 from pathlib import Path
@@ -702,6 +701,7 @@ async def command_line(ctx, *args):
 @bot.command(aliases=['check'], help="командная строка")
 async def check_messages(ctx, *args):
     try:
+        from function import chatgpt_get_result
         message = int("".join(args))
         messages = []
         async for message in ctx.channel.history(limit=message):
