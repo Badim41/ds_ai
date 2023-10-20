@@ -70,14 +70,20 @@ async def on_ready():
         type=discord.ActivityType.listening, name='AI-covers'))
 
 
-# @bot.event
-# async def on_message(message):
-#     if message.author.bot:
-#         return
-#     if len(message.attachments) > 0:
-#         for attachment in message.attachments:
-#             await attachment.save(attachment.filename)
-#             print(f'Получен файл: {attachment.filename}')
+@bot.event
+async def on_message(ctx, message):
+    if message.author == bot:
+        return
+    if bot.user in message.mentions:
+        try:
+            from function import replace_mat_in_sentence
+            if await set_get_config_default("robot_name_need") == "False":
+                message = await set_get_config_default("currentainame") + ", " + message
+            message = await replace_mat_in_sentence(message)
+            print(f'{message} ({type(message).__name__})\n')
+            await run_main_with_settings(ctx, message, True)
+        except Exception as e:
+            await ctx.respond(f"Ошибка при команде say (с параметрами{message}): {e}")
 
 
 @bot.slash_command(name="change_video",
