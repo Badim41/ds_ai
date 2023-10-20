@@ -191,6 +191,8 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
 
         # запись прошлых запросов
         with open(f"texts/memories/{currentAIname}.txt", 'a') as writer2:
+            if "(" in temp_spokenText and ")" in temp_spokenText:
+                temp_spokenText = re.sub(r'(.*?)', '', temp_spokenText)
             writer2.write(f"Пользователь: {temp_spokenText}\n")
 
         # chatgpt + write + TTS
@@ -1090,7 +1092,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
             lines = reader.readlines()
             lines_number = len(lines)
-        while lines_number > 9:
+        while lines_number > 5:
             lines_number -= 1
             try:
                 with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
