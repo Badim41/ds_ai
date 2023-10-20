@@ -426,7 +426,6 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0, gpt_model="gpt-3.5-
     global currentAIname  # , gpt_errors
     config.read('config.ini')
     gpt_provider = config.getboolean('gpt', 'use_gpt_provider')
-    result = "result"
     if not gpt_provider:
         gpt_loaded = config.getboolean('gpt', 'gpt')
         if not gpt_loaded:
@@ -470,8 +469,8 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0, gpt_model="gpt-3.5-
                     provider_number += 1
                     print("change provider:", _providers[provider_number])
 
-                    await chatgpt_get_result(prompt, ctx, provider_number=provider_number, gpt_model=gpt_model)
-                    return
+                    result = await chatgpt_get_result(prompt, ctx, provider_number=provider_number, gpt_model=gpt_model)
+                    return result
                 result = "Ошибка при получении запроса"
         # if not language == "russian":
         #    translator = Translator(from_lang="ru", to_lang=language[:2].lower())
