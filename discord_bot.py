@@ -75,16 +75,13 @@ async def on_message(message):
     if message.author.bot:
         return
     if bot.user in message.mentions:
-        print("ctx0")
         ctx = await bot.get_context(message)
-        print("ctx")
         try:
             text = message.content
             from function import replace_mat_in_sentence
             if await set_get_config_default("robot_name_need") == "False":
                 text = await set_get_config_default("currentainame") + ", " + text
             text = await replace_mat_in_sentence(text)
-            print(f'{text} ({type(text).__name__})\n')
             await run_main_with_settings(ctx, text, True)
         except Exception as e:
             await ctx.send(f"Ошибка при команде say с параметрами {message}: {e}")
