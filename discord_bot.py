@@ -328,7 +328,7 @@ async def __read_messages(
         prompt: Option(str, description='Промпт для GPT. Какой вывод сделать по сообщениям (перевести, пересказать)', required=True)
 ):
     await ctx.defer()
-    from function import chatgpt_get_result
+    from function import chatgpt_get_result, text_to_speech
     try:
         messages = []
         async for message in ctx.channel.history(limit=number):
@@ -341,6 +341,7 @@ async def __read_messages(
         result = await chatgpt_get_result(f"{prompt}. Вот история сообщений:{messages}", ctx)
         print(result)
         await ctx.respond(result)
+        await text_to_speech(result, False, ctx)
     except Exception as e:
         await ctx.respond(f"Произошла ошибка: {e}")
 
