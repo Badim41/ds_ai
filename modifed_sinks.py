@@ -60,7 +60,7 @@ class StreamBuffer:
 
     def write(self, data, user):
         self.byte_buffer += data  # data is a bytearray object
-
+        audio_segment = None
         while len(self.byte_buffer) >= self.buff_lim:
             byte_slice = self.byte_buffer[:self.buff_lim]
             self.byte_buffer = self.byte_buffer[self.buff_lim:]
@@ -79,3 +79,7 @@ class StreamBuffer:
         if len(self.byte_buffer) < self.buff_lim:
             silence_data = bytearray(b'\x00' * (self.buff_lim - len(self.byte_buffer)))
             self.byte_buffer += silence_data
+
+        # temporary for validating process
+        audio_segment.export(f"output{self.ct}.wav", format="wav")
+        self.ct += 1
