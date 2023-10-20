@@ -9,34 +9,37 @@ import time
 import os
 import g4f
 _providers = [
-g4f.Provider.ChatForAi,
-g4f.Provider.GPTalk,
-g4f.Provider.AiAsk, #- rate limit
-g4f.Provider.GeekGpt, # short answer
-#g4f.Provider.ChatgptAi,# - error ID
-g4f.Provider.ChatgptDemo,# error 403
-g4f.Provider.ChatgptLogin,# error 403
-#g4f.Provider.GptGo,# error 403
-g4f.Provider.ChatgptX,# error
-g4f.Provider.NoowAi,
-g4f.Provider.You,
-
 # AUTH
 g4f.Provider.Raycast,
 g4f.Provider.Phind,
-#g4f.Provider.Liaobots,
+g4f.Provider.Liaobots, # - Doker output
 g4f.Provider.Bing,
 g4f.Provider.OpenaiChat,
 g4f.Provider.Vercel,
 g4f.Provider.Theb,
 
-# g4f.Provider.FreeGpt,# wrong language
+# good providers
+g4f.Provider.ChatForAi,
+g4f.Provider.GPTalk,
+g4f.Provider.AiAsk, #- rate limit
+g4f.Provider.GeekGpt, # short answer
+g4f.Provider.ChatgptDemo,# error 403
+g4f.Provider.ChatgptLogin,# error 403
+g4f.Provider.ChatgptX,# error
+
+
+
+# bad providers
+g4f.Provider.You, # dont work
+g4f.Provider.NoowAi, # normal, but not so good
 g4f.Provider.GptGod,# error list
-# g4f.Provider.GptForLove, error no module
-# g4f.Provider.NoowAi, bad
-#g4f.Provider.Opchatgpts bad
-# g4f.Provider.Chatgpt4Online, - bad
-# g4f.Provider.ChatBase, - bad
+# g4f.Provider.FreeGpt,# wrong language
+g4f.Provider.ChatgptAi,# - error ID
+g4f.Provider.GptGo,# error 403
+g4f.Provider.GptForLove, #error no module
+g4f.Provider.Opchatgpts,# bad
+g4f.Provider.Chatgpt4Online,# - bad
+g4f.Provider.ChatBase,# - bad
 #g4f.Provider.Llama2, # no model
 ]
 
@@ -194,7 +197,10 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
         try:
             print("temp1")
             await result_command_change("Prompt" + prompt, Color.GRAY)
-            await chatgpt_get_result(True, prompt, ctx, writeAnswer)
+            result = await chatgpt_get_result(prompt, ctx)
+            if writeAnswer:
+                await write_in_discord(ctx, result)
+            await text_to_speech(result, True, ctx)
         except Exception as ex:
             raise ex
 
@@ -346,16 +352,24 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name="."):
                 cookies={"Fake": ""},
                 auth=True
             )
+        if "Liaobots" in str(provider) and len(result) > 2000:
+            # делаем задержку
+            await asyncio.sleep(delay_for_gpt)
+            return
+
         if result is None or result.replace("\n", "").replace(" ", "") == "":
             # делаем задержку, чтобы не вывелся пустой результат
             await asyncio.sleep(delay_for_gpt)
             return
+
         # если больше 3 "```" (форматов)
         result = await remove_last_format_simbols(result)
+
         # убираем имя из результата
         if currentAIname + ": " in result:
             result = result[len(currentAIname) + 2:]
-        # заменяем на имя провайдера
+
+        # добавляем имя провайдера
         provider = str(provider)
         provider = provider[provider.find("'") + 1:]
         provider = provider[:provider.find("'")]
@@ -389,7 +403,7 @@ async def run_all_gpt(prompt, mode):
                 new_results.append(result)
         return '\n\n\n'.join(new_results)
 
-async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=0, gpt_model="gpt-3.5-turbo"):
+async def chatgpt_get_result(prompt, ctx, provider_number=0, gpt_model="gpt-3.5-turbo"):
     global currentAIname#, gpt_errors
     config.read('config.ini')
     gpt_provider = config.getboolean('gpt', 'use_gpt_provider')
@@ -426,22 +440,16 @@ async def chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider
             except Exception as e:
                 if not provider_number == len(_providers) - 1:
                     print("Ошибка получения ответа:", e)
-                    # gpt_errors += 1
-                    # if gpt_errors > 2:
                     provider_number += 1
-                    # gpt_errors = 0
                     print("change provider:", _providers[provider_number])
 
-                    await chatgpt_get_result(write_in_memory, prompt, ctx, writeAnswer, provider_number=provider_number, gpt_model=gpt_model)
-
+                    await chatgpt_get_result(prompt, ctx, provider_number=provider_number, gpt_model=gpt_model)
                     return
                 result = "Ошибка при получении запроса"
         # if not language == "russian":
         #    translator = Translator(from_lang="ru", to_lang=language[:2].lower())
         #    result = translator.translate(result)
-    if writeAnswer:
-        await write_in_discord(ctx, result)
-    await text_to_speech(result, write_in_memory, ctx)
+    return result
 
 
 async def correct_number(number_input, operation_number):
@@ -501,7 +509,9 @@ async def voice_commands(sentence, ctx):
             await text_to_speech("нужны права администратора", False, ctx)
             return True
         try:
-            await chatgpt_get_result(False, sentence[sentence.index("gpt") + 3:], ctx, True)
+            result = await chatgpt_get_result(sentence[sentence.index("gpt") + 3:], ctx)
+            await write_in_discord(ctx, result)
+            await text_to_speech(result, False, ctx)
         except Exception as e:
             raise RuntimeError(e)
         return True
