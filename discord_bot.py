@@ -75,8 +75,10 @@ async def on_message(message):
     if message.author.bot:
         return
     if bot.user in message.mentions:
+        print("ctx0")
+        ctx = await bot.get_context(message)
+        print("ctx")
         try:
-            ctx = await bot.get_context(message)
             from function import replace_mat_in_sentence
             if await set_get_config_default("robot_name_need", False):
                 message = await set_get_config_default("current_robot_name", message)
