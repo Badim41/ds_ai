@@ -696,7 +696,7 @@ async def command_line(ctx, *args):
     except Exception as e:
         await ctx.send(f"Произошла неизвестная ошибка: {e}")
 
-@bot.command()
+@bot.command(aliases=['check'], help="вывод 10 сообщений из истории чата")
 async def check_messages(ctx):
     print("histoty")
     async for message in ctx.channel.history(limit=10):
