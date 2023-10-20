@@ -1,9 +1,6 @@
-import audiosegment
-import numpy as np
 import pydub
 
 from discord.sinks.core import Filters, Sink, default_filters
-from pydub import AudioSegment
 from queue import Queue
 import sys
 
