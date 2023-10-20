@@ -81,5 +81,6 @@ class StreamBuffer:
             self.byte_buffer += silence_data
 
         # temporary for validating process
-        audio_segment.export(f"output{self.ct}.wav", format="wav")
-        self.ct += 1
+        if not audio_segment is None:
+            audio_segment.export(f"output{self.ct}.wav", format="wav")
+            self.ct += 1
