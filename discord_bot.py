@@ -96,7 +96,6 @@ async def on_message(message):
             await ctx.send(f"Ошибка при команде say с параметрами {message}: {e}")
     await bot.process_commands(message)
 
-
 @bot.slash_command(name="change_video",
                    description='перерисовать и переозвучить видео. Бот также предложит вам название')
 async def __change_video(
@@ -697,6 +696,11 @@ async def command_line(ctx, *args):
     except Exception as e:
         await ctx.send(f"Произошла неизвестная ошибка: {e}")
 
+@bot.command(aliases=['check'], help="командная строка")
+async def check_messages(ctx):
+    print("histoty")
+    async for message in ctx.channel.history(limit=10):
+        print(f"Сообщение от {message.author.name}: {message.content}")
 
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
