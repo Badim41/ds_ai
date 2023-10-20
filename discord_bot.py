@@ -831,7 +831,18 @@ async def recognize(ctx):
         if await set_get_config() == "False":
             print("Stopped listening2.")
             return
-        file_found = None
+        # удаляём все output, если файлов больше 150
+        file_list = os.listdir(os.getcwd())
+        if len([f for f in file_list if os.path.isfile(f)]) > 150:
+            for filename in file_list:
+                if filename.startswith("output") and filename.endswith(".wav"):
+                    Path(filename).unlink()
+                    break
+        # проверяем файлы
+        for filename in file_list:
+            if filename.startswith("output") and filename.endswith(".wav"):
+                file_found = filename
+                break
         # проверяем наличие временных файлов
         for filename in os.listdir(os.getcwd()):
             if filename.startswith("output") and filename.endswith(".wav"):
@@ -879,10 +890,6 @@ async def recognize(ctx):
 
             continue
         loudness = await max_volume(file_found)
-        if loudness == float('-inf'):
-            Path(file_found).unlink()
-            print("skip")
-            continue
         if loudness > int(await set_get_config_all("Sound", "min_volume", None)):
             last_speaking = 0
         result = AudioSegment.from_file(wav_filename, format="wav") + AudioSegment.from_file(file_found, format="wav")
