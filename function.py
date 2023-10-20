@@ -185,7 +185,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                 if os.path.exists(f"texts/prompts/{custom_prompt}.txt"):
                     # /content/ds_ai/texts/prompts/roleplay.txt
                     with open(f"texts/prompts/{custom_prompt}.txt", "r") as reader:
-                        prompt = reader.read() + temp_spokenText[temp_spokenText.find(" ") + 1:]
+                        prompt = reader.read() + temp_spokenText.replace(currentAIname + ", ", "")
                         temp_spokenText = prompt
                     await set_get_config_all("gpt", "gpt_custom_prompt", "None")
                 else:
