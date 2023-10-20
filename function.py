@@ -8,39 +8,38 @@ import re
 import time
 import os
 import g4f
+
 _providers = [
-# AUTH
-g4f.Provider.Raycast,
-g4f.Provider.Phind,
-g4f.Provider.Liaobots, # - Doker output
-g4f.Provider.Bing,
-g4f.Provider.OpenaiChat,
-g4f.Provider.Vercel,
-g4f.Provider.Theb,
+    # AUTH
+    g4f.Provider.Raycast,
+    g4f.Provider.Phind,
+    g4f.Provider.Liaobots,  # - Doker output
+    g4f.Provider.Bing,
+    g4f.Provider.OpenaiChat,
+    g4f.Provider.Vercel,
+    g4f.Provider.Theb,
 
-# good providers
-g4f.Provider.ChatForAi,
-g4f.Provider.GPTalk,
-g4f.Provider.AiAsk, #- rate limit
-g4f.Provider.GeekGpt, # short answer
-g4f.Provider.ChatgptDemo,# error 403
-g4f.Provider.ChatgptLogin,# error 403
-g4f.Provider.ChatgptX,# error
+    # good providers
+    g4f.Provider.ChatForAi,
+    g4f.Provider.GPTalk,
+    g4f.Provider.AiAsk,  # - rate limit
+    g4f.Provider.GeekGpt,  # short answer
+    g4f.Provider.ChatgptDemo,  # error 403
+    g4f.Provider.ChatgptLogin,  # error 403
+    g4f.Provider.ChatgptX,  # error
 
-
-
-# bad providers
-g4f.Provider.You, # dont work
-g4f.Provider.NoowAi, # normal, but not so good
-g4f.Provider.GptGod,# error list
-# g4f.Provider.FreeGpt,# wrong language
-g4f.Provider.ChatgptAi,# - error ID
-g4f.Provider.GptGo,# error 403
-g4f.Provider.GptForLove, #error no module
-g4f.Provider.Opchatgpts,# bad
-g4f.Provider.Chatgpt4Online,# - bad
-g4f.Provider.ChatBase,# - bad
-#g4f.Provider.Llama2, # no model
+    # bad providers
+    g4f.Provider.You,  # dont work
+    g4f.Provider.NoowAi,  # normal, but not so good
+    g4f.Provider.GptGod,  # error list
+    # g4f.Provider.FreeGpt,# wrong language
+    g4f.Provider.ChatgptAi,  # - error ID
+    g4f.Provider.GptGo,  # error 403
+    g4f.Provider.GptForLove,  # error no module
+    g4f.Provider.Opchatgpts,  # bad
+    g4f.Provider.Chatgpt4Online,  # - bad
+    g4f.Provider.ChatBase,  # - bad
+    # g4f.Provider.Llama2, # no model
 ]
 
 from gtts import gTTS
@@ -155,20 +154,16 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             with open(file_path, "r") as file:
                 file_content = file.read()
 
-            try:
-                with open(f"texts/memories/{currentAIname}.txt", 'a') as writer2:
-                    writer2.write(f"Пользователь: {temp_spokenText}\n")
-            except IOError as ex:
-                raise RuntimeError(ex)
-
-            # Локальный GPT нормально отвечает, если в конце добавить "Ответ:"
             custom_prompt = await set_get_config_all("gpt", "gpt_custom_prompt", None)
             if custom_prompt == "None":
+                # Локальный GPT
+                # нормально отвечает, если в конце добавить "Ответ:"
                 if await set_get_config_all("gpt", "use_gpt_provider", None) == "False":
                     prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}.\
                      У тебя есть воспоминания:\"{file_content}\".\
                       Тебе пишут: {temp_spokenText}. Ответ:"
                 else:
+                    # GPT провайдер
                     prompt = (f"Привет, chatGPT. Вы собираетесь притвориться {currentAIname}. \
                                 Продолжайте вести себя как {currentAIname}, насколько это возможно. \
                                 {currentAIinfo} \
@@ -177,16 +172,16 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                               {currentAIname}: [так, как ответил бы {currentAIname}]\
                               Вопрос:{temp_spokenText}")
                     while "  " in prompt:
-                        prompt = prompt.replace("  "," ")
+                        prompt = prompt.replace("  ", " ")
             elif custom_prompt == "True":
                 prompt = f"ОПИРАЙСЯ НА ПРЕДЫДУЩИЕ ЗАПРОСЫ. Они даны в формате Человек:[запрос], GPT:[ответ на запрос]:\"{file_content}\"" \
                          f"Напиши ответ пользователю, он говорит:\"{temp_spokenText}\""
             else:
                 if os.path.exists(f"texts/prompts/{custom_prompt}.txt"):
-                    #/content/ds_ai/texts/prompts/roleplay.txt
+                    # /content/ds_ai/texts/prompts/roleplay.txt
                     with open(f"texts/prompts/{custom_prompt}.txt", "r") as reader:
-                        prompt = reader.read()
-                    # await voice_commands("робот протокол 998", ctx)
+                        prompt = reader.read() + temp_spokenText
+                        temp_spokenText = prompt
                     await set_get_config_all("gpt", "gpt_custom_prompt", "None")
                 else:
                     await text_to_speech("Промпт не найден!", False, ctx)
@@ -194,6 +189,11 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
         except Exception as ex:
             raise ex
 
+        # запись прошлых запросов
+        with open(f"texts/memories/{currentAIname}.txt", 'a') as writer2:
+            writer2.write(f"Пользователь: {temp_spokenText}\n")
+
+        # chatgpt + write + TTS
         try:
             await result_command_change("Prompt" + prompt, Color.GRAY)
             result = await chatgpt_get_result(prompt, ctx)
@@ -304,6 +304,7 @@ async def translate(text):
     translator = Translator(from_lang="ru", to_lang=language[:2].lower())
     return translator.translate(text)
 
+
 # gpt_errors = 0
 
 async def remove_last_format_simbols(text, format="```"):
@@ -312,6 +313,7 @@ async def remove_last_format_simbols(text, format="```"):
         corrected_text = format.join(parts[:3]) + parts[3]
         return corrected_text
     return text
+
 
 async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name="."):
     if not provider_name in str(provider):
@@ -378,6 +380,8 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name="."):
         # даём время каждому GPT на ответ
         await asyncio.sleep(delay_for_gpt)
         return ""
+
+
 async def run_all_gpt(prompt, mode):
     if mode == "fast":
         functions = [one_gpt_run(provider, prompt, 120) for provider in _providers]  # список функций
@@ -402,8 +406,9 @@ async def run_all_gpt(prompt, mode):
                 new_results.append(result)
         return '\n\n\n'.join(new_results)
 
+
 async def chatgpt_get_result(prompt, ctx, provider_number=0, gpt_model="gpt-3.5-turbo"):
-    global currentAIname#, gpt_errors
+    global currentAIname  # , gpt_errors
     config.read('config.ini')
     gpt_provider = config.getboolean('gpt', 'use_gpt_provider')
     if not gpt_provider:
@@ -1083,7 +1088,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
             lines = reader.readlines()
             lines_number = len(lines)
         while lines_number > 9:
-            lines_number-=1
+            lines_number -= 1
             try:
                 with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
                     lines = reader.readlines()
