@@ -339,6 +339,7 @@ async def __read_messages(
         messages = messages[:number - 1]
         print(messages)
         result = await chatgpt_get_result(f"{prompt}. Вот история сообщений:{messages}", ctx)
+        print(result)
         await ctx.respond(result)
     except Exception as e:
         await ctx.respond(f"Произошла ошибка: {e}")
