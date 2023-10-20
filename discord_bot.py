@@ -90,6 +90,7 @@ async def on_message(message):
             if await set_get_config_default("robot_name_need") == "False":
                 text = await set_get_config_default("currentainame") + ", " + text
             text = await replace_mat_in_sentence(text)
+            await set_get_config_default("user_name", value=message.author)
             await run_main_with_settings(ctx, text, True)
         except Exception as e:
             await ctx.send(f"Ошибка при команде say с параметрами {message}: {e}")
@@ -155,7 +156,7 @@ async def __change_video(
         if voice not in voices:
             return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
         if await set_get_config_all("Image", "model_loaded", None) == "False":
-            return await ctx.respond("модель для картинок не загрузилась, подождите 10-20 минут")
+            return await ctx.respond("модель для картинок не загружена")
         if not video_path:
             return
 
@@ -244,7 +245,7 @@ async def __image(ctx,
         await ctx.defer()
         # throw extensions
         if await set_get_config_all(f"Image", "model_loaded", None) == "False":
-            return await ctx.respond("модель для картинок не загруженп")
+            return await ctx.respond("модель для картинок не загружена")
         # run timer
         start_time = datetime.datetime.now()
         input_image = "images/image" + str(random.randint(1, 1000000)) + ".png"
@@ -495,6 +496,7 @@ async def __say(
             text = await set_get_config_default("currentainame") + ", " + text
         text = await replace_mat_in_sentence(text)
         print(f'{text} ({type(text).__name__})\n')
+        await set_get_config_default("user_name", value=ctx.author.name)
         await run_main_with_settings(ctx, text, True)
     except Exception as e:
         await ctx.respond(f"Ошибка при команде say (с параметрами{text}): {e}")
@@ -842,6 +844,7 @@ async def recognize(ctx):
                     text = await set_get_config_default("currentainame") + ", " + await replace_numbers_in_sentence(text)
                     text = await replace_mat_in_sentence(text)
                     print(text)
+                    await set_get_config_default("user_name", value=ctx.author.name)
                     await run_main_with_settings(ctx, text, True)
 
             continue

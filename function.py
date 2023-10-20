@@ -71,6 +71,7 @@ async def result_command_change(message, color):
 
 spokenText = ""
 language = ""
+user_name = ""
 prompt_length = 1
 admin = True
 all_admin = False
@@ -115,6 +116,8 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     all_admin = config.getboolean('Default', 'all_admin')
     global video_length
     video_length = config.getint('Default', 'video_length')
+    global user_name
+    user_name = config.getint('Default', 'user_name')
     global currentAIname
     name = config.get('Default', 'currentainame')
     if name == "None":
@@ -177,7 +180,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                         prompt = prompt.replace("  ", " ")
             elif custom_prompt == "True":
                 prompt = f"ОПИРАЙСЯ НА ПРЕДЫДУЩИЕ ЗАПРОСЫ. Они даны в формате Человек:[запрос], GPT:[ответ на запрос]:\"{file_content}\"" \
-                         f"Напиши ответ пользователю, он говорит:\"{temp_spokenText}\""
+                         f"Напиши ответ {user_name}, он говорит:\"{temp_spokenText}\""
             else:
                 if os.path.exists(f"texts/prompts/{custom_prompt}.txt"):
                     # /content/ds_ai/texts/prompts/roleplay.txt
@@ -195,7 +198,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
         with open(f"texts/memories/{currentAIname}.txt", 'a') as writer2:
             if "(" in temp_spokenText and ")" in temp_spokenText:
                 temp_spokenText = re.sub(r'(.*?)', '', temp_spokenText)
-            writer2.write(f"Пользователь: {temp_spokenText}\n")
+            writer2.write(f"{user_name}: {temp_spokenText}\n")
 
         # chatgpt + write + TTS
         try:
@@ -549,8 +552,7 @@ async def voice_commands(sentence, ctx):
         elif protocol_number == 998:
             try:
                 with open(f"texts/memories/{currentAIname}.txt", "w") as create_file:
-                    create_file.write(
-                        "Пользователь: Привет!\n" + currentAIname + ": Привет, как я могу помочь?\n")
+                    create_file.write("")
                 await text_to_speech("отчищена память", False, ctx)
             except Exception as e:
                 await result_command_change(f"Ошибка: {e}", Color.RED)
