@@ -17,6 +17,7 @@ _providers = [
     g4f.Provider.Phind,
     g4f.Provider.Liaobots,  # - Doker output
     g4f.Provider.Bing,
+    g4f.Provider.Bard,
     g4f.Provider.OpenaiChat,
     g4f.Provider.Vercel,
     g4f.Provider.Theb,
@@ -37,10 +38,10 @@ _providers = [
     # g4f.Provider.FreeGpt,# wrong language
     g4f.Provider.ChatgptAi,  # - error ID
     g4f.Provider.GptGo,  # error 403
-    #g4f.Provider.GptForLove,  # error no module
+    # g4f.Provider.GptForLove,  # error no module
     g4f.Provider.Opchatgpts,  # bad
     g4f.Provider.Chatgpt4Online,  # - bad
-    #g4f.Provider.ChatBase,  # - bad
+    # g4f.Provider.ChatBase,  # - bad
     # g4f.Provider.Llama2, # no model
 ]
 
@@ -322,11 +323,10 @@ async def remove_last_format_simbols(text, format="```"):
     return text
 
 
-async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name="."):
+async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_model="gpt-3.5-turbo"):
     if not provider_name in str(provider):
         return None
     try:
-        gpt_model = "gpt-3.5-turbo"
         if "GeekGpt" in str(provider):
             gpt_model = "gpt-4"
         if "Bing" in str(provider):
@@ -398,6 +398,7 @@ async def run_all_gpt(prompt, mode):
             return result
     if mode == "all":
         functions = [one_gpt_run(provider, prompt, 1) for provider in _providers]  # список функций
+        functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 1, gpt_model=gpt_model) for gpt_model in ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003"]]
         results = await asyncio.gather(*functions)  # результаты всех функций
         new_results = []
         for i, result in enumerate(results):
