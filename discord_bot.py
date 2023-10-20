@@ -72,19 +72,19 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    ctx = message.ctx
-    if message.author == bot:
+    if message.author.bot:
         return
     if bot.user in message.mentions:
         try:
+            ctx = await bot.get_context(message)
             from function import replace_mat_in_sentence
-            if await set_get_config_default("robot_name_need") == "False":
-                message = await set_get_config_default("currentainame") + ", " + message
-            message = await replace_mat_in_sentence(message)
-            print(f'{message} ({type(message).__name__})\n')
-            await run_main_with_settings(ctx, message, True)
+            if await set_get_config_default("robot_name_need", False):
+                message = await set_get_config_default("current_robot_name", message)
+                message = await replace_mat_in_sentence(message)
+                print(f"message type: {type(message)}, name: {message.name}")
+                await run_main_with_settings(ctx, message, True)
         except Exception as e:
-            await ctx.respond(f"Ошибка при команде say (с параметрами{message}): {e}")
+            await ctx.send(f"Ошибка при команде say с параметрами {message}: {e}")
 
 
 @bot.slash_command(name="change_video",
@@ -428,6 +428,7 @@ async def disconnect(ctx):
 async def pause(ctx):
     try:
         await ctx.defer()
+        await ctx.respond('Выполнение...')
         voice_client = ctx.voice_client
         if voice_client.is_playing():
             voice_client.pause()
@@ -445,6 +446,7 @@ async def pause(ctx):
 async def skip(ctx):
     try:
         await ctx.defer()
+        await ctx.respond('Выполнение...')
         voice_client = ctx.voice_client
         if voice_client.is_playing():
             voice_client.stop()
@@ -464,6 +466,7 @@ async def __lenght(
 ):
     try:
         await ctx.defer()
+        await ctx.respond('Выполнение...')
         # for argument in (number,"""boolean, member, text, choice"""):
         print(f'{number} ({type(number).__name__})\n')
         await run_main_with_settings(ctx, f"робот длина запроса {number}", True)
@@ -478,6 +481,7 @@ async def __say(
         text: Option(str, description='Сам текст/команда. Список команд: \\help-say', required=True)
 ):
     try:
+        await ctx.respond('Выполнение...')
         from function import replace_mat_in_sentence
         if await set_get_config_default("robot_name_need") == "False":
             text = await set_get_config_default("currentainame") + ", " + text
@@ -564,6 +568,7 @@ async def __cover(
     param_string = None
     try:
         await ctx.defer()
+        await ctx.respond('Выполнение...')
         params = []
         if audio_path:
             filename = str(random.randint(1, 1000000)) + ".mp3"
@@ -629,6 +634,7 @@ async def __add_voice(
                              default=False)
 ):
     await ctx.defer()
+    await ctx.respond('Выполнение...')
     if name == "None" or ";" in name or "/" in name or "\\" in name:
         await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
     # !python download_model.py {url} {dir_name} {gender} {info}
@@ -693,7 +699,7 @@ async def write_in_discord(ctx, text):
         await result_command_change("ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
         return
     if len(text) < 2000:
-        await ctx.respond(text)
+        await ctx.send(text)
     else:
         message_parts = []
 
@@ -729,22 +735,22 @@ async def write_in_discord(ctx, text):
         for part in message_parts:
             if part == "" or part is None:
                 continue
-            await ctx.respond(part)
+            await ctx.send(part)
 
 
 async def send_file(ctx, file_path):
     try:
-        await ctx.respond(file=discord.File(file_path))
+        await ctx.send(file=discord.File(file_path))
     except FileNotFoundError:
-        await ctx.respond('Файл не найден.')
+        await ctx.send('Файл не найден.')
     except discord.HTTPException:
-        await ctx.respond('Произошла ошибка при отправке файла.')
+        await ctx.send('Произошла ошибка при отправке файла.')
 
 
 async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     # Проверяем, находится ли бот в голосовом канале
     if not ctx.voice_client:
-        await ctx.respond("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
+        await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
         return
 
     # Проверяем, играет ли что-то уже
