@@ -785,6 +785,7 @@ async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
 def max_volume(audio_file_path):
     audio = AudioSegment.from_file(audio_file_path)
     max_dBFS = audio.max_dBFS
+    print(max_dBFS, type(max_dBFS))
     return max_dBFS
 
 last_speaking = 0
