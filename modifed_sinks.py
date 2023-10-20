@@ -1,6 +1,5 @@
-import pydub
-
 from discord.sinks.core import Filters, Sink, default_filters
+from pydub import AudioSegment
 from queue import Queue
 import sys
 
@@ -51,36 +50,34 @@ class StreamBuffer:
         self.channels = 2
         self.sample_rate = 48000
         self.bytes_ps = 192000  # bytes added to buffer per second
-        self.block_len = 1  # how long you want each audio block to be in seconds
+        self.block_len = 0.1  # how long you want each audio block to be in seconds
         # min len to pull bytes from buffer
-        self.buff_lim = self.bytes_ps * self.block_len
+        self.buff_lim = int(self.bytes_ps * self.block_len)
 
         # temp var for outputting audio
         self.ct = 1
 
     def write(self, data, user):
         self.byte_buffer += data  # data is a bytearray object
-        audio_segment = None
-        while len(self.byte_buffer) >= self.buff_lim:
+        # checking amount of data in the buffer
+        if len(self.byte_buffer) > self.buff_lim:
+            # grabbing slice from the buffer to work with
             byte_slice = self.byte_buffer[:self.buff_lim]
+
+            # creating AudioSegment object with the slice
+            audio_segment = AudioSegment(data=byte_slice,
+                                         sample_width=self.sample_width,
+                                         frame_rate=self.sample_rate,
+                                         channels=self.channels,
+                                         )
+
+            # removing the old stinky trash data from buffer - ew get it out of there already
             self.byte_buffer = self.byte_buffer[self.buff_lim:]
+            # ok much better now
 
-            audio_segment = pydub.AudioSegment(
-                data=byte_slice,
-                sample_width=self.sample_width,
-                frame_rate=self.sample_rate,
-                channels=self.channels
-            )
-
+            # adding AudioSegment to the queue
             self.segment_buffer.put(audio_segment)
-            self.ct += 1
 
-        # Если после цикла данных все равно не хватает, заполняем тишиной
-        if len(self.byte_buffer) < self.buff_lim:
-            silence_data = bytearray(b'\x00' * (self.buff_lim - len(self.byte_buffer)))
-            self.byte_buffer += silence_data
-
-        # temporary for validating process
-        if not audio_segment is None:
+            # temporary for validating process
             audio_segment.export(f"output{self.ct}.wav", format="wav")
             self.ct += 1
