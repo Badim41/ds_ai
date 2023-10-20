@@ -761,7 +761,6 @@ async def write_in_discord(ctx, text):
                         message_part = text[:min_start + spoiler_end + 4]
                     else:
                         message_part = text[:1990]
-
                 message_parts.append(message_part)
                 text = text[len(message_part):]
 
