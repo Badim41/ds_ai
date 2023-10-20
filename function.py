@@ -164,7 +164,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                 # Локальный GPT
                 # нормально отвечает, если в конце добавить "Ответ:"
                 if await set_get_config_all("gpt", "use_gpt_provider", None) == "False":
-                    prompt = f"Представь, что тебя зовут {currentAIname}. {currentAIinfo}.\
+                    prompt = f"Вы собираетесь притвориться {currentAIname}. {currentAIinfo}.\
                      У тебя есть воспоминания:\"{file_content}\".\
                       Напиши ответ пользователю с именем {user_name}, он говорит: {temp_spokenText}. Ответ:"
                 else:
