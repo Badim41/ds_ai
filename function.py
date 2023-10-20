@@ -327,13 +327,9 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
     if not provider_name in str(provider):
         return None
     try:
-        if "GeekGpt" in str(provider):
-            gpt_model = "gpt-4"
         if "Bing" in str(provider):
             gpt_model = "gpt-4"
         if "Phind" in str(provider):
-            gpt_model = "gpt-4"
-        if "Raycast" in str(provider):
             gpt_model = "gpt-4"
         # получаем cookie
         if os.path.exists('cookies.json'):
@@ -396,13 +392,20 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
 async def run_all_gpt(prompt, mode):
     if mode == "fast":
         functions = [one_gpt_run(provider, prompt, 120) for provider in _providers]  # список функций
+        functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 1, gpt_model=gpt_model) for gpt_model in
+                      ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003"]]
+        functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 1, gpt_model=gpt_model) for gpt_model in
+                      ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003"]]
         done, _ = await asyncio.wait(functions, return_when=asyncio.FIRST_COMPLETED)
         for task in done:
             result = await task
             return result
     if mode == "all":
         functions = [one_gpt_run(provider, prompt, 1) for provider in _providers]  # список функций
-        functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 1, gpt_model=gpt_model) for gpt_model in ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003"]]
+        functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 1, gpt_model=gpt_model) for gpt_model in
+                      ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003"]]
+        functions += [one_gpt_run(providers, prompt, 1, gpt_model="gpt-4") for providers in
+                      [g4f.Provider.GeekGpt, g4f.Provider.Liaobots, g4f.Provider.Raycast]]
         results = await asyncio.gather(*functions)  # результаты всех функций
         new_results = []
         for i, result in enumerate(results):
