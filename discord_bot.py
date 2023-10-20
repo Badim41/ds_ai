@@ -421,7 +421,6 @@ async def disconnect(ctx):
 async def pause(ctx):
     try:
         await ctx.defer()
-        await ctx.respond('Выполнение...')
         voice_client = ctx.voice_client
         if voice_client.is_playing():
             voice_client.pause()
@@ -439,7 +438,6 @@ async def pause(ctx):
 async def skip(ctx):
     try:
         await ctx.defer()
-        await ctx.respond('Выполнение...')
         voice_client = ctx.voice_client
         if voice_client.is_playing():
             voice_client.stop()
@@ -459,7 +457,6 @@ async def __lenght(
 ):
     try:
         await ctx.defer()
-        await ctx.respond('Выполнение...')
         # for argument in (number,"""boolean, member, text, choice"""):
         print(f'{number} ({type(number).__name__})\n')
         await run_main_with_settings(ctx, f"робот длина запроса {number}", True)
@@ -474,7 +471,6 @@ async def __say(
         text: Option(str, description='Сам текст/команда. Список команд: \\help-say', required=True)
 ):
     try:
-        await ctx.respond('Выполнение...')
         from function import replace_mat_in_sentence
         if await set_get_config_default("robot_name_need") == "False":
             text = await set_get_config_default("currentainame") + ", " + text
@@ -561,7 +557,6 @@ async def __cover(
     param_string = None
     try:
         await ctx.defer()
-        await ctx.respond('Выполнение...')
         params = []
         if audio_path:
             filename = str(random.randint(1, 1000000)) + ".mp3"
@@ -627,7 +622,6 @@ async def __add_voice(
                              default=False)
 ):
     await ctx.defer()
-    await ctx.respond('Выполнение...')
     if name == "None" or ";" in name or "/" in name or "\\" in name:
         await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
     # !python download_model.py {url} {dir_name} {gender} {info}
