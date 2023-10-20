@@ -74,7 +74,7 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     # minecraft chat bot
-    if message.author.id == 1152731363502477374:
+    if message.author.id == 1165023027847757836:
         text = message.content
         ctx = await bot.get_context(message)
         from function import replace_mat_in_sentence
