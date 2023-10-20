@@ -702,10 +702,19 @@ async def command_line(ctx, *args):
 async def check_messages(ctx, *args):
     from function import chatgpt_get_result
     try:
-        message = int("".join(args))
+        content = "".join(args)
+        if "-" in content:
+            content.split("-")
+            start = int(content[0])
+            end = int(content[1])
+        else:
+            start = int(content)
+            end = ""
+
         messages = []
         async for message in ctx.channel.history(limit=message):
             messages.append(f"Сообщение от {message.author.name}: {message.content}")
+        print(messages)
         result = await chatgpt_get_result(f"Кратко перескажи о чём говорили в чате, "\
                                  f"в конце сделай небольшой свой комментарий, например: этот пользователь заслуживает наказания"\
                                  f"Вот история сообщений:{messages}", ctx)
