@@ -79,12 +79,16 @@ async def on_message(message):
         ctx = await bot.get_context(message)
         print("ctx")
         try:
+            print("temp-m1")
             from function import replace_mat_in_sentence
-            if await set_get_config_default("robot_name_need", False):
+            print("temp-m2")
+            if await set_get_config_default("robot_name_need") == "False":
                 message = await set_get_config_default("current_robot_name", message)
-                message = await replace_mat_in_sentence(message)
-                print(f"message type: {type(message)}, name: {message.name}")
-                await run_main_with_settings(ctx, message, True)
+            print("temp-m3")
+            message = await replace_mat_in_sentence(message)
+            print("temp-m4")
+            await run_main_with_settings(ctx, message, True)
+            print("temp-m5")
         except Exception as e:
             await ctx.send(f"Ошибка при команде say с параметрами {message}: {e}")
 
