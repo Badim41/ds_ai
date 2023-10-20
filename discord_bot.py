@@ -320,6 +320,27 @@ async def __config(
     except Exception as e:
         await ctx.respond(f"Ошибка при изменении конфига (с параметрами{section},{key},{value}): {e}")
 
+@bot.slash_command(name="read_messages", description='Читает последние x сообщений из чата и делает по ним вывод')
+async def __read_messages(
+        ctx,
+        number: Option(int, description='количество сообщений (от 1 до 100', required=True, min_value=1,
+                                                   max_value=100),
+        prompt: Option(str, description='Промпт для GPT. Какой вывод сделать по сообщениям (перевести, пересказать)', required=True)
+):
+    from function import chatgpt_get_result
+    try:
+        messages = []
+        async for message in ctx.channel.history(limit=number):
+            messages.append(f"Сообщение от {message.author.name}: {message.content}")
+        # От начала до конца
+        messages = messages[::-1]
+        # убираем последнее / последние сообщения
+        messages = messages[:number - 1]
+        print(messages)
+        result = await chatgpt_get_result(f"{prompt}. Вот история сообщений:{messages}", ctx)
+        await ctx.send(result)
+    except Exception as e:
+        await ctx.send(f"Произошла ошибка: {e}")
 
 @bot.slash_command(name="join", description='присоединиться к голосовому каналу')
 async def join(ctx):
@@ -696,30 +717,6 @@ async def command_line(ctx, *args):
         await ctx.send(f"Ошибка выполнения команды: {e}")
     except Exception as e:
         await ctx.send(f"Произошла неизвестная ошибка: {e}")
-
-
-@bot.command(aliases=['check'], help="командная строка")
-async def check_messages(ctx, *args):
-    from function import chatgpt_get_result
-    try:
-        content = "".join(args)
-        number = int(content) + 1
-
-        messages = []
-        async for message in ctx.channel.history(limit=number):
-            messages.append(f"Сообщение от {message.author.name}: {message.content}")
-        # От начала до конца
-        messages = messages[::-1]
-        # убираем последнее / последние сообщения
-        messages = messages[:number - 1]
-        print(messages)
-        result = await chatgpt_get_result(f"Кратко перескажи о чём говорили в чате, "\
-                                 f"в конце сделай небольшой свой комментарий, например: этот пользователь заслуживает наказания"\
-                                 f"Вот история сообщений:{messages}", ctx)
-        await ctx.send(result)
-    except Exception as e:
-        await ctx.send(f"Произошла ошибка: {e}")
-
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
     from function import start_bot
