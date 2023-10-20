@@ -383,6 +383,10 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
         provider = provider[:provider.find("'")]
         return result + f"\n||Провайдер: {provider}, Модель: {gpt_model}||"
     except Exception as e:
+        # Удаление ссылок
+        link_pattern = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+        e = re.sub(link_pattern, '', str(e))
+
         await result_command_change(f"Error: {e}\n Provider: {provider}", Color.YELLOW)
         # даём время каждому GPT на ответ
         await asyncio.sleep(delay_for_gpt)

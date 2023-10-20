@@ -728,8 +728,9 @@ async def run_main_with_settings(ctx, spokenText, writeAnswer):
 
 async def write_in_discord(ctx, text):
     print(text)
+    from function import result_command_change, Color
     if text == "" or text is None:
-        from function import result_command_change, Color
+
         await result_command_change("ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
         return
     if len(text) < 1990:
@@ -766,6 +767,10 @@ async def write_in_discord(ctx, text):
 
         # отправляем по частям
         for part in message_parts:
+            while len(part) > 1990:
+                await result_command_change("Сообщение всё ровно больше 2000 символов", Color.RED)
+                await ctx.send(part[1990:])
+                part = part[1990:]
             if part == "" or part is None:
                 continue
             await ctx.send(part)
