@@ -117,7 +117,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     global video_length
     video_length = config.getint('Default', 'video_length')
     global user_name
-    user_name = config.getint('Default', 'user_name')
+    user_name = config.get('Default', 'user_name')
     global currentAIname
     name = config.get('Default', 'currentainame')
     if name == "None":
