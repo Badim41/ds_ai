@@ -692,7 +692,7 @@ async def write_in_discord(ctx, text):
         await result_command_change("ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
         return
     if len(text) < 2000:
-        await ctx.send(text)
+        await ctx.respond(text)
     else:
         message_parts = []
 
@@ -728,22 +728,22 @@ async def write_in_discord(ctx, text):
         for part in message_parts:
             if part == "" or part is None:
                 continue
-            await ctx.send(part)
+            await ctx.respond(part)
 
 
 async def send_file(ctx, file_path):
     try:
-        await ctx.send(file=discord.File(file_path))
+        await ctx.respond(file=discord.File(file_path))
     except FileNotFoundError:
-        await ctx.send('Файл не найден.')
+        await ctx.respond('Файл не найден.')
     except discord.HTTPException:
-        await ctx.send('Произошла ошибка при отправке файла.')
+        await ctx.respond('Произошла ошибка при отправке файла.')
 
 
 async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     # Проверяем, находится ли бот в голосовом канале
     if not ctx.voice_client:
-        await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
+        await ctx.respond("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
         return
 
     # Проверяем, играет ли что-то уже
