@@ -867,6 +867,7 @@ async def createAICaver(ctx):
     except Exception as e:
         traceback_str = traceback.format_exc()
         await result_command_change(f"Произошла ошибка (ID:f6): {str(e)}\n{str(traceback_str)}", Color.RED)
+        await write_in_discord(ctx, "Произошла ошибка (ID:f6):" + str(e))
         raise e
 
 
@@ -1174,6 +1175,7 @@ async def play_audio_process(ctx):
                         break
     except (IOError, KeyboardInterrupt) as e:
         await result_command_change("Произошла ошибка (ID:f12):" + str(e), Color.RED)
+        await write_in_discord(ctx, "Произошла ошибка (ID:f12):" + str(e))
 
 
 async def wait_for_file(file_name, max_attempts, delay):
