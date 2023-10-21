@@ -413,11 +413,8 @@ def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radi
         else:
             try:
                 # Записываем путь файла в очередь
-                with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "r", encoding='utf-8') as reader:
-                    lines = reader.readlines()
-                with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "w", encoding='utf-8') as writer:
-                    writer.writelines(lines)
-                    writer.write(f"{cover_path} -time {time} -start {start} -output {output}\n")
+                with open("caversAI/audio_links.txt", "a") as writer:
+                    writer.write(f"{cover_path} -time {time} -start {start} -output {output}")
             except IOError as e:
                 print(e)
 
