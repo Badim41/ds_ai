@@ -4,7 +4,7 @@ import requests
 MDX_DOWNLOAD_LINK = 'https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/'
 RVC_DOWNLOAD_LINK = 'https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/'
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
 mdxnet_models_dir = BASE_DIR / 'mdxnet_models'
 rvc_models_dir = BASE_DIR / 'rvc_models'
 
