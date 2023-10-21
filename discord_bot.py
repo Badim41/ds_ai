@@ -677,8 +677,8 @@ async def __cover(
             params.append(f"-url {filename}")
         elif url:
             functions = []
-            params.append(f"-url {url}")
-            for i, one_url in url.split(";"):
+            urls = url.split(";")
+            for i, one_url in urls:
                 function = run_main_with_settings(ctx, f"робот протокол 13 -wait {i} -url {one_url} {param_string}", False)
                 functions.append(function)
             await asyncio.gather(*functions)
