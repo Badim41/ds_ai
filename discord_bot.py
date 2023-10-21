@@ -698,7 +698,6 @@ async def __cover(
             elif "playlist" in url:
                 urls = await get_links_from_playlist(url)
                 urls = urls.split(";")
-                print("URLS:", urls)
                 if urls == "" or urls is None:
                     ctx.respond("Ошибка нахождения видео в плейлисте")
             else:
@@ -707,6 +706,7 @@ async def __cover(
             for one_url in urls:
                 function = run_main_with_settings(ctx, f"робот протокол 13 -wait {(len(functions) + 1)*4} -url {one_url} {param_string}", False)
                 functions.append(function)
+            print("FUNCTIONS:", functions)
             await asyncio.gather(*functions)
             return
         else:
