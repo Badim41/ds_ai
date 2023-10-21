@@ -177,11 +177,11 @@ def preprocess_song(song_input, mdx_model_params, song_id, input_type=None):
     audio_part1 = audio[:half_length]
     audio_part2 = audio[half_length:]
 
-    audio_part1.export("0" + orig_song_path, format="mp3")
-    audio_part2.export("1" + orig_song_path, format="mp3")
+    audio_part1.export(orig_song_path, format="mp3")
+    audio_part2.export(orig_song_path, format="mp3")
 
-    args1 = (0, mdx_model_params, song_output_dir, "0" + orig_song_path, keep_orig)
-    args2 = (1, mdx_model_params, song_output_dir, "1" + orig_song_path, keep_orig)
+    args1 = (0, mdx_model_params, song_output_dir, orig_song_path, keep_orig)
+    args2 = (1, mdx_model_params, song_output_dir, orig_song_path, keep_orig)
 
     pool = multiprocessing.Pool(2)
     results = pool.map(mdx_runner_wrapper, [args1, args2])
@@ -513,8 +513,7 @@ if __name__ == '__main__':
             try:
                 # Записываем путь файла в очередь
                 with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "r", encoding='utf-8') as reader:
-                    for line in reader:
-                        lines = reader.readlines()
+                    lines = reader.readlines()
                 with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "w", encoding='utf-8') as writer:
                     writer.writelines(lines)
                     writer.write(f"{cover_path} -time {args.time} -start {args.start}\n")
