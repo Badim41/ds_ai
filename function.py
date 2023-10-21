@@ -958,7 +958,7 @@ async def getCaverPrms(line, ctx):
     output = "None"
     if "-output" in line:
         output = line[line.index("-output") + 8:]
-        output = voice[0: voice.index(" ")]
+        output = output[0: output.index(" ")]
 
     outputFormat = "mp3"
 
