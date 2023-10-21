@@ -167,38 +167,41 @@ def display_progress(message):
 
 
 def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_type=None):
-    if cuda_number == 0:
-        from mdx_cuda0 import run_mdx
-    else:
-        from mdx_cuda1 import run_mdx
+    try:
+        if cuda_number == 0:
+            from mdx_cuda0 import run_mdx
+        else:
+            from mdx_cuda1 import run_mdx
 
-    keep_orig = False
-    if input_type == 'yt':
-        display_progress('[~] Downloading song...')
-        song_link = song_input.split('&')[0]
-        orig_song_path = yt_download(song_link)
-        print("downloaded")
-    elif input_type == 'local':
-        orig_song_path = song_input
-        # keep_orig = True
-    else:
-        orig_song_path = None
-    song_output_dir = os.path.join(output_dir, song_id)
-    orig_song_path = convert_to_stereo(orig_song_path)
-    display_progress('[~] Separating Vocals from Instrumental...')
-    vocals_path, instrumentals_path = run_mdx(mdx_model_params, song_output_dir,
-                                              os.path.join(mdxnet_models_dir, 'UVR-MDX-NET-Voc_FT.onnx'),
-                                              orig_song_path, denoise=True, keep_orig=keep_orig)
-    display_progress('[~] Separating Main Vocals from Backup Vocals...')
-    backup_vocals_path, main_vocals_path = run_mdx(mdx_model_params, song_output_dir,
-                                                   os.path.join(mdxnet_models_dir, 'UVR_MDXNET_KARA_2.onnx'),
-                                                   vocals_path, suffix='Backup', invert_suffix='Main', denoise=True)
-    display_progress('[~] Applying DeReverb to Vocals...')
-    _, main_vocals_dereverb_path = run_mdx(mdx_model_params, song_output_dir,
-                                           os.path.join(mdxnet_models_dir, 'Reverb_HQ_By_FoxJoy.onnx'),
-                                           main_vocals_path, invert_suffix='DeReverb', exclude_main=True,
-                                           denoise=True)
-    return orig_song_path, vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path
+        keep_orig = False
+        if input_type == 'yt':
+            display_progress('[~] Downloading song...')
+            song_link = song_input.split('&')[0]
+            orig_song_path = yt_download(song_link)
+            print("downloaded")
+        elif input_type == 'local':
+            orig_song_path = song_input
+            # keep_orig = True
+        else:
+            orig_song_path = None
+        song_output_dir = os.path.join(output_dir, song_id)
+        orig_song_path = convert_to_stereo(orig_song_path)
+        display_progress('[~] Separating Vocals from Instrumental...')
+        vocals_path, instrumentals_path = run_mdx(mdx_model_params, song_output_dir,
+                                                  os.path.join(mdxnet_models_dir, 'UVR-MDX-NET-Voc_FT.onnx'),
+                                                  orig_song_path, denoise=True, keep_orig=keep_orig)
+        display_progress('[~] Separating Main Vocals from Backup Vocals...')
+        backup_vocals_path, main_vocals_path = run_mdx(mdx_model_params, song_output_dir,
+                                                       os.path.join(mdxnet_models_dir, 'UVR_MDXNET_KARA_2.onnx'),
+                                                       vocals_path, suffix='Backup', invert_suffix='Main', denoise=True)
+        display_progress('[~] Applying DeReverb to Vocals...')
+        _, main_vocals_dereverb_path = run_mdx(mdx_model_params, song_output_dir,
+                                               os.path.join(mdxnet_models_dir, 'Reverb_HQ_By_FoxJoy.onnx'),
+                                               main_vocals_path, invert_suffix='DeReverb', exclude_main=True,
+                                               denoise=True)
+        return orig_song_path, vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path
+    except Exception as e:
+        raise e
 
 
 def download_video_or_use_file(song_input, input_type):
