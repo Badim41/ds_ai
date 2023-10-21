@@ -597,8 +597,8 @@ async def get_links_from_playlist(playlist_url):
         playlist = Playlist(playlist_url)
         playlist._video_regex = re.compile(r"\"url\":\"(/watch\?v=[\w-]*)")
         video_links = playlist.video_urls
-        print("URLS_PLAYLIST:", video_links)
-        return ';'.join(list(video_links))
+        video_links = str(video_links).replace("'", "").replace("[", "").replace("]", "").replace(" ", "").replace(",", ";")
+        return video_links
     except Exception as e:
         print(f"Произошла ошибка при извлечении плейлиста: {e}")
         return []
