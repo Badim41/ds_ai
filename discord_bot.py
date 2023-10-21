@@ -680,7 +680,7 @@ async def __cover(
             functions = []
             urls = url.split(";")
             for one_url in urls:
-                function = run_main_with_settings(ctx, f"робот протокол 13 -wait {len(functions) + 1} -url {one_url} {param_string}", False)
+                function = run_main_with_settings(ctx, f"робот протокол 13 -wait {(len(functions) + 1)*4} -url {one_url} {param_string}", False)
                 functions.append(function)
             await asyncio.gather(*functions)
             return
