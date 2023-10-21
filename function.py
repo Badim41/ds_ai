@@ -1083,12 +1083,12 @@ async def play_audio_process(ctx):
                 print("audio0")
                 if not line is None and not line == "":
                     # connect to voice chat
-                    # voice = ctx.author.voice
-                    # if voice:
-                    #     voice_channel = voice.channel
-                    #     if ctx.voice_client is not None:
-                    #         return await ctx.voice_client.move_to(voice_channel)
-                    #     await voice_channel.connect(timeout=60, reconnect=reconnect)
+                    voice = ctx.author.voice
+                    if voice:
+                        voice_channel = voice.channel
+                        if ctx.voice_client is not None:
+                            return await ctx.voice_client.move_to(voice_channel)
+                        await voice_channel.connect(timeout=10, reconnect=True)
                     print("audio1")
                     params = await getCaverPrms(line, ctx)
                     print("audio2")
