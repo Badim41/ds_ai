@@ -698,6 +698,7 @@ async def __cover(
             elif "playlist" in url:
                 urls = await get_links_from_playlist(url)
                 urls = urls.split(";")
+                print("URLS:", urls)
                 if urls == "" or urls is None:
                     ctx.respond("Ошибка нахождения видео в плейлисте")
             else:
