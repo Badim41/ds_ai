@@ -1126,6 +1126,8 @@ async def play_audio_process(ctx):
                             with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
                                 for filename in os.listdir(os.path.dirname(audio_path)):
                                     file_path = os.path.join(os.path.dirname(audio_path), filename)
+                                    if ".zip" in file_path:
+                                        continue
                                     print("FILE:", file_path)
                                     zipf.write(file_path, os.path.basename(file_path))
 
