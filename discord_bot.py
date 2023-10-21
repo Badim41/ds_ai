@@ -619,9 +619,8 @@ async def __cover(
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
                         max_value=1),
         start: Option(int, description='Начать воспроизводить с (в секундах)', required=False, default=0, min_value=0),
-        #output: Option(bool, description='Отправить результат',  required=False, default="file"), # choices=["zip", "file", "all_files", "None"],
+        output: Option(str, description='Отправить результат', choices=["zip", "file", "all_files", "None"],  required=False, default="file"),
 ):
-    output = "file"
     param_string = None
     try:
         await ctx.defer()
