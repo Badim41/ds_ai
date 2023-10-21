@@ -999,7 +999,7 @@ async def prepare_audio_pipeline(cuda_number, ctx):
                         break
 
         except (IOError, KeyboardInterrupt) as e:
-            print(f"Произошла ошибка (ID:f7-cuda{cuda_number}):", e)
+            await result_command_change(f"Произошла ошибка (ID:f7-cuda{cuda_number}):" + str(e), Color.RED)
 
 
 async def execute_command(command, ctx):
@@ -1134,6 +1134,7 @@ async def console_command_runner(command, ctx):
 
 
 async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
+    global currentAIpitch
     if tts is None or tts.replace("\n", "").replace(" ", "") == "":
         await result_command_change(f"Пустой текст \"{tts}\"", Color.RED)
         return
@@ -1183,51 +1184,52 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     language = await set_get_config_all("Default", "language")
     max_simbols = await set_get_config_all("voice", "max_simbols")
 
-    if (len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_tokens") == "None") and not ai_dictionary == "None":
+    pitch = 0
+    if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_tokens") == "None":
         await result_command_change("gtts1", Color.CYAN)
         await gtts(tts, language[:2], file_name)
-        await playSoundFile(file_name, -1, 0, ctx)
-        return
-
-    # получаем ключ для elevenlab
-    keys = (await set_get_config_all("voice", "avaible_tokens")).split(";")
-    key = keys[0]
-    if not key == "Free":
-        set_api_key(key)
-    try:
-        # голос TTS в зависимости от пола
         if currentAIpitch == 0:
-            voice = "Arnold"
-        else:
-            voice = "Bella"
-        audio = generate(
-            text=tts,
-            model='eleven_multilingual_v2',
-            voice=voice
-        )
+            pitch = -1
+    else:
+        # получаем ключ для elevenlab
+        keys = (await set_get_config_all("voice", "avaible_tokens")).split(";")
+        key = keys[0]
+        if not key == "Free":
+            set_api_key(key)
+        try:
+            # голос TTS в зависимости от пола
+            if currentAIpitch == 0:
+                voice = "Arnold"
+            else:
+                voice = "Bella"
+            audio = generate(
+                text=tts,
+                model='eleven_multilingual_v2',
+                voice=voice
+            )
 
-        save(audio, file_name)
-    except Exception as e:
-        await result_command_change(f"Ошибка при выполнении команды (ID:f16): {e}", Color.YELLOW)
-        await remove_unavaible_voice_token()
-        await text_to_speech(tts, False, ctx, ai_dictionary=ai_dictionary)
-        return
-        # gtts(tts, language[:2], file_name)
-    # если голос не выставлен
-    if ai_dictionary == "None":
-        await playSoundFile(file_name, -1, 0, ctx)
-        await result_command_change(f"tts(No RVC)", Color.CYAN)
-        return
+            save(audio, file_name)
+        except Exception as e:
+            await result_command_change(f"Ошибка при выполнении команды (ID:f16): {e}", Color.YELLOW)
+            await remove_unavaible_voice_token()
+            await text_to_speech(tts, False, ctx, ai_dictionary=ai_dictionary)
+            return
+            # gtts(tts, language[:2], file_name)
+        # если голос не выставлен
+        if ai_dictionary == "None":
+            await playSoundFile(file_name, -1, 0, ctx)
+            await result_command_change(f"tts(No RVC)", Color.CYAN)
+            return
 
     # используем RVC
     try:
         command = [
             "python",
             "src/only_voice_change.py",
-            "-i", file_name,
+            "-i", f"\"{file_name}\"",
             "-o", "2.mp3",
             "-dir", str(ai_dictionary),
-            "-p", "0",
+            "-p", f"\"{pitch}\"",
             "-ir", "0.5",
             "-fr", "3",
             "-rms", "0.3",
