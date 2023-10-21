@@ -179,7 +179,6 @@ def preprocess_song(song_input, mdx_model_params, song_id, input_type=None):
 
     audio_part1.export("0" + orig_song_path, format="mp3")
     audio_part2.export("1" + orig_song_path, format="mp3")
-    print("OUTPUT_PART:", output_dir)
     args1 = (0, mdx_model_params, song_output_dir, "0" + orig_song_path, keep_orig)
     args2 = (1, mdx_model_params, song_output_dir, "1" + orig_song_path, keep_orig)
 
@@ -239,8 +238,8 @@ def download_video_or_use_file(song_input, input_type):
 
 def mdx_runner_wrapper(args):
     index, mdx_model_params, song_output_dir, orig_song_path, keep_orig = args
-    result = mdx_runner(index, mdx_model_params, song_output_dir, orig_song_path, keep_orig)
-    return result
+    results = mdx_runner(index, mdx_model_params, song_output_dir, orig_song_path, keep_orig)
+    return results
 
 def mdx_runner(index, mdx_model_params, song_output_dir, orig_song_path, keep_orig):
     if index == 0:
@@ -263,8 +262,7 @@ def mdx_runner(index, mdx_model_params, song_output_dir, orig_song_path, keep_or
                                            os.path.join(mdxnet_models_dir, 'Reverb_HQ_By_FoxJoy.onnx'),
                                            main_vocals_path, invert_suffix='DeReverb', exclude_main=True,
                                            denoise=True)
-    return str(index) + vocals_path, str(index) + instrumentals_path, str(index) + main_vocals_path, str(
-        index) + backup_vocals_path, str(index) + main_vocals_dereverb_path
+    return vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path
 
 
 def voice_change(cuda_number, voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
