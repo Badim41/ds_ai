@@ -1,4 +1,3 @@
-import configparser
 import os
 import gc
 import hashlib
@@ -10,8 +9,7 @@ import numpy as np
 import onnxruntime as ort
 import soundfile as sf
 from tqdm import tqdm
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-import torch
+from main import torch
 
 warnings.filterwarnings("ignore")
 stem_naming = {'Vocals': 'Instrumental', 'Other': 'Instruments', 'Instrumental': 'Vocals', 'Drums': 'Drumless',
@@ -79,7 +77,7 @@ class MDX:
         # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number_global
         # import torch
         # Set the device and the provider (CPU or CUDA)
-        self.device = torch.device(f"cuda:0")
+        self.device = torch.device(f"cuda:1")
         self.provider = ['CUDAExecutionProvider']
 
         self.model = params
@@ -263,7 +261,7 @@ def run_mdx(model_params, output_dir, model_path, filename, exclude_main=False, 
     print("DEV_TEMP_CUDA_USED: 1")
     # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number_global
     # import torch
-    device = torch.device(f"cuda:0")
+    device = torch.device(f"cuda:1")
     device_properties = torch.cuda.get_device_properties(device)
     vram_gb = device_properties.total_memory / 1024 ** 3
     m_threads = 1 if vram_gb < 8 else 2

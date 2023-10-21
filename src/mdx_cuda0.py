@@ -1,4 +1,3 @@
-import configparser
 import os
 import gc
 import hashlib
@@ -10,8 +9,7 @@ import numpy as np
 import onnxruntime as ort
 import soundfile as sf
 from tqdm import tqdm
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-import torch
+from main import torch
 
 warnings.filterwarnings("ignore")
 stem_naming = {'Vocals': 'Instrumental', 'Other': 'Instruments', 'Instrumental': 'Vocals', 'Drums': 'Drumless',

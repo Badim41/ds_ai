@@ -1,7 +1,8 @@
 import multiprocessing
 import os
 import argparse
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
+import torch
 import gc
 import hashlib
 import json
