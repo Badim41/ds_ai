@@ -176,7 +176,9 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
         keep_orig = False
         if input_type == 'yt':
             display_progress('[~] Downloading song...')
+            print("song_input", song_input)
             song_link = song_input.split('&')[0]
+            print("song_link", song_link)
             orig_song_path = yt_download(song_link)
             print("downloaded")
         elif input_type == 'local':
