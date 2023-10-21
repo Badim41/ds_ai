@@ -839,6 +839,7 @@ async def createAICaver(ctx):
         config.read('config.ini')
         continue_process = config.getboolean('Values', 'queue')
         if not continue_process:
+            # удаляем аудиофайлы
             with open("caversAI/queue.txt", 'w') as file:
                 pass
             await use_cuda_async(0)
