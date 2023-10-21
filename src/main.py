@@ -194,21 +194,21 @@ def preprocess_song(song_input, mdx_model_params, song_id, input_type=None):
 
     # объединение и экспорт
     result_vocals = AudioSegment.from_file(vocals_path1, format="mp3") + AudioSegment.from_file(vocals_path2,format="mp3")
-    result_vocals.export(os.path.dirname(orig_song_path) + "/vocals.mp3", format="mp3")
+    result_vocals.export(os.path.dirname(orig_song_path) + "vocals.mp3", format="mp3")
 
     result_instrumentals = AudioSegment.from_file(instrumentals_path1, format="mp3") + AudioSegment.from_file(instrumentals_path2, format="mp3")
-    result_instrumentals.export(os.path.dirname(orig_song_path) + "/instrumentals.mp3", format="mp3")
+    result_instrumentals.export(os.path.dirname(orig_song_path) + "instrumentals.mp3", format="mp3")
 
     result_main_vocals = AudioSegment.from_file(main_vocals_path1, format="mp3") + AudioSegment.from_file(main_vocals_path2, format="mp3")
-    result_main_vocals.export(os.path.dirname(orig_song_path) + "/main_vocals.mp3", format="mp3")
+    result_main_vocals.export(os.path.dirname(orig_song_path) + "main_vocals.mp3", format="mp3")
 
     result_backup_vocals = AudioSegment.from_file(backup_vocals_path1, format="mp3") + AudioSegment.from_file(backup_vocals_path2, format="mp3")
-    result_backup_vocals.export(os.path.dirname(orig_song_path) + "/backup_vocals.mp3", format="mp3")
+    result_backup_vocals.export(os.path.dirname(orig_song_path) + "backup_vocals.mp3", format="mp3")
 
     result_main_vocals_dereverb = AudioSegment.from_file(main_vocals_dereverb_path1, format="mp3") + AudioSegment.from_file(main_vocals_dereverb_path2, format="mp3")
-    result_main_vocals_dereverb.export(os.path.dirname(orig_song_path) + "/main_vocals_dereverb.mp3", format="mp3")
-    print("DEV_TEMP_TEST_1_PART:" + os.path.dirname(orig_song_path) + "/main_vocals_dereverb.mp3")
-    print("DEV_TEMP_TEST_2_PART:" + os.path.join(os.path.dirname(orig_song_path) + "main_vocals_dereverb.mp3"))
+    result_main_vocals_dereverb.export(os.path.dirname(orig_song_path) + "main_vocals_dereverb.mp3", format="mp3")
+    print("DEV_TEMP_TEST_1_PART:" + os.path.dirname(orig_song_path) + "main_vocals_dereverb.mp3")
+    print("DEV_TEMP_TEST_2_PART:" + os.path.join(os.path.dirname(orig_song_path), "main_vocals_dereverb.mp3"))
 
     # удаление временных файлов
     # for result in results:
@@ -217,11 +217,11 @@ def preprocess_song(song_input, mdx_model_params, song_id, input_type=None):
 
     return (
         orig_song_path,
-        os.path.dirname(orig_song_path) + "/vocals.mp3",
-        os.path.dirname(orig_song_path) + "/instrumentals.mp3",
-        os.path.dirname(orig_song_path) + "/main_vocals.mp3",
-        os.path.dirname(orig_song_path) + "/backup_vocals.mp3",
-        os.path.dirname(orig_song_path) + "/main_vocals_dereverb.mp3"
+        os.path.dirname(orig_song_path) + "vocals.mp3",
+        os.path.dirname(orig_song_path) + "instrumentals.mp3",
+        os.path.dirname(orig_song_path) + "main_vocals.mp3",
+        os.path.dirname(orig_song_path) + "backup_vocals.mp3",
+        os.path.dirname(orig_song_path) + "main_vocals_dereverb.mp3"
     )
 
 
