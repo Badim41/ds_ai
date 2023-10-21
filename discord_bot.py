@@ -601,7 +601,7 @@ async def __cover(
         gender: Option(str, description='Кто говорит/поёт в видео?', required=False,
                       choices=['мужчина', 'женщина'], default=None),
         time: Option(int, description='Ограничить длительность воспроизведения (в секундах)', required=False,
-                     default=None, min_value=-1),
+                     default=-1, min_value=-1),
         indexrate: Option(float, description='Индекс голоса (от 0 до 1)', required=False, default=0.5, min_value=0,
                           max_value=1),
         loudness: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.2, min_value=0,
@@ -619,7 +619,7 @@ async def __cover(
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
                         max_value=1),
         start: Option(int, description='Начать воспроизводить с (в секундах)', required=False, default=0, min_value=0),
-        output: Option(bool, description='Отправить результат в архиве', required=False, default=False)
+        output: Option(bool, description='Отправить результат', choices=["zip", "file", "all_files", "None"], required=False, default="file")
 ):
     param_string = None
     try:
@@ -650,11 +650,11 @@ async def __cover(
             if not await set_get_config_default("currentaipitch") == "0":
                 pitch_int = -1
         params.append(f"-pitch {pitch_int}")
-        if time is None:
-            time = -1
         if time == -1:
             stop_seconds = int(await set_get_config_all("Sound", "stop_milliseconds", None)) // 1000
             params.append(f"-time {stop_seconds}")
+        elif time is None:
+            params.append(f"-time -1")
         else:
             params.append(f"-time {time}")
         if indexrate != 0.5:
@@ -675,6 +675,9 @@ async def __cover(
             params.append(f"-dryness {dryness}")
         if start != 0:
             params.append(f"-start {start}")
+        if output != "None":
+            params.append(f"-output {output}")
+
         param_string = ' '.join(params)
         print("suc params")
         await run_main_with_settings(ctx, "робот протокол 13 " + param_string, False)

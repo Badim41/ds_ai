@@ -179,7 +179,7 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
         orig_song_path = yt_download(song_link)
     elif input_type == 'local':
         orig_song_path = song_input
-        keep_orig = True
+        # keep_orig = True
     else:
         orig_song_path = None
     song_output_dir = os.path.join(output_dir, song_id)
@@ -208,7 +208,7 @@ def download_video_or_use_file(song_input, input_type):
         orig_song_path = yt_download(song_link)
     elif input_type == 'local':
         orig_song_path = song_input
-        keep_orig = True
+        # keep_orig = True
     else:
         orig_song_path = None
     return orig_song_path, keep_orig
@@ -406,13 +406,15 @@ if __name__ == '__main__':
     parser.add_argument('-oformat', '--output-format', type=str, default='mp3',
                         help='Output format of audio file. mp3 for smaller file size, wav for best quality')
     parser.add_argument('-start', '--start', type=str, default='0',
-                        help='start song with (seconds)')
+                        help='Здесь не используется. Время начала')
     parser.add_argument('-time', '--time', type=str, default='-1',
-                        help='song duration')
+                        help='Здесь не используется. Длительность файла')
     parser.add_argument('-write', '--write-in-queue', type=bool, default=True,
-                        help='нужно ли записать в файл')
+                        help='нужно ли записать в файл queue')
     parser.add_argument('-cuda', '--cuda-number', type=int, default=0,
-                        help='нужно ли записать в файл')
+                        help='номер видеокарты')
+    parser.add_argument('-output', '--output', type=str, default="None",
+                        help='Здесь не используется. Отправка файла')
     args = parser.parse_args()
 
     rvc_dirname = args.rvc_dirname
@@ -466,6 +468,6 @@ if __name__ == '__main__':
                     lines = reader.readlines()
                 with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "w", encoding='utf-8') as writer:
                     writer.writelines(lines)
-                    writer.write(f"{cover_path} -time {args.time} -start {args.start}\n")
+                    writer.write(f"{cover_path} -time {args.time} -start {args.start} -output {args.output}\n")
             except IOError as e:
                 print(e)

@@ -952,9 +952,14 @@ async def getCaverPrms(line, ctx):
         if start < 0:
             start = 0
 
+    output = "None"
+    if "-output" in line:
+        output = line[line.index("-output") + 8:]
+        output = voice[0: voice.index(" ")]
+
     outputFormat = "mp3"
 
-    return f"python src/main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat}"
+    return f"python src/main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output}"
 
 
 # async def defaultRVCParams(filePath, pitch):
@@ -1060,10 +1065,29 @@ async def play_audio_process(ctx):
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
                 if not line is None and not line == "":
+                    # connect to voice chat
+                    voice = ctx.author.voice
+                    if voice:
+                        voice_channel = voice.channel
+                        if ctx.voice_client is not None:
+                            return await ctx.voice_client.move_to(voice_channel)
+                        await voice_channel.connect()
+
                     params = await getCaverPrms(line, ctx)
                     time = await extract_number_after_keyword(params, "-time")
+                    output = await extract_number_after_keyword(params, "-output")
                     stop_milliseconds = await extract_number_after_keyword(params, "-start")
                     audio_path = line[:line.find(" -time")]
+
+                    if not output == "None":
+                        from discord_bot import send_file
+                        if output == "file":
+                            await send_file(ctx, audio_path)
+                        elif output == "all_files":
+                            for file in os.listdir(os.path.dirname(audio_path)):
+                                await send_file(ctx, file)
+                        elif output == "zip":
+                            print("")
 
                     await result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
                     await playSoundFile(audio_path, time, stop_milliseconds, ctx)
