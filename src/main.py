@@ -69,8 +69,8 @@ def get_youtube_video_id(url, ignore_playlist=True):
 
 def yt_download(link):
     import datetime
-    current_datetime = datetime.datetime.now()
-    current_time = current_datetime.time()
+    start_time = datetime.datetime.now()
+    print("download 1")
     ydl_opts = {
         'format': 'bestaudio',
         'outtmpl': '%(title)s',
@@ -81,12 +81,16 @@ def yt_download(link):
         'extractaudio': True,
         'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3'}],
     }
+    print("download 2")
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         result = ydl.extract_info(link, download=True)
+        print("download 3")
         download_path = ydl.prepare_filename(result, outtmpl='%(title)s.mp3')
-
-    current_datetime = datetime.datetime.now()
-    current_time = current_datetime.time()
+    print("download 4")
+    end_time = datetime.datetime.now()
+    spent_time = str(end_time - start_time)
+    spent_time = spent_time[:spent_time.find(".")]
+    print("Скачано за ", spent_time)
     return download_path
 
 
