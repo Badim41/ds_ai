@@ -208,6 +208,7 @@ def download_video_or_use_file(song_input, input_type):
     keep_orig = False
     if input_type == 'yt':
         display_progress('[~] Downloading song...')
+        print(song_input)
         song_link = song_input.split('&')[0]
         print(song_link)
         orig_song_path = yt_download(song_link)
