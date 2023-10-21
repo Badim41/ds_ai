@@ -3,7 +3,6 @@ import multiprocessing
 import os
 import random
 import re
-import struct
 import subprocess
 import configparser
 import asyncio
@@ -19,7 +18,7 @@ from pathlib import Path
 import sys
 import discord
 from discord.ext import commands
-from use_free_cuda import check_cuda, use_cuda_async, stop_use_cuda_async
+from use_free_cuda import use_cuda_async, stop_use_cuda_async
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
@@ -937,7 +936,7 @@ async def get_image_dimensions(file_path):
 
 
 if __name__ == "__main__":
-    print("update 1")
+    print("update 2")
     try:
 
         # === args ===

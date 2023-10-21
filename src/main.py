@@ -189,6 +189,7 @@ def preprocess_song(song_input, mdx_model_params, song_id, input_type=None):
     pool.join()
 
     # получение результатов
+    print("RESULTS:", results[0], "\n", results[1])
     vocals_path1, instrumentals_path1, main_vocals_path1, backup_vocals_path1, main_vocals_dereverb_path1 = results[0]
     vocals_path2, instrumentals_path2, main_vocals_path2, backup_vocals_path2, main_vocals_dereverb_path2 = results[1]
 
