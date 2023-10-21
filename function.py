@@ -835,7 +835,7 @@ async def createAICaver(ctx):
             await use_cuda_async(0)
             await use_cuda_async(1)
             await write_in_discord(ctx, "Начинаю обработку аудио")
-            await asyncio.gather(play_audio_process(ctx), prepare_audio_process_cuda(ctx))
+            await asyncio.gather(play_audio_process(ctx), prepare_audio_pipeline(0, ctx), prepare_audio_pipeline(1, ctx))
             await result_command_change(f"ready audios", Color.GRAY)
             # освобождаем видеокарты
             await stop_use_cuda_async(0)
@@ -958,8 +958,8 @@ async def getCaverPrms(line, ctx):
 # async def defaultRVCParams(filePath, pitch):
 #     return f"python ../AICoverGen/src/main.py -i {filePath} -dir {currentAIname} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
-async def prepare_audio_process_cuda(ctx):
-    print("prepare_audio1")
+async def prepare_audio_pipeline(cuda_number, ctx):
+    print(f"prepare_audio. GPU:{cuda_number}")
     while True:
         try:
             with open("caversAI/audio_links.txt") as reader:
@@ -982,17 +982,20 @@ async def prepare_audio_process_cuda(ctx):
                     #     print("Условия не выполнены")
                     #     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     #     break
-                    print("prepare_audio2")
                     params = await getCaverPrms(line, ctx)
                     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     await result_command_change(f"запуск AICoverGen", Color.CYAN)
+                    params += f" -cuda {cuda_number}"
                     print("Params:", params)
                     await execute_command(params, ctx)
                     time.sleep(0.05)
                 else:
-                    print("Больше нет ссылок")
-                    await set_get_config_all('Values', "queue", "False")
-                    break
+                    await set_get_config_all("Values", f"cuda{cuda_number}_is_busy", "False")
+                    if set_get_config_all("Values", f"cuda{1 - cuda_number}_is_busy") == "False":
+                        print("Больше нет ссылок")
+                        await set_get_config_all("Values", "queue", "False")
+                        break
+                    await asyncio.sleep(0.5)
         except (IOError, KeyboardInterrupt):
             pass
 

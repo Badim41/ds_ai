@@ -166,63 +166,38 @@ def display_progress(message, percent, is_webui=None):
     print(message)
 
 
-def preprocess_song(song_input, mdx_model_params, song_id, input_type=None):
-    orig_song_path, keep_orig = download_video_or_use_file(song_input, input_type)
+def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_type=None):
+    if cuda_number == 0:
+        from mdx_cuda0 import run_mdx
+    else:
+        from mdx_cuda1 import run_mdx
+
+    keep_orig = False
+    if input_type == 'yt':
+        display_progress('[~] Downloading song...', 0)
+        song_link = song_input.split('&')[0]
+        orig_song_path = yt_download(song_link)
+    elif input_type == 'local':
+        orig_song_path = song_input
+        keep_orig = True
+    else:
+        orig_song_path = None
     song_output_dir = os.path.join(output_dir, song_id)
     orig_song_path = convert_to_stereo(orig_song_path)
-
-    audio = AudioSegment.from_file(orig_song_path, format="mp3")
-    # делим аудиофайл на две части
-    half_length = len(audio) // 2
-    audio_part1 = audio[:half_length]
-    audio_part2 = audio[half_length:]
-
-    audio_part1.export("0" + orig_song_path, format="mp3")
-    audio_part2.export("1" + orig_song_path, format="mp3")
-    args1 = (0, mdx_model_params, song_output_dir, "0" + orig_song_path, keep_orig)
-    args2 = (1, mdx_model_params, song_output_dir, "1" + orig_song_path, keep_orig)
-
-    pool = multiprocessing.Pool(2)
-    results = pool.map(mdx_runner_wrapper, [args1, args2])
-    pool.close()
-    pool.join()
-
-    # получение результатов
-    print("RESULTS:", results[0], "\n", results[1])
-    vocals_path1, instrumentals_path1, main_vocals_path1, backup_vocals_path1, main_vocals_dereverb_path1 = results[0]
-    vocals_path2, instrumentals_path2, main_vocals_path2, backup_vocals_path2, main_vocals_dereverb_path2 = results[1]
-
-    # объединение и экспорт
-    result_vocals = AudioSegment.from_file(vocals_path1, format="mp3") + AudioSegment.from_file(vocals_path2,format="mp3")
-    result_vocals.export(os.path.join(os.path.dirname(orig_song_path), "vocals.mp3"), format="mp3")
-
-    result_instrumentals = AudioSegment.from_file(instrumentals_path1, format="mp3") + AudioSegment.from_file(instrumentals_path2, format="mp3")
-    result_instrumentals.export(os.path.join(os.path.dirname(orig_song_path), "instrumentals.mp3"), format="mp3")
-
-    result_main_vocals = AudioSegment.from_file(main_vocals_path1, format="mp3") + AudioSegment.from_file(main_vocals_path2, format="mp3")
-    result_main_vocals.export(os.path.join(os.path.dirname(orig_song_path), "main_vocals.mp3"), format="mp3")
-
-    result_backup_vocals = AudioSegment.from_file(backup_vocals_path1, format="mp3") + AudioSegment.from_file(backup_vocals_path2, format="mp3")
-    result_backup_vocals.export(os.path.join(os.path.dirname(orig_song_path), "backup_vocals.mp3"), format="mp3")
-
-    result_main_vocals_dereverb = AudioSegment.from_file(main_vocals_dereverb_path1, format="mp3") + AudioSegment.from_file(main_vocals_dereverb_path2, format="mp3")
-    result_main_vocals_dereverb.export(os.path.dirname(orig_song_path) + "main_vocals_dereverb.mp3", format="mp3")
-    print("DEV_TEMP_TEST_1_PART:" + os.path.dirname(orig_song_path) + "main_vocals_dereverb.mp3")
-    print("DEV_TEMP_TEST_2_PART:" + os.path.join(os.path.dirname(orig_song_path), "main_vocals_dereverb.mp3"))
-
-    # удаление временных файлов
-    # for result in results:
-    #     for file in result:
-    #         os.remove(file)
-
-    return (
-        orig_song_path,
-        os.path.join(os.path.dirname(orig_song_path), "vocals.mp3"),
-        os.path.join(os.path.dirname(orig_song_path), "instrumentals.mp3"),
-        os.path.join(os.path.dirname(orig_song_path), "main_vocals.mp3"),
-        os.path.join(os.path.dirname(orig_song_path), "backup_vocals.mp3"),
-        os.path.join(os.path.dirname(orig_song_path), "main_vocals_dereverb.mp3")
-    )
+    display_progress('[~] Separating Vocals from Instrumental...', 0.1)
+    vocals_path, instrumentals_path = run_mdx(mdx_model_params, song_output_dir,
+                                              os.path.join(mdxnet_models_dir, 'UVR-MDX-NET-Voc_FT.onnx'),
+                                              orig_song_path, denoise=True, keep_orig=keep_orig)
+    display_progress('[~] Separating Main Vocals from Backup Vocals...', 0.2)
+    backup_vocals_path, main_vocals_path = run_mdx(mdx_model_params, song_output_dir,
+                                                   os.path.join(mdxnet_models_dir, 'UVR_MDXNET_KARA_2.onnx'),
+                                                   vocals_path, suffix='Backup', invert_suffix='Main', denoise=True)
+    display_progress('[~] Applying DeReverb to Vocals...', 0.3)
+    _, main_vocals_dereverb_path = run_mdx(mdx_model_params, song_output_dir,
+                                           os.path.join(mdxnet_models_dir, 'Reverb_HQ_By_FoxJoy.onnx'),
+                                           main_vocals_path, invert_suffix='DeReverb', exclude_main=True,
+                                           denoise=True)
+    return orig_song_path, vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path
 
 
 def download_video_or_use_file(song_input, input_type):
@@ -237,34 +212,6 @@ def download_video_or_use_file(song_input, input_type):
     else:
         orig_song_path = None
     return orig_song_path, keep_orig
-
-def mdx_runner_wrapper(args):
-    index, mdx_model_params, song_output_dir, orig_song_path, keep_orig = args
-    results = mdx_runner(index, mdx_model_params, song_output_dir, orig_song_path, keep_orig)
-    return results
-
-def mdx_runner(index, mdx_model_params, song_output_dir, orig_song_path, keep_orig):
-    if index == 0:
-        from mdx_cuda0 import run_mdx
-    else:
-        from mdx_cuda1 import run_mdx
-
-    display_progress('[~] Separating Vocals from Instrumental...', 0.1)
-    vocals_path, instrumentals_path = run_mdx(mdx_model_params, song_output_dir,
-                                              os.path.join(mdxnet_models_dir, 'UVR-MDX-NET-Voc_FT.onnx'),
-                                              orig_song_path, denoise=True, keep_orig=keep_orig)
-
-    display_progress('[~] Separating Main Vocals from Backup Vocals...', 0.2)
-    backup_vocals_path, main_vocals_path = run_mdx(mdx_model_params, song_output_dir,
-                                                   os.path.join(mdxnet_models_dir, 'UVR_MDXNET_KARA_2.onnx'),
-                                                   vocals_path, suffix='Backup', invert_suffix='Main', denoise=True)
-
-    display_progress('[~] Applying DeReverb to Vocals...', 0.3)
-    _, main_vocals_dereverb_path = run_mdx(mdx_model_params, song_output_dir,
-                                           os.path.join(mdxnet_models_dir, 'Reverb_HQ_By_FoxJoy.onnx'),
-                                           main_vocals_path, invert_suffix='DeReverb', exclude_main=True,
-                                           denoise=True)
-    return vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path
 
 
 def voice_change(cuda_number, voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
@@ -359,7 +306,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
         if not os.path.exists(song_dir):
             os.makedirs(song_dir)
             orig_song_path, vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path = preprocess_song(
-                song_input, mdx_model_params, song_id, input_type)
+                cuda_number, song_input, mdx_model_params, song_id, input_type)
 
         else:
             vocals_path, main_vocals_path = None, None
@@ -368,7 +315,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
             # if any of the audio files aren't available or keep intermediate files, rerun preprocess
             if any(path is None for path in paths) or keep_files:
                 orig_song_path, vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path = preprocess_song(
-                    song_input, mdx_model_params, song_id, input_type)
+                    cuda_number, song_input, mdx_model_params, song_id, input_type)
             else:
                 orig_song_path, instrumentals_path, main_vocals_dereverb_path, backup_vocals_path = paths
 
@@ -464,6 +411,8 @@ if __name__ == '__main__':
                         help='song duration')
     parser.add_argument('-write', '--write-in-queue', type=bool, default=True,
                         help='нужно ли записать в файл')
+    parser.add_argument('-cuda', '--cuda-number', type=int, default=0,
+                        help='нужно ли записать в файл')
     args = parser.parse_args()
 
     rvc_dirname = args.rvc_dirname
@@ -477,7 +426,7 @@ if __name__ == '__main__':
                                      pitch_change_all=args.pitch_change_all,
                                      reverb_rm_size=args.reverb_size, reverb_wet=args.reverb_wetness,
                                      reverb_dry=args.reverb_dryness, reverb_damping=args.reverb_damping,
-                                     output_format="mp3")
+                                     output_format="mp3", cuda_number=args.cuda_number)
     print(f'[+] Cover generated at {cover_path}')
     # ошибка при генерации
     # if cover_path is None:
