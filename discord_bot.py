@@ -598,7 +598,7 @@ async def __cover(
         audio_path: Option(discord.SlashCommandOptionType.attachment, description='Аудиофайл',
                            required=False, default=None),
         voice: Option(str, description='Голос для видео', required=False, default=None),
-        pitch: Option(str, description='Кто говорит/поёт в видео?', required=False,
+        gender: Option(str, description='Кто говорит/поёт в видео?', required=False,
                       choices=['мужчина', 'женщина'], default=None),
         time: Option(int, description='Ограничить длительность воспроизведения (в секундах)', required=False,
                      default=-1, min_value=0),
@@ -642,11 +642,11 @@ async def __cover(
         # если мужчина-мужчина, женщина-женщина, pitch не меняем
         pitch_int = 0
         # если женщина, но AI мужчина = 1,
-        if pitch == 'женщина':
+        if gender == 'женщина':
             if not await set_get_config_default("currentaipitch") == "1":
                 pitch_int = 1
         # если мужчина, но AI женщина = -1,
-        elif pitch == 'мужчина':
+        elif gender == 'мужчина':
             if not await set_get_config_default("currentaipitch") == "0":
                 pitch_int = -1
         params.append(f"-pitch {pitch_int}")
