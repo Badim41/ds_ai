@@ -986,8 +986,9 @@ async def run_ai_cover_gen(line, ctx, wait=False):
     cuda = 0
     if "-cuda" in line:
         cuda = await extract_number_after_keyword(line, "-cuda")
-        if cuda < 0:
-            cuda = 0
+        print("CUDA_IN_LINE:", cuda)
+        if not cuda == 0:
+            cuda = 1
 
     output = "None"
     if "-output" in line:
