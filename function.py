@@ -1008,9 +1008,11 @@ async def execute_command(command, ctx):
         stdout, stderr = process.communicate()
         for line in stdout.decode().split('\n'):
             if line.strip():
+                await result_command_change(line, Color.GRAY)
                 # await ctx.send(line)
         for line in stderr.decode().split('\n'):
             if line.strip():
+                await result_command_change(line, Color.GRAY)
                 # await ctx.send(line)
     except subprocess.CalledProcessError as e:
         await ctx.send(f"Ошибка выполнения команды (ID:f8): {e}")
