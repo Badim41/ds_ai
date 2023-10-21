@@ -1089,7 +1089,7 @@ async def play_audio_process(ctx):
                             voice_channel = voice.channel
                             if ctx.voice_client is not None:
                                 return await ctx.voice_client.move_to(voice_channel)
-                            await voice_channel.connect(timeout=10, reconnect=True)
+                            await voice_channel.connect(timeout=10, reconnect=False)
                     except TimeoutError:
                         pass
                     print("audio1")
