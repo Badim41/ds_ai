@@ -839,6 +839,8 @@ async def createAICaver(ctx):
         config.read('config.ini')
         continue_process = config.getboolean('Values', 'queue')
         if not continue_process:
+            with open("texts/output_All.txt", 'w') as file:
+                pass
             await use_cuda_async(0)
             await use_cuda_async(1)
             await write_in_discord(ctx, "Начинаю обработку аудио")
@@ -1125,7 +1127,7 @@ async def play_audio_process(ctx):
                                         zipf.write(file_path, arcname)
 
                             # Отправляем ссылку на архив
-                            ctx.send(f"Ссылка на файлы: {zip_name}")
+                            await ctx.send(f"Ссылка на файлы: {zip_name}")
                     print("audio7")
                     await result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
                     await playSoundFile(audio_path, time, stop_milliseconds, ctx)
