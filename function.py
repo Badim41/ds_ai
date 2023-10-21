@@ -1099,6 +1099,7 @@ async def play_audio_process(ctx):
                     print("audio3")
 
                     if not output == "None":
+                        output = output.replace(" ", "")
                         print("audio6_TRUE")
                         from discord_bot import send_file
                         # конечный файл
