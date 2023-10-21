@@ -1118,8 +1118,9 @@ async def play_audio_process(ctx):
                             await send_file(ctx, audio_path)
                         # все файлы
                         elif output == "all_files":
-                            for file in os.listdir(os.path.dirname(audio_path)):
-                                await send_file(ctx, file)
+                            for filename in os.listdir(os.path.dirname(audio_path)):
+                                file_path = os.path.join(os.path.dirname(audio_path), filename)
+                                await send_file(ctx, file_path)
                         # Ссылкой на zip файл
                         elif output == "zip":
                             zip_name = os.path.dirname(audio_path) + f"/files{random.randint(0, 10000)}.zip"
