@@ -38,3 +38,4 @@ flask-cors
 typing-extensions
 PyExecJS
 duckduckgo-search
+pytube

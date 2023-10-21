@@ -7,6 +7,7 @@ import subprocess
 import configparser
 import asyncio
 import time
+from pytube import Playlist
 
 from PIL import Image
 from pydub import AudioSegment
@@ -591,6 +592,17 @@ async def __tts(
         await stop_use_cuda_async(0)
 
 
+async def get_links_from_playlist(playlist_url):
+    try:
+        playlist = Playlist(playlist_url)
+        playlist._video_regex = re.compile(r"\"url\":\"(/watch\?v=[\w-]*)")
+        video_links = playlist.video_urls
+        return video_links
+    except Exception as e:
+        print(f"Произошла ошибка при извлечении плейлиста: {e}")
+        return []
+
+
 @bot.slash_command(name="ai_cover", description='_Заставить_ бота озвучить видео/спеть песню')
 async def __cover(
         ctx,
@@ -677,7 +689,12 @@ async def __cover(
             params.append(f"-url {filename}")
         elif url:
             functions = []
-            urls = url.split(";")
+            if ";" in url:
+                urls = url.split(";")
+            else:
+                urls = get_links_from_playlist(url)
+                print("URLS_PLAYLIST:", urls)
+
             for one_url in urls:
                 function = run_main_with_settings(ctx, f"робот протокол 13 -wait {(len(functions) + 1)*4} -url {one_url} {param_string}", False)
                 functions.append(function)
