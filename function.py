@@ -1074,7 +1074,7 @@ async def file_was_filler(folder, file_list):
 
 
 async def play_audio_process(ctx):
-    await asyncio.sleep(0.5)
+    await asyncio.sleep(0.1)
     try:
         await set_get_config_all('Values', "queue", "True")
         while True:
