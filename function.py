@@ -952,7 +952,7 @@ async def getCaverPrms(line, ctx):
 
     outputFormat = "mp3"
 
-    return f"python src/main.py -i {url} -dir {voice} -p {pitch} -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat}"
+    return f"python src/main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat}"
 
 
 # async def defaultRVCParams(filePath, pitch):
@@ -1007,10 +1007,6 @@ async def execute_command(command, ctx):
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         stdout, stderr = process.communicate()
         for line in stdout.decode().split('\n'):
-            if line.strip():
-                await result_command_change(line, Color.GRAY)
-                # await ctx.send(line)
-        for line in stderr.decode().split('\n'):
             if line.strip():
                 await result_command_change(line, Color.GRAY)
                 # await ctx.send(line)
