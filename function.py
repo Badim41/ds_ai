@@ -952,11 +952,11 @@ async def getCaverPrms(line, ctx):
 
     outputFormat = "mp3"
 
-    return f"python src/main.py -i {url} -dir modelsRVC/{voice} -p {pitch} -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat}"
+    return f"python src/main.py -i {url} -dir {voice} -p {pitch} -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat}"
 
 
 # async def defaultRVCParams(filePath, pitch):
-#     return f"python ../AICoverGen/src/main.py -i {filePath} -dir modelsRVC/{currentAIname} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
+#     return f"python ../AICoverGen/src/main.py -i {filePath} -dir {currentAIname} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
 async def prepare_audio_process_cuda(ctx):
     print("prepare_audio1")
