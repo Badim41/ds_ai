@@ -1096,7 +1096,8 @@ async def play_audio_process(ctx):
                     params = await getCaverPrms(line, ctx)
                     print("audio2")
                     time = await extract_number_after_keyword(params, "-time")
-                    output = await extract_number_after_keyword(params, "-output")
+                    output = line[line.find("-output") + 8:]
+                    output = output[:output.find(" ")]
                     stop_milliseconds = await extract_number_after_keyword(params, "-start")
                     audio_path = line[:line.find(" -time")]
                     print("audio3")
