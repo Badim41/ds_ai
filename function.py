@@ -1370,7 +1370,7 @@ async def extract_number_after_keyword(input, keyword):
             else:
                 numberStr = ''.join(char for char in remaining_str if char.isdigit())
             if numberStr:
-                await result_command_change(f"Extract: {keyword}, Number:{numberStr}", Color.GRAY)
+                # await result_command_change(f"Extract: {keyword}, Number:{numberStr}", Color.GRAY)
                 return int(numberStr)
     return -1
 
@@ -1380,9 +1380,9 @@ async def extract_double_after_keyword(input, keyword):
     index = input.find(keyword)
 
     if index != -1:
-        start = index + len(keyword) + 1
-        end = input.find(" ", start) if " " in input[start:] else len(input)
-        numberStr = ''.join(char for char in input[start:end] if char.isdigit() or char == '.')
+        remaining_str = input[index + len(keyword) + 1:]
+        remaining_str = remaining_str[:remaining_str.find(" ")]
+        numberStr = ''.join(char for char in remaining_str if char.isdigit() or char == '.')
 
         try:
             if numberStr:
