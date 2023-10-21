@@ -597,6 +597,7 @@ async def get_links_from_playlist(playlist_url):
         playlist = Playlist(playlist_url)
         playlist._video_regex = re.compile(r"\"url\":\"(/watch\?v=[\w-]*)")
         video_links = playlist.video_urls
+        print("URLS_PLAYLIST:", video_links)
         return ';'.join(list(video_links))
     except Exception as e:
         print(f"Произошла ошибка при извлечении плейлиста: {e}")
@@ -696,7 +697,6 @@ async def __cover(
                 urls = url.split(";")
             elif "playlist" in url:
                 urls = await get_links_from_playlist(url)
-                print("URLS_PLAYLIST:", urls, type(urls))
                 urls = urls.split(";")
                 if urls == "" or urls is None:
                     ctx.respond("Ошибка нахождения видео в плейлисте")
