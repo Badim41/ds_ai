@@ -1360,17 +1360,18 @@ async def preprocess_text(text):
 
 
 async def extract_number_after_keyword(input, keyword):
-    input = ''.join(char if char.isalnum() or char.isspace() else ' ' for char in input)
     index = input.find(keyword)
-
     if index != -1:
-        start = index + len(keyword) + 1
-        end = input.find(" ", start) if " " in input[start:] else len(input)
-        numberStr = ''.join(char for char in input[start:end] if char.isdigit())
-
-        if numberStr:
-            return int(numberStr)
-
+        start = index + len(keyword)
+        remaining_str = input[start:].strip()
+        if remaining_str:
+            if remaining_str[0] == '-':
+                numberStr = '-' + ''.join(char for char in remaining_str[1:] if char.isdigit())
+            else:
+                numberStr = ''.join(char for char in remaining_str if char.isdigit())
+            if numberStr:
+                await result_command_change(f"Extract: {keyword}, Number:{numberStr}", Color.GRAY)
+                return int(numberStr)
     return -1
 
 
