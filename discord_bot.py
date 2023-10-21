@@ -619,27 +619,13 @@ async def __cover(
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
                         max_value=1),
         start: Option(int, description='Начать воспроизводить с (в секундах)', required=False, default=0, min_value=0),
-        output: Option(bool, description='Отправить результат',  required=False, default="file"),
-        wait_before: Option(int, description='Сколько секунд ещё подождать команд (во время обработки слэш-команды не работают!)', required=False, default=None, min_value=0, max_value=60),
+        output: Option(bool, description='Отправить результат',  required=False, default="file"), # choices=["zip", "file", "all_files", "None"],
 ):
     param_string = None
     try:
         await ctx.defer()
-        if not wait_before is None:
-            await ctx.respond(f'Жду ваших команд ещё {wait_before} секунд')
-            await asyncio.sleep(wait_before)
-        else:
-            await ctx.respond('Выполнение...')
+        await ctx.respond('Выполнение...')
         params = []
-        if audio_path:
-            filename = str(random.randint(1, 1000000)) + ".mp3"
-            await audio_path.save(filename)
-            params.append(f"-url {filename}")
-        elif url:
-            params.append(f"-url {url}")
-        else:
-            await ctx.respond('Не указана ссылка или аудиофайл')
-            return
         if voice is None:
             voice = await set_get_config_default("currentAIname")
         if voice:
@@ -685,8 +671,22 @@ async def __cover(
 
         param_string = ' '.join(params)
         print("suc params")
+        if audio_path:
+            filename = str(random.randint(1, 1000000)) + ".mp3"
+            await audio_path.save(filename)
+            params.append(f"-url {filename}")
+        elif url:
+            functions = []
+            params.append(f"-url {url}")
+            for i, one_url in url.split(";"):
+                function = run_main_with_settings(ctx, f"робот протокол 13 -wait {i} -url {one_url} {param_string}", False)
+                functions.append(function)
+            await asyncio.gather(*functions)
+            return
+        else:
+            await ctx.respond('Не указана ссылка или аудиофайл')
+            return
         await run_main_with_settings(ctx, "робот протокол 13 " + param_string, False)
-        # output..
     except Exception as e:
         await ctx.send(f"Ошибка при изменении голоса (с параметрами {param_string}): {e}")
 

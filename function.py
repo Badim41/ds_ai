@@ -838,7 +838,8 @@ async def createAICaver(ctx):
             await use_cuda_async(0)
             await use_cuda_async(1)
             await write_in_discord(ctx, "Начинаю обработку аудио")
-            await asyncio.gather(play_audio_process(ctx), prepare_audio_pipeline(0, ctx), prepare_audio_pipeline(1, ctx))
+            await asyncio.gather(play_audio_process(ctx), prepare_audio_pipeline(0, ctx),
+                                 prepare_audio_pipeline(1, ctx))
             await result_command_change(f"ready audios", Color.GRAY)
             # освобождаем видеокарты
             await stop_use_cuda_async(0)
@@ -858,10 +859,13 @@ async def createAICaver(ctx):
         raise e
 
 
-
 async def getCaverPrms(line, ctx):
     global currentAIname, currentAIinfo
     # SONG_INPUT
+    if "-wait" in line:
+        wait = await extract_number_after_keyword(line, "-wait")
+        await asyncio.sleep(wait)
+
     url = "."
     if "-url" in line:
         url = line[line.index("-url") + 5:]
@@ -1124,7 +1128,7 @@ async def wait_for_file(file_name, max_attempts, delay):
     attempt = 0
     file = os.path.join(os.getcwd(), file_name)
     while attempt < max_attempts and not os.path.exists(file):
-        time.sleep(delay)
+        await asyncio.sleep(delay)
         if attempt % 50 == 49:
             print(f"Файла нет. Попытка: {attempt + 1}")
         attempt += 1
