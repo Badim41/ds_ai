@@ -989,14 +989,15 @@ async def prepare_audio_pipeline(cuda_number, ctx):
                     params += f" -cuda {cuda_number}"
                     print("Params:", params)
                     await execute_command(params, ctx)
-                    time.sleep(0.05)
+                    await asyncio.sleep(0.05)
                 else:
                     await set_get_config_all("Values", f"cuda{cuda_number}_is_busy", "False")
+                    await asyncio.sleep(0.5)
                     if await set_get_config_all("Values", f"cuda{1 - cuda_number}_is_busy") == "False":
                         print("Больше нет ссылок")
                         await set_get_config_all("Values", "queue", "False")
                         break
-                    await asyncio.sleep(0.5)
+
         except (IOError, KeyboardInterrupt) as e:
             print(f"Произошла ошибка (ID:f7-cuda{cuda_number}):", e)
 
@@ -1070,6 +1071,7 @@ async def play_audio_process(ctx):
                 else:
                     config.read('config.ini')
                     continue_process = config.getboolean('Values', 'queue')
+                    await asyncio.sleep(0.5)
                     if not continue_process:
                         await result_command_change(f"file_have_links - False", Color.CYAN)
                         break
