@@ -1144,7 +1144,7 @@ async def play_audio_process(ctx):
         while True:
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
-                if not line is None and not line == "":
+                if not line is None and not line.replace(" ", "") == "":
                     time = await extract_number_after_keyword(line, "-time")
                     output = line[line.find("-output") + 8:]
                     output = output[:output.find(" ")]
