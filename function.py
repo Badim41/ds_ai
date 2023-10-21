@@ -1,15 +1,15 @@
 import asyncio
 import datetime
 import json
-import multiprocessing
-import random
-import sys
-from translate import Translator
-import subprocess
-import re
-import time
 import os
+import random
+import re
+import subprocess
+import sys
+import time
+
 import g4f
+from translate import Translator
 
 _providers = [
     # AUTH
@@ -46,10 +46,10 @@ _providers = [
 ]
 
 from gtts import gTTS
-from elevenlabs import generate, play, save, set_api_key
+from elevenlabs import generate, save, set_api_key
 from discord_bot import config, send_file
 from discord_bot import write_in_discord
-from use_free_cuda import use_cuda, stop_use_cuda, check_cuda, wait_for_cuda_async, stop_use_cuda_async, use_cuda_async
+from use_free_cuda import check_cuda, stop_use_cuda_async, use_cuda_async
 
 
 class Color:
@@ -148,7 +148,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                 await result_command_change(f"Голосовая команда", Color.CYAN)
                 return
         except Exception as e:
-            print("Произошла ошибка (ID:f1):", e)
+            await result_command_change("Произошла ошибка (ID:f1):" + str(e), Color.RED)
 
         try:
             # memories
@@ -193,7 +193,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                     await text_to_speech("Промпт не найден!", False, ctx)
                     return
         except Exception as e:
-            print("Произошла ошибка (ID:f2):", e)
+            await result_command_change("Произошла ошибка (ID:f2):" + str(e), Color.RED)
 
         # запись прошлых запросов
         with open(f"texts/memories/{currentAIname}.txt", 'a') as writer2:
@@ -209,7 +209,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                 await write_in_discord(ctx, result)
             await text_to_speech(result, True, ctx)
         except Exception as e:
-            print("Произошла ошибка (ID:f3):", e)
+            await result_command_change("Произошла ошибка (ID:f3):" + str(e), Color.RED)
 
 
 async def is_robot_name(text, ctx):
@@ -539,7 +539,7 @@ async def voice_commands(sentence, ctx):
             await write_in_discord(ctx, result)
             await text_to_speech(result, False, ctx)
         except Exception as e:
-            print("Произошла ошибка (ID:f4):", e)
+            await result_command_change("Произошла ошибка (ID:f4):" + str(e), Color.RED)
         return True
 
     # маты
@@ -1076,7 +1076,7 @@ async def play_audio_process(ctx):
                         await result_command_change(f"file_have_links - False", Color.CYAN)
                         break
     except (IOError, KeyboardInterrupt) as e:
-        print("Произошла ошибка (ID:f12):", e)
+        await result_command_change("Произошла ошибка (ID:f12):" + str(e), Color.RED)
 
 
 async def wait_for_file(file_name, max_attempts, delay):
@@ -1130,7 +1130,7 @@ async def console_command_runner(command, ctx):
             return False
         return True
     except (subprocess.CalledProcessError, IOError, Exception) as e:
-        print("Произошла ошибка (ID:f13):", e)
+        await result_command_change("Произошла ошибка (ID:f13):" + str(e), Color.RED)
 
 
 async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
@@ -1157,7 +1157,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
                 tts_no_n = tts.replace("\n", " ")
                 writer2.write(f"GPT: {tts_no_n}\n")
         except IOError as e:
-            print("Произошла ошибка (ID:f14):", e)
+            await result_command_change("Произошла ошибка (ID:f14):" + str(e), Color.RED)
         lines_number = 0
         with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
             lines = reader.readlines()
@@ -1385,7 +1385,7 @@ async def extract_double_after_keyword(input, keyword):
             if numberStr:
                 return float(numberStr.replace(',', '.'))
         except ValueError as e:
-            print("Произошла ошибка (ID:f18):", e)
+            await result_command_change("Произошла ошибка (ID:f18):" + str(e), Color.RED)
 
     return -1
 
