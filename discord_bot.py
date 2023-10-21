@@ -703,7 +703,9 @@ async def __cover(
             else:
                 urls = [url]
             args = ""
-            for i, one_url in urls:
+            i = 0
+            for one_url in urls:
+                i += 1
                 args += f"робот протокол 13 -wait {(i + 1)*3} -url {one_url} {param_string}\n"
             await run_main_with_settings(ctx, args, True)
             return
