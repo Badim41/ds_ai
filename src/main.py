@@ -194,19 +194,19 @@ def preprocess_song(song_input, mdx_model_params, song_id, input_type=None):
 
     # объединение и экспорт
     result_vocals = AudioSegment.from_file(vocals_path1, format="mp3") + AudioSegment.from_file(vocals_path2,format="mp3")
-    result_vocals.export("vocals.mp3", format="mp3")
+    result_vocals.export(orig_song_path + "vocals.mp3", format="mp3")
 
     result_instrumentals = AudioSegment.from_file(instrumentals_path1, format="mp3") + AudioSegment.from_file(instrumentals_path2, format="mp3")
-    result_instrumentals.export("instrumentals.mp3", format="mp3")
+    result_instrumentals.export(orig_song_path + "instrumentals.mp3", format="mp3")
 
     result_main_vocals = AudioSegment.from_file(main_vocals_path1, format="mp3") + AudioSegment.from_file(main_vocals_path2, format="mp3")
-    result_main_vocals.export("main_vocals.mp3", format="mp3")
+    result_main_vocals.export(orig_song_path + "main_vocals.mp3", format="mp3")
 
     result_backup_vocals = AudioSegment.from_file(backup_vocals_path1, format="mp3") + AudioSegment.from_file(backup_vocals_path2, format="mp3")
-    result_backup_vocals.export("backup_vocals.mp3", format="mp3")
+    result_backup_vocals.export(orig_song_path + "backup_vocals.mp3", format="mp3")
 
     result_main_vocals_dereverb = AudioSegment.from_file(main_vocals_dereverb_path1, format="mp3") + AudioSegment.from_file(main_vocals_dereverb_path2, format="mp3")
-    result_main_vocals_dereverb.export("main_vocals_dereverb.mp3", format="mp3")
+    result_main_vocals_dereverb.export(orig_song_path + "main_vocals_dereverb.mp3", format="mp3")
 
     # удаление временных файлов
     # for result in results:
@@ -215,11 +215,11 @@ def preprocess_song(song_input, mdx_model_params, song_id, input_type=None):
 
     return (
         orig_song_path,
-        "vocals.mp3",
-        "instrumentals.mp3",
-        "main_vocals.mp3",
-        "backup_vocals.mp3",
-        "main_vocals_dereverb.mp3"
+        orig_song_path + "vocals.mp3",
+        orig_song_path + "instrumentals.mp3",
+        orig_song_path + "main_vocals.mp3",
+        orig_song_path + "backup_vocals.mp3",
+        orig_song_path + "main_vocals_dereverb.mp3"
     )
 
 
