@@ -704,7 +704,7 @@ async def __cover(
                 urls = [url]
 
             for one_url in urls:
-                function = run_main_with_settings(ctx, f"робот протокол 13 -wait {(len(functions) + 1)*4} -url {one_url} {param_string}", False)
+                function = await run_main_with_settings(ctx, f"робот протокол 13 -wait {(len(functions) + 1)*4} -url {one_url} {param_string}", False)
                 functions.append(function)
             print("FUNCTIONS:", functions)
             await asyncio.gather(*functions)
