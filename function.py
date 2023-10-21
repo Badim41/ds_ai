@@ -1080,6 +1080,7 @@ async def play_audio_process(ctx):
         while True:
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
+                print("audio0")
                 if not line is None and not line == "":
                     # connect to voice chat
                     voice = ctx.author.voice
@@ -1088,14 +1089,17 @@ async def play_audio_process(ctx):
                         if ctx.voice_client is not None:
                             return await ctx.voice_client.move_to(voice_channel)
                         await voice_channel.connect()
-
+                    print("audio1")
                     params = await getCaverPrms(line, ctx)
+                    print("audio2")
                     time = await extract_number_after_keyword(params, "-time")
                     output = await extract_number_after_keyword(params, "-output")
                     stop_milliseconds = await extract_number_after_keyword(params, "-start")
                     audio_path = line[:line.find(" -time")]
+                    print("audio3")
 
                     if not output == "None":
+                        print("audio6_TRUE")
                         from discord_bot import send_file
                         # конечный файл
                         if output == "file":
@@ -1114,7 +1118,7 @@ async def play_audio_process(ctx):
                                         arcname = os.path.relpath(file_path, os.path.dirname(audio_path))
                                         zipf.write(file_path, arcname)
                             ctx.send(f"Ссылка на файлы: {FileLink(zip_name)}")
-
+                    print("audio7")
                     await result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
                     await playSoundFile(audio_path, time, stop_milliseconds, ctx)
                     await remove_line_from_txt("caversAI/queue.txt", 1)
