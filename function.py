@@ -196,6 +196,9 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                         prompt = reader.read() + temp_spokenText.replace(currentAIname + ", ", "")
                         temp_spokenText = prompt
                     await set_get_config_all("gpt", "gpt_custom_prompt", "None")
+                    # удаляем память
+                    with open("texts/memories/{currentAIname}.txt", 'w') as file:
+                        pass
                 else:
                     await text_to_speech("Промпт не найден!", False, ctx)
                     return
