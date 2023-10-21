@@ -1062,7 +1062,7 @@ async def play_audio_process(ctx):
                     params = await getCaverPrms(line, ctx)
                     time = await extract_number_after_keyword(params, "-time")
                     stop_milliseconds = await extract_number_after_keyword(params, "-start")
-                    audio_path = line.split()[0]
+                    audio_path = line[:line.find(" ")]
 
                     await result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
                     await playSoundFile(audio_path, time, stop_milliseconds, ctx)
