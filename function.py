@@ -876,7 +876,9 @@ async def getCaverPrms(line, ctx):
     # PITCH_CHANGE
     pitch = 0
     if "-pitch" in line:
+        print("Pitch in line")
         pitch = await extract_number_after_keyword(line, "-pitch")
+        print("Pitch", pitch)
         if pitch < -2 or pitch > 2:
             pitch = 0
 
