@@ -692,9 +692,13 @@ async def __cover(
             functions = []
             if ";" in url:
                 urls = url.split(";")
-            else:
+            elif "playlist" in url:
                 urls = await get_links_from_playlist(url)
                 print("URLS_PLAYLIST:", urls)
+                if urls == "" or urls is None:
+                    ctx.respond("Ошибка нахождения видео в плейлисте")
+            else:
+                urls = [url]
 
             for one_url in urls:
                 function = run_main_with_settings(ctx, f"робот протокол 13 -wait {(len(functions) + 1)*4} -url {one_url} {param_string}", False)
