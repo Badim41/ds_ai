@@ -831,12 +831,14 @@ async def removePunctuation(input, chars):
 async def createAICaver(ctx):
     try:
         global spokenText
+        message = spokenText
+        lines = message.split("\n")
         if not os.path.exists("caversAI/audio_links.txt"):
             with open("caversAI/audio_links.txt", "w"):
                 pass
         with open("caversAI/audio_links.txt", "a") as writer:
-            print("add_in_list:", spokenText)
-            writer.write(spokenText + "\n")
+            for line in lines:
+                writer.write(line + "\n")
         config.read('config.ini')
         continue_process = config.getboolean('Values', 'queue')
         if not continue_process:

@@ -702,12 +702,10 @@ async def __cover(
                     ctx.respond("Ошибка нахождения видео в плейлисте")
             else:
                 urls = [url]
-
+            args = ""
             for one_url in urls:
-                function = await run_main_with_settings(ctx, f"робот протокол 13 -wait {(len(functions) + 1)*4} -url {one_url} {param_string}", False)
-                functions.append(function)
-            print("FUNCTIONS:", functions)
-            await asyncio.gather(*functions)
+                args += f"робот протокол 13 -wait {(len(functions) + 1)*4} -url {one_url} {param_string}"
+            await run_main_with_settings(ctx, args, True)
             return
         else:
             await ctx.respond('Не указана ссылка или аудиофайл')
