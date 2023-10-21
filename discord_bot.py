@@ -601,7 +601,7 @@ async def __cover(
         gender: Option(str, description='Кто говорит/поёт в видео?', required=False,
                       choices=['мужчина', 'женщина'], default=None),
         time: Option(int, description='Ограничить длительность воспроизведения (в секундах)', required=False,
-                     default=-1, min_value=0),
+                     default=None, min_value=-1),
         indexrate: Option(float, description='Индекс голоса (от 0 до 1)', required=False, default=0.5, min_value=0,
                           max_value=1),
         loudness: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.2, min_value=0,
@@ -650,7 +650,12 @@ async def __cover(
             if not await set_get_config_default("currentaipitch") == "0":
                 pitch_int = -1
         params.append(f"-pitch {pitch_int}")
-        if time != -1:
+        if time is None:
+            time = -1
+        if time == -1:
+            stop_seconds = int(await set_get_config_all("Sound", "stop_milliseconds", None)) // 1000
+            params.append(f"-time {stop_seconds}")
+        else:
             params.append(f"-time {time}")
         if indexrate != 0.5:
             params.append(f"-indexrate {indexrate}")
