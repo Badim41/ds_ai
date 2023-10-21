@@ -1083,15 +1083,15 @@ async def play_audio_process(ctx):
                 print("audio0")
                 if not line is None and not line == "":
                     # connect to voice chat
-                    try:
-                        voice = ctx.author.voice
-                        if voice:
-                            voice_channel = voice.channel
-                            if ctx.voice_client is not None:
-                                return await ctx.voice_client.move_to(voice_channel)
-                            await voice_channel.connect(timeout=10, reconnect=False)
-                    except TimeoutError:
-                        pass
+                    # try:
+                    #     voice = ctx.author.voice
+                    #     if voice:
+                    #         voice_channel = voice.channel
+                    #         if ctx.voice_client is not None:
+                    #             return await ctx.voice_client.move_to(voice_channel)
+                    #         await voice_channel.connect(timeout=10, reconnect=False)
+                    # except TimeoutError:
+                    #     pass
                     print("audio1")
                     params = await getCaverPrms(line, ctx)
                     print("audio2")
@@ -1116,8 +1116,8 @@ async def play_audio_process(ctx):
                                 await send_file(ctx, file)
                         # Ссылкой на zip файл
                         elif output == "zip":
-                            zip_name = f"files{random.randint(0, 10000)}.zip"
-                            with zipfile.ZipFile("song_output", 'w', zipfile.ZIP_DEFLATED) as zipf:
+                            zip_name = os.path.dirname(audio_path) + f"/files{random.randint(0, 10000)}.zip"
+                            with zipfile.ZipFile(os.path.dirname(audio_path), 'w', zipfile.ZIP_DEFLATED) as zipf:
                                 for foldername, subfolders, filenames in os.walk(os.path.dirname(audio_path)):
                                     for filename in filenames:
                                         file_path = os.path.join(foldername, filename)
