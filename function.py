@@ -7,6 +7,9 @@ import re
 import subprocess
 import sys
 import time
+import zipfile
+
+from IPython.display import FileLink
 
 import g4f
 from translate import Translator
@@ -1081,13 +1084,23 @@ async def play_audio_process(ctx):
 
                     if not output == "None":
                         from discord_bot import send_file
+                        # конечный файл
                         if output == "file":
                             await send_file(ctx, audio_path)
+                        # все файлы
                         elif output == "all_files":
                             for file in os.listdir(os.path.dirname(audio_path)):
                                 await send_file(ctx, file)
+                        # Ссылкой на zip файл
                         elif output == "zip":
-                            print("")
+                            zip_name = f"files{random.randint(0, 10000)}.zip"
+                            with zipfile.ZipFile("song_output", 'w', zipfile.ZIP_DEFLATED) as zipf:
+                                for foldername, subfolders, filenames in os.walk(os.path.dirname(audio_path)):
+                                    for filename in filenames:
+                                        file_path = os.path.join(foldername, filename)
+                                        arcname = os.path.relpath(file_path, os.path.dirname(audio_path))
+                                        zipf.write(file_path, arcname)
+                            ctx.send(f"Ссылка на файлы: {FileLink(zip_name)}")
 
                     await result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
                     await playSoundFile(audio_path, time, stop_milliseconds, ctx)
