@@ -998,7 +998,7 @@ async def run_ai_cover_gen(line, ctx, wait=False):
     outputFormat = "mp3"
 
     print(
-        f"python src/main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output}")
+        f"python main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output}")
 
     from main import run_ai_cover_gen
     loop = asyncio.get_event_loop()
@@ -1369,7 +1369,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     try:
         command = [
             "python",
-            "src/only_voice_change.py",
+            "only_voice_change.py",
             "-i", f"\"{file_name}\"",
             "-o", "2.mp3",
             "-dir", str(ai_dictionary),

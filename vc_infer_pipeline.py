@@ -7,7 +7,6 @@ import numpy as np
 import os
 import parselmouth
 import pyworld
-import sys
 import torch
 import torch.nn.functional as F
 import torchcrepe
@@ -16,8 +15,6 @@ from scipy import signal
 from torch import Tensor
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-now_dir = os.path.join(BASE_DIR, 'src')
-sys.path.append(now_dir)
 
 bh, ah = signal.butter(N=5, Wn=48, btype="high", fs=16000)
 
