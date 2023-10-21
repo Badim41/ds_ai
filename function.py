@@ -1119,8 +1119,16 @@ async def play_audio_process(ctx):
                         # все файлы
                         elif output == "all_files":
                             for filename in os.listdir(os.path.dirname(audio_path)):
-                                file_path = os.path.join(os.path.dirname(audio_path), filename)
-                                await send_file(ctx, file_path)
+                                zip_name = os.path.dirname(audio_path) + f"/files{random.randint(0, 10000)}.zip"
+                                with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf
+                                        file_path = os.path.join(os.path.dirname(audio_path), filename)
+                                        if ".zip" in file_path:
+                                            continue
+                                        print("FILE:", file_path)
+                                        zipf.write(file_path, os.path.basename(file_path))
+
+                                # Отправляем ссылку на архив
+                                await send_file(ctx, zip_name)
                         # Ссылкой на zip файл
                         elif output == "zip":
                             zip_name = os.path.dirname(audio_path) + f"/files{random.randint(0, 10000)}.zip"
