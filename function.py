@@ -854,6 +854,7 @@ async def createAICaver(ctx):
                 queue_position += len(lines)
             await write_in_discord(ctx, "Аудио добавлено в очередь. Место в очереди: " + str(queue_position))
     except Exception as e:
+        raise e
         await result_command_change(f"Произошла ошибка (ID:f6): {e}", Color.RED)
 
 
