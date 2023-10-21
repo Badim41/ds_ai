@@ -339,10 +339,10 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
             instrumentals_path = pitch_shift(instrumentals_path, pitch_change_all)
             backup_vocals_path = pitch_shift(backup_vocals_path, pitch_change_all)
         # BACK VOCAL CHANGE
-        if not os.path.exists(backup_vocals_path):
-            voice_change(cuda_number, voice_model, main_vocals_dereverb_path, backup_vocals_path, pitch_change, f0_method,
-                         index_rate,
-                         filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui)
+        # if not os.path.exists(backup_vocals_path):
+        #     voice_change(cuda_number, voice_model, main_vocals_dereverb_path, backup_vocals_path, pitch_change, f0_method,
+        #                  index_rate,
+        #                  filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui)
         display_progress('[~] Combining AI Vocals and Instrumentals...')
         combine_audio([ai_vocals_mixed_path, backup_vocals_path, instrumentals_path], ai_cover_path, main_gain,
                       backup_gain, inst_gain, output_format)
