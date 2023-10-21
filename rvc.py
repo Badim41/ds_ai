@@ -14,7 +14,7 @@ from infer_pack.models import (
 from my_utils import load_audio
 from vc_infer_pipeline import VC
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
 
 
 class Config:
