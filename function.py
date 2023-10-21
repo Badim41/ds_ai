@@ -1119,7 +1119,7 @@ async def play_audio_process(ctx):
                                         zipf.write(file_path, os.path.basename(file_path))
 
                                 # Отправляем ссылку на архив
-                                await send_file(ctx, zip_name)
+                                await send_file(ctx, zip_name, delete_file=Treu)
                         # Ссылкой на zip файл
                         elif output == "zip":
                             zip_name = os.path.dirname(audio_path) + f"/all_files.zip"
@@ -1132,7 +1132,7 @@ async def play_audio_process(ctx):
                                     zipf.write(file_path, os.path.basename(file_path))
 
                             # Отправляем ссылку на архив
-                            await send_file(ctx, zip_name)
+                            await send_file(ctx, zip_name, delete_file=Treu)
                     print("audio7")
                     await result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
                     await ctx.send("Играет " + os.path.basename(audio_path)[:-4])

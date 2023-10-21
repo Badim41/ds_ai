@@ -316,9 +316,7 @@ async def __image(ctx,
         spent_time = spent_time[:spent_time.find(".")]
         # отправляем
         await ctx.respond("Вот как я изменил ваше изображение🖌. Потрачено " + spent_time)
-        await send_file(ctx, output_image)
-        # удаляем временные файлы
-        os.remove(output_image)
+        await send_file(ctx, output_image, delete_file=True)
         # перестаём использовать видеокарту
         await stop_use_cuda_async(0)
     except Exception as e:
@@ -811,9 +809,10 @@ async def write_in_discord(ctx, text):
             await ctx.send(part)
 
 
-async def send_file(ctx, file_path):
+async def send_file(ctx, file_path, delete_file=False):
     try:
         await ctx.send(file=discord.File(file_path))
+        os.remove(file_path)
     except FileNotFoundError:
         await ctx.send('Файл не найден.')
     except discord.HTTPException as e:
