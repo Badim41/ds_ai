@@ -225,16 +225,17 @@ def voice_change(cuda_number, voice_model, vocals_path, output_path, pitch_chang
     print("voice_change")
     device = 'cuda:0'
     config2 = Config(device, True)
-    print("DIR-RVC-MODELS:", os.path.join(rvc_models_dir, 'hubert_base.pt'))
-    print("DIR-RVC-MODELS2:", os.path.join(BASE_DIR, "rvc_models", 'hubert_base.pt'))
-    hubert_model = load_hubert(device, config2.is_half, os.path.join(BASE_DIR, "rvc_models", 'hubert_base.pt'))
+    hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
     cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
 
     # convert main vocals
+    print("hubert_model done")
     rvc_infer(rvc_index_path, index_rate, vocals_path, output_path, pitch_change, f0_method, cpt, version, net_g,
               filter_radius, tgt_sr, rms_mix_rate, protect, crepe_hop_length, vc, hubert_model)
     del hubert_model, cpt
+    print("rvc_infer done")
     gc.collect()
+    print("gc.collect done")
 
 
 def add_audio_effects(audio_path, reverb_rm_size, reverb_wet, reverb_dry, reverb_damping):
