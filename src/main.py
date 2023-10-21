@@ -345,14 +345,14 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
         combine_audio([ai_vocals_mixed_path, backup_vocals_path, instrumentals_path], ai_cover_path, main_gain,
                       backup_gain, inst_gain, output_format)
 
-        if not keep_files:
-            display_progress('[~] Removing intermediate audio files...')
-            intermediate_files = [vocals_path, main_vocals_path, ai_vocals_mixed_path]
-            if pitch_change_all != 0:
-                intermediate_files += [instrumentals_path, backup_vocals_path]
-            for file in intermediate_files:
-                if file and os.path.exists(file):
-                    os.remove(file)
+        # if not keep_files:
+        #     display_progress('[~] Removing intermediate audio files...')
+        #     intermediate_files = [vocals_path, main_vocals_path, ai_vocals_mixed_path]
+        #     if pitch_change_all != 0:
+        #         intermediate_files += [instrumentals_path, backup_vocals_path]
+        #     for file in intermediate_files:
+        #         if file and os.path.exists(file):
+        #             os.remove(file)
 
         return ai_cover_path
 
@@ -433,30 +433,29 @@ if __name__ == '__main__':
                                      output_format="mp3", cuda_number=args.cuda_number)
     print(f'[+] Cover generated at {cover_path}')
     # ошибка при генерации
-    # if cover_path is None:
-    #     # if youtube url
-    #     if urlparse(args.song_input).scheme == 'https':
-    #         input_type = 'yt'
-    #         song_id = get_youtube_video_id(args.song_input)
-    #         if song_id is None:
-    #             error_msg = 'Invalid YouTube url.'
-    #             print(error_msg)
-    #
-    #     # local audio file
-    #     else:
-    #         input_type = 'local'
-    #         song_input = args.song_input.strip('\"')
-    #         if os.path.exists(song_input):
-    #             song_id = get_hash(song_input)
-    #         else:
-    #             error_msg = f'{song_input} does not exist.'
-    #             song_id = None
-    #             print(error_msg)
-    #     print("DEV_TEMP: REMOVING " + os.path.join(output_dir, song_id))
-    #     shutil.rmtree(os.path.join(output_dir, song_id))
-    #     print("DEV_TEMP: REMOVED")
-    # else:
-    if True:
+    if cover_path is None:
+        # if youtube url
+        if urlparse(args.song_input).scheme == 'https':
+            input_type = 'yt'
+            song_id = get_youtube_video_id(args.song_input)
+            if song_id is None:
+                error_msg = 'Invalid YouTube url.'
+                print(error_msg)
+
+        # local audio file
+        else:
+            input_type = 'local'
+            song_input = args.song_input.strip('\"')
+            if os.path.exists(song_input):
+                song_id = get_hash(song_input)
+            else:
+                error_msg = f'{song_input} does not exist.'
+                song_id = None
+                print(error_msg)
+        print("DEV_TEMP: REMOVING " + os.path.join(output_dir, song_id))
+        shutil.rmtree(os.path.join(output_dir, song_id))
+        print("DEV_TEMP: REMOVED")
+    else:
         if not args.write_in_queue:
             config.read('config.ini')
             config.set('voice', 'generated_path', cover_path)
