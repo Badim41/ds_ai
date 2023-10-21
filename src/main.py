@@ -76,14 +76,14 @@ def yt_download(link):
         'outtmpl': '%(title)s',
         'nocheckcertificate': True,
         'ignoreerrors': True,
-        'no_warnings': True,
+        'no_warnings': False,
         'quiet': True,
         'extractaudio': True,
         'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3'}],
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         result = ydl.extract_info(link, download=True)
-        download_path = ydl.prepare_filename(result, outtmpl='%(title)s.mp3')
+        download_path = ydl.prepare_filename(result, outtmpl='%(title)s.mp3', warn=True)
     print("download 4")
     end_time = datetime.datetime.now()
     spent_time = str(end_time - start_time)
