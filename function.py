@@ -147,8 +147,8 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             if await voice_commands(temp_spokenText.lower(), ctx):
                 await result_command_change(f"Голосовая команда", Color.CYAN)
                 return
-        except Exception as ex:
-            raise ex
+        except Exception as e:
+            print("Произошла ошибка (ID:f1):", e)
 
         try:
             # memories
@@ -192,8 +192,8 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                 else:
                     await text_to_speech("Промпт не найден!", False, ctx)
                     return
-        except Exception as ex:
-            raise ex
+        except Exception as e:
+            print("Произошла ошибка (ID:f2):", e)
 
         # запись прошлых запросов
         with open(f"texts/memories/{currentAIname}.txt", 'a') as writer2:
@@ -208,8 +208,8 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             if writeAnswer:
                 await write_in_discord(ctx, result)
             await text_to_speech(result, True, ctx)
-        except Exception as ex:
-            raise ex
+        except Exception as e:
+            print("Произошла ошибка (ID:f3):", e)
 
 
 async def is_robot_name(text, ctx):
@@ -539,7 +539,7 @@ async def voice_commands(sentence, ctx):
             await write_in_discord(ctx, result)
             await text_to_speech(result, False, ctx)
         except Exception as e:
-            raise RuntimeError(e)
+            print("Произошла ошибка (ID:f4):", e)
         return True
 
     # маты
@@ -570,7 +570,7 @@ async def voice_commands(sentence, ctx):
                     create_file.write("")
                 await text_to_speech("отчищена память", False, ctx)
             except Exception as e:
-                await result_command_change(f"Ошибка: {e}", Color.RED)
+                await result_command_change(f"Ошибка (ID:f5): {e}", Color.RED)
             return True
         # текущий файл, найденный с помощью 34
         elif protocol_number == 228:
@@ -851,7 +851,7 @@ async def createAICaver(ctx):
                 queue_position += len(lines)
             await write_in_discord(ctx, "Аудио добавлено в очередь. Место в очереди: " + str(queue_position))
     except Exception as e:
-        await result_command_change(f"Произошла ошибка: {e}", Color.RED)
+        await result_command_change(f"Произошла ошибка (ID:f6): {e}", Color.RED)
 
 
 async def getCaverPrms(line, ctx):
@@ -997,8 +997,8 @@ async def prepare_audio_pipeline(cuda_number, ctx):
                         await set_get_config_all("Values", "queue", "False")
                         break
                     await asyncio.sleep(0.5)
-        except (IOError, KeyboardInterrupt):
-            pass
+        except (IOError, KeyboardInterrupt) as e:
+            print(f"Произошла ошибка (ID:f7-cuda{cuda_number}):", e)
 
 
 async def execute_command(command, ctx):
@@ -1012,9 +1012,9 @@ async def execute_command(command, ctx):
             if line.strip():
                 await ctx.send(line)
     except subprocess.CalledProcessError as e:
-        await ctx.send(f"Ошибка выполнения команды: {e}")
+        await ctx.send(f"Ошибка выполнения команды (ID:f8): {e}")
     except Exception as e:
-        await ctx.send(f"Произошла неизвестная ошибка: {e}")
+        await ctx.send(f"Произошла неизвестная ошибка (ID:f9): {e}")
 
 
 async def remove_line_from_txt(file_path, delete_line):
@@ -1037,7 +1037,7 @@ async def remove_line_from_txt(file_path, delete_line):
             for line in lines:
                 writer.write(line)
     except IOError as e:
-        await result_command_change(f"Ошибка {e}", Color.RED)
+        await result_command_change(f"Ошибка  (ID:f10) {e}", Color.RED)
 
 
 async def file_was_filler(folder, file_list):
@@ -1048,7 +1048,7 @@ async def file_was_filler(folder, file_list):
                     file_list.append(os.path.join(root, file))
         return file_list
     except IOError as e:
-        await result_command_change(f"Ошибка {e}", Color.RED)
+        await result_command_change(f"Ошибка (ID:f11)  {e}", Color.RED)
 
 
 async def play_audio_process(ctx):
@@ -1073,8 +1073,8 @@ async def play_audio_process(ctx):
                     if not continue_process:
                         await result_command_change(f"file_have_links - False", Color.CYAN)
                         break
-    except (IOError, KeyboardInterrupt):
-        pass
+    except (IOError, KeyboardInterrupt) as e:
+        print("Произошла ошибка (ID:f12):", e)
 
 
 async def wait_for_file(file_name, max_attempts, delay):
@@ -1127,8 +1127,8 @@ async def console_command_runner(command, ctx):
             await text_to_speech("Видео не скачалось по неизвестной причине", False, ctx)
             return False
         return True
-    except (subprocess.CalledProcessError, IOError, Exception):
-        pass
+    except (subprocess.CalledProcessError, IOError, Exception) as e:
+        print("Произошла ошибка (ID:f13):", e)
 
 
 async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
@@ -1154,8 +1154,8 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
             with open(f"texts/memories/{ai_dictionary}.txt", 'a') as writer2:
                 tts_no_n = tts.replace("\n", " ")
                 writer2.write(f"GPT: {tts_no_n}\n")
-        except IOError as ex:
-            raise RuntimeError(ex)
+        except IOError as e:
+            print("Произошла ошибка (ID:f14):", e)
         lines_number = 0
         with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
             lines = reader.readlines()
@@ -1169,7 +1169,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
                 with open(f"texts/memories/{ai_dictionary}.txt", 'w') as writer:
                     writer.writelines(lines)
             except IOError as e:
-                await result_command_change(f"Ошибка при выполнении команды: {e}", Color.RED)
+                await result_command_change(f"Ошибка при выполнении команды (ID:f51): {e}", Color.RED)
 
     if not ctx.voice_client:
         await result_command_change("skip tts", Color.CYAN)
@@ -1206,7 +1206,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
 
         save(audio, file_name)
     except Exception as e:
-        await result_command_change(f"Ошибка при выполнении команды: {e}", Color.YELLOW)
+        await result_command_change(f"Ошибка при выполнении команды (ID:f16): {e}", Color.YELLOW)
         await remove_unavaible_voice_token()
         await text_to_speech(tts, False, ctx, ai_dictionary=ai_dictionary)
         return
@@ -1234,7 +1234,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         print("run RVC, AIName:", ai_dictionary)
         subprocess.run(command, check=True)
     except subprocess.CalledProcessError as e:
-        await result_command_change(f"Ошибка при выполнении команды: {e}", Color.RED)
+        await result_command_change(f"Ошибка при выполнении команды (ID:f17): {e}", Color.RED)
         await playSoundFile("1.mp3", -1, 0, ctx)
         return
     await result_command_change("done RVC", Color.GREEN)
@@ -1291,23 +1291,25 @@ async def setModelWithLanguage(language, model_type):
 async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
     from pydub import AudioSegment
     from discord_bot import playSoundFileDiscord
+    try:
+        if not ctx.voice_client:
+            print("Skip play")
+            return
 
-    if not ctx.voice_client:
-        print("Skip play")
-        return
+        if not await wait_for_file(audio_file_path, 100, 10):
+            await result_command_change("Файл недоступен", Color.RED)
+            return
 
-    if not await wait_for_file(audio_file_path, 100, 10):
-        await result_command_change("Файл недоступен", Color.RED)
-        return
+        # Проверяем, чтобы ничего не играло
+        # перенесено
 
-    # Проверяем, чтобы ничего не играло
-    # перенесено
+        if duration <= 0:
+            duration = len(AudioSegment.from_file(audio_file_path)) / 1000
 
-    if duration <= 0:
-        duration = len(AudioSegment.from_file(audio_file_path)) / 1000
-
-    await playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds)
-    print("Аудио закончилось")
+        await playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds)
+        print("Аудио закончилось")
+    except Exception as e:
+        print("Ошибка проигрывания файла: ", e)
 
 
 async def fileFind(sentence, ctx):
@@ -1380,8 +1382,8 @@ async def extract_double_after_keyword(input, keyword):
         try:
             if numberStr:
                 return float(numberStr.replace(',', '.'))
-        except ValueError:
-            pass
+        except ValueError as e:
+            print("Произошла ошибка (ID:f18):", e)
 
     return -1
 
