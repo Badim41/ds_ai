@@ -1059,7 +1059,7 @@ async def play_audio_process(ctx):
         while True:
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
-                if not line is None:
+                if not line is None and not line == "":
                     params = await getCaverPrms(line, ctx)
                     time = await extract_number_after_keyword(params, "-time")
                     stop_milliseconds = await extract_number_after_keyword(params, "-start")
