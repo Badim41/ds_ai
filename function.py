@@ -960,6 +960,7 @@ async def getCaverPrms(line, ctx):
 
 async def prepare_audio_pipeline(cuda_number, ctx):
     print(f"prepare_audio. GPU:{cuda_number}")
+    await asyncio.sleep(cuda_number / 2)
     while True:
         try:
             with open("caversAI/audio_links.txt") as reader:
