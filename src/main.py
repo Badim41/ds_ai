@@ -177,11 +177,11 @@ def preprocess_song(song_input, mdx_model_params, song_id, input_type=None):
     audio_part1 = audio[:half_length]
     audio_part2 = audio[half_length:]
 
-    audio_part1.export(orig_song_path, format="mp3")
-    audio_part2.export(orig_song_path, format="mp3")
+    audio_part1.export("0" + orig_song_path, format="mp3")
+    audio_part2.export("1" + orig_song_path, format="mp3")
 
-    args1 = (0, mdx_model_params, song_output_dir, orig_song_path, keep_orig)
-    args2 = (1, mdx_model_params, song_output_dir, orig_song_path, keep_orig)
+    args1 = (0, mdx_model_params, song_output_dir, "0" + orig_song_path, keep_orig)
+    args2 = (1, mdx_model_params, song_output_dir, "1" + orig_song_path, keep_orig)
 
     pool = multiprocessing.Pool(2)
     results = pool.map(mdx_runner_wrapper, [args1, args2])
@@ -194,19 +194,19 @@ def preprocess_song(song_input, mdx_model_params, song_id, input_type=None):
 
     # объединение и экспорт
     result_vocals = AudioSegment.from_file(vocals_path1, format="mp3") + AudioSegment.from_file(vocals_path2,format="mp3")
-    result_vocals.export(song_output_dir + "/vocals.mp3", format="mp3")
+    result_vocals.export("vocals.mp3", format="mp3")
 
     result_instrumentals = AudioSegment.from_file(instrumentals_path1, format="mp3") + AudioSegment.from_file(instrumentals_path2, format="mp3")
-    result_instrumentals.export(song_output_dir + "/instrumentals.mp3", format="mp3")
+    result_instrumentals.export("instrumentals.mp3", format="mp3")
 
     result_main_vocals = AudioSegment.from_file(main_vocals_path1, format="mp3") + AudioSegment.from_file(main_vocals_path2, format="mp3")
-    result_main_vocals.export(song_output_dir + "/main_vocals.mp3", format="mp3")
+    result_main_vocals.export("main_vocals.mp3", format="mp3")
 
     result_backup_vocals = AudioSegment.from_file(backup_vocals_path1, format="mp3") + AudioSegment.from_file(backup_vocals_path2, format="mp3")
-    result_backup_vocals.export(song_output_dir + "/backup_vocals.mp3", format="mp3")
+    result_backup_vocals.export("backup_vocals.mp3", format="mp3")
 
     result_main_vocals_dereverb = AudioSegment.from_file(main_vocals_dereverb_path1, format="mp3") + AudioSegment.from_file(main_vocals_dereverb_path2, format="mp3")
-    result_main_vocals_dereverb.export(song_output_dir + "/main_vocals_dereverb.mp3", format="mp3")
+    result_main_vocals_dereverb.export("main_vocals_dereverb.mp3", format="mp3")
 
     # удаление временных файлов
     # for result in results:
@@ -215,11 +215,11 @@ def preprocess_song(song_input, mdx_model_params, song_id, input_type=None):
 
     return (
         orig_song_path,
-        song_output_dir + "/vocals.mp3",
-        song_output_dir + "/instrumentals.mp3",
-        song_output_dir + "/main_vocals.mp3",
-        song_output_dir + "/backup_vocals.mp3",
-        song_output_dir + "/main_vocals_dereverb.mp3"
+        "vocals.mp3",
+        "instrumentals.mp3",
+        "main_vocals.mp3",
+        "backup_vocals.mp3",
+        "main_vocals_dereverb.mp3"
     )
 
 
