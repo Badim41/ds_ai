@@ -484,10 +484,12 @@ async def pause(ctx):
         await ctx.respond('Выполнение...')
         voice_client = ctx.voice_client
         if voice_client.is_playing():
-            voice_client.pause()
+            # voice_client.pause()
+            await set_get_config_all("Sound", "pause", "True")
             await ctx.respond("Пауза ⏸")
         elif voice_client.is_paused():
-            voice_client.resume()
+            # voice_client.resume()
+            await set_get_config_all("Sound", "pause", "False")
             await ctx.respond("Продолжаем воспроизведение ▶️")
         else:
             await ctx.respond("Нет активного аудио для приостановки или продолжения.")
@@ -834,8 +836,19 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     ctx.voice_client.play(source)
 
     # Ожидаем окончания проигрывания
+    resume = False
     while ctx.voice_client.is_playing():
         await asyncio.sleep(1)
+        voice_client = ctx.voice_client
+        pause = await set_get_config_all("Sound", "pause", None) == "True"
+        if pause:
+            resume = True
+            voice_client.pause()
+            while await set_get_config_all("Sound", "pause", None) == "True":
+                await asyncio.sleep(0.25)
+        if resume:
+            voice_client.resume()
+
         # stop_milliseconds += 1000
         await set_get_config("stop_milliseconds", int(await set_get_config("stop_milliseconds")) + 1000)
 
