@@ -371,6 +371,62 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
 #         print(e)
 #     return False
 
+def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radius=3, rms_mix_rate=0.25,
+        pitch_detection_algo='rmvpe', crepe_hop_length=128, protect=0.33, main_vol=0, backup_vol=0, inst_vol=0,
+        pitch_change_all=0, reverb_size=0.15, reverb_wetness=0.2, reverb_dryness=0.8, reverb_damping=0.7,
+        output_format='mp3', start='0', time='-1', write_in_queue=True, cuda_number=0, output='None'):
+
+    if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
+        raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
+    cover_path = song_cover_pipeline(song_input, rvc_dirname, pitch, False,
+                                     main_gain=main_vol, backup_gain=backup_vol, inst_gain=inst_vol,
+                                     index_rate=index_rate, filter_radius=filter_radius,
+                                     rms_mix_rate=rms_mix_rate, f0_method=pitch_detection_algo,
+                                     crepe_hop_length=crepe_hop_length, protect=protect,
+                                     pitch_change_all=pitch_change_all,
+                                     reverb_rm_size=reverb_size, reverb_wet=reverb_wetness,
+                                     reverb_dry=reverb_dryness, reverb_damping=reverb_damping,
+                                     output_format=output_format, cuda_number=cuda_number)
+    print(f'[+] Cover generated at {cover_path}')
+    # ошибка при генерации
+    if cover_path is None:
+        # if youtube url
+        if urlparse(song_input).scheme == 'https':
+            song_id = get_youtube_video_id(song_input)
+            if song_id is None:
+                error_msg = 'Invalid YouTube url.'
+                print(error_msg)
+
+        # local audio file
+        else:
+            song_input = song_input.strip('\"')
+            if os.path.exists(song_input):
+                song_id = get_hash(song_input)
+            else:
+                error_msg = f'{song_input} does not exist.'
+                song_id = None
+                print(error_msg)
+        print("DEV_TEMP: REMOVING " + os.path.join(output_dir, song_id))
+        shutil.rmtree(os.path.join(output_dir, song_id))
+        print("DEV_TEMP: REMOVED")
+    else:
+        if not write_in_queue:
+            config.read('config.ini')
+            config.set('voice', 'generated_path', cover_path)
+            # Сохранение
+            with open('config.ini', 'w') as configfile:
+                config.write(configfile)
+        else:
+            try:
+                # Записываем путь файла в очередь
+                with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "r", encoding='utf-8') as reader:
+                    lines = reader.readlines()
+                with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "w", encoding='utf-8') as writer:
+                    writer.writelines(lines)
+                    writer.write(f"{cover_path} -time {time} -start {start} -output {output}\n")
+            except IOError as e:
+                print(e)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate a AI cover song in the song_output/id directory.',
@@ -436,7 +492,6 @@ if __name__ == '__main__':
     if cover_path is None:
         # if youtube url
         if urlparse(args.song_input).scheme == 'https':
-            input_type = 'yt'
             song_id = get_youtube_video_id(args.song_input)
             if song_id is None:
                 error_msg = 'Invalid YouTube url.'
@@ -444,7 +499,6 @@ if __name__ == '__main__':
 
         # local audio file
         else:
-            input_type = 'local'
             song_input = args.song_input.strip('\"')
             if os.path.exists(song_input):
                 song_id = get_hash(song_input)

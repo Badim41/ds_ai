@@ -617,6 +617,8 @@ async def __cover(
                           max_value=1),
         loudness: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.2, min_value=0,
                          max_value=1),
+        filter_radius: Option(int, description='Насколько далеко от каждой точки в данных будут учитываться значения для вычисления результата фильтрации (я не знаю как это объяснить)', required=False, default=3, min_value=0,
+                         max_value=6),
         main_vocal: Option(int, description='Громкость основного вокала (от -20 до 0)', required=False, default=0,
                            min_value=-20, max_value=0),
         back_vocal: Option(int, description='Громкость бэквокала (от -20 до 0)', required=False, default=0,
@@ -663,6 +665,8 @@ async def __cover(
             params.append(f"-indexrate {indexrate}")
         if loudness != 0.2:
             params.append(f"-loudness {loudness}")
+        if filter_radius != 3:
+            params.append(f"-filter_radius {filter_radius}")
         if main_vocal != 0:
             params.append(f"-vocal {main_vocal}")
         if back_vocal != 0:

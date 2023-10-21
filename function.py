@@ -139,7 +139,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
 
     # wait
     if "-wait" in spokenText:
-        await getCaverPrms(spokenText, "-wait", wait=True)
+        await run_ai_cover_gen(spokenText, "-wait", wait=True)
     await result_command_change(f"RowInput:{spokenText}", Color.GRAY)
     temp_spokenText = spokenText
 
@@ -871,14 +871,16 @@ async def createAICaver(ctx):
         raise e
 
 
-async def getCaverPrms(line, ctx, wait=False):
+async def run_ai_cover_gen(line, ctx, wait=False):
     global currentAIname, currentAIinfo
-    # SONG_INPUT
+    # WAIT and return
     if "-wait" in line:
         if wait:
             seconds = await extract_number_after_keyword(line, "-wait")
             await asyncio.sleep(seconds)
+            return
 
+    # SONG_INPUT
     url = "."
     if "-url" in line:
         url = line[line.index("-url") + 5:]
@@ -917,6 +919,12 @@ async def getCaverPrms(line, ctx, wait=False):
         indexrate = await extract_double_after_keyword(line, "-indexrate")
         if indexrate < 0 or indexrate > 1:
             indexrate = 0.5
+    # FILTER_RADIUS
+    filter_radius = 3
+    if "-filter_radius" in line:
+        filter_radius = await extract_double_after_keyword(line, "-filter_radius")
+        if filter_radius < 0 or filter_radius > 7:
+            filter_radius = 0.5
 
     # RMS_MIX_RATE
     loudness = 0.2
@@ -974,6 +982,13 @@ async def getCaverPrms(line, ctx, wait=False):
         if start < 0:
             start = 0
 
+    # начало
+    cuda = 0
+    if "-cuda" in line:
+        cuda = await extract_number_after_keyword(line, "-cuda")
+        if cuda < 0:
+            cuda = 0
+
     output = "None"
     if "-output" in line:
         output = line[line.index("-output") + 8:]
@@ -982,7 +997,40 @@ async def getCaverPrms(line, ctx, wait=False):
 
     outputFormat = "mp3"
 
-    return f"python src/main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output}"
+    print(
+        f"python src/main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output}")
+
+    from src.main import run_ai_cover_gen
+    loop = asyncio.get_event_loop()
+    # song_input, rvc_dirname, pitch, keep_files=False, index_rate=0.5, filter_radius=3, rms_mix_rate=0.25,
+    #         pitch_detection_algo='rmvpe', crepe_hop_length=128, protect=0.33, main_vol=0, backup_vol=0, inst_vol=0,
+    #         pitch_change_all=0, reverb_size=0.15, reverb_wetness=0.2, reverb_dryness=0.8, reverb_damping=0.7,
+    #         output_format='mp3', start='0', time='-1', write_in_queue=True, cuda_number=0, output='None'
+    await loop.run_in_executor(None, run_ai_cover_gen,
+                               url,
+                               voice,
+                               pitch,
+                               indexrate,
+                               filter_radius,
+                               loudness,
+                               "rmvpe",
+                               128,
+                               0.1,
+                               mainVocal,
+                               backVocal,
+                               music,
+                               0,
+                               roomsize,
+                               wetness,
+                               dryness,
+                               0.7,
+                               "mp3",
+                               start,
+                               time,
+                               True,
+                               cuda,
+                               output)
+
 
 
 # async def defaultRVCParams(filePath, pitch):
@@ -1013,12 +1061,10 @@ async def prepare_audio_pipeline(cuda_number, ctx):
                     #     print("Условия не выполнены")
                     #     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     #     break
-                    params = await getCaverPrms(line, ctx)
-                    await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     await result_command_change(f"запуск AICoverGen", Color.CYAN)
-                    params += f" -cuda {cuda_number}"
-                    print("Params:", params)
-                    await execute_command(params, ctx)
+                    await remove_line_from_txt("caversAI/audio_links.txt", 1)
+                    await run_ai_cover_gen(f"{line} -cuda {cuda_number}", ctx)
+                    # await execute_command(params, ctx)
                     await asyncio.sleep(0.05)
                 else:
                     await set_get_config_all("Values", f"cuda{cuda_number}_is_busy", "False")
@@ -1101,12 +1147,11 @@ async def play_audio_process(ctx):
                 if not line is None and not line == "":
 
                     print("audio1")
-                    params = await getCaverPrms(line, ctx)
                     print("audio2")
-                    time = await extract_number_after_keyword(params, "-time")
+                    time = await extract_number_after_keyword(line, "-time")
                     output = line[line.find("-output") + 8:]
                     output = output[:output.find(" ")]
-                    stop_milliseconds = await extract_number_after_keyword(params, "-start")
+                    stop_milliseconds = await extract_number_after_keyword(line, "-start")
                     audio_path = line[:line.find(" -time")]
                     print("audio3")
 
