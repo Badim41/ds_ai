@@ -1103,6 +1103,7 @@ async def play_audio_process(ctx):
                         from discord_bot import send_file
                         # конечный файл
                         if output == "file":
+                            print("PATH:", audio_path)
                             await send_file(ctx, audio_path)
                         # все файлы
                         elif output == "all_files":
