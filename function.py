@@ -1177,7 +1177,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     language = await set_get_config_all("Default", "language")
     max_simbols = await set_get_config_all("voice", "max_simbols")
 
-    if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_tokens") == "None":
+    if (len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_tokens") == "None") and not ai_dictionary == "None":
         await result_command_change("gtts1", Color.CYAN)
         await gtts(tts, language[:2], file_name)
         await playSoundFile(file_name, -1, 0, ctx)
