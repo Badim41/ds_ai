@@ -675,7 +675,7 @@ async def __cover(
         await run_main_with_settings(ctx, "робот протокол 13 " + param_string, False)
         # output..
     except Exception as e:
-        await ctx.respond(f"Ошибка при изменении голоса (с параметрами {param_string}): {e}")
+        await ctx.send(f"Ошибка при изменении голоса (с параметрами {param_string}): {e}")
 
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
