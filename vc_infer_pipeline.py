@@ -14,7 +14,7 @@ import traceback
 from scipy import signal
 from torch import Tensor
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 bh, ah = signal.butter(N=5, Wn=48, btype="high", fs=16000)
 
