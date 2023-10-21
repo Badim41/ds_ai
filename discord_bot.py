@@ -993,6 +993,6 @@ if __name__ == "__main__":
         # ==== load bot ====
         print("====load bot====")
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(bot.start('YOUR_BOT_TOKEN'))
+        loop.run_until_complete(bot.start(discord_token))
     except Exception as e:
         print(f"Произошла ошибка: {e}")
