@@ -1279,7 +1279,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
             "-i", f"\"{file_name}\"",
             "-o", "2.mp3",
             "-dir", str(ai_dictionary),
-            "-p", f"\"{pitch}\"",
+            "-p", f"{pitch}",
             "-ir", "0.5",
             "-fr", "3",
             "-rms", "0.3",

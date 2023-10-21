@@ -69,8 +69,8 @@ def get_youtube_video_id(url, ignore_playlist=True):
 
 def yt_download(link):
     import datetime
-    start_time = datetime.datetime.now()
-    print("download 1")
+    current_datetime = datetime.datetime.now()
+    current_time = current_datetime.time()
     ydl_opts = {
         'format': 'bestaudio',
         'outtmpl': '%(title)s',
@@ -81,16 +81,12 @@ def yt_download(link):
         'extractaudio': True,
         'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3'}],
     }
-    print("download 2")
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         result = ydl.extract_info(link, download=True)
-        print("download 3")
         download_path = ydl.prepare_filename(result, outtmpl='%(title)s.mp3')
-    print("download 4")
-    end_time = datetime.datetime.now()
-    spent_time = str(end_time - start_time)
-    spent_time = spent_time[:spent_time.find(".")]
-    print("Скачано за ", spent_time)
+
+    current_datetime = datetime.datetime.now()
+    current_time = current_datetime.time()
     return download_path
 
 
@@ -180,9 +176,7 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
         keep_orig = False
         if input_type == 'yt':
             display_progress('[~] Downloading song...')
-            # print("song_input", song_input)
             song_link = song_input.split('&')[0]
-            print("song_link", song_link)
             orig_song_path = yt_download(song_link)
             print("downloaded")
         elif input_type == 'local':
@@ -214,7 +208,6 @@ def download_video_or_use_file(song_input, input_type):
     keep_orig = False
     if input_type == 'yt':
         display_progress('[~] Downloading song...')
-        print(song_input)
         song_link = song_input.split('&')[0]
         print(song_link)
         orig_song_path = yt_download(song_link)
