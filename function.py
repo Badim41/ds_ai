@@ -1375,8 +1375,7 @@ async def extract_number_after_keyword(input, keyword):
     return -1
 
 
-async def extract_double_after_keyword(input, keyword):
-    input = ''.join(char if char.isalnum() or char.isspace() else ' ' for char in input)
+def extract_double_after_keyword(input, keyword):
     index = input.find(keyword)
 
     if index != -1:
@@ -1388,7 +1387,7 @@ async def extract_double_after_keyword(input, keyword):
             if numberStr:
                 return float(numberStr.replace(',', '.'))
         except ValueError as e:
-            await result_command_change("Произошла ошибка (ID:f18):" + str(e), Color.RED)
+            pass
 
     return -1
 
