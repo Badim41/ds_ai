@@ -67,9 +67,6 @@ def get_youtube_video_id(url, ignore_playlist=True):
 
 
 def yt_download(link):
-    import datetime
-    current_datetime = datetime.datetime.now()
-    current_time = current_datetime.time()
     ydl_opts = {
         'format': 'bestaudio',
         'outtmpl': '%(title)s',
@@ -83,9 +80,6 @@ def yt_download(link):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         result = ydl.extract_info(link, download=True)
         download_path = ydl.prepare_filename(result, outtmpl='%(title)s.mp3')
-
-    current_datetime = datetime.datetime.now()
-    current_time = current_datetime.time()
     return download_path
 
 
