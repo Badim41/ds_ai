@@ -162,7 +162,7 @@ def get_hash(filepath):
     return file_hash.hexdigest()[:11]
 
 
-def display_progress(message, percent, is_webui=None):
+def display_progress(message):
     print(message)
 
 
@@ -174,7 +174,7 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
 
     keep_orig = False
     if input_type == 'yt':
-        display_progress('[~] Downloading song...', 0)
+        display_progress('[~] Downloading song...')
         song_link = song_input.split('&')[0]
         orig_song_path = yt_download(song_link)
     elif input_type == 'local':
@@ -184,15 +184,15 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
         orig_song_path = None
     song_output_dir = os.path.join(output_dir, song_id)
     orig_song_path = convert_to_stereo(orig_song_path)
-    display_progress('[~] Separating Vocals from Instrumental...', 0.1)
+    display_progress('[~] Separating Vocals from Instrumental...')
     vocals_path, instrumentals_path = run_mdx(mdx_model_params, song_output_dir,
                                               os.path.join(mdxnet_models_dir, 'UVR-MDX-NET-Voc_FT.onnx'),
                                               orig_song_path, denoise=True, keep_orig=keep_orig)
-    display_progress('[~] Separating Main Vocals from Backup Vocals...', 0.2)
+    display_progress('[~] Separating Main Vocals from Backup Vocals...')
     backup_vocals_path, main_vocals_path = run_mdx(mdx_model_params, song_output_dir,
                                                    os.path.join(mdxnet_models_dir, 'UVR_MDXNET_KARA_2.onnx'),
                                                    vocals_path, suffix='Backup', invert_suffix='Main', denoise=True)
-    display_progress('[~] Applying DeReverb to Vocals...', 0.3)
+    display_progress('[~] Applying DeReverb to Vocals...')
     _, main_vocals_dereverb_path = run_mdx(mdx_model_params, song_output_dir,
                                            os.path.join(mdxnet_models_dir, 'Reverb_HQ_By_FoxJoy.onnx'),
                                            main_vocals_path, invert_suffix='DeReverb', exclude_main=True,
@@ -203,7 +203,7 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
 def download_video_or_use_file(song_input, input_type):
     keep_orig = False
     if input_type == 'yt':
-        display_progress('[~] Downloading song...', 0)
+        display_progress('[~] Downloading song...')
         song_link = song_input.split('&')[0]
         orig_song_path = yt_download(song_link)
     elif input_type == 'local':
@@ -278,7 +278,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
         if not song_input or not voice_model:
             print('Ensure that the song input field and voice model field is filled.', is_webui)
 
-        display_progress('\n[~] Starting AI Cover Generation Pipeline...', 0, is_webui)
+        display_progress('\n[~] Starting AI Cover Generation Pipeline...')
 
         with open(os.path.join(mdxnet_models_dir, 'model_data.json')) as infile:
             mdx_model_params = json.load(infile)
@@ -326,16 +326,16 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
                                      f'{os.path.splitext(os.path.basename(orig_song_path))[0]} ({voice_model} Ver).{output_format}')
 
         if not os.path.exists(ai_vocals_path):
-            display_progress('[~] Converting voice using RVC...', 0.5, is_webui)
+            display_progress('[~] Converting voice using RVC...')
             voice_change(cuda_number, voice_model, main_vocals_dereverb_path, ai_vocals_path, pitch_change, f0_method,
                          index_rate,
                          filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui)
 
-        display_progress('[~] Applying audio effects to Vocals...', 0.8, is_webui)
+        display_progress('[~] Applying audio effects to Vocals...')
         ai_vocals_mixed_path = add_audio_effects(ai_vocals_path, reverb_rm_size, reverb_wet, reverb_dry, reverb_damping)
 
         if pitch_change_all != 0:
-            display_progress('[~] Applying overall pitch change', 0.85, is_webui)
+            display_progress('[~] Applying overall pitch change')
             instrumentals_path = pitch_shift(instrumentals_path, pitch_change_all)
             backup_vocals_path = pitch_shift(backup_vocals_path, pitch_change_all)
         # BACK VOCAL CHANGE
@@ -343,12 +343,12 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
             voice_change(cuda_number, voice_model, main_vocals_dereverb_path, backup_vocals_path, pitch_change, f0_method,
                          index_rate,
                          filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui)
-        display_progress('[~] Combining AI Vocals and Instrumentals...', 0.9, is_webui)
+        display_progress('[~] Combining AI Vocals and Instrumentals...')
         combine_audio([ai_vocals_mixed_path, backup_vocals_path, instrumentals_path], ai_cover_path, main_gain,
                       backup_gain, inst_gain, output_format)
 
         if not keep_files:
-            display_progress('[~] Removing intermediate audio files...', 0.95, is_webui)
+            display_progress('[~] Removing intermediate audio files...')
             intermediate_files = [vocals_path, main_vocals_path, ai_vocals_mixed_path]
             if pitch_change_all != 0:
                 intermediate_files += [instrumentals_path, backup_vocals_path]

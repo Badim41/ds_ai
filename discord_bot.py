@@ -619,12 +619,17 @@ async def __cover(
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
                         max_value=1),
         start: Option(int, description='Начать воспроизводить с (в секундах)', required=False, default=0, min_value=0),
-        output: Option(bool, description='Отправить результат', choices=["zip", "file", "all_files", "None"], required=False, default="file")
+        output: Option(bool, description='Отправить результат', choices=["zip", "file", "all_files", "None"], required=False, default="file"),
+        wait_before: Option(int, description='Сколько секунд ещё подождать команд (во время обработки слэш-команды не работают!)', required=False, default=None, min_value=0, max_value=60),
 ):
     param_string = None
     try:
         await ctx.defer()
-        await ctx.respond('Выполнение...')
+        if not wait_before is None:
+            await ctx.respond(f'Жду ваших команд ещё {wait_before} секунд')
+            await asyncio.sleep(wait_before)
+        else:
+            await ctx.respond('Выполнение...')
         params = []
         if audio_path:
             filename = str(random.randint(1, 1000000)) + ".mp3"
