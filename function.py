@@ -137,6 +137,9 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     global robot_names
     robot_names = ["robot", "robots", "робот", "нейросеть", "hello", "роботы", "ропот"]
 
+    # wait
+    if "-wait" in spokenText:
+        await getCaverPrms(spokenText, "-wait", wait=True)
     await result_command_change(f"RowInput:{spokenText}", Color.GRAY)
     temp_spokenText = spokenText
 
@@ -861,12 +864,13 @@ async def createAICaver(ctx):
         raise e
 
 
-async def getCaverPrms(line, ctx):
+async def getCaverPrms(line, ctx, wait=False):
     global currentAIname, currentAIinfo
     # SONG_INPUT
     if "-wait" in line:
-        wait = await extract_number_after_keyword(line, "-wait")
-        await asyncio.sleep(wait)
+        if wait:
+            seconds = await extract_number_after_keyword(line, "-wait")
+            await asyncio.sleep(seconds)
 
     url = "."
     if "-url" in line:
