@@ -76,14 +76,16 @@ def yt_download(link):
         'outtmpl': '%(title)s',
         'nocheckcertificate': True,
         'ignoreerrors': True,
-        'no_warnings': False,
+        'no_warnings': True,
         'quiet': True,
         'extractaudio': True,
         'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3'}],
     }
+    print("download 2")
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         result = ydl.extract_info(link, download=True)
-        download_path = ydl.prepare_filename(result, outtmpl='%(title)s.mp3', warn=True)
+        print("download 3")
+        download_path = ydl.prepare_filename(result, outtmpl='%(title)s.mp3')
     print("download 4")
     end_time = datetime.datetime.now()
     spent_time = str(end_time - start_time)
@@ -180,7 +182,7 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
             display_progress('[~] Downloading song...')
             # print("song_input", song_input)
             song_link = song_input.split('&')[0]
-            # print("song_link", song_link)
+            print("song_link", song_link)
             orig_song_path = yt_download(song_link)
             print("downloaded")
         elif input_type == 'local':
