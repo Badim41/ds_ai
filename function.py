@@ -1292,6 +1292,10 @@ async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
     from pydub import AudioSegment
     from discord_bot import playSoundFileDiscord
 
+    if not ctx.voice_client:
+        print("Skip play")
+        return
+
     if not await wait_for_file(audio_file_path, 100, 10):
         await result_command_change("Файл недоступен", Color.RED)
         return
