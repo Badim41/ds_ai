@@ -7,6 +7,7 @@ import re
 import subprocess
 import sys
 import time
+import traceback
 import zipfile
 
 from IPython.display import FileLink
@@ -855,6 +856,7 @@ async def createAICaver(ctx):
                 queue_position += len(lines)
             await write_in_discord(ctx, "Аудио добавлено в очередь. Место в очереди: " + str(queue_position))
     except Exception as e:
+        traceback_str = traceback.format_exc()
         await result_command_change(f"Произошла ошибка (ID:f6): {str(e)}", Color.RED)
         raise e
 
