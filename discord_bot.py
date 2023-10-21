@@ -689,7 +689,7 @@ async def __cover(
         if audio_path:
             filename = str(random.randint(1, 1000000)) + ".mp3"
             await audio_path.save(filename)
-            params.append(f"-url {filename}")
+            param_string += f" -url {filename} "
         elif url:
             functions = []
             if ";" in url:
