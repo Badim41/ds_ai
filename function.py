@@ -1151,6 +1151,7 @@ async def play_audio_process(ctx):
                     audio_path = line[:line.find(" -time")]
 
                     if not output == "None":
+                        await ctx.send("===Файлы " + os.path.basename(audio_path)[:-4] + "===")
                         # file sizes
                         max_file_size = int(await set_get_config_all("Default", "max_file_size", None)) * 1024 * 1024
                         can_send = await chech_file_size(os.path.dirname(audio_path), max_file_size)
