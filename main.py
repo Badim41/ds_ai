@@ -225,6 +225,7 @@ def voice_change(cuda_number, voice_model, vocals_path, output_path, pitch_chang
     print("voice_change")
     device = 'cuda:0'
     config2 = Config(device, True)
+    print("DIR-RVC-MODELS:", os.path.join(rvc_models_dir, 'hubert_base.pt'))
     hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
     cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
 

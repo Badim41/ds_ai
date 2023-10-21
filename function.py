@@ -1143,17 +1143,12 @@ async def play_audio_process(ctx):
         while True:
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
-                print("audio0")
                 if not line is None and not line == "":
-
-                    print("audio1")
-                    print("audio2")
                     time = await extract_number_after_keyword(line, "-time")
                     output = line[line.find("-output") + 8:]
                     output = output[:output.find(" ")]
                     stop_milliseconds = await extract_number_after_keyword(line, "-start")
                     audio_path = line[:line.find(" -time")]
-                    print("audio3")
 
                     if not output == "None":
                         # file sizes
@@ -1161,7 +1156,6 @@ async def play_audio_process(ctx):
                         can_send = await chech_file_size(os.path.dirname(audio_path), max_file_size)
 
                         output = output.replace(" ", "")
-                        print("audio6_TRUE")
                         from discord_bot import send_file
                         # конечный файл
                         if output == "file":
@@ -1206,8 +1200,6 @@ async def play_audio_process(ctx):
                                 await send_file(ctx, zip_name, delete_file=True)
                     else:
                         await ctx.send("Играет " + os.path.basename(audio_path)[:-4])
-
-                    print("audio7")
                     await result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
                     await playSoundFile(audio_path, time, stop_milliseconds, ctx)
                     await remove_line_from_txt("caversAI/queue.txt", 1)
