@@ -831,14 +831,12 @@ async def removePunctuation(input, chars):
 async def createAICaver(ctx):
     try:
         global spokenText
-        message = spokenText
-        lines = message.split("\n")
         if not os.path.exists("caversAI/audio_links.txt"):
             with open("caversAI/audio_links.txt", "w"):
                 pass
         with open("caversAI/audio_links.txt", "a") as writer:
-            for line in lines:
-                writer.write(line + "\n")
+            print("add_in_list:", spokenText)
+            writer.write(spokenText + "\n")
         config.read('config.ini')
         continue_process = config.getboolean('Values', 'queue')
         if not continue_process:
@@ -998,7 +996,7 @@ async def run_ai_cover_gen(line, ctx, wait=False):
     outputFormat = "mp3"
 
     print(
-        f"python main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output}")
+        f"python main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda}")
 
     from main import run_ai_cover_gen
     loop = asyncio.get_event_loop()

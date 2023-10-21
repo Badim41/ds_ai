@@ -229,11 +229,9 @@ def voice_change(cuda_number, voice_model, vocals_path, output_path, pitch_chang
     cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
 
     # convert main vocals
-    print("hubert_model done")
     rvc_infer(rvc_index_path, index_rate, vocals_path, output_path, pitch_change, f0_method, cpt, version, net_g,
               filter_radius, tgt_sr, rms_mix_rate, protect, crepe_hop_length, vc, hubert_model)
     del hubert_model, cpt
-    print("rvc_infer done")
     gc.collect()
     print("gc.collect done")
 
