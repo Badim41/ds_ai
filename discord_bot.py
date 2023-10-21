@@ -634,7 +634,8 @@ async def __cover(
         elif url:
             params.append(f"-url {url}")
         else:
-            return ctx.respond('Не указана ссылка или аудиофайл')
+            await ctx.respond('Не указана ссылка или аудиофайл')
+            return
         if voice is None:
             voice = await set_get_config_default("currentAIname")
         if voice:
