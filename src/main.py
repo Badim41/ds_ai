@@ -179,7 +179,7 @@ def preprocess_song(song_input, mdx_model_params, song_id, input_type=None):
 
     audio_part1.export("0" + orig_song_path, format="mp3")
     audio_part2.export("1" + orig_song_path, format="mp3")
-
+    print("OUTPUT_PART:", output_dir)
     args1 = (0, mdx_model_params, song_output_dir, "0" + orig_song_path, keep_orig)
     args2 = (1, mdx_model_params, song_output_dir, "1" + orig_song_path, keep_orig)
 
