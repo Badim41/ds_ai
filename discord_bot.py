@@ -816,8 +816,8 @@ async def send_file(ctx, file_path):
         await ctx.send(file=discord.File(file_path))
     except FileNotFoundError:
         await ctx.send('Файл не найден.')
-    except discord.HTTPException:
-        await ctx.send('Произошла ошибка при отправке файла.')
+    except discord.HTTPException as e:
+        await ctx.send(f'Произошла ошибка при отправке файла: {e}.')
 
 
 async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):

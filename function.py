@@ -1088,16 +1088,7 @@ async def play_audio_process(ctx):
                 line = reader.readline()
                 print("audio0")
                 if not line is None and not line == "":
-                    # connect to voice chat
-                    # try:
-                    #     voice = ctx.author.voice
-                    #     if voice:
-                    #         voice_channel = voice.channel
-                    #         if ctx.voice_client is not None:
-                    #             return await ctx.voice_client.move_to(voice_channel)
-                    #         await voice_channel.connect(timeout=10, reconnect=False)
-                    # except TimeoutError:
-                    #     pass
+
                     print("audio1")
                     params = await getCaverPrms(line, ctx)
                     print("audio2")
@@ -1119,7 +1110,7 @@ async def play_audio_process(ctx):
                         # все файлы
                         elif output == "all_files":
                             for filename in os.listdir(os.path.dirname(audio_path)):
-                                zip_name = os.path.dirname(audio_path) + f"/files{random.randint(0, 10000)}.zip"
+                                zip_name = os.path.dirname(audio_path) + f"/{filename}.zip"
                                 with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
                                         file_path = os.path.join(os.path.dirname(audio_path), filename)
                                         if ".zip" in file_path:
@@ -1131,7 +1122,7 @@ async def play_audio_process(ctx):
                                 await send_file(ctx, zip_name)
                         # Ссылкой на zip файл
                         elif output == "zip":
-                            zip_name = os.path.dirname(audio_path) + f"/files{random.randint(0, 10000)}.zip"
+                            zip_name = os.path.dirname(audio_path) + f"/all_files.zip"
                             with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
                                 for filename in os.listdir(os.path.dirname(audio_path)):
                                     file_path = os.path.join(os.path.dirname(audio_path), filename)
@@ -1144,6 +1135,7 @@ async def play_audio_process(ctx):
                             await send_file(ctx, zip_name)
                     print("audio7")
                     await result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
+                    await ctx.send("Играет " + os.path.basename(audio_path)[:-4])
                     await playSoundFile(audio_path, time, stop_milliseconds, ctx)
                     await remove_line_from_txt("caversAI/queue.txt", 1)
                 else:
@@ -1377,6 +1369,15 @@ async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
         if not ctx.voice_client:
             print("Skip play")
             return
+        else:
+            # connect to voice chat
+            voice = ctx.author.voice
+            if voice:
+                voice_channel = voice.channel
+                if ctx.voice_client is not None:
+                    return await ctx.voice_client.move_to(voice_channel)
+                await voice_channel.connect(timeout=10, reconnect=False)
+
 
         if not await wait_for_file(audio_file_path, 100, 10):
             await result_command_change("Файл недоступен", Color.RED)
@@ -1390,6 +1391,8 @@ async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
 
         await playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds)
         print("Аудио закончилось")
+    except TimeoutError:
+        pass
     except Exception as e:
         print("Ошибка проигрывания файла: ", e)
 
