@@ -1132,7 +1132,7 @@ async def play_audio_process(ctx):
                                     zipf.write(file_path, os.path.basename(file_path))
 
                             # Отправляем ссылку на архив
-                            await ctx.send(f"Ссылка на файлы: {FileLink(zip_name)}")
+                            await send_file(ctx, zip_name)
                     print("audio7")
                     await result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
                     await playSoundFile(audio_path, time, stop_milliseconds, ctx)
