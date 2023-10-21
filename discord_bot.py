@@ -731,7 +731,7 @@ async def __add_voice(
     await ctx.respond('Выполнение...')
     if name == "None" or ";" in name or "/" in name or "\\" in name:
         await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
-    # !python download_model.py {url} {dir_name} {gender} {info}
+    # !python download_voice_model.py {url} {dir_name} {gender} {info}
     command = None
     if gender == "женщина":
         gender = "female"
@@ -742,7 +742,7 @@ async def __add_voice(
     try:
         command = [
             "python",
-            "download_model.py",
+            "download_voice_model.py",
             url,
             name,
             gender,
