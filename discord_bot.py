@@ -859,7 +859,8 @@ async def recognize(ctx):
         if len([f for f in file_list if os.path.isfile(f)]) > 150:
             for filename in file_list:
                 if filename.startswith("output") and filename.endswith(".wav"):
-                    Path(filename).unlink()
+                    if os.path.exists(filename):
+                        Path(filename).unlink()
                     break
             print("Deleted all output files!")
         # проверяем наличие временных файлов
