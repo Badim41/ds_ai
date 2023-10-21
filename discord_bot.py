@@ -692,7 +692,7 @@ async def __cover(
             if ";" in url:
                 urls = url.split(";")
             else:
-                urls = get_links_from_playlist(url)
+                urls = await get_links_from_playlist(url)
                 print("URLS_PLAYLIST:", urls)
 
             for one_url in urls:
