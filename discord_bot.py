@@ -216,7 +216,7 @@ async def __change_video(
         # освобождаем видеокарту
         await stop_use_cuda_async(0)
     except Exception as e:
-        await ctx.respond(f"Ошибка при изменении длины запроса (с параметрами\
+        await ctx.respond(f"Ошибка при изменении картинки (с параметрами\
                           {fps, extension, prompt, negative_prompt, steps, seed, strength, strength_prompt, voice, pitch, indexrate, loudness, main_vocal, back_vocal, music, roomsize, wetness, dryness}\
                           ): {e}")
 
@@ -322,7 +322,7 @@ async def __image(ctx,
         # перестаём использовать видеокарту
         await stop_use_cuda_async(0)
     except Exception as e:
-        await ctx.respond(f"Ошибка при изменении длины запроса (с параметрами\
+        await ctx.respond(f"Ошибка при изменении видео (с параметрами\
                           {prompt, negative_prompt, steps, x, y, strength, strength_prompt, strength_negative_prompt}): {e}")
         # перестаём использовать видеокарту
         await stop_use_cuda_async(0)
@@ -992,6 +992,7 @@ if __name__ == "__main__":
                     break
         # ==== load bot ====
         print("====load bot====")
-        bot.run(discord_token)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(bot.start('YOUR_BOT_TOKEN'))
     except Exception as e:
         print(f"Произошла ошибка: {e}")
