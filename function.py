@@ -857,7 +857,7 @@ async def createAICaver(ctx):
             await write_in_discord(ctx, "Аудио добавлено в очередь. Место в очереди: " + str(queue_position))
     except Exception as e:
         traceback_str = traceback.format_exc()
-        await result_command_change(f"Произошла ошибка (ID:f6): {str(e)}", Color.RED)
+        await result_command_change(f"Произошла ошибка (ID:f6): {str(e)}\n{str(traceback_str)}", Color.RED)
         raise e
 
 
