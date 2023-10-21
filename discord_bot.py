@@ -643,11 +643,11 @@ async def __cover(
         pitch_int = 0
         # если женщина, но AI мужчина = 1,
         if pitch == 'женщина':
-            if not await set_get_config_default("currentaipitch") == 1:
+            if not await set_get_config_default("currentaipitch") == "1":
                 pitch_int = 1
         # если мужчина, но AI женщина = -1,
         elif pitch == 'мужчина':
-            if not await set_get_config_default("currentaipitch") == 0:
+            if not await set_get_config_default("currentaipitch") == "0":
                 pitch_int = -1
         params.append(f"-pitch {pitch_int}")
         if time != -1:
