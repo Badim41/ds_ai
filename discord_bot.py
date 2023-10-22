@@ -859,21 +859,26 @@ async def send_file(ctx, file_path, delete_file=False):
 async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     # Проверяем, находится ли бот в голосовом канале
     try:
+        print("sound1")
         if not ctx.voice_client:
             await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
             return
-    
+        print("sound2")
         # Проверяем, играет ли что-то уже
         if ctx.voice_client.is_playing():
             await asyncio.sleep(0.1)
-    
+        print("sound3")
+
         # проигрываем
         source = discord.FFmpegPCMAudio(audio_file_path, options=f"-ss {start_seconds} -t {duration}")
         ctx.voice_client.play(source)
-    
+        print("sound4")
+
         # Ожидаем окончания проигрывания
         resume = False
         while ctx.voice_client.is_playing():
+            print("sound5")
+
             await asyncio.sleep(1)
             voice_client = ctx.voice_client
             pause = await set_get_config_all("Sound", "pause", None) == "True"
@@ -887,6 +892,7 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     
             # stop_milliseconds += 1000
             await set_get_config("stop_milliseconds", int(await set_get_config("stop_milliseconds")) + 1000)
+        print("sound6")
     except Exception as e:
         print(f"Ошибка, {e}")
 

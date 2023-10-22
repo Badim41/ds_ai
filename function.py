@@ -1439,12 +1439,12 @@ async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
             return
         else:
             # connect to voice chat
-            voice = ctx.author.voice
-            if voice:
-                voice_channel = voice.channel
-                if ctx.voice_client is not None:
-                    return await ctx.voice_client.move_to(voice_channel)
-                await voice_channel.connect(timeout=10, reconnect=False)
+            # voice = ctx.author.voice
+            # if voice:
+            #     voice_channel = voice.channel
+            #     if ctx.voice_client is not None:
+            #         return await ctx.voice_client.move_to(voice_channel)
+            #     await voice_channel.connect(timeout=10, reconnect=False)
 
 
         if not await wait_for_file(audio_file_path, 100, 10):
