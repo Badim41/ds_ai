@@ -1437,7 +1437,7 @@ async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
         if not ctx.voice_client:
             print("Skip play")
             return
-        else:
+        # else:
             # connect to voice chat
             # voice = ctx.author.voice
             # if voice:
