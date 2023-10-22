@@ -405,6 +405,7 @@ def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radi
         print("DEV_TEMP: REMOVED")
     else:
         if not write_in_queue:
+            print("WRITING3!!!")
             config.read('config.ini')
             config.set('voice', 'generated_path', cover_path)
             # Сохранение
@@ -413,7 +414,8 @@ def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radi
         else:
             try:
                 # Записываем путь файла в очередь
-                with open("caversAI/audio_links.txt", "a") as writer:
+                print("WRITING4!!!")
+                with open("caversAI/audio_links.txt", "a", encoding="utf-8") as writer:
                     writer.write(f"{cover_path} -time {time} -start {start} -output {output}")
             except IOError as e:
                 print(e)
@@ -502,16 +504,17 @@ if __name__ == '__main__':
         print("DEV_TEMP: REMOVED")
     else:
         if not args.write_in_queue:
+            print("WRITING1!!!")
             config.read('config.ini')
-            config.set('voice', 'generated_path', cover_path)
+            config.set('voice', 'generated', cover_path)
             # Сохранение
             with open('config.ini', 'w') as configfile:
                 config.write(configfile)
         else:
-            print("WRITING!!!")
+            print("WRITING2!!!")
             try:
                 # Записываем путь файла в очередь
-                with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "a") as writer:
+                with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "a", encoding="utf-8") as writer:
                     writer.write(f"{cover_path} -time {args.time} -start {args.start} -output {args.output}\n")
             except IOError as e:
                 print(e)
