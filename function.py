@@ -996,7 +996,7 @@ async def run_ai_cover_gen(line, ctx, wait=False):
     outputFormat = "mp3"
     if url == ".":
         return
-    await execute_command(f"python main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda}", ctx)
+    await execute_command(f"python main_cuda{cuda}.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda}", ctx)
     # if cuda == 0:
     #     from main_cuda0 import run_ai_cover_gen
     # else:
