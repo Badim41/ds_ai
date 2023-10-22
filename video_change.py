@@ -143,7 +143,7 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
             await set_get_config_all("voice", "generated", "None")
             command = [
                 "python",
-                "main.py",
+                "main_cuda0.py",
                 "-i", extracted_audio_path,
                 "-dir", voice,
                 "-p", str(pitch),

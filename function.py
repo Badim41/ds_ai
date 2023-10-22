@@ -1001,7 +1001,7 @@ async def run_ai_cover_gen(line, ctx, wait=False):
         f"python main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda}")
     if url == ".":
         return
-    from main import run_ai_cover_gen
+    from main_cuda0 import run_ai_cover_gen
     loop = asyncio.get_event_loop()
     # song_input, rvc_dirname, pitch, keep_files=False, index_rate=0.5, filter_radius=3, rms_mix_rate=0.25,
     #         pitch_detection_algo='rmvpe', crepe_hop_length=128, protect=0.33, main_vol=0, backup_vol=0, inst_vol=0,
@@ -1035,7 +1035,7 @@ async def run_ai_cover_gen(line, ctx, wait=False):
 
 
 # async def defaultRVCParams(filePath, pitch):
-#     return f"python ../AICoverGen/src/main.py -i {filePath} -dir {currentAIname} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
+#     return f"python ../AICoverGen/src/main_cuda0.py -i {filePath} -dir {currentAIname} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
 async def prepare_audio_pipeline(cuda_number, ctx):
     print(f"prepare_audio. GPU:{cuda_number}")
@@ -1512,7 +1512,8 @@ async def extract_number_after_keyword(input, keyword):
     index = input.find(keyword)
     if index != -1:
         remaining_str = input[index + len(keyword) + 1:]
-        remaining_str = remaining_str[:remaining_str.find(" ")]
+        if " " in remaining_str:
+            remaining_str = remaining_str[:remaining_str.find(" ")]
         if remaining_str:
             if remaining_str[0] == '-':
                 numberStr = '-' + ''.join(char for char in remaining_str[1:] if char.isdigit())
@@ -1529,7 +1530,8 @@ async def extract_double_after_keyword(input, keyword):
 
     if index != -1:
         remaining_str = input[index + len(keyword) + 1:]
-        remaining_str = remaining_str[:remaining_str.find(" ")]
+        if " " in remaining_str:
+            remaining_str = remaining_str[:remaining_str.find(" ")]
         numberStr = ''.join(char for char in remaining_str if char.isdigit() or char == '.')
 
         try:

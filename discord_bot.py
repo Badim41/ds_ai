@@ -664,7 +664,7 @@ async def __cover(
             if not await set_get_config_default("currentaipitch") == "0":
                 pitch_int = -1
         params.append(f"-pitch {pitch_int}")
-        if time == -1:
+        if time == -2:
             stop_seconds = int(await set_get_config_all("Sound", "stop_milliseconds", None)) // 1000
             params.append(f"-time {stop_seconds}")
         elif time is None:
@@ -859,25 +859,20 @@ async def send_file(ctx, file_path, delete_file=False):
 async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     # Проверяем, находится ли бот в голосовом канале
     try:
-        print("sound1")
         if not ctx.voice_client:
             await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
             return
-        print("sound2")
         # Проверяем, играет ли что-то уже
         if ctx.voice_client.is_playing():
             await asyncio.sleep(0.1)
-        print("sound3")
 
         # проигрываем
         source = discord.FFmpegPCMAudio(audio_file_path, options=f"-ss {start_seconds} -t {duration}")
         ctx.voice_client.play(source)
-        print("sound4")
 
         # Ожидаем окончания проигрывания
         resume = False
         while ctx.voice_client.is_playing():
-            print("sound5")
 
             await asyncio.sleep(1)
             voice_client = ctx.voice_client
@@ -892,7 +887,6 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     
             # stop_milliseconds += 1000
             await set_get_config("stop_milliseconds", int(await set_get_config("stop_milliseconds")) + 1000)
-        print("sound6")
     except Exception as e:
         print(f"Ошибка, {e}")
 

@@ -1,7 +1,7 @@
 import multiprocessing
 import os
 import argparse
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"
 import torch
 import gc
 import hashlib
