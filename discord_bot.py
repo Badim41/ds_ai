@@ -789,56 +789,57 @@ async def run_main_with_settings(ctx, spokenText, writeAnswer):
 
 async def write_in_discord(ctx, text):
     print(text)
-    from function import result_command_change, Color
-    if text == "" or text is None:
+    try:
+        from function import result_command_change, Color
+        if text == "" or text is None:
 
-        await result_command_change("ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
-        return
-    for line in text.split("\n"):
-        ctx.send(line) 
-    return
-    if len(text) < 1990:
-        await ctx.send(text)
-    else:
-        message_parts = []
+            await result_command_change("ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
+            return
+        if len(text) < 1990:
+            await ctx.send(text)
+        else:
+            message_parts = []
 
-        while len(text) > 0:
-            code_block_start = text.find("```")
-            spoiler_start = text.find("||")
+            while len(text) > 0:
+                code_block_start = text.find("```")
+                spoiler_start = text.find("||")
 
-            # первая пара
-            min_start = min(code_block_start, spoiler_start) if code_block_start >= 0 and spoiler_start >= 0 else max(
-                code_block_start, spoiler_start)
+                # первая пара
+                min_start = min(code_block_start, spoiler_start) if code_block_start >= 0 and spoiler_start >= 0 else max(
+                    code_block_start, spoiler_start)
 
-            if min_start == -1:
-                message_parts.append(text[:1990])
-                text = text[1990:]
-            else:
-                if text[min_start:min_start + 3] == "```":
-                    code_block_end = text[min_start + 3:].find("```")
-                    if code_block_end != -1:
-                        message_part = text[:min_start + code_block_end + 6]
-                    else:
-                        message_part = text[:1990]
+                if min_start == -1:
+                    message_parts.append(text[:1990])
+                    text = text[1990:]
                 else:
-                    spoiler_end = text[min_start + 2:].find("||")
-                    if spoiler_end != -1:
-                        message_part = text[:min_start + spoiler_end + 4]
+                    if text[min_start:min_start + 3] == "```":
+                        code_block_end = text[min_start + 3:].find("```")
+                        if code_block_end != -1:
+                            message_part = text[:min_start + code_block_end + 6]
+                        else:
+                            message_part = text[:1990]
                     else:
-                        message_part = text[:1990]
-                message_parts.append(message_part)
-                text = text[len(message_part):]
+                        spoiler_end = text[min_start + 2:].find("||")
+                        if spoiler_end != -1:
+                            message_part = text[:min_start + spoiler_end + 4]
+                        else:
+                            message_part = text[:1990]
+                    message_parts.append(message_part)
+                    text = text[len(message_part):]
 
-        # отправляем по частям
-        for part in message_parts:
-            while len(part) > 1990:
-                await result_command_change("Сообщение всё ровно больше 2000 символов", Color.RED)
-                await ctx.send(part[1990:])
-                part = part[1990:]
-            if part == "" or part is None:
-                continue
-            await ctx.send(part)
-
+            # отправляем по частям
+            for part in message_parts:
+                while len(part) > 1990:
+                    await result_command_change("Сообщение всё ровно больше 2000 символов", Color.RED)
+                    await ctx.send(part[1990:])
+                    part = part[1990:]
+                if part == "" or part is None:
+                    continue
+                await ctx.send(part)
+    except Exception as e:
+        await ctx.send(f"Ошибка при отправке текста:{e}")
+        for line in text.split("\n"):
+            await ctx.send(line)
 
 async def send_file(ctx, file_path, delete_file=False):
     try:
