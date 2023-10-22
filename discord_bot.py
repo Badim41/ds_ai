@@ -888,7 +888,7 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
             # stop_milliseconds += 1000
             await set_get_config("stop_milliseconds", int(await set_get_config("stop_milliseconds")) + 1000)
     except Exception as e:
-        print(f"Ошибка, {ewwwww}")
+        print(f"Ошибка, {e}")
 
 
 async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
