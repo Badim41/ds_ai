@@ -1079,6 +1079,7 @@ async def prepare_audio_pipeline(cuda_number, ctx):
 
 
 async def execute_command(command, ctx):
+    print(command)
     try:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         stdout, stderr = process.communicate()
