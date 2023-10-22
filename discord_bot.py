@@ -849,7 +849,9 @@ async def write_in_discord(ctx, text):
 async def send_file(ctx, file_path, delete_file=False):
     try:
         await ctx.send(file=discord.File(file_path))
-        os.remove(file_path)
+        if delete_file:
+            await asyncio.wait(3)
+            os.remove(file_path)
     except FileNotFoundError:
         await ctx.send('Файл не найден.')
     except discord.HTTPException as e:
