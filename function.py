@@ -6,11 +6,8 @@ import random
 import re
 import subprocess
 import sys
-import time
 import traceback
 import zipfile
-
-from IPython.display import FileLink
 
 import g4f
 from translate import Translator
@@ -137,9 +134,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     global robot_names
     robot_names = ["robot", "robots", "робот", "нейросеть", "hello", "роботы", "ропот"]
 
-    # wait
-    if "-wait" in spokenText:
-        await run_ai_cover_gen(spokenText, "-wait", wait=True)
+
     await result_command_change(f"RowInput:{spokenText}", Color.GRAY)
     temp_spokenText = spokenText
 
@@ -870,7 +865,7 @@ async def createAICaver(ctx):
         raise e
 
 
-async def run_ai_cover_gen(line, ctx, wait=False):
+async def run_ai_cover_gen(line, ctx, wait=False, cuda=None):
     global currentAIname, currentAIinfo
     # WAIT and return
     if "-wait" in line:
@@ -981,12 +976,6 @@ async def run_ai_cover_gen(line, ctx, wait=False):
         if start < 0:
             start = 0
 
-    # начало
-    cuda = 0
-    if "-cuda" in line:
-        cuda = await extract_number_after_keyword(line, "-cuda")
-        print("CUDA_IN_LINE:", cuda)
-
     output = "None"
     if "-output" in line:
         output = line[line.index("-output") + 8:]
@@ -1063,7 +1052,7 @@ async def prepare_audio_pipeline(cuda_number, ctx):
                     #     break
                     await result_command_change(f"запуск AICoverGen", Color.CYAN)
                     await remove_line_from_txt("caversAI/audio_links.txt", 1)
-                    await run_ai_cover_gen(f"{line} -cuda {cuda_number}", ctx)
+                    await run_ai_cover_gen(line, ctx, cuda=cuda_number)
                     # await execute_command(params, ctx)
                     await asyncio.sleep(0.05)
                 else:

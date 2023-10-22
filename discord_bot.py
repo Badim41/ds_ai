@@ -696,12 +696,13 @@ async def __cover(
 
         param_string = ' '.join(params)
         print("suc params")
+        # time start
+        start_time = datetime.datetime.now()
         if audio_path:
             filename = str(random.randint(1, 1000000)) + ".mp3"
             await audio_path.save(filename)
             param_string += f" -url {filename} "
         elif url:
-            functions = []
             if ";" in url:
                 urls = url.split(";")
             elif "playlist" in url:
@@ -722,6 +723,11 @@ async def __cover(
             await ctx.respond('Не указана ссылка или аудиофайл')
             return
         await run_main_with_settings(ctx, "робот протокол 13 " + param_string, False)
+        end_time = datetime.datetime.now()
+        spent_time = str(end_time - start_time)
+        # убираем миллисекунды
+        spent_time = spent_time[:spent_time.find(".")]
+        await ctx.send("Потрачено на обработку:",spent_time)
     except Exception as e:
         await ctx.send(f"Ошибка при изменении голоса (с параметрами {param_string}): {e}")
 
