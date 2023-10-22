@@ -848,7 +848,7 @@ async def createAICaver(ctx):
             await use_cuda_async(0)
             await use_cuda_async(1)
             await write_in_discord(ctx, "Начинаю обработку аудио")
-            await asyncio.gather(play_audio_process(ctx), prepare_audio_pipeline(0, ctx)) # , prepare_audio_pipeline(1, ctx)
+            await asyncio.gather(play_audio_process(ctx), prepare_audio_pipeline(0, ctx), prepare_audio_pipeline(1, ctx)) # , prepare_audio_pipeline(1, ctx)
             await result_command_change(f"ready audios", Color.GRAY)
             # освобождаем видеокарты
             await stop_use_cuda_async(0)
@@ -1001,7 +1001,7 @@ async def run_ai_cover_gen(line, ctx, wait=False):
         f"python main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda}")
     if url == ".":
         return
-    if cuda = 0:
+    if cuda == 0:
         from main_cuda0 import run_ai_cover_gen
     else:
         from main_cuda1 import run_ai_cover_gen
@@ -1042,7 +1042,7 @@ async def run_ai_cover_gen(line, ctx, wait=False):
 
 async def prepare_audio_pipeline(cuda_number, ctx):
     print(f"prepare_audio. GPU:{cuda_number}")
-    await asyncio.sleep(cuda_number / 2)
+    await asyncio.sleep(cuda_number + 1)
     while True:
         try:
             with open("caversAI/audio_links.txt") as reader:
