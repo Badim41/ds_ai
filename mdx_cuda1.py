@@ -9,7 +9,7 @@ import numpy as np
 import onnxruntime as ort
 import soundfile as sf
 from tqdm import tqdm
-from main_cuda0 import torch
+from main_cuda1 import torch
 
 warnings.filterwarnings("ignore")
 stem_naming = {'Vocals': 'Instrumental', 'Other': 'Instruments', 'Instrumental': 'Vocals', 'Drums': 'Drumless',
