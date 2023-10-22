@@ -794,6 +794,8 @@ async def write_in_discord(ctx, text):
 
         await result_command_change("ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
         return
+    for line in text.split("\n"):
+        ctx.send(line)
     if len(text) < 1990:
         await ctx.send(text)
     else:
