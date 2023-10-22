@@ -88,7 +88,8 @@ async def on_message(message):
         await set_get_config_default("user_name", value=user)
         # info
         info_was = await set_get_config_default("currentaiinfo")
-        await set_get_config_default("currentaiinfo", "Ты сейчас играешь на сервере майнкрафт GoldenFire и отвечаешь на сообщения игроков из чата")
+        await set_get_config_default("currentaiinfo",
+                                     "Ты сейчас играешь на сервере майнкрафт GoldenFire и отвечаешь на сообщения игроков из чата")
         await run_main_with_settings(ctx, text, True)
         # info2
         await set_get_config_default("currentaiinfo", info_was)
@@ -340,12 +341,14 @@ async def __config(
     except Exception as e:
         await ctx.respond(f"Ошибка при изменении конфига (с параметрами{section},{key},{value}): {e}")
 
+
 @bot.slash_command(name="read_messages", description='Читает последние x сообщений из чата и делает по ним вывод')
 async def __read_messages(
         ctx,
         number: Option(int, description='количество сообщений (от 1 до 100', required=True, min_value=1,
-                                                   max_value=100),
-        prompt: Option(str, description='Промпт для GPT. Какой вывод сделать по сообщениям (перевести, пересказать)', required=True)
+                       max_value=100),
+        prompt: Option(str, description='Промпт для GPT. Какой вывод сделать по сообщениям (перевести, пересказать)',
+                       required=True)
 ):
     await ctx.defer()
     from function import chatgpt_get_result, text_to_speech
@@ -364,6 +367,7 @@ async def __read_messages(
         await text_to_speech(result, False, ctx)
     except Exception as e:
         await ctx.respond(f"Произошла ошибка: {e}")
+
 
 @bot.slash_command(name="join", description='присоединиться к голосовому каналу')
 async def join(ctx):
@@ -597,11 +601,13 @@ async def get_links_from_playlist(playlist_url):
         playlist = Playlist(playlist_url)
         playlist._video_regex = re.compile(r"\"url\":\"(/watch\?v=[\w-]*)")
         video_links = playlist.video_urls
-        video_links = str(video_links).replace("'", "").replace("[", "").replace("]", "").replace(" ", "").replace(",", ";")
+        video_links = str(video_links).replace("'", "").replace("[", "").replace("]", "").replace(" ", "").replace(",",
+                                                                                                                   ";")
         return video_links
     except Exception as e:
         print(f"Произошла ошибка при извлечении плейлиста: {e}")
         return []
+
 
 @bot.slash_command(name="ai_cover", description='_Заставить_ бота озвучить видео/спеть песню')
 async def __cover(
@@ -611,15 +617,17 @@ async def __cover(
                            required=False, default=None),
         voice: Option(str, description='Голос для видео', required=False, default=None),
         gender: Option(str, description='Кто говорит/поёт в видео?', required=False,
-                      choices=['мужчина', 'женщина'], default=None),
+                       choices=['мужчина', 'женщина'], default=None),
         time: Option(int, description='Ограничить длительность воспроизведения (в секундах)', required=False,
                      default=-1, min_value=-1),
         indexrate: Option(float, description='Индекс голоса (от 0 до 1)', required=False, default=0.5, min_value=0,
                           max_value=1),
         loudness: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.2, min_value=0,
                          max_value=1),
-        filter_radius: Option(int, description='Насколько далеко от каждой точки в данных будут учитываться значения... (что?)', required=False, default=3, min_value=0,
-                         max_value=6),
+        filter_radius: Option(int,
+                              description='Насколько далеко от каждой точки в данных будут учитываться значения... (что?)',
+                              required=False, default=3, min_value=0,
+                              max_value=6),
         main_vocal: Option(int, description='Громкость основного вокала (от -20 до 0)', required=False, default=0,
                            min_value=-20, max_value=0),
         back_vocal: Option(int, description='Громкость бэквокала (от -20 до 0)', required=False, default=0,
@@ -633,7 +641,8 @@ async def __cover(
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
                         max_value=1),
         start: Option(int, description='Начать воспроизводить с (в секундах)', required=False, default=0, min_value=0),
-        output: Option(str, description='Отправить результат', choices=["zip", "file", "all_files", "None"],  required=False, default="file"),
+        output: Option(str, description='Отправить результат', choices=["zip", "file", "all_files", "None"],
+                       required=False, default="file"),
 ):
     param_string = None
     try:
@@ -782,6 +791,7 @@ async def command_line(ctx, *args):
     except Exception as e:
         await ctx.send(f"Произошла неизвестная ошибка: {e}")
 
+
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
     from function import start_bot
     await start_bot(ctx, spokenText, writeAnswer)
@@ -789,57 +799,52 @@ async def run_main_with_settings(ctx, spokenText, writeAnswer):
 
 async def write_in_discord(ctx, text):
     print(text)
-    try:
-        from function import result_command_change, Color
-        if text == "" or text is None:
+    from function import result_command_change, Color
+    if text == "" or text is None:
+        await result_command_change("ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
+        return
+    if len(text) < 1990:
+        await ctx.send(text)
+    else:
+        message_parts = []
 
-            await result_command_change("ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
-            return
-        if len(text) < 1990:
-            await ctx.send(text)
-        else:
-            message_parts = []
+        while len(text) > 0:
+            code_block_start = text.find("```")
+            spoiler_start = text.find("||")
 
-            while len(text) > 0:
-                code_block_start = text.find("```")
-                spoiler_start = text.find("||")
+            # первая пара
+            min_start = min(code_block_start, spoiler_start) if code_block_start >= 0 and spoiler_start >= 0 else max(
+                code_block_start, spoiler_start)
 
-                # первая пара
-                min_start = min(code_block_start, spoiler_start) if code_block_start >= 0 and spoiler_start >= 0 else max(
-                    code_block_start, spoiler_start)
-
-                if min_start == -1:
-                    message_parts.append(text[:1990])
-                    text = text[1990:]
-                else:
-                    if text[min_start:min_start + 3] == "```":
-                        code_block_end = text[min_start + 3:].find("```")
-                        if code_block_end != -1:
-                            message_part = text[:min_start + code_block_end + 6]
-                        else:
-                            message_part = text[:1990]
+            if min_start == -1:
+                message_parts.append(text[:1990])
+                text = text[1990:]
+            else:
+                if text[min_start:min_start + 3] == "```":
+                    code_block_end = text[min_start + 3:].find("```")
+                    if code_block_end != -1:
+                        message_part = text[:min_start + code_block_end + 6]
                     else:
-                        spoiler_end = text[min_start + 2:].find("||")
-                        if spoiler_end != -1:
-                            message_part = text[:min_start + spoiler_end + 4]
-                        else:
-                            message_part = text[:1990]
-                    message_parts.append(message_part)
-                    text = text[len(message_part):]
+                        message_part = text[:1990]
+                else:
+                    spoiler_end = text[min_start + 2:].find("||")
+                    if spoiler_end != -1:
+                        message_part = text[:min_start + spoiler_end + 4]
+                    else:
+                        message_part = text[:1990]
+                message_parts.append(message_part)
+                text = text[len(message_part):]
 
-            # отправляем по частям
-            for part in message_parts:
-                while len(part) > 1990:
-                    await result_command_change("Сообщение всё ровно больше 2000 символов", Color.RED)
-                    await ctx.send(part[1990:])
-                    part = part[1990:]
-                if part == "" or part is None:
-                    continue
-                await ctx.send(part)
-    except Exception as e:
-        await ctx.send(f"Ошибка при отправке текста:{e}")
-        for line in text.split("\n"):
-            await ctx.send(line)
+        # отправляем по частям
+        for part in message_parts:
+            while len(part) > 1990:
+                await result_command_change("Сообщение всё ровно больше 2000 символов", Color.RED)
+                await ctx.send(part[1990:])
+                part = part[1990:]
+            if part == "" or part is None:
+                continue
+            await ctx.send(part)
+
 
 async def send_file(ctx, file_path, delete_file=False):
     try:
