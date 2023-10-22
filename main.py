@@ -510,9 +510,9 @@ if __name__ == '__main__':
         else:
             try:
                 # Записываем путь файла в очередь
-                with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "r", encoding='utf-8') as reader:
+                with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "r") as reader:
                     lines = reader.readlines()
-                with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "w", encoding='utf-8') as writer:
+                with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "w") as writer:
                     writer.writelines(lines)
                     writer.write(f"{cover_path} -time {args.time} -start {args.start} -output {args.output}\n")
             except IOError as e:
