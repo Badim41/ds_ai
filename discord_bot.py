@@ -878,11 +878,11 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
         pause = await set_get_config_all("Sound", "pause", None) == "True"
         if pause:
             resume = True
-            voice_client.pause()
+            await voice_client.pause()
             while await set_get_config_all("Sound", "pause", None) == "True":
                 await asyncio.sleep(0.25)
         if resume:
-            voice_client.resume()
+            await voice_client.resume()
 
         # stop_milliseconds += 1000
         await set_get_config("stop_milliseconds", int(await set_get_config("stop_milliseconds")) + 1000)
