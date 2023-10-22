@@ -850,7 +850,7 @@ async def send_file(ctx, file_path, delete_file=False):
     try:
         await ctx.send(file=discord.File(file_path))
         if delete_file:
-            await asyncio.wait(3)
+            await asyncio.sleep(3)
             os.remove(file_path)
     except FileNotFoundError:
         await ctx.send('Файл не найден.')
