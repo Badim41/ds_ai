@@ -858,34 +858,37 @@ async def send_file(ctx, file_path, delete_file=False):
 
 async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     # Проверяем, находится ли бот в голосовом канале
-    if not ctx.voice_client:
-        await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
-        return
-
-    # Проверяем, играет ли что-то уже
-    if ctx.voice_client.is_playing():
-        await asyncio.sleep(0.1)
-
-    # проигрываем
-    source = discord.FFmpegPCMAudio(audio_file_path, options=f"-ss {start_seconds} -t {duration}")
-    ctx.voice_client.play(source)
-
-    # Ожидаем окончания проигрывания
-    resume = False
-    while ctx.voice_client.is_playing():
-        await asyncio.sleep(1)
-        voice_client = ctx.voice_client
-        pause = await set_get_config_all("Sound", "pause", None) == "True"
-        if pause:
-            resume = True
-            await voice_client.pause()
-            while await set_get_config_all("Sound", "pause", None) == "True":
-                await asyncio.sleep(0.25)
-        if resume:
-            await voice_client.resume()
-
-        # stop_milliseconds += 1000
-        await set_get_config("stop_milliseconds", int(await set_get_config("stop_milliseconds")) + 1000)
+    try:
+        if not ctx.voice_client:
+            await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
+            return
+    
+        # Проверяем, играет ли что-то уже
+        if ctx.voice_client.is_playing():
+            await asyncio.sleep(0.1)
+    
+        # проигрываем
+        source = discord.FFmpegPCMAudio(audio_file_path, options=f"-ss {start_seconds} -t {duration}")
+        ctx.voice_client.play(source)
+    
+        # Ожидаем окончания проигрывания
+        resume = False
+        while ctx.voice_client.is_playing():
+            await asyncio.sleep(1)
+            voice_client = ctx.voice_client
+            pause = await set_get_config_all("Sound", "pause", None) == "True"
+            if pause:
+                resume = True
+                await voice_client.pause()
+                while await set_get_config_all("Sound", "pause", None) == "True":
+                    await asyncio.sleep(0.25)
+            if resume:
+                await voice_client.resume()
+    
+            # stop_milliseconds += 1000
+            await set_get_config("stop_milliseconds", int(await set_get_config("stop_milliseconds")) + 1000)
+    except Exception as e:
+        print(f"Ошибка, {ewwwww}")
 
 
 async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
