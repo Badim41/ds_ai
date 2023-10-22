@@ -1081,8 +1081,14 @@ async def prepare_audio_pipeline(cuda_number, ctx):
 async def execute_command(command, ctx):
     print(command)
     try:
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        stdout, stderr = process.communicate()
+        process = await asyncio.create_subprocess_shell(
+            command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+
+        stdout, stderr = await process.communicate()
+
         for line in stdout.decode().split('\n'):
             if line.strip():
                 await result_command_change(line, Color.GRAY)
