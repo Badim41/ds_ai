@@ -1001,7 +1001,10 @@ async def run_ai_cover_gen(line, ctx, wait=False):
         f"python main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda}")
     if url == ".":
         return
-    from main_cuda0 import run_ai_cover_gen
+    if cuda = 0:
+        from main_cuda0 import run_ai_cover_gen
+    else:
+        from main_cuda1 import run_ai_cover_gen
     loop = asyncio.get_event_loop()
     # song_input, rvc_dirname, pitch, keep_files=False, index_rate=0.5, filter_radius=3, rms_mix_rate=0.25,
     #         pitch_detection_algo='rmvpe', crepe_hop_length=128, protect=0.33, main_vol=0, backup_vol=0, inst_vol=0,

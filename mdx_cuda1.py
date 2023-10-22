@@ -77,7 +77,7 @@ class MDX:
         # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number_global
         # import torch
         # Set the device and the provider (CPU or CUDA)
-        self.device = torch.device(f"cuda:1")
+        self.device = torch.device(f"cuda:0")
         self.provider = ['CUDAExecutionProvider']
 
         self.model = params
@@ -261,7 +261,7 @@ def run_mdx(model_params, output_dir, model_path, filename, exclude_main=False, 
     print("DEV_TEMP_CUDA_USED: 1")
     # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number_global
     # import torch
-    device = torch.device(f"cuda:1")
+    device = torch.device(f"cuda:0")
     device_properties = torch.cuda.get_device_properties(device)
     vram_gb = device_properties.total_memory / 1024 ** 3
     m_threads = 1 if vram_gb < 8 else 2
