@@ -986,8 +986,6 @@ async def run_ai_cover_gen(line, ctx, wait=False):
     if "-cuda" in line:
         cuda = await extract_number_after_keyword(line, "-cuda")
         print("CUDA_IN_LINE:", cuda)
-        if not cuda == 0:
-            cuda = 1
 
     output = "None"
     if "-output" in line:
@@ -996,44 +994,42 @@ async def run_ai_cover_gen(line, ctx, wait=False):
             output = output[0: output.index(" ")]
 
     outputFormat = "mp3"
-
-    print(
-        f"python main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda}")
     if url == ".":
         return
-    if cuda == 0:
-        from main_cuda0 import run_ai_cover_gen
-    else:
-        from main_cuda1 import run_ai_cover_gen
-    loop = asyncio.get_event_loop()
-    # song_input, rvc_dirname, pitch, keep_files=False, index_rate=0.5, filter_radius=3, rms_mix_rate=0.25,
-    #         pitch_detection_algo='rmvpe', crepe_hop_length=128, protect=0.33, main_vol=0, backup_vol=0, inst_vol=0,
-    #         pitch_change_all=0, reverb_size=0.15, reverb_wetness=0.2, reverb_dryness=0.8, reverb_damping=0.7,
-    #         output_format='mp3', start='0', time='-1', write_in_queue=True, cuda_number=0, output='None'
-    await loop.run_in_executor(None, run_ai_cover_gen,
-                               url,
-                               voice,
-                               pitch,
-                               indexrate,
-                               filter_radius,
-                               loudness,
-                               "rmvpe",
-                               128,
-                               0.1,
-                               mainVocal,
-                               backVocal,
-                               music,
-                               0,
-                               roomsize,
-                               wetness,
-                               dryness,
-                               0.7,
-                               "mp3",
-                               start,
-                               time,
-                               True,
-                               cuda,
-                               output)
+    await execute_command(f"python main.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda}", ctx)
+    # if cuda == 0:
+    #     from main_cuda0 import run_ai_cover_gen
+    # else:
+    #     from main_cuda1 import run_ai_cover_gen
+    # loop = asyncio.get_event_loop()
+    # # song_input, rvc_dirname, pitch, keep_files=False, index_rate=0.5, filter_radius=3, rms_mix_rate=0.25,
+    # #         pitch_detection_algo='rmvpe', crepe_hop_length=128, protect=0.33, main_vol=0, backup_vol=0, inst_vol=0,
+    # #         pitch_change_all=0, reverb_size=0.15, reverb_wetness=0.2, reverb_dryness=0.8, reverb_damping=0.7,
+    # #         output_format='mp3', start='0', time='-1', write_in_queue=True, cuda_number=0, output='None'
+    # await loop.run_in_executor(None, run_ai_cover_gen,
+    #                            url,
+    #                            voice,
+    #                            pitch,
+    #                            indexrate,
+    #                            filter_radius,
+    #                            loudness,
+    #                            "rmvpe",
+    #                            128,
+    #                            0.1,
+    #                            mainVocal,
+    #                            backVocal,
+    #                            music,
+    #                            0,
+    #                            roomsize,
+    #                            wetness,
+    #                            dryness,
+    #                            0.7,
+    #                            "mp3",
+    #                            start,
+    #                            time,
+    #                            True,
+    #                            cuda,
+    #                            output)
 
 
 
