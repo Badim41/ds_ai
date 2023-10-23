@@ -702,6 +702,7 @@ async def __cover(
             filename = str(random.randint(1, 1000000)) + ".mp3"
             await audio_path.save(filename)
             param_string += f" -url {filename} "
+            await run_main_with_settings(ctx, "робот протокол 13 " + param_string, False)
         elif url:
             if ";" in url:
                 urls = url.split(";")
@@ -718,16 +719,9 @@ async def __cover(
                 i += 1
                 args += f"робот протокол 13 -url {one_url} {param_string}\n"
             await run_main_with_settings(ctx, args, True)
-            end_time = datetime.datetime.now()
-            spent_time = str(end_time - start_time)
-            # убираем миллисекунды
-            spent_time = spent_time[:spent_time.find(".")]
-            await ctx.send("Потрачено на обработку:" + spent_time)
-            return
         else:
             await ctx.respond('Не указана ссылка или аудиофайл')
             return
-        await run_main_with_settings(ctx, "робот протокол 13 " + param_string, False)
         end_time = datetime.datetime.now()
         spent_time = str(end_time - start_time)
         # убираем миллисекунды
