@@ -8,8 +8,6 @@ import librosa
 import numpy as np
 import onnxruntime as ort
 import soundfile as sf
-from torch import nn
-from torch.nn import DataParallel
 from tqdm import tqdm
 from main_cuda1 import torch
 
@@ -18,10 +16,11 @@ stem_naming = {'Vocals': 'Instrumental', 'Other': 'Instruments', 'Instrumental':
                'Bass': 'Bassless'}
 
 
-class MDXModel(nn.Module):
-    def __init__(self, dim_f, dim_t, n_fft, hop=1024, stem_name=None, compensation=1.000):
-        super(MDXModel, self).__init__()
-
+class MDXModel:
+    def __init__(self, device, dim_f, dim_t, n_fft, hop=1024, stem_name=None, compensation=1.000):
+        # global cuda_number_global
+        # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number_global
+        # import torch
         self.dim_f = dim_f
         self.dim_t = dim_t
         self.dim_c = 4
@@ -32,11 +31,11 @@ class MDXModel(nn.Module):
 
         self.n_bins = self.n_fft // 2 + 1
         self.chunk_size = hop * (self.dim_t - 1)
-        self.window = torch.hann_window(window_length=self.n_fft, periodic=True)
+        self.window = torch.hann_window(window_length=self.n_fft, periodic=True).to(device)
 
         out_c = self.dim_c
 
-        self.freq_pad = torch.zeros([1, out_c, self.n_bins - self.dim_f, self.dim_t])
+        self.freq_pad = torch.zeros([1, out_c, self.n_bins - self.dim_f, self.dim_t]).to(device)
 
     def stft(self, x):
         # global cuda_number_global
@@ -78,12 +77,10 @@ class MDX:
         # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number_global
         # import torch
         # Set the device and the provider (CPU or CUDA)
-        self.model = params
         self.device = torch.device(f"cuda:0")
         self.provider = ['CUDAExecutionProvider']
 
-        self.model = DataParallel(self.model)  # Wrap the model for parallel processing
-        self.model.to(self.device)
+        self.model = params
 
         # Load the ONNX model using ONNX Runtime
         self.ort = ort.InferenceSession(model_path, providers=self.provider)
