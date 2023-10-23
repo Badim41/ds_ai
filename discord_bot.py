@@ -718,6 +718,11 @@ async def __cover(
                 i += 1
                 args += f"робот протокол 13 -url {one_url} {param_string}\n"
             await run_main_with_settings(ctx, args, True)
+            end_time = datetime.datetime.now()
+            spent_time = str(end_time - start_time)
+            # убираем миллисекунды
+            spent_time = spent_time[:spent_time.find(".")]
+            await ctx.send("Потрачено на обработку:", spent_time)
             return
         else:
             await ctx.respond('Не указана ссылка или аудиофайл')
