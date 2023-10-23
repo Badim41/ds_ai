@@ -1,18 +1,11 @@
-def extract_number_after_keyword(input, keyword):
-    index = input.find(keyword)
-    if index != -1:
-        remaining_str = input[index + len(keyword) + 1:]
-        if " " in remaining_str:
-            remaining_str = remaining_str[:remaining_str.find(" ")]
-        if remaining_str:
-            if remaining_str[0] == '-':
-                numberStr = '-' + ''.join(char for char in remaining_str[1:] if char.isdigit())
-            else:
-                numberStr = ''.join(char for char in remaining_str if char.isdigit())
-            if numberStr:
-                # await result_command_change(f"Extract: {keyword}, Number:{numberStr}", Color.GRAY)
-                return int(numberStr)
-    return -1
+import subprocess
 
-string = "Line removed: /kaggle/working/ds_ai/song_output/1777beb1f67/792658 (Фарадей Ver).mp3 -time -1 -start 0 -output all_files"
-print(extract_number_after_keyword(string, "-time"))
+audio1 = "/kaggle/working/123.mp3"
+audio2 = "/kaggle/working/123.mp3"
+output_file = "combined3.m4a"
+
+ffmpeg_command = (
+    f'ffmpeg -i {audio1} -i {audio1} -filter_complex "[0:a][1:a]amerge=inputs=2[aout]" -map "[aout]" -c:a aac -strict experimental -q:a 1 {output_file} -y'
+)
+
+subprocess.run(ffmpeg_command, shell=True)
