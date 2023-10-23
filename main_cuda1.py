@@ -161,10 +161,7 @@ def display_progress(message):
 
 def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_type=None):
     try:
-        if cuda_number == 0:
-            from mdx_cuda0 import run_mdx
-        else:
-            from mdx_cuda1 import run_mdx
+        from mdx_cuda1 import run_mdx
 
         keep_orig = False
         if input_type == 'yt':
