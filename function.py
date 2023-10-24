@@ -1123,16 +1123,6 @@ async def file_was_filler(folder, file_list):
         await result_command_change(f"Ошибка (ID:f11)  {e}", Color.RED)
 
 
-async def chech_file_size(path, max_file_size):
-    for filename in os.listdir(os.path.dirname(path)):
-        file_path = os.path.join(os.path.dirname(path), filename)
-        # file size
-        file_size = os.path.getsize(file_path)
-        if file_size > max_file_size:
-            return False
-    return True
-
-
 async def get_link_to_file(zip_name, ctx):
     try:
         process = await asyncio.create_subprocess_shell(
@@ -1150,7 +1140,7 @@ async def get_link_to_file(zip_name, ctx):
                 if "id" in line:
                     line = line[line.find(":") + 1:]
                     line = line[:line.find("\"")]
-                    return line
+                    return "https://pixeldrain.com/u/" + line
     except subprocess.CalledProcessError as e:
         await ctx.send(f"Ошибка выполнения команды (ID:z1): {e}")
     except Exception as e:
@@ -1173,9 +1163,6 @@ async def play_audio_process(ctx):
 
                     if not output == "None":
                         await ctx.send("===Файлы " + os.path.basename(audio_path)[:-4] + "===")
-                        # file sizes
-                        max_file_size = int(await set_get_config_all("Default", "max_file_size", None)) * 1024 * 1024
-                        can_send = await chech_file_size(os.path.dirname(audio_path), max_file_size)
 
                         output = output.replace(" ", "")
                         from discord_bot import send_file
