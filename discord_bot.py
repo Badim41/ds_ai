@@ -202,7 +202,7 @@ async def __change_video(
 
         cuda_numbers = []
         for i in range(cuda_avaible):
-            cuda_numbers.append(use_cuda_async())
+            cuda_numbers.append(await use_cuda_async())
 
         # run timer
         start_time = datetime.datetime.now()
@@ -212,12 +212,13 @@ async def __change_video(
         await video_path.save(filename)
         # сколько кадров будет в результате
         video_clip = VideoFileClip(filename)
-        total_frames = int(video_clip.fps * video_clip.duration) / (30 / fps)
+        total_frames = int((video_clip.fps * video_clip.duration) / (30 / fps))
         max_frames = int(await set_get_config_all("Video", "max_frames", None))
         if max_frames > total_frames:
             await ctx.send(f"Слишком много кадров, снизьте параметр FPS! Максимальное разрешённое количество кадров в видео: {max_frames}. Количество кадров у вас - {total_frames}")
             for i in cuda_numbers:
                 await stop_use_cuda_async(i)
+            return
         else:
             # на kaggle тратится около 13 секунд, на колаб - 16
             if len(cuda_numbers) > 1:
