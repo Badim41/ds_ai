@@ -85,8 +85,8 @@ def generate_picture1():
             image_name = set_get_config("input")
             # create pipes
             print(f"image_generate(1/5), GPU:{cuda_number}")
-            pipe_prior = pipe_prior.to(f"cuda{cuda_number}")
-            pipe = pipe.to(f"cuda{cuda_number}")
+            pipe_prior = pipe_prior.to(f"cuda:{cuda_number}")
+            pipe = pipe.to(f"cuda:{cuda_number}")
             print(f"image_generate(2/5), GPU:{cuda_number}")
 
             # create generator
@@ -96,7 +96,7 @@ def generate_picture1():
             # make hint
             img = load_image(image_name).resize((x, y))
             depth_estimator = pipeline("depth-estimation")
-            hint = make_hint(img, depth_estimator).unsqueeze(0).half().to(f"cuda{cuda_number}")
+            hint = make_hint(img, depth_estimator).unsqueeze(0).half().to(f"cuda:{cuda_number}")
             print(f"image_generate(4/5), GPU:{cuda_number}")
 
             # run prior pipeline
