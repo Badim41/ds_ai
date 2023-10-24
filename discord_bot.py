@@ -240,7 +240,7 @@ async def __change_video(
                     time_spend = f"{minutes} минут, {remaining_seconds} секунд"
             else:
                 time_spend = f"{seconds} секунд"
-            await ctx.respond(f"Видео будет обрабатываться ~{time_spend}")
+            await ctx.send(f"Видео будет обрабатываться ~{time_spend}")
     # loading params
         for i in cuda_numbers:
             await set_get_config_all(f"Image{i}", "strength_negative_prompt", strength_negative_prompt)
