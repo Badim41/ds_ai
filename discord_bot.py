@@ -8,7 +8,7 @@ import configparser
 import asyncio
 import time
 import traceback
-import magic
+
 
 from pytube import Playlist
 
@@ -192,7 +192,6 @@ async def __change_video(
             return
         if not video_path:
             return
-        print(await get_file_type(video_path))
         # используем видеокарты
         cuda_avaible = await check_cuda_async()
         if cuda_avaible == 0:
@@ -1135,7 +1134,7 @@ async def get_file_type(ctx, attachment):
     if not attachment:
         await ctx.send("Файл не прикреплен.")
         return
-
+    import magic
     mime = magic.Magic()
     file_type = mime.from_buffer(attachment.fp.read(2048))
 
