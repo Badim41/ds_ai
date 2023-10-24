@@ -257,9 +257,9 @@ def combine_audio(audio_paths, output_path, main_gain, backup_gain, inst_gain, o
     combined_audio.export(output_path, format=output_format)
 
     output_file = os.path.dirname(output_path) + "/combined.m4a"
-    print("M4A FILE:", main_vocal_audio, backup_vocal_audio, instrumental_audio, output_file, sep="|||")
+    print("M4A FILE:", main_gain, backup_gain, inst_gain, output_file, sep="|||")
     ffmpeg_command = (
-        f'ffmpeg -i {main_vocal_audio} -i {backup_vocal_audio} -i {instrumental_audio} -filter_complex "[0:a][1:a]amerge=inputs=3[aout]" -map "[aout]" -c:a aac -strict experimental -q:a 1 {output_file} -y'
+        f'ffmpeg -i {main_gain} -i {backup_gain} -i {inst_gain} -filter_complex "[0:a][1:a]amerge=inputs=3[aout]" -map "[aout]" -c:a aac -strict experimental -q:a 1 {output_file} -y'
     )
     subprocess.run(ffmpeg_command, shell=True)
 
