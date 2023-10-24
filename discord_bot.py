@@ -646,6 +646,8 @@ async def __cover(
         start: Option(int, description='Начать воспроизводить с (в секундах)', required=False, default=0, min_value=0),
         output: Option(str, description='Отправить результат', choices=["zip", "file", "all_files", "None"],
                        required=False, default="file"),
+        only_voice_change: Option(bool, description='Не извлекать инструментал и бэквокал, изменить голос. Не поддерживаются ссылки',
+                                  required=False, default=False)
 ):
     param_string = None
     try:
@@ -704,8 +706,29 @@ async def __cover(
         if audio_path:
             filename = str(random.randint(1, 1000000)) + ".mp3"
             await audio_path.save(filename)
-            param_string += f" -url {filename} "
-            await run_main_with_settings(ctx, "робот протокол 13 " + param_string, False)
+            # Изменить ТОЛЬКО ГОЛОС
+            if only_voice_change:
+                try:
+                    command = [
+                        "python",
+                        "only_voice_change.py",
+                        "-i", f"\"{filename}\"",
+                        "-o", f"\"{filename}\"",
+                        "-dir", str(voice),
+                        "-p", f"{pitch_int}",
+                        "-ir", f"{indexrate}",
+                        "-fr", f"{filter_radius}",
+                        "-rms", f"{roomsize}",
+                        "-pro", "0.05"
+                    ]
+                    print("run RVC, AIName:", voice)
+                    subprocess.run(command, check=True)
+                except subprocess.CalledProcessError as e:
+                    await ctx.send(f"Ошибка при изменении голоса(ID:d1): {e}")
+            else:
+                # изменить голос без музыки
+                param_string += f" -url {filename} "
+                await run_main_with_settings(ctx, "робот протокол 13 " + param_string, False)
         elif url:
             if ";" in url:
                 urls = url.split(";")
@@ -732,7 +755,7 @@ async def __cover(
         if not "0:00:00" in str(spent_time):
             await ctx.send("Потрачено на обработку:" + spent_time)
     except Exception as e:
-        await ctx.send(f"Ошибка при изменении голоса (с параметрами {param_string}): {e}")
+        await ctx.send(f"Ошибка при изменении голоса(ID:d2) (с параметрами {param_string}): {e}")
 
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
@@ -895,7 +918,7 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
                     await asyncio.sleep(0.25)
             if resume:
                 await voice_client.resume()
-    
+
             # stop_milliseconds += 1000
             await set_get_config("stop_milliseconds", int(await set_get_config("stop_milliseconds")) + 1000)
     except Exception as e:
