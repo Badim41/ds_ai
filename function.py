@@ -1158,11 +1158,10 @@ async def get_link_to_file(zip_name, ctx):
 
         for line in stdout.decode().split('\n'):
             if line.strip():
-                print("line")
-                await result_command_change(line, Color.GRAY)
+                print(line)
                 # {"id":"123"}
                 if "id" in line:
-                    line = line[line.find(":") + 1:]
+                    line = line[line.find(":") + 2:]
                     line = line[:line.find("\"")]
                     return "https://pixeldrain.com/u/" + line
     except subprocess.CalledProcessError as e:
@@ -1208,7 +1207,7 @@ async def play_audio_process(ctx):
                                         continue
                                     zipf.write(file_path, os.path.basename(file_path))
                             link = await get_link_to_file(zip_name, ctx)
-                            await ctx.send(f"Ссылка на скачку архива:{link}")
+                            await ctx.send(f"Ссылка на скачку:{link}")
                             # link = await get_link_to_file(os.path.dirname(audio_path) + "/combined.m4a", ctx)
                             # await ctx.send(f"Ссылка на скачку архива:{link}")
                     else:
