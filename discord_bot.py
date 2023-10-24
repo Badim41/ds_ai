@@ -7,6 +7,8 @@ import subprocess
 import configparser
 import asyncio
 import time
+import traceback
+
 from pytube import Playlist
 
 from PIL import Image
@@ -270,6 +272,8 @@ async def __change_video(
         await ctx.send(f"Ошибка при изменении картинки (с параметрами\
                           {fps, extension, prompt, negative_prompt, steps, seed, strength, strength_prompt, voice, pitch, indexrate, loudness, main_vocal, back_vocal, music, roomsize, wetness, dryness}\
                           ): {e}")
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         raise e
 
 
