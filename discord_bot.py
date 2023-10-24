@@ -37,7 +37,9 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='\\', intents=intents)
 
 
-async def set_get_config_all(section, key, value):
+async def set_get_config_all(section, key, value, error=0):
+    if error == 5:
+        raise "Ошибка при записи в конфиг"
     try:
         config.read('config.ini')
         if value is None:
@@ -50,7 +52,7 @@ async def set_get_config_all(section, key, value):
     except Exception as e:
         print(f"Ошибка при чтении конфига:{e}")
         await asyncio.sleep(0.1)
-        result = await set_get_config_all(section, key, value)
+        result = await set_get_config_all(section, key, value, error+1)
         return result
 
 
