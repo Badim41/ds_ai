@@ -209,7 +209,7 @@ async def __change_video(
         filename = str(random.randint(1, 1000000)) + ".mp4"
         print(filename)
         # сколько кадров будет в результате
-        video_clip = VideoFileClip(video_path)
+        video_clip = VideoFileClip(filename)
         total_frames = int(video_clip.fps * video_clip.duration) / (30 / fps)
         await video_path.save(filename)
         max_frames = int(await set_get_config_all("Video", "max_frames", None))
