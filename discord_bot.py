@@ -176,6 +176,7 @@ async def __change_video(
 ):
     try:
         # ошибки входных данных
+        await ctx.defer()
         config.read('config.ini')
         voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
         if voice not in voices:
@@ -269,6 +270,7 @@ async def __change_video(
         await ctx.send(f"Ошибка при изменении картинки (с параметрами\
                           {fps, extension, prompt, negative_prompt, steps, seed, strength, strength_prompt, voice, pitch, indexrate, loudness, main_vocal, back_vocal, music, roomsize, wetness, dryness}\
                           ): {e}")
+        raise e
 
 
 @bot.slash_command(name="change_image", description='изменить изображение нейросетью')
