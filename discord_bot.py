@@ -11,6 +11,7 @@ from pytube import Playlist
 
 from PIL import Image
 from pydub import AudioSegment
+from moviepy.editor import VideoFileClip
 
 from discord import Option
 from modifed_sinks import StreamSink
@@ -19,7 +20,7 @@ from pathlib import Path
 import sys
 import discord
 from discord.ext import commands
-from use_free_cuda import use_cuda_async, stop_use_cuda_async
+from use_free_cuda import use_cuda_async, stop_use_cuda_async, check_cuda_async
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
@@ -179,13 +180,21 @@ async def __change_video(
         voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
         if voice not in voices:
             return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
-        if await set_get_config_all("Image", "model_loaded", None) == "False":
+        if await set_get_config_all(f"Image0", "model_loaded", None) == "False":
             return await ctx.respond("модель для картинок не загружена")
         if not video_path:
             return
-
         # используем видеокарты
-        await use_cuda_async(0)
+        cuda_avaible = await check_cuda_async()
+        if cuda_avaible < 0:
+            await ctx.respond("Нет свободных видеокарт")
+            return
+        else:
+            await ctx.respond(f"Используется {cuda_avaible} видеокарт для обработки видео")
+
+        cuda_numbers = []
+        for i in range(cuda_avaible):
+            cuda_numbers.append(use_cuda_async())
 
         await ctx.defer()
         # run timer
@@ -193,32 +202,70 @@ async def __change_video(
         # save
         filename = str(random.randint(1, 1000000)) + ".mp4"
         print(filename)
+        # сколько кадров будет в результате
+        video_clip = VideoFileClip(video_path)
+        total_frames = int(video_clip.fps * video_clip.duration) / (30 / fps)
         await video_path.save(filename)
-        # loading params
-        await set_get_config_all(f"Image", "strength_negative_prompt", strength_negative_prompt)
-        await set_get_config_all(f"Image", "strength_prompt", strength_prompt)
-        await set_get_config_all(f"Image", "strength", strength)
-        await set_get_config_all(f"Image", "seed", seed)
-        await set_get_config_all(f"Image", "steps", steps)
-        await set_get_config_all(f"Image", "negative_prompt", negative_prompt)
+        max_frames = int(await set_get_config_all("Video", "max_frames", None))
+        if max_frames > total_frames:
+            await ctx.respond(f"Слишком много кадров, снизьте параметр FPS! Максимальное разрешённое количество кадров в видео: {max_frames}")
+            for i in cuda_numbers:
+                await stop_use_cuda_async(i)
+        else:
+            # на kaggle тратится около 13 секунд, на колаб - 16
+            if len(cuda_numbers) > 1:
+                seconds = total_frames * 13 / len(cuda_numbers)
+            else:
+                seconds = total_frames * 16
+            if seconds >= 3600:
+                hours = seconds // 3600
+                minutes = (seconds % 3600) // 60
+                remaining_seconds = seconds % 60
+                if minutes == 0 and remaining_seconds == 0:
+                    time_spend = f"{hours} часов"
+                elif remaining_seconds == 0:
+                    time_spend = f"{hours} часов, {minutes} минут"
+                elif minutes == 0:
+                    time_spend = f"{hours} часов, {remaining_seconds} секунд"
+                else:
+                    time_spend = f"{hours} часов, {minutes} минут, {remaining_seconds} секунд"
+            elif seconds >= 60:
+                minutes = seconds // 60
+                remaining_seconds = seconds % 60
+                if remaining_seconds == 0:
+                    time_spend = f"{minutes} минут"
+                else:
+                    time_spend = f"{minutes} минут, {remaining_seconds} секунд"
+            else:
+                time_spend = f"{seconds} секунд"
+            await ctx.respond(f"Видео будет обрабатываться ~{time_spend}")
+    # loading params
+        for i in cuda_numbers:
+            await set_get_config_all(f"Image{i}", "strength_negative_prompt", strength_negative_prompt)
+            await set_get_config_all(f"Image{i}", "strength_prompt", strength_prompt)
+            await set_get_config_all(f"Image{i}", "strength", strength)
+            await set_get_config_all(f"Image{i}", "seed", seed)
+            await set_get_config_all(f"Image{i}", "steps", steps)
+            await set_get_config_all(f"Image{i}", "negative_prompt", negative_prompt)
         print("params suc")
         # wait for answer
         from video_change import video_pipeline
         video_path = await video_pipeline(filename, fps, extension, prompt, voice, pitch,
                                           indexrate, loudness, main_vocal, back_vocal, music,
-                                          roomsize, wetness, dryness)
+                                          roomsize, wetness, dryness, cuda_numbers)
         # count time
         end_time = datetime.datetime.now()
         spent_time = str(end_time - start_time)
         # убираем миллисекунды
         spent_time = spent_time[:spent_time.find(".")]
         # отправляем
-        await ctx.respond("Вот как я изменил ваше видео🖌. Потрачено " + spent_time)
+        await ctx.send("Вот как я изменил ваше видео🖌. Потрачено " + spent_time)
         await send_file(ctx, video_path)
-        # освобождаем видеокарту
-        await stop_use_cuda_async(0)
+        # освобождаем видеокарты
+        for i in cuda_numbers:
+            await stop_use_cuda_async(i)
     except Exception as e:
-        await ctx.respond(f"Ошибка при изменении картинки (с параметрами\
+        await ctx.send(f"Ошибка при изменении картинки (с параметрами\
                           {fps, extension, prompt, negative_prompt, steps, seed, strength, strength_prompt, voice, pitch, indexrate, loudness, main_vocal, back_vocal, music, roomsize, wetness, dryness}\
                           ): {e}")
 
@@ -264,11 +311,11 @@ async def __image(ctx,
                                                    max_value=1)
                   ):
     try:
-        await use_cuda_async(0)
-        await set_get_config_all(f"Image", "result", "None")
+        cuda_number = await use_cuda_async()
+        await set_get_config_all(f"Image{cuda_number}", "result", "None")
         await ctx.defer()
         # throw extensions
-        if await set_get_config_all(f"Image", "model_loaded", None) == "False":
+        if await set_get_config_all(f"Image{cuda_number}", "model_loaded", None) == "False":
             return await ctx.respond("модель для картинок не загружена")
         # run timer
         start_time = datetime.datetime.now()
@@ -292,20 +339,20 @@ async def __image(ctx,
             if y > 64:
                 y -= 64
         # loading params
-        await set_get_config_all(f"Image", "strength_negative_prompt", strength_negative_prompt)
-        await set_get_config_all(f"Image", "strength_prompt", strength_prompt)
-        await set_get_config_all(f"Image", "strength", strength)
-        await set_get_config_all(f"Image", "seed", seed)
-        await set_get_config_all(f"Image", "steps", steps)
-        await set_get_config_all(f"Image", "negative_prompt", negative_prompt)
-        await set_get_config_all(f"Image", "prompt", prompt)
-        await set_get_config_all(f"Image", "x", x)
-        await set_get_config_all(f"Image", "y", y)
-        await set_get_config_all(f"Image", "input", input_image)
+        await set_get_config_all(f"Image{cuda_number}", "strength_negative_prompt", strength_negative_prompt)
+        await set_get_config_all(f"Image{cuda_number}", "strength_prompt", strength_prompt)
+        await set_get_config_all(f"Image{cuda_number}", "strength", strength)
+        await set_get_config_all(f"Image{cuda_number}", "seed", seed)
+        await set_get_config_all(f"Image{cuda_number}", "steps", steps)
+        await set_get_config_all(f"Image{cuda_number}", "negative_prompt", negative_prompt)
+        await set_get_config_all(f"Image{cuda_number}", "prompt", prompt)
+        await set_get_config_all(f"Image{cuda_number}", "x", x)
+        await set_get_config_all(f"Image{cuda_number}", "y", y)
+        await set_get_config_all(f"Image{cuda_number}", "input", input_image)
         print("params suc")
         # wait for answer
         while True:
-            output_image = await set_get_config_all(f"Image", "result", None)
+            output_image = await set_get_config_all(f"Image{cuda_number}", "result", None)
             if not output_image == "None":
                 break
             await asyncio.sleep(0.25)
@@ -1079,7 +1126,7 @@ if __name__ == "__main__":
 
         # == load images ==
         if load_images1:
-            print("load image model")
+            print("load image model on GPU-0")
 
             from image_create_cuda0 import generate_picture0
 
@@ -1089,10 +1136,10 @@ if __name__ == "__main__":
             while True:
                 time.sleep(0.5)
                 config.read('config.ini')
-                if config.getboolean("Image", "model_loaded"):
+                if config.getboolean("Image0", "model_loaded"):
                     break
         if load_images2:
-            print("load image model")
+            print("load image model on GPU-1")
 
             from image_create_cuda1 import generate_picture1
 

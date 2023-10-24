@@ -32,27 +32,48 @@ def set_get_config_all_not_async(section, key, value):
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
 
-
-def image_change(output_folder, prompt):
+#                                       количество---индекс
+def image_change(output_folder, prompt, cuda_number, cuda_index):
     print("image changing...")
-    for filename in sorted(os.listdir(output_folder)):
-        if filename.endswith('.png'):
-            print("changing...", filename)
-            set_get_config_all_not_async(f"Image", "result", "None")
-            set_get_config_all_not_async(f"Image", "input", "frames/" + filename)
-            set_get_config_all_not_async(f"Image", "prompt", prompt)
-            # wait for answer
-            while True:
-                if not set_get_config_all_not_async(f"Image", "result", None) == "None":
-                    break
-                time.sleep(0.25)
-    set_get_config_all_not_async(f"Video", "result", True)
+    if cuda_number == 1:
+        # 1 GPU
+        for filename in sorted(os.listdir(output_folder)):
+            if filename.endswith('.png'):
+                print("changing...", filename)
+                set_get_config_all_not_async(f"Image", "result", "None")
+                set_get_config_all_not_async(f"Image", "input", "frames/" + filename)
+                set_get_config_all_not_async(f"Image", "prompt", prompt)
+                # wait for answer
+                while True:
+                    if not set_get_config_all_not_async(f"Image", "result", None) == "None":
+                        break
+                    time.sleep(0.25)
+        set_get_config_all_not_async(f"Video", "result", True)
+    else:
+        # 2 GPU
+        i = 0
+        for filename in sorted(os.listdir(output_folder)):
+            # чётные карды на 2-ой видеокарте, нечётные - на 1-ой
+            i += 1
+            if i % 2 == cuda_index:
+                continue
+            if filename.endswith('.png'):
+                print("changing...", filename)
+                set_get_config_all_not_async(f"Image{cuda_index}", "result", "None")
+                set_get_config_all_not_async(f"Image{cuda_index}", "input", "frames/" + filename)
+                set_get_config_all_not_async(f"Image{cuda_index}", "prompt", prompt)
+                # wait for answer
+                while True:
+                    if not set_get_config_all_not_async(f"Image{cuda_index}", "result", None) == "None":
+                        break
+                    time.sleep(0.25)
+        set_get_config_all_not_async(f"Video{cuda_index}", "result", True)
     return
 
 
 async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
                          pitch, indexrate, loudness, main_vocal, back_vocal,
-                         music, roomsize, wetness, dryness):
+                         music, roomsize, wetness, dryness, cuda_numbers):
     try:
 
         # === разбиваем видео на карды ===
@@ -72,44 +93,41 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
         audio_clip.write_audiofile(extracted_audio_path)
 
         # Размер
-        # 480p=640×480
-        # 360p=480×360
+        # 720p=1280×720
+        # 480p=854×480
+        # 360p=640×360
         # 240p=426×240
         # 144p=256×144
         new_width = None
         new_height = None
-        if video_extension == "720p":
-            new_width = 960
-            new_height = 704
-        if video_extension == "480p":
-            new_width = 640
-            new_height = 512
-        elif video_extension == "360p":
-            new_width = 512
-            new_height = 384
-        elif video_extension == "240p":
-            new_width = 448
-            new_height = 256
-        elif video_extension == "144p":
-            new_width = 256
-            new_height = 128
         old_width = None
         old_height = None
+
         if video_extension == "720p":
-            old_width = 960
+            old_width = 1280
             old_height = 720
-        if video_extension == "480p":
-            old_width = 640
+            new_width = 1280
+            new_height = 704
+        elif video_extension == "480p":
+            old_width = 854
             old_height = 480
+            new_width = 832
+            new_height = 480
         elif video_extension == "360p":
-            old_width = 480
+            old_width = 640
             old_height = 360
+            new_width = 640
+            new_height = 352
         elif video_extension == "240p":
             old_width = 426
             old_height = 240
+            new_width = 448
+            new_height = 240
         elif video_extension == "144p":
             old_width = 256
             old_height = 144
+            new_width = 256
+            new_height = 128
 
         # пропуск изображений (установка FPS)
         save_img_step = original_fps / fps_output
@@ -127,16 +145,19 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
         print(f"saved {frame_number // save_img_step} frames!")
 
         # === обработка изображений ===
-        await set_get_config_all(f"Video", "result", False)
-        pool1 = multiprocessing.Pool(processes=1)
-        pool1.apply_async(image_change(output_folder, prompt, ))
-        pool1.close()
+        for i in range(len(cuda_numbers)):
+            await set_get_config_all(f"Video{i}", "result", False)
+            pool = multiprocessing.Pool(processes=1)
+            pool.apply_async(image_change(output_folder, prompt, len(cuda_numbers), i))
+            pool.close()
+            print(f"{i} GPU START IMAGES. ALL GPUS: {cuda_numbers}")
 
         # wait for results
-        while True:
-            if await set_get_config_all(f"Video", "result", None) == "True":
-                break
-            await asyncio.sleep(10)
+        for i in range(len(cuda_numbers)):
+            while True:
+                if await set_get_config_all(f"Video{i}", "result", None) == "True":
+                    break
+                await asyncio.sleep(5)
 
         # === обработка звука ===
         if not voice == "None":

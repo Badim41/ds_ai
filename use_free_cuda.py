@@ -85,3 +85,14 @@ def check_cuda(index=None):
         return cuda_avaible
     else:
         return set_get_config_all(f"cuda{index}_is_busy")
+
+async def check_cuda_async(index=None):
+    if index is None:
+        cuda_avaible = 0
+        if not set_get_config_all("cuda0_is_busy"):
+            cuda_avaible += 1
+        if not set_get_config_all("cuda1_is_busy"):
+            cuda_avaible += 1
+        return cuda_avaible
+    else:
+        return set_get_config_all(f"cuda{index}_is_busy")
