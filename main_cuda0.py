@@ -213,12 +213,14 @@ def voice_change(cuda_number, voice_model, vocals_path, output_path, pitch_chang
     print("voice_change")
     device = 'cuda:0'
     config2 = Config(device, True)
+    print("DEV_TEMP load hubert")
     hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
     cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
-
+    print("DEV_TEMP loaded hubert")
     # convert main vocals
     rvc_infer(rvc_index_path, index_rate, vocals_path, output_path, pitch_change, f0_method, cpt, version, net_g,
               filter_radius, tgt_sr, rms_mix_rate, protect, crepe_hop_length, vc, hubert_model)
+    print("DEV_TEMP loaded infer")
     del hubert_model, cpt
     gc.collect()
     print("gc.collect done")
@@ -397,9 +399,7 @@ def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radi
                 error_msg = f'{song_input} does not exist.'
                 song_id = None
                 print(error_msg)
-        print("DEV_TEMP: REMOVING " + os.path.join(output_dir, song_id))
         shutil.rmtree(os.path.join(output_dir, song_id))
-        print("DEV_TEMP: REMOVED")
     else:
         if not write_in_queue:
             print("WRITING3!!!")
@@ -496,9 +496,7 @@ if __name__ == '__main__':
                 error_msg = f'{song_input} does not exist.'
                 song_id = None
                 print(error_msg)
-        print("DEV_TEMP: REMOVING " + os.path.join(output_dir, song_id))
         shutil.rmtree(os.path.join(output_dir, song_id))
-        print("DEV_TEMP: REMOVED")
     else:
         if not args.write_in_queue:
             print("WRITING1!!!")
