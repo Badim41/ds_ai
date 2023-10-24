@@ -22,33 +22,23 @@ async def set_get_config_all(section, key, value):
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
 
-
-def set_get_config_all_not_async(section, key, value):
-    config.read('config.ini')
-    if value is None:
-        return config.get(section, key)
-    config.set(section, key, str(value))
-    # Сохранение
-    with open('config.ini', 'w') as configfile:
-        config.write(configfile)
-
 #                                       количество---индекс
-def image_change(output_folder, prompt, cuda_number, cuda_index):
+async def image_change(output_folder, prompt, cuda_number, cuda_index):
     print("image changing...")
     if cuda_number == 1:
         # 1 GPU
         for filename in sorted(os.listdir(output_folder)):
             if filename.endswith('.png'):
                 print("changing...", filename)
-                set_get_config_all_not_async(f"Image", "result", "None")
-                set_get_config_all_not_async(f"Image", "input", "frames/" + filename)
-                set_get_config_all_not_async(f"Image", "prompt", prompt)
+                await set_get_config_all(f"Image", "result", "None")
+                await set_get_config_all(f"Image", "input", "frames/" + filename)
+                await set_get_config_all(f"Image", "prompt", prompt)
                 # wait for answer
                 while True:
-                    if not set_get_config_all_not_async(f"Image", "result", None) == "None":
+                    if not await set_get_config_all(f"Image", "result", None) == "None":
                         break
-                    time.sleep(0.25)
-        set_get_config_all_not_async(f"Video", f"result_video{cuda_index}", True)
+                    await asyncio.sleep(0.25)
+        await set_get_config_all(f"Video", f"result_video{cuda_index}", True)
     else:
         # 2 GPU
         i = 0
@@ -59,15 +49,15 @@ def image_change(output_folder, prompt, cuda_number, cuda_index):
                 continue
             if filename.endswith('.png'):
                 print("changing...", filename)
-                set_get_config_all_not_async(f"Image{cuda_index}", "result", "None")
-                set_get_config_all_not_async(f"Image{cuda_index}", "input", "frames/" + filename)
-                set_get_config_all_not_async(f"Image{cuda_index}", "prompt", prompt)
+                await set_get_config_all(f"Image{cuda_index}", "result", "None")
+                await set_get_config_all(f"Image{cuda_index}", "input", "frames/" + filename)
+                await set_get_config_all(f"Image{cuda_index}", "prompt", prompt)
                 # wait for answer
                 while True:
-                    if not set_get_config_all_not_async(f"Image{cuda_index}", "result", None) == "None":
+                    if not await set_get_config_all(f"Image{cuda_index}", "result", None) == "None":
                         break
-                    time.sleep(0.25)
-        set_get_config_all_not_async(f"Video", f"result_video{cuda_index}", True)
+                    await asyncio.sleep(0.25)
+        await set_get_config_all(f"Video", f"result_video{cuda_index}", True)
     return
 
 
@@ -145,12 +135,15 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
         print(f"saved {frame_number // save_img_step} frames!")
 
         # === обработка изображений ===
-        for i in cuda_numbers:
-            await set_get_config_all(f"Video", f"result_video{i}", False)
+        if len(cuda_numbers) == 1:
+            await set_get_config_all(f"Video", f"result_video0", False)
             pool = multiprocessing.Pool(processes=1)
-            pool.apply_async(image_change(output_folder, prompt, len(cuda_numbers), i))
+            pool.apply_async(image_change(output_folder, prompt, 1, 0))
             pool.close()
-            print(f"{i} GPU START IMAGES. ALL GPUS: {cuda_numbers}")
+        else:
+            await set_get_config_all(f"Video", f"result_video0", False)
+            await set_get_config_all(f"Video", f"result_video1", False)
+            await asyncio.gather(image_change(output_folder, prompt, len(cuda_numbers), 0), image_change(output_folder, prompt, len(cuda_numbers), 1))  # результаты всех функций
 
         # wait for results
         for i in cuda_numbers:
