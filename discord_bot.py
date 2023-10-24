@@ -188,7 +188,7 @@ async def __change_video(
             return
         # используем видеокарты
         cuda_avaible = await check_cuda_async()
-        if cuda_avaible < 0:
+        if cuda_avaible == 0:
             await ctx.respond("Нет свободных видеокарт")
             return
         else:
