@@ -2,7 +2,7 @@ import os
 import struct
 import time
 import configparser
-cuda_number = "0"
+cuda_number = "1"
 os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
 import torch
 import numpy as np
@@ -16,9 +16,9 @@ config = configparser.ConfigParser()
 def set_get_config(key, value=None):
     config.read('config.ini')
     if value is None:
-        return config.get(f'Image', key)
+        return config.get(f'Image1', key)
 
-    config.set(f'Image', key, str(value))
+    config.set(f'Image1', key, str(value))
     # Сохранение
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
@@ -40,7 +40,7 @@ async def get_image_dimensions(file_path):
         raise ValueError("Формат не поддерживается")
 
 
-def generate_picture0():
+def generate_picture1():
     def make_hint(image, depth_estimator):
         image = depth_estimator(image)["depth"]
         image = np.array(image)

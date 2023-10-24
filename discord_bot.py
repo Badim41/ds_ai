@@ -660,11 +660,11 @@ async def __cover(
             params.append(f"-voice {voice}")
         # если мужчина-мужчина, женщина-женщина, pitch не меняем
         pitch_int = 0
-        # если женщина, но AI мужчина = 1,
+        # если женщина, а AI мужчина = 1,
         if gender == 'женщина':
             if not await set_get_config_default("currentaipitch") == "1":
                 pitch_int = 1
-        # если мужчина, но AI женщина = -1,
+        # если мужчина, а AI женщина = -1,
         elif gender == 'мужчина':
             if not await set_get_config_default("currentaipitch") == "0":
                 pitch_int = -1
@@ -1044,15 +1044,19 @@ if __name__ == "__main__":
             discord_token = arguments[1]
             # load models? (img, gpt, all)
             load_gpt = False
-            load_images = False
+            load_images1 = False
+            load_images2 = False
             if len(arguments) > 2:
                 args = arguments[2]
                 if "gpt_local" in args:
                     load_gpt = True
                 if "gpt_provider" in args:
                     asyncio.run(set_get_config_all("gpt", "use_gpt_provider", "True"))
-                if "img" in args:
-                    load_images = True
+                if "img1" in args:
+                    load_images1 = True
+                if "img2" in args:
+                    load_images1 = True
+                    load_images2 = True
         else:
             # raise error & exit
             print("Укажите discord_TOKEN")
@@ -1074,18 +1078,31 @@ if __name__ == "__main__":
                     break
 
         # == load images ==
-        if load_images:
+        if load_images1:
             print("load image model")
 
-            from image_create_cuda0 import generate_picture
+            from image_create_cuda0 import generate_picture0
 
             pool = multiprocessing.Pool(processes=1)
-            pool.apply_async(generate_picture)
+            pool.apply_async(generate_picture0)
             pool.close()
             while True:
                 time.sleep(0.5)
                 config.read('config.ini')
                 if config.getboolean("Image", "model_loaded"):
+                    break
+        if load_images2:
+            print("load image model")
+
+            from image_create_cuda1 import generate_picture1
+
+            pool = multiprocessing.Pool(processes=1)
+            pool.apply_async(generate_picture1)
+            pool.close()
+            while True:
+                time.sleep(0.5)
+                config.read('config.ini')
+                if config.getboolean("Image1", "model_loaded"):
                     break
         # ==== load bot ====
         print("====load bot====")
