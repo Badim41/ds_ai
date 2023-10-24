@@ -38,34 +38,52 @@ bot = commands.Bot(command_prefix='\\', intents=intents)
 
 
 async def set_get_config_all(section, key, value):
-    config.read('config.ini')
-    if value is None:
-        return config.get(section, key)
-    config.set(section, key, str(value))
-    # Сохранение
-    with open('config.ini', 'w') as configfile:
-        config.write(configfile)
-    return ' '.join([section, key, str(value)])
+    try:
+        config.read('config.ini')
+        if value is None:
+            return config.get(section, key)
+        config.set(section, key, str(value))
+        # Сохранение
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
+        return ' '.join([section, key, str(value)])
+    except Exception as e:
+        print(f"Ошибка при чтении конфига:{e}")
+        await asyncio.sleep(0.1)
+        result = await set_get_config_all(section, key, value)
+        return result
 
 
 async def set_get_config(key="record", value=None):
-    config.read('config.ini')
-    if value is None:
-        return config.get("Sound", key)
-    config.set('Sound', key, str(value))
-    # Сохранение
-    with open('config.ini', 'w') as configfile:
-        config.write(configfile)
+    try:
+        config.read('config.ini')
+        if value is None:
+            return config.get("Sound", key)
+        config.set('Sound', key, str(value))
+        # Сохранение
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
+    except Exception as e:
+        print(f"Ошибка при чтении конфига:{e}")
+        await asyncio.sleep(0.1)
+        result = await set_get_config(key, value)
+        return result
 
 
 async def set_get_config_default(key, value=None):
-    config.read('config.ini')
-    if value is None:
-        return config.get("Default", key)
-    config.set('Default', key, str(value))
-    # Сохранение
-    with open('config.ini', 'w') as configfile:
-        config.write(configfile)
+    try:
+        config.read('config.ini')
+        if value is None:
+            return config.get("Default", key)
+        config.set('Default', key, str(value))
+        # Сохранение
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
+    except Exception as e:
+        print(f"Ошибка при чтении конфига:{e}")
+        await asyncio.sleep(0.1)
+        result = await set_get_config_default(key, value)
+        return result
 
 
 @bot.event

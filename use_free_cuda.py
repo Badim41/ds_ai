@@ -6,23 +6,35 @@ config = configparser.ConfigParser()
 
 
 def set_get_config_all(key, value=None):
-    config.read('config.ini')
-    if value is None:
-        return config.get("Values", key)
-    config.set("Values", key, str(value))
-    # Сохранение
-    with open('config.ini', 'w') as configfile:
-        config.write(configfile)
+    try:
+        config.read('config.ini')
+        if value is None:
+            return config.get("Values", key)
+        config.set("Values", key, str(value))
+        # Сохранение
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
+    except Exception as e:
+        print(f"Ошибка при чтении конфига:{e}")
+        time.sleep(0.1)
+        result = set_get_config_all(key, value)
+        return result
 
 
 async def set_get_config_all_async(key, value=None):
-    config.read('config.ini')
-    if value is None:
-        return config.get("Values", key)
-    config.set("Values", key, str(value))
-    # Сохранение
-    with open('config.ini', 'w') as configfile:
-        config.write(configfile)
+    try:
+        config.read('config.ini')
+        if value is None:
+            return config.get("Values", key)
+        config.set("Values", key, str(value))
+        # Сохранение
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
+    except Exception as e:
+        print(f"Ошибка при чтении конфига:{e}")
+        await asyncio.sleep(0.1)
+        result = await set_get_config_all_async(key, value)
+        return result
 
 
 def use_cuda(index=None):

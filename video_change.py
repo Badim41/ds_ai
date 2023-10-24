@@ -14,13 +14,19 @@ config = configparser.ConfigParser()
 
 
 async def set_get_config_all(section, key, value):
-    config.read('config.ini')
-    if value is None:
-        return config.get(section, key)
-    config.set(section, key, str(value))
-    # Сохранение
-    with open('config.ini', 'w') as configfile:
-        config.write(configfile)
+    try:
+        config.read('config.ini')
+        if value is None:
+            return config.get(section, key)
+        config.set(section, key, str(value))
+        # Сохранение
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
+    except Exception as e:
+        print(f"Ошибка при чтении конфига:{e}")
+        await asyncio.sleep(0.1)
+        result = await set_get_config_all(section, key, value)
+        return result
 
 #                                       количество---индекс
 async def image_change(output_folder, prompt, cuda_number, cuda_index):
