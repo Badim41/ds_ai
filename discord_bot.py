@@ -761,8 +761,8 @@ async def __cover(
                     command = [
                         "python",
                         "only_voice_change.py",
-                        "-i", f"\"{filename}\"",
-                        "-o", f"\"{filename}\"",
+                        "-i", f"{filename}",
+                        "-o", f"{filename}",
                         "-dir", str(voice),
                         "-p", f"{pitch_int}",
                         "-ir", f"{indexrate}",
