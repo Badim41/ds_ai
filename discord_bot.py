@@ -575,10 +575,13 @@ async def __tts(
             return
         print(f'{text} ({type(text).__name__})\n')
         # меняем голос
+        voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
         ai_voice_temp = await set_get_config_default("currentainame")
         if ai_voice == "None":
             ai_voice = await set_get_config_default("currentainame")
             print(await set_get_config_default("currentainame"))
+        elif ai_voice not in voices:
+            return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
         await set_get_config_default("currentainame", ai_voice)
         # запускаем TTS
         await run_main_with_settings(ctx, f"робот протокол 24 {text}",
