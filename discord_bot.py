@@ -119,6 +119,8 @@ async def on_message(message):
             await set_get_config_default("user_name", value=message.author)
             await run_main_with_settings(ctx, text, True)
         except Exception as e:
+            traceback_str = traceback.format_exc()
+            print(str(traceback_str))
             await ctx.send(f"Ошибка при команде say с параметрами {message}: {e}")
     await bot.process_commands(message)
 
@@ -376,6 +378,8 @@ async def __image(ctx,
         # перестаём использовать видеокарту
         await stop_use_cuda_async(0)
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.respond(f"Ошибка при изменении видео (с параметрами\
                           {prompt, negative_prompt, steps, x, y, strength, strength_prompt, strength_negative_prompt}): {e}")
         # перестаём использовать видеокарту
@@ -393,6 +397,8 @@ async def __config(
         await ctx.defer()
         await ctx.respond(await set_get_config_all(section, key, value))
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.respond(f"Ошибка при изменении конфига (с параметрами{section},{key},{value}): {e}")
 
 
@@ -420,6 +426,8 @@ async def __read_messages(
         await ctx.respond(result)
         await text_to_speech(result, False, ctx)
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.respond(f"Произошла ошибка: {e}")
 
 
@@ -440,6 +448,8 @@ async def join(ctx):
         await voice_channel.connect()
         await ctx.respond("присоединяюсь")
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.respond(f"Ошибка при присоединении: {e}")
 
 
@@ -477,6 +487,8 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         await ctx.respond("Started listening.")
         await recognize(ctx)
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.respond(f"Ошибка при записи звука из микрофона: {e}")
 
 
@@ -490,6 +502,8 @@ async def stop_recording(ctx):
         else:
             await ctx.respond("Я и так тебя не слушал ._.")
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.respond(f"Ошибка при остановки записи микрофона: {e}")
 
 
@@ -506,6 +520,8 @@ async def disconnect(ctx):
         if ctx.guild.id in connections:
             del connections[ctx.guild.id]  # remove the guild from the cache.
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.respond(f"Ошибка при выходе из войс-чата: {e}")
 
 
@@ -553,6 +569,8 @@ async def pause(ctx):
         else:
             await ctx.respond("Нет активного аудио для приостановки или продолжения.")
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.respond(f"Ошибка при паузе: {e}")
 
 
@@ -569,6 +587,8 @@ async def skip(ctx):
         else:
             await ctx.respond("Нет активного аудио для пропуска.")
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.respond(f"Ошибка при пропуске: {e}")
 
 
@@ -586,6 +606,8 @@ async def __lenght(
         await run_main_with_settings(ctx, f"робот длина запроса {number}", True)
         await ctx.respond(f"Длина запроса: {number}")
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.respond(f"Ошибка при изменении длины запроса (с параметрами{number}): {e}")
 
 
@@ -604,6 +626,8 @@ async def __say(
         await set_get_config_default("user_name", value=ctx.author.name)
         await run_main_with_settings(ctx, text, True)
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.respond(f"Ошибка при команде say (с параметрами{text}): {e}")
 
 
@@ -645,6 +669,8 @@ async def __tts(
         # перестаём использовать видеокарту
         await stop_use_cuda_async(0)
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
         # возращаем голос
         if not ai_voice_temp is None:
@@ -662,6 +688,8 @@ async def get_links_from_playlist(playlist_url):
                                                                                                                    ";")
         return video_links
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         print(f"Произошла ошибка при извлечении плейлиста: {e}")
         return []
 
@@ -779,6 +807,8 @@ async def __cover(
                     subprocess.run(command, check=True)
                     await send_file(ctx, filename, delete_file=True)
                 except subprocess.CalledProcessError as e:
+                    traceback_str = traceback.format_exc()
+                    print(str(traceback_str))
                     await ctx.send(f"Ошибка при изменении голоса(ID:d1): {e}")
             else:
                 # изменить голос без музыки
@@ -810,6 +840,8 @@ async def __cover(
         if not "0:00:00" in str(spent_time):
             await ctx.send("Потрачено на обработку:" + spent_time)
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.send(f"Ошибка при изменении голоса(ID:d2) (с параметрами {param_string}): {e}")
 
 
@@ -857,6 +889,8 @@ async def __add_voice(
         if change_voice:
             await run_main_with_settings(ctx, f"робот измени голос на {name}", True)
     except subprocess.CalledProcessError as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.respond(f"Ошибка при скачивании голоса {command}: {e}")
 
 
@@ -874,8 +908,12 @@ async def command_line(ctx, *args):
             if line.strip():
                 await ctx.send(line)
     except subprocess.CalledProcessError as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.send(f"Ошибка выполнения команды: {e}")
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.send(f"Произошла неизвестная ошибка: {e}")
 
 
@@ -942,6 +980,8 @@ async def send_file(ctx, file_path, delete_file=False):
     except FileNotFoundError:
         await ctx.send('Файл не найден.')
     except discord.HTTPException as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         await ctx.send(f'Произошла ошибка при отправке файла: {e}.')
 
 
@@ -977,6 +1017,8 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
             # stop_milliseconds += 1000
             await set_get_config("stop_milliseconds", int(await set_get_config("stop_milliseconds")) + 1000)
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         print(f"Ошибка, {e}")
 
 
@@ -1037,6 +1079,8 @@ async def recognize(ctx):
                 except sr.UnknownValueError:
                     pass
                 except sr.RequestError as e:
+                    traceback_str = traceback.format_exc()
+                    print(str(traceback_str))
                     print(f"Ошибка при распознавании: {e}")
                 # удаление out_all.wav
                 try:
@@ -1049,6 +1093,8 @@ async def recognize(ctx):
                 try:
                     empty_audio.export(wav_filename, format="wav")
                 except Exception as e:
+                    traceback_str = traceback.format_exc()
+                    print(str(traceback_str))
                     print(f"Ошибка при создании пустого аудиофайла: {e}")
                 # вызов function
                 if not text is None:
@@ -1071,6 +1117,8 @@ async def recognize(ctx):
         try:
             result.export(wav_filename, format="wav")
         except Exception as e:
+            traceback_str = traceback.format_exc()
+            print(str(traceback_str))
             print(f"Ошибка при экспорте аудио: {e}")
         # print("recognize_saved")
         # удаление временного файла
@@ -1164,4 +1212,6 @@ if __name__ == "__main__":
         loop = asyncio.get_event_loop()
         loop.run_until_complete(bot.start(discord_token))
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
         print(f"Произошла ошибка: {e}")
