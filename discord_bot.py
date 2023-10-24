@@ -198,7 +198,6 @@ async def __change_video(
         for i in range(cuda_avaible):
             cuda_numbers.append(use_cuda_async())
 
-        await ctx.defer()
         # run timer
         start_time = datetime.datetime.now()
         # save
