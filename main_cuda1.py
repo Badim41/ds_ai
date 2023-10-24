@@ -257,6 +257,13 @@ def combine_audio(audio_paths, output_path, main_gain, backup_gain, inst_gain, o
     combined_audio = main_vocal_audio.overlay(backup_vocal_audio).overlay(instrumental_audio)
     combined_audio.export(output_path, format=output_format)
 
+    output_file = os.path.dirname(output_path) + "/combined.m4a"
+
+    ffmpeg_command = (
+        f'ffmpeg -i {main_vocal_audio} -i {backup_vocal_audio} -i {instrumental_audio} -filter_complex "[0:a][1:a]amerge=inputs=3[aout]" -map "[aout]" -c:a aac -strict experimental -q:a 1 {output_file} -y'
+    )
+    subprocess.run(ffmpeg_command, shell=True)
+
 
 def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
                         is_webui=0, main_gain=0, backup_gain=0, inst_gain=0, index_rate=0.5, filter_radius=3,

@@ -1189,14 +1189,16 @@ async def play_audio_process(ctx):
                                 await send_file(ctx, file_path, delete_file=True)
                         # zip файл по ссылке
                         elif output == "link":
-                            zip_name = os.path.dirname(audio_path) + f"/all_files.zip"
-                            with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                                for filename in os.listdir(os.path.dirname(audio_path)):
-                                    file_path = os.path.join(os.path.dirname(audio_path), filename)
-                                    if ".zip" in file_path:
-                                        continue
-                                    zipf.write(file_path, os.path.basename(file_path))
-                            link = await get_link_to_file(zip_name, ctx)
+                            # zip_name = os.path.dirname(audio_path) + f"/all_files.zip"
+                            # with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                            #     for filename in os.listdir(os.path.dirname(audio_path)):
+                            #         file_path = os.path.join(os.path.dirname(audio_path), filename)
+                            #         if ".zip" in file_path:
+                            #             continue
+                            #         zipf.write(file_path, os.path.basename(file_path))
+                            # link = await get_link_to_file(zip_name, ctx)
+                            # await ctx.send(f"Ссылка на скачку архива:{link}")
+                            link = await get_link_to_file(os.path.dirname(audio_path) + "/combined.m4a", ctx)
                             await ctx.send(f"Ссылка на скачку архива:{link}")
                     else:
                         await ctx.send("Играет " + os.path.basename(audio_path)[:-4])
