@@ -1133,6 +1133,30 @@ async def chech_file_size(path, max_file_size):
     return True
 
 
+async def get_link_to_file(zip_name, ctx):
+    try:
+        process = await asyncio.create_subprocess_shell(
+            f"!curl -T \"{zip_name}\" https://pixeldrain.com/api/file/",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+
+        stdout, stderr = await process.communicate()
+
+        for line in stdout.decode().split('\n'):
+            if line.strip():
+                await result_command_change(line, Color.GRAY)
+                # {"id":"123"}
+                if "id" in line:
+                    line = line[line.find(":") + 1:]
+                    line = line[:line.find("\"")]
+                    return line
+    except subprocess.CalledProcessError as e:
+        await ctx.send(f"Ошибка выполнения команды (ID:z1): {e}")
+    except Exception as e:
+        await ctx.send(f"Произошла неизвестная ошибка (ID:z2): {e}")
+
+
 async def play_audio_process(ctx):
     await asyncio.sleep(0.1)
     try:
@@ -1157,45 +1181,24 @@ async def play_audio_process(ctx):
                         from discord_bot import send_file
                         # конечный файл
                         if output == "file":
-                            print("PATH:", audio_path)
                             file_size = os.path.getsize(audio_path)
-                            # скидываем архивом, если больше максимального веса
-                            if file_size > max_file_size:
-                                zip_name = os.path.dirname(audio_path) + f"/ready_file.zip"
-                                with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                                    zipf.write(audio_path, os.path.basename(audio_path))
-                                await send_file(ctx, zip_name, delete_file=True)
-                            else:
-                                # скидываем файл
-                                await send_file(ctx, audio_path)
-                        # все файлы (если каждый меньше максимального веса)
-                        elif output == "all_files" and can_send:
+                            await send_file(ctx, audio_path)
+                        # все файлы
+                        elif output == "all_files":
                             for filename in os.listdir(os.path.dirname(audio_path)):
                                 file_path = os.path.join(os.path.dirname(audio_path), filename)
                                 await send_file(ctx, file_path, delete_file=True)
-                        # zip файл (если каждый меньше максимального веса)
-                        elif output == "zip" and can_send:
+                        # zip файл по ссылке
+                        elif output == "link":
                             zip_name = os.path.dirname(audio_path) + f"/all_files.zip"
                             with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
                                 for filename in os.listdir(os.path.dirname(audio_path)):
                                     file_path = os.path.join(os.path.dirname(audio_path), filename)
                                     if ".zip" in file_path:
                                         continue
-                                    print("FILE(один зип):", file_path)
                                     zipf.write(file_path, os.path.basename(file_path))
-                            await send_file(ctx, zip_name, delete_file=True)
-                        # много zip файлов (если файлы больше максимального веса и их нужно скинуть все)
-                        elif not can_send:
-                            for filename in os.listdir(os.path.dirname(audio_path)):
-                                zip_name = os.path.dirname(audio_path) + f"/{filename}.zip"
-                                with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                                    file_path = os.path.join(os.path.dirname(audio_path), filename)
-                                    if ".zip" in file_path:
-                                        continue
-                                    print("FILE(много зип):", file_path)
-                                    zipf.write(file_path, os.path.basename(file_path))
-
-                                await send_file(ctx, zip_name, delete_file=True)
+                            link = await get_link_to_file(zip_name, ctx)
+                            await ctx.send(f"Ссылка на скачку архива:{link}")
                     else:
                         await ctx.send("Играет " + os.path.basename(audio_path)[:-4])
                     await result_command_change("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)

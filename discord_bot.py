@@ -691,7 +691,7 @@ async def __cover(
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
                         max_value=1),
         start: Option(int, description='Начать воспроизводить с (в секундах)', required=False, default=0, min_value=0),
-        output: Option(str, description='Отправить результат', choices=["zip", "file", "all_files", "None"],
+        output: Option(str, description='Отправить результат', choices=["link", "file", "all_files", "None"],
                        required=False, default="file"),
         only_voice_change: Option(bool, description='Не извлекать инструментал и бэквокал, изменить голос. Не поддерживаются ссылки',
                                   required=False, default=False)
