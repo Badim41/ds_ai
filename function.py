@@ -1093,24 +1093,18 @@ async def prepare_audio_pipeline(cuda_number, ctx):
 async def execute_command(command, ctx):
     print(command)
     try:
-        process = subprocess.Popen(
+        process = await asyncio.create_subprocess_shell(
             command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
         )
 
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        stdout, stderr = process.communicate()
+        stdout, stderr = await process.communicate()
 
         for line in stdout.decode().split('\n'):
             if line.strip():
                 await result_command_change(line, Color.GRAY)
-                # {"id":"123"}
-                if "id" in line:
-                    line = line[line.find(":") + 1:]
-                    line = line[:line.find("\"")]
-                    return "https://pixeldrain.com/u/" + line
+                # await ctx.send(line)
     except subprocess.CalledProcessError as e:
         await ctx.send(f"Ошибка выполнения команды (ID:f8): {e}")
     except Exception as e:
@@ -1154,9 +1148,10 @@ async def file_was_filler(folder, file_list):
 async def get_link_to_file(zip_name, ctx):
     try:
         process = await asyncio.create_subprocess_shell(
-            f"!curl -T \"{zip_name}\" https://pixeldrain.com/api/file/",
+            f"curl -T \"{zip_name}\" https://pixeldrain.com/api/file/",
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
+            shell=True
         )
 
         stdout, stderr = await process.communicate()
