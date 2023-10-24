@@ -210,7 +210,7 @@ async def __change_video(
         await video_path.save(filename)
         max_frames = int(await set_get_config_all("Video", "max_frames", None))
         if max_frames > total_frames:
-            await ctx.respond(f"Слишком много кадров, снизьте параметр FPS! Максимальное разрешённое количество кадров в видео: {max_frames}")
+            await ctx.send(f"Слишком много кадров, снизьте параметр FPS! Максимальное разрешённое количество кадров в видео: {max_frames}. Количество кадров у вас - {total_frames}")
             for i in cuda_numbers:
                 await stop_use_cuda_async(i)
         else:
