@@ -27,4 +27,6 @@ def list_python_files(root_dir):
                         lines_number += 1
     print(lines_number, "строчек кода в проекте")
 
-list_python_files(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "ds_ai"))
+
+print(os.path.dirname(os.path.abspath(__file__)))
+list_python_files(os.path.dirname(os.path.abspath(__file__)))
