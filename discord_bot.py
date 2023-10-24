@@ -729,7 +729,8 @@ async def __cover(
         spent_time = str(end_time - start_time)
         # убираем миллисекунды
         spent_time = spent_time[:spent_time.find(".")]
-        await ctx.send("Потрачено на обработку:" + spent_time)
+        if not "0:00:00" in str(spent_time):
+            await ctx.send("Потрачено на обработку:" + spent_time)
     except Exception as e:
         await ctx.send(f"Ошибка при изменении голоса (с параметрами {param_string}): {e}")
 
