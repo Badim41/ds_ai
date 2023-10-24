@@ -39,3 +39,4 @@ typing-extensions
 PyExecJS
 duckduckgo-search
 pytube
+python-magic-bin

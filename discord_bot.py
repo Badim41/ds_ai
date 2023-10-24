@@ -8,6 +8,7 @@ import configparser
 import asyncio
 import time
 import traceback
+import magic
 
 from pytube import Playlist
 
@@ -1128,6 +1129,26 @@ async def recognize(ctx):
             pass
     print("Stop_Recording")
 
+
+async def get_file_type(ctx, attachment):
+    # Проверить, что файл прикреплен
+    if not attachment:
+        await ctx.send("Файл не прикреплен.")
+        return
+
+    # Определить MIME-тип файла
+    mime = magic.Magic()
+    file_type = mime.from_buffer(attachment.fp.read(2048))
+
+    # Определить тип файла на основе MIME-типа
+    if file_type.startswith('image'):
+        return "image"
+    elif file_type.startswith('video'):
+        return "video"
+    elif file_type.startswith('audio'):
+        return "audio"
+    else:
+        await ctx.send("Неизвестный тип файла.")
 
 async def get_image_dimensions(file_path):
     with Image.open(file_path) as img:
