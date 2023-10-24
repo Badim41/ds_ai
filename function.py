@@ -1157,6 +1157,7 @@ async def get_link_to_file(zip_name, ctx):
 
         for line in stdout.decode().split('\n'):
             if line.strip():
+                print("line")
                 await result_command_change(line, Color.GRAY)
                 # {"id":"123"}
                 if "id" in line:
@@ -1190,7 +1191,6 @@ async def play_audio_process(ctx):
                         from discord_bot import send_file
                         # конечный файл
                         if output == "file":
-                            file_size = os.path.getsize(audio_path)
                             await send_file(ctx, audio_path)
                         # все файлы
                         elif output == "all_files":
