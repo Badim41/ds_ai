@@ -1093,18 +1093,24 @@ async def prepare_audio_pipeline(cuda_number, ctx):
 async def execute_command(command, ctx):
     print(command)
     try:
-        process = await asyncio.create_subprocess_shell(
+        process = subprocess.Popen(
             command,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True
         )
 
-        stdout, stderr = await process.communicate()
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        stdout, stderr = process.communicate()
 
         for line in stdout.decode().split('\n'):
             if line.strip():
                 await result_command_change(line, Color.GRAY)
-                # await ctx.send(line)
+                # {"id":"123"}
+                if "id" in line:
+                    line = line[line.find(":") + 1:]
+                    line = line[:line.find("\"")]
+                    return "https://pixeldrain.com/u/" + line
     except subprocess.CalledProcessError as e:
         await ctx.send(f"Ошибка выполнения команды (ID:f8): {e}")
     except Exception as e:
