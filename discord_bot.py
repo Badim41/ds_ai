@@ -192,6 +192,7 @@ async def __change_video(
             return
         if not video_path:
             return
+        print(await get_file_type(video_path))
         # используем видеокарты
         cuda_avaible = await check_cuda_async()
         if cuda_avaible == 0:
@@ -1131,12 +1132,10 @@ async def recognize(ctx):
 
 
 async def get_file_type(ctx, attachment):
-    # Проверить, что файл прикреплен
     if not attachment:
         await ctx.send("Файл не прикреплен.")
         return
 
-    # Определить MIME-тип файла
     mime = magic.Magic()
     file_type = mime.from_buffer(attachment.fp.read(2048))
 
