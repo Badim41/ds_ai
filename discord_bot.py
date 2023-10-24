@@ -179,9 +179,11 @@ async def __change_video(
         config.read('config.ini')
         voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
         if voice not in voices:
-            return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
+            await ctx.respond("Выберите голос из списка: " + ','.join(voices))
+            return
         if await set_get_config_all(f"Image0", "model_loaded", None) == "False":
-            return await ctx.respond("модель для картинок не загружена")
+            await ctx.respond("модель для картинок не загружена")
+            return
         if not video_path:
             return
         # используем видеокарты
