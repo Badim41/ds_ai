@@ -48,7 +48,7 @@ def image_change(output_folder, prompt, cuda_number, cuda_index):
                     if not set_get_config_all_not_async(f"Image", "result", None) == "None":
                         break
                     time.sleep(0.25)
-        set_get_config_all_not_async(f"Video", "result", True)
+        set_get_config_all_not_async(f"Video", f"result_video{cuda_index}", True)
     else:
         # 2 GPU
         i = 0
@@ -67,7 +67,7 @@ def image_change(output_folder, prompt, cuda_number, cuda_index):
                     if not set_get_config_all_not_async(f"Image{cuda_index}", "result", None) == "None":
                         break
                     time.sleep(0.25)
-        set_get_config_all_not_async(f"Video{cuda_index}", "result", True)
+        set_get_config_all_not_async(f"Video", f"result_video{cuda_index}", True)
     return
 
 
@@ -145,17 +145,17 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
         print(f"saved {frame_number // save_img_step} frames!")
 
         # === обработка изображений ===
-        for i in range(len(cuda_numbers)):
-            await set_get_config_all(f"Video{i}", "result", False)
+        for i in cuda_numbers:
+            await set_get_config_all(f"Video", f"result_video{i}", False)
             pool = multiprocessing.Pool(processes=1)
             pool.apply_async(image_change(output_folder, prompt, len(cuda_numbers), i))
             pool.close()
             print(f"{i} GPU START IMAGES. ALL GPUS: {cuda_numbers}")
 
         # wait for results
-        for i in range(len(cuda_numbers)):
+        for i in cuda_numbers:
             while True:
-                if await set_get_config_all(f"Video{i}", "result", None) == "True":
+                if await set_get_config_all(f"Video", f"result_video{i}", None) == "True":
                     break
                 await asyncio.sleep(5)
 
