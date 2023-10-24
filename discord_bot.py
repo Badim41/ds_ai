@@ -770,6 +770,7 @@ async def __cover(
                     ]
                     print("run RVC, AIName:", voice)
                     subprocess.run(command, check=True)
+                    await send_file(ctx, filename, delete_file=True)
                 except subprocess.CalledProcessError as e:
                     await ctx.send(f"Ошибка при изменении голоса(ID:d1): {e}")
             else:
