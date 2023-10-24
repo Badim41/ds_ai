@@ -231,7 +231,8 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                 await write_in_discord(ctx, result)
             await text_to_speech(result, True, ctx)
         except Exception as e:
-            await result_command_change("Произошла ошибка (ID:f3):" + str(e), Color.RED)
+            traceback_str = traceback.format_exc()
+            await result_command_change(f"Произошла ошибка (ID:f6): {str(e)}\n{str(traceback_str)}", Color.RED)
 
 
 async def is_robot_name(text, ctx):
@@ -383,7 +384,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
             await asyncio.sleep(delay_for_gpt)
             return
 
-        if result is None or result.replace("\n", "").replace(" ", "") == "":
+        if result is None or result.replace("\n", "").replace(" ", "") == "" or result == "None":
             # делаем задержку, чтобы не вывелся пустой результат
             await asyncio.sleep(delay_for_gpt)
             return
@@ -414,9 +415,9 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
 async def run_all_gpt(prompt, mode):
     if mode == "fast":
         functions = [one_gpt_run(provider, prompt, 120) for provider in _providers]  # список функций
-        functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 1, gpt_model=gpt_model) for gpt_model in
+        functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 120, gpt_model=gpt_model) for gpt_model in
                       ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003"]]
-        functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 1, gpt_model=gpt_model) for gpt_model in
+        functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 120, gpt_model=gpt_model) for gpt_model in
                       ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003"]]
         done, _ = await asyncio.wait(functions, return_when=asyncio.FIRST_COMPLETED)
         for task in done:
@@ -492,6 +493,10 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0, gpt_model="gpt-3.5-
                     print("change provider:", _providers[provider_number])
 
                     result = await chatgpt_get_result(prompt, ctx, provider_number=provider_number, gpt_model=gpt_model)
+                    if result is None or result.replace("\n", "").replace(" ", "") == "" or result == "None":
+                        provider_number += 1
+                        result = await chatgpt_get_result(prompt, ctx, provider_number=provider_number,
+                                                          gpt_model=gpt_model)
                     return result
                 result = "Ошибка при получении запроса"
         # if not language == "russian":
