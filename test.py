@@ -9,19 +9,81 @@
 # )
 #
 # subprocess.run(ffmpeg_command, shell=True)
+import re
+
+# print(round(10 / 3, 4))
 
 
-# 2πR
-# π^2 R
-# V = (4/3) × π × r³
-# S = 4πR^2
-input_int = int(input())
-P = 3.141592
-formula_1 = 2 * P * input_int
-formula_2 = input_int**2 * P
-formula_3 = (4/3) * P * input_int**3
-formula_4 = 4 * P * input_int**2
-print(f"Длина окружности радиуса {input_int} равна {round(formula_1, 3)}\n\
-Площадь круга радиуса {input_int} равна {round(formula_2, 3)}\n\
-Объем шара радиуса {input_int} равен {round(formula_3, 3)}\n\
-Площадь поверхности шара радиуса {input_int} равна {round(formula_4, 3)}")
+
+# def add_0(inputs):
+#     output = []
+#     for input in inputs:
+#         # print(len(input[input.find("."):]))
+#         if not "." in input:
+#             output.append(input + ".00")
+#             continue
+#         if len(input[input.find("."):]) < 3:
+#             output.append(input + "0")
+#         else:
+#             output.append(input)
+#     return output
+#
+#
+# # print(len("     1.05"))
+# input_str1, input_str1_1, input_str1_2, input_str2, input_str2_1, input_str2_2 = input(), input(), input(), input(), input(), input()
+# # Наименование изделия   Цена  Вес/Кол.   ВСЕГО
+# # -------------------- ------- -------- ---------
+# # Печенье               109.99     1.05    115.49
+# # Молоко                 67.00     1.00     67.00
+# # -------------------- ------- -------- ---------
+# # ИТОГО                                    182.49
+# result_1 = str(round(float(input_str1_1) * float(input_str1_2), 2))
+# result_2 = str(round(float(input_str2_1) * float(input_str2_2), 2))
+# input_str1_1, input_str1_2, input_str2_1, input_str2_2, result_1, result_2 = add_0([input_str1_1, input_str1_2, input_str2_1, input_str2_2, result_1, result_2])
+# print("Наименование изделия   Цена  Вес/Кол.   ВСЕГО   ")
+# print("-------------------- ------- -------- ---------")
+# print("{:<20}".format(input_str1), "{:>7}".format(input_str1_1), "{:>8}".format(input_str1_2),
+#       "{:>9}".format(result_1))
+# print("{:<20}".format(input_str2), "{:>7}".format(input_str2_1), "{:>8}".format(input_str2_2),
+#       "{:>9}".format(result_2))
+# print("-------------------- ------- -------- ---------")
+# result_final = add_0([str(float(result_1) + float(result_2))])[0]
+# print("ИТОГО", "{:>41}".format(result_final))
+
+
+
+# input_number = int(input())
+# print((input_number - input_number ** 2) ** int(input()))
+
+
+
+# input_int_1, input_int_2 = int(input()), int(input())
+# print(int(input_int_2 / input_int_1))
+
+
+# input_int_1, input_int_2 = int(input()), int(input())
+# print(input_int_2 % input_int_1)
+
+
+# input_int_1, input_int_2, input_int_3 = int(input()), int(input()), int(input())
+# print(input_int_1 * 0.15 + input_int_2 * 0.15 + input_int_3 * 0.15)
+
+# km, benzin_spend, benzin_cost = float(input()), float(input()), float(input())
+# litrov_benzina = km / 100
+# print(round(litrov_benzina * benzin_spend * benzin_cost * 2, 3))
+
+
+# input_ints = [int(input()), int(input()), int(input())]
+# result = 0
+# for integer in input_ints:
+#     if integer % 2 == 1:
+#         result += 1
+#     result += integer // 2
+# print(result)
+
+# input_int = int(input())
+# print(input_int * int(str(input_int)[::-1]))
+
+str ="--opit-- itop"
+str = re.sub(r"--.*?--", '', str)
+print(str)

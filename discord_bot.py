@@ -723,18 +723,20 @@ async def __cover(
         audio_path: Option(discord.SlashCommandOptionType.attachment, description='Аудиофайл',
                            required=False, default=None),
         voice: Option(str, description='Голос для видео', required=False, default=None),
-        gender: Option(str, description='Кто говорит/поёт в видео?', required=False,
+        gender: Option(str, description='Кто говорит/поёт в видео? (или указать pitch)', required=False,
                        choices=['мужчина', 'женщина'], default=None),
+        pitch: Option(int, description='Какую использовать тональность (от -24 до 24) (или указать gender)', required=False,
+                     default=None, min_value=-24, max_value=24),
         time: Option(int, description='Ограничить длительность воспроизведения (в секундах)', required=False,
-                     default=-1, min_value=-1),
+                     default=-1, min_value=-2),
         indexrate: Option(float, description='Индекс голоса (от 0 до 1)', required=False, default=0.5, min_value=0,
                           max_value=1),
         loudness: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.2, min_value=0,
                          max_value=1),
         filter_radius: Option(int,
-                              description='Насколько далеко от каждой точки в данных будут учитываться значения... (что?)',
+                              description='Насколько далеко от каждой точки в данных будут учитываться значения... (от 1 до 7)',
                               required=False, default=3, min_value=0,
-                              max_value=6),
+                              max_value=7),
         main_vocal: Option(int, description='Громкость основного вокала (от -20 до 0)', required=False, default=0,
                            min_value=-20, max_value=0),
         back_vocal: Option(int, description='Громкость бэквокала (от -20 до 0)', required=False, default=0,
@@ -763,7 +765,7 @@ async def __cover(
         if voice:
             params.append(f"-voice {voice}")
         # если мужчина-мужчина, женщина-женщина, pitch не меняем
-        pitch_int = 0
+        pitch_int = pitch
         # если женщина, а AI мужчина = 1,
         if gender == 'женщина':
             if not await set_get_config_default("currentaipitch") == "1":
@@ -866,6 +868,19 @@ async def __cover(
         print(str(traceback_str))
         await ctx.send(f"Ошибка при изменении голоса(ID:d2) (с параметрами {param_string}): {e}")
 
+
+@bot.slash_command(name="create_diologe", description='Имитировать диалог людей')
+async def __diologe(
+    ctx,
+    names: Option(str, description="Участники диалога через ';' (у каждого должен быть добавлен голос!)", required=True),
+    theme: Option(str, description="Тема разговора", required=True)
+):
+    config.read('config.ini')
+    voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
+    for name in names:
+        if name not in voices:
+            await ctx.respond("Выберите голоса из списка: " + ','.join(voices))
+            return
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
 async def __add_voice(

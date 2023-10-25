@@ -1337,7 +1337,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         await result_command_change("gtts1", Color.CYAN)
         await gtts(tts, language[:2], file_name)
         if currentAIpitch == 0:
-            pitch = -1
+            pitch = -12
     else:
         # получаем ключ для elevenlab
         keys = (await set_get_config_all("voice", "avaible_tokens")).split(";")
