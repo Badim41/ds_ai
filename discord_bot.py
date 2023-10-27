@@ -402,7 +402,7 @@ async def __image(ctx,
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        await ctx.respond(f"Ошибка при изменении видео (с параметрами\
+        await ctx.send(f"Ошибка при изменении видео (с параметрами\
                           {prompt, negative_prompt, steps, x, y, strength, strength_prompt, strength_negative_prompt}): {e}")
         # перестаём использовать видеокарту
         await stop_use_cuda_async(0)
@@ -639,16 +639,23 @@ async def __lenght(
 @bot.slash_command(name="say", description='Сказать роботу что-то')
 async def __say(
         ctx,
-        text: Option(str, description='Сам текст/команда. Список команд: \\help-say', required=True)
+        text: Option(str, description='Сам текст/команда. Список команд: \\help-say', required=True),
+        gpt_mode: Option(str, description="модификация GPT. 'all' - все ответы, 'fast' - быстрый, 'None' - точный",
+                         choices=["fast", "all", "None"], required=False, default=None)
 ):
     try:
         await ctx.respond('Выполнение...')
+
+        if gpt_mode:
+            await set_get_config_all("gpt", "gpt_mode", gpt_mode)
+
         from function import replace_mat_in_sentence
         if await set_get_config_default("robot_name_need") == "False":
             text = await set_get_config_default("currentainame") + ", " + text
         text = await replace_mat_in_sentence(text)
         print(f'{text} ({type(text).__name__})\n')
         await set_get_config_default("user_name", value=ctx.author.name)
+
         await run_main_with_settings(ctx, text, True)
     except Exception as e:
         traceback_str = traceback.format_exc()
@@ -771,14 +778,14 @@ async def __cover(
             params.append(f"-voice {voice}")
         # если мужчина-мужчина, женщина-женщина, pitch не меняем
         pitch_int = pitch
-        # если женщина, а AI мужчина = 1,
+        # если женщина, а AI мужчина = 12,
         if gender == 'женщина':
-            if not await set_get_config_default("currentaipitch") == "1":
-                pitch_int = 1
-        # если мужчина, а AI женщина = -1,
+            if not await set_get_config_default("currentaipitch") == "12":
+                pitch_int = 12
+        # если мужчина, а AI женщина = -12,
         elif gender == 'мужчина':
             if not await set_get_config_default("currentaipitch") == "0":
-                pitch_int = -1
+                pitch_int = -12
         params.append(f"-pitch {pitch_int}")
         if time == -2:
             stop_seconds = int(await set_get_config_all("Sound", "stop_milliseconds", None)) // 1000
@@ -882,36 +889,26 @@ async def __dialog(
         theme: Option(str, description="Начальная тема разговора", required=False, default="случайная тема"),
         prompt: Option(str, description="Общий запрос для всех диалогов", required=False, default="")
 ):
-    await set_get_config_all("dialog", "dialog", "True")
-    config.read('config.ini')
-    voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
-    voices.remove("None")  # убираем, чтобы не путаться
-    names = names.split(";")
-    infos = []
-    for name in names:
-        if name not in voices:
-            await ctx.respond("Выберите голоса из списка: " + ','.join(voices))
-            return
-        with open(f"rvc_models/{name}/info.txt") as reader:
-            infos.append(f"Вот информация о {name}: {reader.read()}")
-    from function import chatgpt_get_result
-    prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)}. На тему \"{theme}\". "
-              f"{'.'.join(infos)}. {prompt}. Обязательно в конце диалога напиши, что должно произойти дальше. "
-              f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
-    result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
-    with open("caversAI/dialog_create", "a") as writer:
-        for line in result.split("\n"):
-            for name in names:
-                if name + ":" in line:
-                    writer.write(line + "\n")
-    while await set_get_config_all("dialog", "dialog", None) == "True":
-        prompt = (f"Придумай продолжение между {', '.join(names)}. "
-                  f"{'.'.join(infos)}. {prompt} "
-                  f"Теперь продолжи предыдущий диалог. "
-                  f"Временной промежуток между этим и прошлым диалогом несколько секунд. "
-                  f"Вот прошлый диалог:\"{result}\"\nОбязательно в конце диалога напиши, что должно произойти дальше."
-                  f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
-        result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
+    try:
+        await set_get_config_all("dialog", "dialog", "True")
+        await set_get_config_all("gpt", "gpt_mode", "None")
+        config.read('config.ini')
+        voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
+        voices.remove("None")  # убираем, чтобы не путаться
+        names = names.split(";")
+        infos = []
+        for name in names:
+            if name not in voices:
+                await ctx.respond("Выберите голоса из списка: " + ','.join(voices))
+                return
+            with open(f"rvc_models/{name}/info.txt") as reader:
+                infos.append(f"Вот информация о {name}: {reader.read()}")
+        # names, theme, infos, prompt, ctx
+        await asyncio.gather(await gpt_dialog(names, theme, infos, prompt, ctx), await play_dialog())
+    except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
+        await ctx.send(f"Ошибка при диалоге: {e}")
 
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
@@ -932,6 +929,7 @@ async def __add_voice(
         await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
     # !python download_voice_model.py {url} {dir_name} {gender} {info}
     command = None
+    name = name.replace(" ", "_")
     if gender == "женщина":
         gender = "female"
     elif gender == "мужчина":
@@ -984,6 +982,139 @@ async def command_line(ctx, *args):
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
         await ctx.send(f"Произошла неизвестная ошибка: {e}")
+
+
+async def play_dialog(ctx):
+    while await set_get_config_all("dialog", "dialog", None) == "True":
+        play_path = "caversAI/dialog_play.txt"
+        with open(play_path, "r") as reader:
+            line = reader.readline()
+            if not line is None and not line.replace(" ", "") == "":
+                await remove_line_from_txt(play_path, 1)
+                from function import playSoundFile
+                # audio_file_path, duration, start_seconds, ctx
+                await playSoundFile(line, -1, 0, ctx)
+            else:
+                await asyncio.sleep(0.1)
+
+async def text_to_speech_file(tts, currentpitch, file_name):
+    from elevenlabs import generate, save, set_api_key
+    language = await set_get_config_all("Default", "language", None)
+    max_simbols = await set_get_config_all("voice", "max_simbols", None)
+
+    pitch = 0
+    if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_tokens") == "None":
+        print("gtts1")
+        from function import gtts
+        await gtts(tts, language[:2], file_name)
+        if currentpitch == 0:
+            pitch = -12
+    else:
+        # получаем ключ для elevenlab
+        keys = (await set_get_config_all("voice", "avaible_tokens", None)).split(";")
+        key = keys[0]
+        if not key == "Free":
+            set_api_key(key)
+        try:
+            # голос TTS в зависимости от пола
+            if currentpitch == 0:
+                voice = "Arnold"
+            else:
+                voice = "Bella"
+            audio = generate(
+                text=tts,
+                model='eleven_multilingual_v2',
+                voice=voice
+            )
+
+            save(audio, file_name)
+        except Exception as e:
+            from function import remove_unavaible_voice_token
+            print(f"Ошибка при выполнении команды (ID:f16): {e}")
+            await remove_unavaible_voice_token()
+            pitch = await text_to_speech_file(tts, currentpitch, file_name)
+            return pitch
+            # gtts(tts, language[:2], file_name)
+    return pitch
+async def create_audio_dialog(ctx):
+    while await set_get_config_all("dialog", "dialog", None) == "True":
+        text_path = "caversAI/dialog_play.txt"
+        play_path = "caversAI/dialog_play.txt"
+        with open(text_path, "r") as reader:
+            line = reader.readline()
+            if not line is None:
+                await remove_line_from_txt(play_path, 1)
+                name = line[line.find("-voice") + 7:]
+                with open(os.path.join(f"rvc_models/{name}/gender.txt")) as file:
+                    pitch = 0
+                    if file.read().lower() == "female":
+                        pitch = 12
+                filename = int(await set_get_config_all("dialog", "files_number", None))
+                await set_get_config_all("dialog", "files_number", filename + 1)
+                filename = str(filename) + ".mp3"
+                pitch = await text_to_speech_file(line, pitch, filename)
+                try:
+                    command = [
+                        "python",
+                        "only_voice_change.py",
+                        "-i", f"{filename}",
+                        "-o", f"{filename}",
+                        "-dir", name,
+                        "-p", f"{pitch}",
+                        "-ir", "0.5",
+                        "-fr", "3",
+                        "-rms", "0.3",
+                        "-pro", "0.15"
+                    ]
+                    print("run RVC, AIName:", name)
+                    subprocess.run(command, check=True)
+                    await send_file(ctx, filename, delete_file=True)
+                except subprocess.CalledProcessError as e:
+                    traceback_str = traceback.format_exc()
+                    print(str(traceback_str))
+                    await ctx.send(f"Ошибка при изменении голоса(ID:d1): {e}")
+            else:
+                await asyncio.sleep(0.1)
+
+
+async def remove_line_from_txt(file_path, delete_line):
+    try:
+        if not os.path.exists(file_path):
+            return
+        lines = []
+        with open(file_path, "r") as reader:
+            i = 1
+            for line in reader:
+                if not i == delete_line:
+                    lines.append(line)
+                i += 1
+        with open(file_path, "w") as writer:
+            for line in lines:
+                writer.write(line)
+    except Exception as e:
+        print(f"Ошибка при удалении строки: {e}")
+
+
+async def gpt_dialog(names, theme, infos, prompt, ctx):
+    from function import chatgpt_get_result
+    prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)}. На тему \"{theme}\". "
+              f"{'.'.join(infos)}. {prompt}. Обязательно в конце диалога напиши, что должно произойти дальше. "
+              f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
+    result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
+    with open("caversAI/dialog_create.txt", "a") as writer:
+        for line in result.split("\n"):
+            for name in names:
+                if line.startswith(name + ":"):
+                    line = line[line.find(":") + 1:]
+                    writer.write(line + f"-voice {name}\n")
+
+    while await set_get_config_all("dialog", "dialog", None) == "True":
+        prompt = (f"Придумай продолжение диалога между {', '.join(names)}. "
+                  f"{'.'.join(infos)}. {prompt} "
+                  f"Временной промежуток между этим и прошлым диалогом несколько секунд. "
+                  f"Вот прошлый диалог:\"{result}\"\nОбязательно в конце диалога напиши, что должно произойти дальше."
+                  f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
+        result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
 
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):

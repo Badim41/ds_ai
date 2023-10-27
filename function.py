@@ -52,7 +52,6 @@ _providers = [
 ]
 
 from gtts import gTTS
-from elevenlabs import generate, save, set_api_key
 from discord_bot import config, send_file
 from discord_bot import write_in_discord
 from use_free_cuda import check_cuda, stop_use_cuda_async, use_cuda_async
@@ -782,7 +781,7 @@ async def setAIvoice(name, ctx):
         # Pitch
         with open(os.path.join(f"rvc_models/{name}/gender.txt")) as file:
             if file.read().lower() == "female":
-                await set_config("currentaipitch", 1)
+                await set_config("currentaipitch", 12)
             else:
                 await set_config("currentaipitch", 0)
 
@@ -1283,7 +1282,7 @@ async def console_command_runner(command, ctx):
 
 
 async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
-    global currentAIpitch
+    currentpitch = int(await set_get_config_all("Default", "currentaipitch", None))
     if tts is None or tts.replace("\n", "").replace(" ", "") == "":
         await result_command_change(f"Пустой текст \"{tts}\"", Color.RED)
         return
@@ -1330,45 +1329,14 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
 
     if os.path.exists(file_name):
         os.remove(file_name)
-    language = await set_get_config_all("Default", "language")
-    max_simbols = await set_get_config_all("voice", "max_simbols")
 
-    pitch = 0
-    if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_tokens") == "None":
-        await result_command_change("gtts1", Color.CYAN)
-        await gtts(tts, language[:2], file_name)
-        if currentAIpitch == 0:
-            pitch = -12
-    else:
-        # получаем ключ для elevenlab
-        keys = (await set_get_config_all("voice", "avaible_tokens")).split(";")
-        key = keys[0]
-        if not key == "Free":
-            set_api_key(key)
-        try:
-            # голос TTS в зависимости от пола
-            if currentAIpitch == 0:
-                voice = "Arnold"
-            else:
-                voice = "Bella"
-            audio = generate(
-                text=tts,
-                model='eleven_multilingual_v2',
-                voice=voice
-            )
-
-            save(audio, file_name)
-        except Exception as e:
-            await result_command_change(f"Ошибка при выполнении команды (ID:f16): {e}", Color.YELLOW)
-            await remove_unavaible_voice_token()
-            await text_to_speech(tts, False, ctx, ai_dictionary=ai_dictionary)
-            return
-            # gtts(tts, language[:2], file_name)
-        # если голос не выставлен
-        if ai_dictionary == "None":
-            await playSoundFile(file_name, -1, 0, ctx)
-            await result_command_change(f"tts(No RVC)", Color.CYAN)
-            return
+    from discord_bot import text_to_speech_file
+    pitch = text_to_speech_file(tts, currentpitch, file_name)
+    # если голос не выставлен
+    if ai_dictionary == "None":
+        await playSoundFile(file_name, -1, 0, ctx)
+        await result_command_change(f"tts(No RVC)", Color.CYAN)
+        return
 
     # используем RVC
     try:
@@ -1448,14 +1416,6 @@ async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
         if not ctx.voice_client:
             print("Skip play")
             return
-        # else:
-        # connect to voice chat
-        # voice = ctx.author.voice
-        # if voice:
-        #     voice_channel = voice.channel
-        #     if ctx.voice_client is not None:
-        #         return await ctx.voice_client.move_to(voice_channel)
-        #     await voice_channel.connect(timeout=10, reconnect=False)
 
         if not await wait_for_file(audio_file_path, 100, 10):
             await result_command_change("Файл недоступен", Color.RED)
