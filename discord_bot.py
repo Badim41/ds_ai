@@ -1057,7 +1057,7 @@ async def create_audio_dialog(ctx):
                 filename = int(await set_get_config_all("dialog", "files_number", None))
                 await set_get_config_all("dialog", "files_number", filename + 1)
                 filename = "song_output/" + str(filename) + ".mp3"
-                pitch = await text_to_speech_file(line, pitch, filename)
+                pitch = await text_to_speech_file(line[:line.find("-voice")], pitch, filename)
                 try:
                     command = [
                         "python",
