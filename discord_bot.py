@@ -1185,7 +1185,6 @@ async def run_main_with_settings(ctx, spokenText, writeAnswer):
 
 
 async def write_in_discord(ctx, text):
-    print(text)
     from function import result_command_change, Color
     if text == "" or text is None:
         await result_command_change("ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
