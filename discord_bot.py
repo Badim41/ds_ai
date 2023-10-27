@@ -1127,7 +1127,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
     while await set_get_config_all("dialog", "dialog", None) == "True":
         if "\n" in result:
             result = result[result.rfind("\n"):]
-        random_int = random.randint(1, 10)
+        random_int = random.randint(1, 25)
         if not random_int == 0:
             prompt = (f"Придумай продолжение диалога между {', '.join(names)}. "
                       f"{'.'.join(infos)}. {prompt_global} "
