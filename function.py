@@ -1343,7 +1343,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     try:
         command = [
             "python",
-            "only_voice_change.py",
+            "only_voice_change_cuda0.py",
             "-i", f"\"{file_name}\"",
             "-o", "2.mp3",
             "-dir", str(ai_dictionary),

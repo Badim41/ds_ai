@@ -829,7 +829,7 @@ async def __cover(
                 try:
                     command = [
                         "python",
-                        "only_voice_change.py",
+                        "only_voice_change_cuda0.py",
                         "-i", f"{filename}",
                         "-o", f"{filename}",
                         "-dir", str(voice),
@@ -1044,7 +1044,7 @@ async def text_to_speech_file(tts, currentpitch, file_name):
     return pitch
 
 
-async def create_audio_dialog(ctx):
+async def create_audio_dialog(ctx, cuda):
     while await set_get_config_all("dialog", "dialog", None) == "True":
         text_path = "caversAI/dialog_create.txt"
         play_path = "caversAI/dialog_play.txt"
@@ -1064,7 +1064,7 @@ async def create_audio_dialog(ctx):
                 try:
                     command = [
                         "python",
-                        "only_voice_change.py",
+                        "only_voice_change_cuda0.py",
                         "-i", f"{filename}",
                         "-o", f"{filename}",
                         "-dir", name,

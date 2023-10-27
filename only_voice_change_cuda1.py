@@ -1,6 +1,8 @@
 import argparse
 import gc
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+import torch
 
 from rvc import Config, load_hubert, get_vc, rvc_infer
 
