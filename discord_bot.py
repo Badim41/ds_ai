@@ -879,7 +879,8 @@ async def __dialog(
         ctx,
         names: Option(str, description="Участники диалога через ';' (у каждого должен быть добавлен голос!)",
                       required=True),
-        theme: Option(str, description="Начальная тема разговора", required=False, default="случайная тема")
+        theme: Option(str, description="Начальная тема разговора", required=False, default="случайная тема"),
+        prompt: Option(str, description="Общий запрос для всех диалогов", required=False, default="")
 ):
     await set_get_config_all("dialog", "dialog", "True")
     config.read('config.ini')
@@ -895,19 +896,22 @@ async def __dialog(
             infos.append(f"Вот информация о {name}: {reader.read()}")
     from function import chatgpt_get_result
     prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)}. На тему \"{theme}\". "
-              f"{'.'.join(infos)}"
+              f"{'.'.join(infos)}. {prompt}"
               f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
-    result = await chatgpt_get_result(prompt, ctx)
-    print(result)
+    result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
+    with open("caversAI/dialog_create", "a") as writer:
+        for line in result.split("\n"):
+            for name in names:
+                if name + ":" in line:
+                    writer.write(line + "\n")
     while await set_get_config_all("dialog", "dialog", None) == "True":
         prompt = (f"Придумай тему для нового диалога между {', '.join(names)}. "
-                  f"{'.'.join(infos)} "
+                  f"{'.'.join(infos)}. {prompt} "
                   f"Дополни предыдущий диалог, взяв за основу какие-то детали из него. "
                   f"Временной промежуток между этим и прошлым диалогом несколько секунд. "
                   f"Вот прошлый диалог:\"{result}\""
                   f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
-        result = await chatgpt_get_result(prompt, ctx)
-        print(result)
+        result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
 
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')

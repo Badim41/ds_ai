@@ -23,7 +23,6 @@ _providers = [
     g4f.Provider.Theb,
 
     # good providers
-    g4f.Provider.ChatForAi,
     g4f.Provider.GPTalk,
     g4f.Provider.AiAsk,  # - rate limit
     g4f.Provider.GeekGpt,  # short answer
@@ -36,6 +35,7 @@ _providers = [
     g4f.Provider.ChatgptFree,
     g4f.Provider.AItianhuSpace,
     g4f.Provider.AItianhu,
+    g4f.Provider.ChatForAi,
 
     # bad providers
     g4f.Provider.You,  # dont work

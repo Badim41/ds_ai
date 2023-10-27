@@ -105,3 +105,9 @@ import re
 #             while not len(text_part) == 0:
 #                 print(text_part[:1990], end="")
 #                 text_part = text_part[1990:]
+
+
+# result = '124\n245\n2342'
+# with open("caversAI/dialog_create", "a") as writer:
+#     for line in result.split("\n"):
+#         writer.write(line + "\n")
