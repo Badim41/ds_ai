@@ -20,7 +20,6 @@ _providers = [
     g4f.Provider.Bing,
     g4f.Provider.Bard,
     g4f.Provider.OpenaiChat,
-    g4f.Provider.Vercel,
     g4f.Provider.Theb,
 
     # good providers
@@ -28,6 +27,7 @@ _providers = [
     g4f.Provider.GPTalk,
     g4f.Provider.AiAsk,  # - rate limit
     g4f.Provider.GeekGpt,  # short answer
+    g4f.Provider.Vercel, # cut answer
     g4f.Provider.ChatgptDemo,  # error 403
     g4f.Provider.ChatgptLogin,  # error 403
     g4f.Provider.ChatgptX,  # error
@@ -151,7 +151,6 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     global robot_names
     robot_names = ["robot", "robots", "робот", "нейросеть", "hello", "роботы", "ропот"]
 
-
     await result_command_change(f"RowInput:{spokenText}", Color.GRAY)
     temp_spokenText = spokenText
 
@@ -184,18 +183,18 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                 # Локальный GPT
                 # нормально отвечает, если в конце добавить "Ответ:"
                 if await set_get_config_all("gpt", "use_gpt_provider", None) == "False":
-                    prompt = f"Вы собираетесь притвориться {currentAIname}. {currentAIinfo}.\
-                     У тебя есть воспоминания:\"{file_content}\".\
-                      Напиши ответ пользователю с именем {user_name}, он говорит: {temp_spokenText}. Ответ:"
+                    prompt = f"Вы собираетесь притвориться {currentAIname}. {currentAIinfo}." \
+                             f"У тебя есть воспоминания:\"{file_content}\"." \
+                             f"Напиши ответ пользователю с именем {user_name}, он говорит: {temp_spokenText}. Ответ:"
                 else:
                     # GPT провайдер
-                    prompt = (f"Привет, chatGPT. Вы собираетесь притвориться {currentAIname}. \
-                                Продолжайте вести себя как {currentAIname}, насколько это возможно. \
-                                {currentAIinfo} \
-                             ОПИРАЙСЯ НА ПРЕДЫДУЩИЕ ЗАПРОСЫ. Они даны в формате Человек:[запрос], GPT:[ответ на запрос]:\"{file_content}\"\
-                             Когда я задаю вам вопрос, отвечайте как {currentAIname}, как показано ниже.\n\
-                              {currentAIname}: [так, как ответил бы {currentAIname}]\n\
-                              Напиши ответ пользователю с именем {user_name}, он говорит:{temp_spokenText}")
+                    prompt = (f"Привет, chatGPT. Вы собираетесь притвориться {currentAIname}. "
+                              f"Продолжайте вести себя как {currentAIname}, насколько это возможно. "
+                              f"{currentAIinfo}"
+                              f"ОПИРАЙСЯ НА ПРЕДЫДУЩИЕ ЗАПРОСЫ. Они даны в формате Человек:[запрос], GPT:[ответ на запрос]:\"{file_content}\"\n"
+                              f"Когда я задаю вам вопрос, отвечайте как {currentAIname}, как показано ниже.\n"
+                              f"{currentAIname}: [так, как ответил бы {currentAIname}]\n"
+                              f"Напиши ответ пользователю с именем {user_name}, он говорит:{temp_spokenText}")
                     while "  " in prompt:
                         prompt = prompt.replace("  ", " ")
             elif custom_prompt == "True":
@@ -865,7 +864,8 @@ async def createAICaver(ctx):
             await use_cuda_async(0)
             await use_cuda_async(1)
             await write_in_discord(ctx, "Начинаю обработку аудио")
-            await asyncio.gather(play_audio_process(ctx), prepare_audio_pipeline(1, ctx), prepare_audio_pipeline(0, ctx)) #
+            await asyncio.gather(play_audio_process(ctx), prepare_audio_pipeline(1, ctx),
+                                 prepare_audio_pipeline(0, ctx))  #
             await result_command_change(f"ready audios", Color.GRAY)
             # освобождаем видеокарты
             await stop_use_cuda_async(0)
@@ -1008,7 +1008,9 @@ async def run_ai_cover_gen(line, ctx, wait=False, cuda=None):
     outputFormat = "mp3"
     if url == ".":
         return
-    await execute_command(f"python main_cuda{cuda}.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda}", ctx)
+    await execute_command(
+        f"python main_cuda{cuda}.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda}",
+        ctx)
     # if cuda == 0:
     #     from main_cuda0 import run_ai_cover_gen
     # else:
@@ -1042,7 +1044,6 @@ async def run_ai_cover_gen(line, ctx, wait=False, cuda=None):
     #                            True,
     #                            cuda,
     #                            output)
-
 
 
 # async def defaultRVCParams(filePath, pitch):
@@ -1448,14 +1449,13 @@ async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
             print("Skip play")
             return
         # else:
-            # connect to voice chat
-            # voice = ctx.author.voice
-            # if voice:
-            #     voice_channel = voice.channel
-            #     if ctx.voice_client is not None:
-            #         return await ctx.voice_client.move_to(voice_channel)
-            #     await voice_channel.connect(timeout=10, reconnect=False)
-
+        # connect to voice chat
+        # voice = ctx.author.voice
+        # if voice:
+        #     voice_channel = voice.channel
+        #     if ctx.voice_client is not None:
+        #         return await ctx.voice_client.move_to(voice_channel)
+        #     await voice_channel.connect(timeout=10, reconnect=False)
 
         if not await wait_for_file(audio_file_path, 100, 10):
             await result_command_change("Файл недоступен", Color.RED)

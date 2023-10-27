@@ -9,7 +9,6 @@ import asyncio
 import time
 import traceback
 
-
 from pytube import Playlist
 
 from PIL import Image
@@ -52,7 +51,7 @@ async def set_get_config_all(section, key, value, error=0):
     except Exception as e:
         print(f"Ошибка при чтении конфига:{e}")
         await asyncio.sleep(0.1)
-        result = await set_get_config_all(section, key, value, error+1)
+        result = await set_get_config_all(section, key, value, error + 1)
         return result
 
 
@@ -235,7 +234,8 @@ async def __change_video(
         total_frames = int((video_clip.fps * video_clip.duration) / (30 / fps))
         max_frames = int(await set_get_config_all("Video", "max_frames", None))
         if max_frames <= total_frames:
-            await ctx.send(f"Слишком много кадров, снизьте параметр FPS! Максимальное разрешённое количество кадров в видео: {max_frames}. Количество кадров у вас - {total_frames}")
+            await ctx.send(
+                f"Слишком много кадров, снизьте параметр FPS! Максимальное разрешённое количество кадров в видео: {max_frames}. Количество кадров у вас - {total_frames}")
             for i in cuda_numbers:
                 await stop_use_cuda_async(i)
             return
@@ -267,7 +267,7 @@ async def __change_video(
             else:
                 time_spend = f"{seconds} секунд"
             await ctx.send(f"Видео будет обрабатываться ~{time_spend}")
-    # loading params
+        # loading params
         for i in cuda_numbers:
             await set_get_config_all(f"Image{i}", "strength_negative_prompt", strength_negative_prompt)
             await set_get_config_all(f"Image{i}", "strength_prompt", strength_prompt)
@@ -574,11 +574,14 @@ async def disconnect(ctx):
 #         await ctx.send("Вы должны находиться в войс-чате, чтобы использовать эту команду.")
 
 
-@bot.slash_command(name="pause", description='пауза/воспроизведение')
+@bot.slash_command(name="pause", description='пауза/воспроизведение (остановка диалога)')
 async def pause(ctx):
     try:
         await ctx.defer()
         await ctx.respond('Выполнение...')
+        if await set_get_config_all("dialog", "dialog", None) == "True":
+            await set_get_config_all("dialog", "dialog", "False")
+            await ctx.send("Диалог остановлен")
         voice_client = ctx.voice_client
         if voice_client.is_playing():
             # voice_client.pause()
@@ -725,8 +728,9 @@ async def __cover(
         voice: Option(str, description='Голос для видео', required=False, default=None),
         gender: Option(str, description='Кто говорит/поёт в видео? (или указать pitch)', required=False,
                        choices=['мужчина', 'женщина'], default=None),
-        pitch: Option(int, description='Какую использовать тональность (от -24 до 24) (или указать gender)', required=False,
-                     default=None, min_value=-24, max_value=24),
+        pitch: Option(int, description='Какую использовать тональность (от -24 до 24) (или указать gender)',
+                      required=False,
+                      default=None, min_value=-24, max_value=24),
         time: Option(int, description='Ограничить длительность воспроизведения (в секундах)', required=False,
                      default=-1, min_value=-2),
         indexrate: Option(float, description='Индекс голоса (от 0 до 1)', required=False, default=0.5, min_value=0,
@@ -752,7 +756,8 @@ async def __cover(
         start: Option(int, description='Начать воспроизводить с (в секундах)', required=False, default=0, min_value=0),
         output: Option(str, description='Отправить результат', choices=["link", "file", "all_files", "None"],
                        required=False, default="file"),
-        only_voice_change: Option(bool, description='Не извлекать инструментал и бэквокал, изменить голос. Не поддерживаются ссылки',
+        only_voice_change: Option(bool,
+                                  description='Не извлекать инструментал и бэквокал, изменить голос. Не поддерживаются ссылки',
                                   required=False, default=False)
 ):
     param_string = None
@@ -869,18 +874,39 @@ async def __cover(
         await ctx.send(f"Ошибка при изменении голоса(ID:d2) (с параметрами {param_string}): {e}")
 
 
-@bot.slash_command(name="create_diologe", description='Имитировать диалог людей')
-async def __diologe(
-    ctx,
-    names: Option(str, description="Участники диалога через ';' (у каждого должен быть добавлен голос!)", required=True),
-    theme: Option(str, description="Тема разговора", required=True)
+@bot.slash_command(name="create_dialog", description='Имитировать диалог людей')
+async def __dialog(
+        ctx,
+        names: Option(str, description="Участники диалога через ';' (у каждого должен быть добавлен голос!)",
+                      required=True),
+        theme: Option(str, description="Начальная тема разговора", required=False, default="случайная тема")
 ):
+    await set_get_config_all("dialog", "dialog", "True")
     config.read('config.ini')
     voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
+    voices.remove("None")  # убираем, чтобы не путаться
+    names = names.split(";")
+    infos = []
     for name in names:
         if name not in voices:
             await ctx.respond("Выберите голоса из списка: " + ','.join(voices))
             return
+        with open(f"rvc_models/{name}/info.txt") as reader:
+            infos.append(f"Вот информация о {name}: {reader.read()}")
+    from function import chatgpt_get_result
+    prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)}. На тему \"{theme}\". "
+              f"{'.'.join(infos)}")
+    result = await chatgpt_get_result(prompt, ctx)
+    print(result)
+    while await set_get_config_all("dialog", "dialog", None) == "True":
+        prompt = (f"Придумай тему для нового диалога между {', '.join(names)}. "
+                  f"{'.'.join(infos)} "
+                  f"Дополни предыдущий диалог, взяв за основу какие-то детали из него. "
+                  f"Временной промежуток между этим и прошлым диалогом несколько секунд. "
+                  f"Вот прошлый диалог:\"{result}\"")
+        result = await chatgpt_get_result(prompt, ctx)
+        print(result)
+
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
 async def __add_voice(
@@ -968,44 +994,19 @@ async def write_in_discord(ctx, text):
     if len(text) < 1990:
         await ctx.send(text)
     else:
-        message_parts = []
-
-        while len(text) > 0:
-            code_block_start = text.find("```")
-            spoiler_start = text.find("||")
-
-            # первая пара
-            min_start = min(code_block_start, spoiler_start) if code_block_start >= 0 and spoiler_start >= 0 else max(
-                code_block_start, spoiler_start)
-
-            if min_start == -1:
-                message_parts.append(text[:1990])
-                text = text[1990:]
-            else:
-                if text[min_start:min_start + 3] == "```":
-                    code_block_end = text[min_start + 3:].find("```")
-                    if code_block_end != -1:
-                        message_part = text[:min_start + code_block_end + 6]
-                    else:
-                        message_part = text[:1990]
-                else:
-                    spoiler_end = text[min_start + 2:].find("||")
-                    if spoiler_end != -1:
-                        message_part = text[:min_start + spoiler_end + 4]
-                    else:
-                        message_part = text[:1990]
-                message_parts.append(message_part)
-                text = text[len(message_part):]
-
-        # отправляем по частям
-        for part in message_parts:
-            while len(part) > 1990:
-                await result_command_change("Сообщение всё ровно больше 2000 символов", Color.RED)
-                await ctx.send(part[1990:])
-                part = part[1990:]
-            if part == "" or part is None:
-                continue
-            await ctx.send(part)
+        while not text == "":
+            text_part = text[:text.find("||") + 2]
+            text = text[text.find("||") + 2:]
+            text_part += text[:text.find("||") + 2]
+            text = text[text.find("||") + 2:]
+            if "```" in text_part:
+                if len(text_part) > 1990:
+                    while text_part.find("```") > 1990:
+                        await ctx.send(text_part[:1990])
+                        text_part = text_part[1990:]
+            while not len(text_part) == 0:
+                await ctx.send(text_part[:1990])
+                text_part = text_part[1990:]
 
 
 async def send_file(ctx, file_path, delete_file=False):
@@ -1183,6 +1184,7 @@ async def get_file_type(ctx, attachment):
         return "audio"
     else:
         await ctx.send("Неизвестный тип файла.")
+
 
 async def get_image_dimensions(file_path):
     with Image.open(file_path) as img:

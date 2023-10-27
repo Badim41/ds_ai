@@ -14,7 +14,6 @@ import re
 # print(round(10 / 3, 4))
 
 
-
 # def add_0(inputs):
 #     output = []
 #     for input in inputs:
@@ -51,10 +50,8 @@ import re
 # print("ИТОГО", "{:>41}".format(result_final))
 
 
-
 # input_number = int(input())
 # print((input_number - input_number ** 2) ** int(input()))
-
 
 
 # input_int_1, input_int_2 = int(input()), int(input())
@@ -84,6 +81,27 @@ import re
 # input_int = int(input())
 # print(input_int * int(str(input_int)[::-1]))
 
-str ="--opit-- itop"
-str = re.sub(r"--.*?--", '', str)
-print(str)
+# str ="--opit-- itop"
+# str = re.sub(r"--.*?--", '', str)
+# print(str)
+
+# def write_in_discord(text):
+#     if text == "" or text is None:
+#         print("пустое")
+#         return
+#     if len(text) < 1:
+#         print(text)
+#     else:
+#         while not text == "":
+#             text_part = text[:text.find("||") + 2]
+#             text = text[text.find("||") + 2:]
+#             text_part += text[:text.find("||") + 2]
+#             text = text[text.find("||") + 2:]
+#             if "```" in text_part:
+#                 if len(text_part) > 1990:
+#                     while text_part.find("```") > 1990:
+#                         print(text_part[:1990], end="")
+#                         text_part = text_part[1990:]
+#             while not len(text_part) == 0:
+#                 print(text_part[:1990], end="")
+#                 text_part = text_part[1990:]
