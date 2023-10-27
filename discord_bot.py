@@ -890,6 +890,8 @@ async def __dialog(
         prompt: Option(str, description="Общий запрос для всех диалогов", required=False, default="")
 ):
     try:
+        await ctx.defer()
+        await ctx.respond('Выполнение...')
         await set_get_config_all("dialog", "dialog", "True")
         await set_get_config_all("gpt", "gpt_mode", "None")
         config.read('config.ini')
@@ -1102,7 +1104,7 @@ async def gpt_dialog(names, theme, infos, prompt, ctx):
               f"{'.'.join(infos)}. {prompt}. Обязательно в конце диалога напиши, что должно произойти дальше. "
               f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
     result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
-    await write_in_discord(result, ctx)
+    await write_in_discord(ctx, result)
     with open("caversAI/dialog_create.txt", "a") as writer:
         for line in result.split("\n"):
             for name in names:
@@ -1117,7 +1119,7 @@ async def gpt_dialog(names, theme, infos, prompt, ctx):
                   f"Вот прошлый диалог:\"{result}\"\nОбязательно в конце диалога напиши, что должно произойти дальше."
                   f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
         result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
-        await write_in_discord(result, ctx)
+        await write_in_discord(ctx, result)
 
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
