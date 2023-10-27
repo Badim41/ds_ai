@@ -1441,7 +1441,7 @@ async def recognize(ctx, record_for_dialog=False):
                 # вызов function
                 if not text is None:
                     from function import replace_mat_in_sentence, replace_numbers_in_sentence
-                    text = await set_get_config_default("currentainame") + ", " + await replace_numbers_in_sentence(
+                    text = await replace_numbers_in_sentence(
                         text)
                     text = await replace_mat_in_sentence(text)
                     print(text)
@@ -1452,11 +1452,11 @@ async def recognize(ctx, record_for_dialog=False):
                         await set_get_config_all("dialog", "dialog", "False")
                         await set_get_config_all("dialog", "dialog_with_user", "True")
                     # запись сказанного для диалога
-                    if await set_get_config_all("dialog", "dialog_with_user", None) == "True":
+                    elif await set_get_config_all("dialog", "dialog_with_user", None) == "True":
                         await set_get_config_all("dialog", "user_spoken_text", text)
-
-                    await set_get_config_default("user_name", value=ctx.author.name)
-                    await run_main_with_settings(ctx, text, True)
+                    else:
+                        await set_get_config_default("user_name", value=ctx.author.name)
+                        await run_main_with_settings(ctx, await set_get_config_default("currentainame") + ", " + text, True)
 
             continue
         loudness = await max_volume(file_found)
