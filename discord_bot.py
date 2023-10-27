@@ -1167,7 +1167,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                     line = line[line.find(":") + 1:]
                     writer.write(line + f"-voice {name}\n")
 
-    # Делаем диалог со зрителями
+    # Делаем диалог между собой
     while await set_get_config_all("dialog", "dialog", None) == "True":
         try:
             if "\n" in result:
@@ -1206,7 +1206,8 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
             print(str(traceback_str))
             await ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
 
-    if await set_get_config_all("dialog", "dialog", None) == "True":
+    # Делаем диалог со зрителями
+    if await set_get_config_all("dialog", "dialog_with_user", None) == "True":
         # отчищаем очередь
         with open("caversAI/dialog_create.txt", "w") as writer:
             pass
@@ -1240,7 +1241,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
             print(str(traceback_str))
             await ctx.send(f"Ошибка при изменении голоса(ID:d6): {e}")
 
-            while await set_get_config_all("dialog", "dialog", None) == "True":
+            while await set_get_config_all("dialog", "dialog_with_user", None) == "True":
                 # ждём ответа пользователей
                 attempt = 0
                 spoken_text = None
