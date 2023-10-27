@@ -85,26 +85,30 @@ import re
 # str = re.sub(r"--.*?--", '', str)
 # print(str)
 
-# def write_in_discord(text):
-#     if text == "" or text is None:
-#         print("пустое")
-#         return
-#     if len(text) < 1:
-#         print(text)
-#     else:
-#         while not text == "":
-#             text_part = text[:text.find("||") + 2]
-#             text = text[text.find("||") + 2:]
-#             text_part += text[:text.find("||") + 2]
-#             text = text[text.find("||") + 2:]
-#             if "```" in text_part:
-#                 if len(text_part) > 1990:
-#                     while text_part.find("```") > 1990:
-#                         print(text_part[:1990], end="")
-#                         text_part = text_part[1990:]
-#             while not len(text_part) == 0:
-#                 print(text_part[:1990], end="")
-#                 text_part = text_part[1990:]
+def write_in_discord(text):
+
+    from function import result_command_change, Color
+    if text == "" or text is None:
+        return
+    if len(text) < 1990:
+        print(text)
+    else:
+        while not text == "":
+            last_newline_index = text.rfind("\n", 0, 1990)
+            if last_newline_index == -1:
+                last_newline_index = 1990
+            text_part = text[:last_newline_index]
+            text = text[last_newline_index:]
+            text_part += text[:text.find("||") + 2]
+            text = text[text.find("||") + 2:]
+            if "```" in text_part:
+                if len(text_part) > 1990:
+                    while text_part.find("```") > 1990:
+                        print(text_part[:1990])
+                        text_part = text_part[1990:]
+            while not len(text_part) == 0:
+                print(text_part[:1990])
+                text_part = text_part[1990:]
 
 
 # result = '124\n245\n2342'
