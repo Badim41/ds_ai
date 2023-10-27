@@ -895,7 +895,8 @@ async def __dialog(
             infos.append(f"Вот информация о {name}: {reader.read()}")
     from function import chatgpt_get_result
     prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)}. На тему \"{theme}\". "
-              f"{'.'.join(infos)}")
+              f"{'.'.join(infos)}"
+              f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
     result = await chatgpt_get_result(prompt, ctx)
     print(result)
     while await set_get_config_all("dialog", "dialog", None) == "True":
@@ -903,7 +904,8 @@ async def __dialog(
                   f"{'.'.join(infos)} "
                   f"Дополни предыдущий диалог, взяв за основу какие-то детали из него. "
                   f"Временной промежуток между этим и прошлым диалогом несколько секунд. "
-                  f"Вот прошлый диалог:\"{result}\"")
+                  f"Вот прошлый диалог:\"{result}\""
+                  f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
         result = await chatgpt_get_result(prompt, ctx)
         print(result)
 
