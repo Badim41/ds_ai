@@ -1146,7 +1146,8 @@ async def write_in_discord(ctx, text):
                 if add_format:
                     line = line.replace("```", "")
                     line = "```" + line + "```"
-                await ctx.send(line)
+                if not line == "":
+                    await ctx.send(line)
 
 
 async def send_file(ctx, file_path, delete_file=False):
