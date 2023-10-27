@@ -907,7 +907,8 @@ async def __dialog(
                 file_content = reader.read().replace("Вот информация о тебе:", "")
                 infos.append(f"Вот информация о {name}: {file_content}")
         # names, theme, infos, prompt, ctx
-        await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx), create_audio_dialog(ctx, 0), create_audio_dialog(ctx, 1))
+        await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx),
+                             create_audio_dialog(ctx, 0), create_audio_dialog(ctx, 1))
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
@@ -924,7 +925,7 @@ async def __add_voice(
         info: Option(str, description=f'Какие-то сведения о данном человеке', required=False,
                      default="Отсутствует"),
         speed: Option(float, description=f'Ускорение голоса', required=False,
-                     default=1, min_value=0.5, max_value=2),
+                      default=1, min_value=0.5, max_value=2),
         change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
                              default=False)
 ):
@@ -1152,12 +1153,13 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                           f"Вот что должно быть в этом диалоге:\"\b{result}\"\nОбязательно в конце диалога напиши, что должно произойти дальше."
                           f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
             else:
-                prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)} на случайную тему, которая должна относиться к событиям сервера. "
-                          f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
-                          f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
-                          f"{'.'.join(infos)}. {prompt_global}. "
-                          f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
-                          f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
+                prompt = (
+                    f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)} на случайную тему, которая должна относиться к событиям сервера. "
+                    f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
+                    f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
+                    f"{'.'.join(infos)}. {prompt_global}. "
+                    f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
+                    f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
             print("PROMPT:", prompt)
             result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
             await write_in_discord(ctx, result)
@@ -1173,6 +1175,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
             traceback_str = traceback.format_exc()
             print(str(traceback_str))
             await ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
+
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
     from function import start_bot
