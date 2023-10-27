@@ -1090,6 +1090,7 @@ async def create_audio_dialog(ctx, cuda):
                     if await set_get_config_all("Sound", "change_speed", None) == "True":
                         with open(os.path.join(f"rvc_models/{name}/speed.txt"), "r") as reader:
                             speed = float(reader.read())
+                            print("SPEED:", speed)
                         from function import speed_up_audio
                         await speed_up_audio(filename, speed)
                     with open(play_path, "a") as writer:
