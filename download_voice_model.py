@@ -84,7 +84,7 @@ if len(arguments) > 1:
         info += "Отсутствует"
     speed = None
     if len(arguments) > 5:
-        speed = float(arguments[4])
+        speed = float(arguments[5])
     if speed is None or speed < 0 or speed > 2:
         speed = 1
     download_online_model(url_input, dir_name_input, gender, info, speed)
