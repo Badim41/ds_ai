@@ -1056,7 +1056,7 @@ async def create_audio_dialog(ctx):
                         pitch = 12
                 filename = int(await set_get_config_all("dialog", "files_number", None))
                 await set_get_config_all("dialog", "files_number", filename + 1)
-                filename = str(filename) + ".mp3"
+                filename = "song_output/" + str(filename) + ".mp3"
                 pitch = await text_to_speech_file(line, pitch, filename)
                 try:
                     command = [
@@ -1106,7 +1106,8 @@ async def gpt_dialog(names, theme, infos, prompt, ctx):
     prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)}. На тему \"{theme}\". "
               f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
               f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
-              f"{'.'.join(infos)}. {prompt}. Обязательно в конце диалога напиши, что должно произойти дальше. "
+              f"{'.'.join(infos)}. {prompt}. "
+              f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
               f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
     result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
     await write_in_discord(ctx, result)
@@ -1118,6 +1119,8 @@ async def gpt_dialog(names, theme, infos, prompt, ctx):
                     writer.write(line + f"-voice {name}\n")
 
     while await set_get_config_all("dialog", "dialog", None) == "True":
+        if "\n" in result:
+            result = result[result.rfind("\n"):]
         prompt = (f"Придумай продолжение диалога между {', '.join(names)}. "
                   f"{'.'.join(infos)}. {prompt} "
                   f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
