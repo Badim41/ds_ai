@@ -356,10 +356,10 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
         if os.path.exists('cookies.json'):
             with open('cookies.json', 'r') as file:
                 cookie_data = json.load(file)
-                print(cookie_data)
             auth = True
         else:
             auth = False
+            print(os.path.abspath('cookies.json') + "not found!")
         # в зависимости от аутефикации получаем ответ
         if auth and not cookie_data == "" and not cookie_data is None:
             result = await g4f.ChatCompletion.create_async(

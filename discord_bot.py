@@ -1102,12 +1102,12 @@ async def remove_line_from_txt(file_path, delete_line):
         print(f"Ошибка при удалении строки: {e}")
 
 
-async def gpt_dialog(names, theme, infos, prompt, ctx):
+async def gpt_dialog(names, theme, infos, prompt_global, ctx):
     from function import chatgpt_get_result
     prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)}. На тему \"{theme}\". "
               f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
               f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
-              f"{'.'.join(infos)}. {prompt}. "
+              f"{'.'.join(infos)}. {prompt_global}. "
               f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
               f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
     result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
@@ -1123,7 +1123,7 @@ async def gpt_dialog(names, theme, infos, prompt, ctx):
         if "\n" in result:
             result = result[result.rfind("\n"):]
         prompt = (f"Придумай продолжение диалога между {', '.join(names)}. "
-                  f"{'.'.join(infos)}. {prompt} "
+                  f"{'.'.join(infos)}. {prompt_global} "
                   f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
                   f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
                   f"Временной промежуток между этим и прошлым диалогом несколько секунд. "
