@@ -1072,7 +1072,8 @@ async def create_audio_dialog(ctx):
                         "-pro", "0.15"
                     ]
                     print("run RVC, AIName:", name)
-                    subprocess.run(command, check=True)
+                    from function import execute_command
+                    await execute_command(' '.join(command), ctx)
                     with open(play_path, "a") as writer:
                         writer.write(filename)
                 except subprocess.CalledProcessError as e:
