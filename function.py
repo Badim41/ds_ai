@@ -10,6 +10,7 @@ import traceback
 import zipfile
 
 import g4f
+from audiosegment import AudioSegment
 from translate import Translator
 
 _providers = [
@@ -1281,6 +1282,11 @@ async def console_command_runner(command, ctx):
     except (subprocess.CalledProcessError, IOError, Exception) as e:
         await result_command_change("Произошла ошибка (ID:f13):" + str(e), Color.RED)
 
+async def speed_up_audio(input_file, speed_factor):
+    audio = AudioSegment.from_file(input_file)
+    sped_up_audio = audio.speedup(playback_speed=speed_factor)
+    sped_up_audio.export(input_file, format="mp3")
+
 
 async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     currentpitch = int(await set_get_config_all("Default", "currentaipitch", None))
@@ -1340,8 +1346,6 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         return
 
     # используем RVC
-    with open(os.path.join(f"rvc_models/{ai_dictionary}/speed.txt"), "r") as reader:
-        speed = float(reader.read())
     try:
         command = [
             "python",
@@ -1362,6 +1366,13 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         await playSoundFile("1.mp3", -1, 0, ctx)
         return
     await result_command_change("done RVC", Color.GREEN)
+    # применение ускорения
+    if await set_get_config_all("Sound", "change_speed", None) == "True":
+        with open(os.path.join(f"rvc_models/{ai_dictionary}/speed.txt"), "r") as reader:
+            speed = float(reader.read())
+        await speed_up_audio("2.mp3", speed)
+
+    # "2.mp3"
     await playSoundFile("2.mp3", -1, 0, ctx)
     await result_command_change(f"tts: {tts}", Color.GRAY)
 
@@ -1413,7 +1424,6 @@ async def setModelWithLanguage(language, model_type):
 
 
 async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
-    from pydub import AudioSegment
     from discord_bot import playSoundFileDiscord
     try:
         if not ctx.voice_client:

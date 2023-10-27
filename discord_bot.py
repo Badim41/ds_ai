@@ -921,8 +921,10 @@ async def __add_voice(
         name: Option(str, description=f'Имя модели', required=True),
         gender: Option(str, description=f'Пол (для настройки тональности)', required=True,
                        choices=['мужчина', 'женщина']),
-        info: Option(str, description=f'(необязательно) Какие-то сведения о данном человеке', required=False,
+        info: Option(str, description=f'Какие-то сведения о данном человеке', required=False,
                      default="Отсутствует"),
+        speed: Option(int, description=f'Ускорение голоса', required=False,
+                     default=1),
         change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
                              default=False)
 ):
@@ -946,7 +948,8 @@ async def __add_voice(
             url,
             name,
             gender,
-            info
+            info,
+            speed
         ]
         subprocess.run(command, check=True)
         config.read('config.ini')
@@ -1077,6 +1080,12 @@ async def create_audio_dialog(ctx, cuda):
                     print("run RVC, AIName:", name)
                     from function import execute_command
                     await execute_command(' '.join(command), ctx)
+                    # применение ускорения
+                    if await set_get_config_all("Sound", "change_speed", None) == "True":
+                        with open(os.path.join(f"rvc_models/{name}/speed.txt"), "r") as reader:
+                            speed = float(reader.read())
+                        from function import speed_up_audio
+                        await speed_up_audio(filename, speed)
                     with open(play_path, "a") as writer:
                         writer.write(filename)
                 except subprocess.CalledProcessError as e:
@@ -1137,7 +1146,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                       f"Вот что должно быть в этом диалоге:\"\b{result}\"\nОбязательно в конце диалога напиши, что должно произойти дальше."
                       f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
         else:
-            prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)}. На случайную тему, которая должна относиться к событиям сервера. "
+            prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)} на случайную тему, которая должна относиться к событиям сервера. "
                       f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
                       f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
                       f"{'.'.join(infos)}. {prompt_global}. "
