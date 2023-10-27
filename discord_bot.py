@@ -1005,6 +1005,7 @@ async def play_dialog(ctx):
                     from function import playSoundFile
                     # audio_file_path, duration, start_seconds, ctx
                     await playSoundFile(line, -1, 0, ctx)
+                    await asyncio.sleep(random.randint(1, 3))
                 else:
                     await asyncio.sleep(0.1)
         except Exception as e:
