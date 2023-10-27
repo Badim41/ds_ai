@@ -1042,7 +1042,7 @@ async def create_audio_dialog(ctx):
         play_path = "caversAI/dialog_play.txt"
         with open(text_path, "r") as reader:
             line = reader.readline()
-            if not line is None:
+            if not line is None and not line.replace(" ", "") == "":
                 await remove_line_from_txt(text_path, 1)
                 name = line[line.find("-voice") + 7:]
                 with open(os.path.join(f"rvc_models/{name}/gender.txt")) as file:
