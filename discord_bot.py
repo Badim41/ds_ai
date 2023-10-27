@@ -896,7 +896,7 @@ async def __dialog(
             infos.append(f"Вот информация о {name}: {reader.read()}")
     from function import chatgpt_get_result
     prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)}. На тему \"{theme}\". "
-              f"{'.'.join(infos)}. {prompt}"
+              f"{'.'.join(infos)}. {prompt}. Обязательно в конце диалога напиши, что должно произойти дальше. "
               f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
     result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
     with open("caversAI/dialog_create", "a") as writer:
@@ -905,11 +905,11 @@ async def __dialog(
                 if name + ":" in line:
                     writer.write(line + "\n")
     while await set_get_config_all("dialog", "dialog", None) == "True":
-        prompt = (f"Придумай тему для нового диалога между {', '.join(names)}. "
+        prompt = (f"Придумай продолжение между {', '.join(names)}. "
                   f"{'.'.join(infos)}. {prompt} "
-                  f"Дополни предыдущий диалог, взяв за основу какие-то детали из него. "
+                  f"Теперь продолжи предыдущий диалог. "
                   f"Временной промежуток между этим и прошлым диалогом несколько секунд. "
-                  f"Вот прошлый диалог:\"{result}\""
+                  f"Вот прошлый диалог:\"{result}\"\nОбязательно в конце диалога напиши, что должно произойти дальше."
                   f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
         result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
 
