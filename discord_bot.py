@@ -1136,18 +1136,17 @@ async def write_in_discord(ctx, text):
     if len(text) < 1990:
         await ctx.send(text)
     else:
-        while not text == "":
-            # начинает строку с "```" если оно встретилось и убирает, когда "```" опять появится
-            add_format = False
-            lines = text.split("\n")
-            for line in lines:
-                if "```" in line:
-                    add_format = not add_format
-                if add_format:
-                    line = line.replace("```", "")
-                    line = "```" + line + "```"
-                if not line == "":
-                    await ctx.send(line)
+        # начинает строку с "```" если оно встретилось и убирает, когда "```" опять появится
+        add_format = False
+        lines = text.split("\n")
+        for line in lines:
+            if "```" in line:
+                add_format = not add_format
+            if add_format:
+                line = line.replace("```", "")
+                line = "```" + line + "```"
+            if not line == "":
+                await ctx.send(line)
 
 
 async def send_file(ctx, file_path, delete_file=False):
