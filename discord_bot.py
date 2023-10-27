@@ -923,8 +923,8 @@ async def __add_voice(
                        choices=['мужчина', 'женщина']),
         info: Option(str, description=f'Какие-то сведения о данном человеке', required=False,
                      default="Отсутствует"),
-        speed: Option(int, description=f'Ускорение голоса', required=False,
-                     default=1),
+        speed: Option(float, description=f'Ускорение голоса', required=False,
+                     default=1, min_value=0.5, max_value=2),
         change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
                              default=False)
 ):
