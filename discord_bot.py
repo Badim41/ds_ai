@@ -1038,12 +1038,12 @@ async def text_to_speech_file(tts, currentpitch, file_name):
     return pitch
 async def create_audio_dialog(ctx):
     while await set_get_config_all("dialog", "dialog", None) == "True":
-        text_path = "caversAI/dialog_play.txt"
+        text_path = "caversAI/dialog_create.txt"
         play_path = "caversAI/dialog_play.txt"
         with open(text_path, "r") as reader:
             line = reader.readline()
             if not line is None:
-                await remove_line_from_txt(play_path, 1)
+                await remove_line_from_txt(text_path, 1)
                 name = line[line.find("-voice") + 7:]
                 with open(os.path.join(f"rvc_models/{name}/gender.txt")) as file:
                     pitch = 0
@@ -1068,7 +1068,8 @@ async def create_audio_dialog(ctx):
                     ]
                     print("run RVC, AIName:", name)
                     subprocess.run(command, check=True)
-                    await send_file(ctx, filename, delete_file=True)
+                    with open(play_path, "a") as writer:
+                        writer.write(filename)
                 except subprocess.CalledProcessError as e:
                     traceback_str = traceback.format_exc()
                     print(str(traceback_str))
