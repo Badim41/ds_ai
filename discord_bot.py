@@ -1054,6 +1054,7 @@ async def text_to_speech_file(tts, currentpitch, file_name):
 
 
 async def create_audio_dialog(ctx, cuda):
+    await asyncio.sleep(cuda + 0.05)
     while await set_get_config_all("dialog", "dialog", None) == "True":
         text_path = "caversAI/dialog_create.txt"
         play_path = "caversAI/dialog_play.txt"
