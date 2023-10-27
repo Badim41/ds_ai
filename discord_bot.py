@@ -950,7 +950,7 @@ async def __add_voice(
             name,
             gender,
             info,
-            speed
+            str(speed)
         ]
         subprocess.run(command, check=True)
         config.read('config.ini')
