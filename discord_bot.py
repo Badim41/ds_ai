@@ -904,7 +904,8 @@ async def __dialog(
                 await ctx.respond("Выберите голоса из списка: " + ','.join(voices))
                 return
             with open(f"rvc_models/{name}/info.txt") as reader:
-                infos.append(f"Вот информация о {name}: {reader.read()}")
+                file_content = reader.read().replace("Вот информация о тебе:", "")
+                infos.append(f"Вот информация о {name}: {file_content}")
         # names, theme, infos, prompt, ctx
         await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx), create_audio_dialog(ctx))
     except Exception as e:
