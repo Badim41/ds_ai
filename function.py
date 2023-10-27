@@ -356,6 +356,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
         if os.path.exists('cookies.json'):
             with open('cookies.json', 'r') as file:
                 cookie_data = json.load(file)
+                print(cookie_data)
             auth = True
         else:
             auth = False
@@ -377,7 +378,6 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
                 cookies={"Fake": ""},
                 auth=True
             )
-            await result_command_change("NOT AUTH", Color.GRAY)
         if "Liaobots" in str(provider) and len(result) > 2000:
             # делаем задержку
             await asyncio.sleep(delay_for_gpt)
