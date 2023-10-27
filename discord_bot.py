@@ -1094,7 +1094,7 @@ async def create_audio_dialog(ctx, cuda):
                         from function import speed_up_audio
                         await speed_up_audio(filename, speed)
                     with open(play_path, "a") as writer:
-                        writer.write(filename)
+                        writer.write(filename + "\n")
                 except Exception as e:
                     traceback_str = traceback.format_exc()
                     print(str(traceback_str))
