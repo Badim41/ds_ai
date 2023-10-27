@@ -904,7 +904,7 @@ async def __dialog(
             with open(f"rvc_models/{name}/info.txt") as reader:
                 infos.append(f"Вот информация о {name}: {reader.read()}")
         # names, theme, infos, prompt, ctx
-        await asyncio.gather(await gpt_dialog(names, theme, infos, prompt, ctx), await play_dialog())
+        await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx), create_audio_dialog(ctx))
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
@@ -1003,7 +1003,7 @@ async def text_to_speech_file(tts, currentpitch, file_name):
     max_simbols = await set_get_config_all("voice", "max_simbols", None)
 
     pitch = 0
-    if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_tokens") == "None":
+    if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_tokens", None) == "None":
         print("gtts1")
         from function import gtts
         await gtts(tts, language[:2], file_name)
