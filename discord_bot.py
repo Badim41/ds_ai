@@ -1201,7 +1201,7 @@ async def write_in_discord(ctx, text):
             if add_format:
                 line = line.replace("```", "")
                 line = "```" + line + "```"
-            if not line == "":
+            if line.strip():
                 await ctx.send(line)
 
 
