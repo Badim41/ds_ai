@@ -999,6 +999,7 @@ async def play_dialog(ctx):
             else:
                 await asyncio.sleep(0.1)
 
+
 async def text_to_speech_file(tts, currentpitch, file_name):
     from elevenlabs import generate, save, set_api_key
     language = await set_get_config_all("Default", "language", None)
@@ -1038,6 +1039,8 @@ async def text_to_speech_file(tts, currentpitch, file_name):
             return pitch
             # gtts(tts, language[:2], file_name)
     return pitch
+
+
 async def create_audio_dialog(ctx):
     while await set_get_config_all("dialog", "dialog", None) == "True":
         text_path = "caversAI/dialog_create.txt"
@@ -1101,6 +1104,8 @@ async def remove_line_from_txt(file_path, delete_line):
 async def gpt_dialog(names, theme, infos, prompt, ctx):
     from function import chatgpt_get_result
     prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)}. На тему \"{theme}\". "
+              f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
+              f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
               f"{'.'.join(infos)}. {prompt}. Обязательно в конце диалога напиши, что должно произойти дальше. "
               f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
     result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
@@ -1115,7 +1120,8 @@ async def gpt_dialog(names, theme, infos, prompt, ctx):
     while await set_get_config_all("dialog", "dialog", None) == "True":
         prompt = (f"Придумай продолжение диалога между {', '.join(names)}. "
                   f"{'.'.join(infos)}. {prompt} "
-                  f"Фразы в сгенерированном диалоге должны быть естественными и короткими, персонажи должны соответствовать своему образу. "
+                  f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
+                  f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
                   f"Временной промежуток между этим и прошлым диалогом несколько секунд. "
                   f"Вот прошлый диалог:\"{result}\"\nОбязательно в конце диалога напиши, что должно произойти дальше."
                   f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
