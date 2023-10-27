@@ -1137,8 +1137,11 @@ async def write_in_discord(ctx, text):
         await ctx.send(text)
     else:
         while not text == "":
-            text_part = text[:text.find("||") + 2]
-            text = text[text.find("||") + 2:]
+            last_newline_index = text.rfind("\n", 0, 1990)
+            if last_newline_index == -1:
+                last_newline_index = 1990
+            text_part = text[:last_newline_index]
+            text = text[last_newline_index:]
             text_part += text[:text.find("||") + 2]
             text = text[text.find("||") + 2:]
             if "```" in text_part:
