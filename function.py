@@ -1332,7 +1332,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         os.remove(file_name)
 
     from discord_bot import text_to_speech_file
-    pitch = text_to_speech_file(tts, currentpitch, file_name)
+    pitch = await text_to_speech_file(tts, currentpitch, file_name)
     # если голос не выставлен
     if ai_dictionary == "None":
         await playSoundFile(file_name, -1, 0, ctx)
@@ -1340,6 +1340,8 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         return
 
     # используем RVC
+    with open(os.path.join(f"rvc_models/{ai_dictionary}/speed.txt"), "r") as reader:
+        speed = float(reader.read())
     try:
         command = [
             "python",
@@ -1418,8 +1420,8 @@ async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
             print("Skip play")
             return
 
-        if not await wait_for_file(audio_file_path, 100, 10):
-            await result_command_change("Файл недоступен", Color.RED)
+        if not os.path.exists(audio_file_path):
+            await result_command_change(f"Файл {audio_file_path} недоступен", Color.RED)
             return
 
         # Проверяем, чтобы ничего не играло

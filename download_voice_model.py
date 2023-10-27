@@ -8,7 +8,7 @@ BASE_DIR = os.getcwd()
 rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
 
 
-def extract_zip(extraction_folder, zip_name, gender, info):
+def extract_zip(extraction_folder, zip_name, gender, info, speed):
     os.makedirs(extraction_folder)
     with zipfile.ZipFile(zip_name, 'r') as zip_ref:
         zip_ref.extractall(extraction_folder)
@@ -30,6 +30,8 @@ def extract_zip(extraction_folder, zip_name, gender, info):
             writer.writelines(info)
         with open(os.path.join(extraction_folder + "/gender.txt"), 'w') as writer:
             writer.writelines(gender)
+        with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
+            writer.writelines(speed)
     except IOError as e:
         print(e)
     # move model and index file to extraction folder
@@ -43,7 +45,7 @@ def extract_zip(extraction_folder, zip_name, gender, info):
             shutil.rmtree(os.path.join(extraction_folder, filepath))
 
 
-def download_online_model(url, dir_name, gender, info):
+def download_online_model(url, dir_name, gender, info, speed):
     try:
         print(f'[~] Скачивание модели с именем {dir_name}...')
         zip_name = url.split('/')[-1]
@@ -61,7 +63,7 @@ def download_online_model(url, dir_name, gender, info):
                 file.write(chunk)
 
         print('[~] Разархивация...')
-        extract_zip(extraction_folder, zip_name, gender, info)
+        extract_zip(extraction_folder, zip_name, gender, info, speed)
         print(f'[+] {dir_name} модель успешно установлена!')
 
     except Exception as e:
@@ -80,7 +82,12 @@ if len(arguments) > 1:
         info += arguments[4]
     else:
         info += "Отсутствует"
-    download_online_model(url_input, dir_name_input, gender, info)
+    speed = None
+    if len(arguments) > 5:
+        speed = float(arguments[4])
+    if speed is None or speed < 0 or speed > 3:
+        speed = 1
+    download_online_model(url_input, dir_name_input, gender, info, speed)
 else:
     print("Нужно указать ссылку и имя модели")
     exit(-1)

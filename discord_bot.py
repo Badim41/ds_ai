@@ -1053,7 +1053,7 @@ async def create_audio_dialog(ctx, cuda):
             if not line is None and not line.replace(" ", "") == "":
                 await remove_line_from_txt(text_path, 1)
                 name = line[line.find("-voice") + 7:].replace("\n", "")
-                with open(os.path.join(f"rvc_models/{name}/gender.txt")) as file:
+                with open(os.path.join(f"rvc_models/{name}/gender.txt"), "r") as file:
                     pitch = 0
                     if file.read().lower() == "female":
                         pitch = 12
@@ -1064,7 +1064,7 @@ async def create_audio_dialog(ctx, cuda):
                 try:
                     command = [
                         "python",
-                        "only_voice_change_cuda0.py",
+                        f"only_voice_change_cuda{cuda}.py",
                         "-i", f"{filename}",
                         "-o", f"{filename}",
                         "-dir", name,
@@ -1127,13 +1127,22 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
     while await set_get_config_all("dialog", "dialog", None) == "True":
         if "\n" in result:
             result = result[result.rfind("\n"):]
-        prompt = (f"Придумай продолжение диалога между {', '.join(names)}. "
-                  f"{'.'.join(infos)}. {prompt_global} "
-                  f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
-                  f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
-                  f"Временной промежуток между этим и прошлым диалогом несколько секунд. "
-                  f"Вот что должно быть в этом диалоге:\"\b{result}\"\nОбязательно в конце диалога напиши, что должно произойти дальше."
-                  f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
+        random_int = random.randint(1, 10)
+        if not random_int == 0:
+            prompt = (f"Придумай продолжение диалога между {', '.join(names)}. "
+                      f"{'.'.join(infos)}. {prompt_global} "
+                      f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
+                      f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
+                      f"Временной промежуток между этим и прошлым диалогом несколько секунд. "
+                      f"Вот что должно быть в этом диалоге:\"\b{result}\"\nОбязательно в конце диалога напиши, что должно произойти дальше."
+                      f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
+        else:
+            prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)}. На случайную тему, которая должна относиться к событиям сервера. "
+                      f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
+                      f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
+                      f"{'.'.join(infos)}. {prompt_global}. "
+                      f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
+                      f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
         print("PROMPT:", prompt)
         result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
         await write_in_discord(ctx, result)
