@@ -1128,6 +1128,7 @@ async def gpt_dialog(names, theme, infos, prompt, ctx):
                   f"Временной промежуток между этим и прошлым диалогом несколько секунд. "
                   f"Вот прошлый диалог:\"{result}\"\nОбязательно в конце диалога напиши, что должно произойти дальше."
                   f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
+        print("PROMPT:", prompt)
         result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
         await write_in_discord(ctx, result)
 
