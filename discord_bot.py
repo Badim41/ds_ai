@@ -892,6 +892,14 @@ async def __dialog(
     try:
         await ctx.defer()
         await ctx.respond('Выполнение...')
+        if await set_get_config_all("dialog", "dialog", None == "True"):
+            await ctx.send("Уже идёт диалог!")
+            return
+        # отчищаем прошлые диалоги
+        with open("caversAI/dialog_create.txt", "w") as writer:
+            pass
+        with open("caversAI/dialog_play.txt", "w") as writer:
+            pass
         await set_get_config_all("dialog", "dialog", "True")
         await set_get_config_all("gpt", "gpt_mode", "None")
         config.read('config.ini')
