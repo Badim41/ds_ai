@@ -1049,7 +1049,7 @@ async def create_audio_dialog(ctx):
             line = reader.readline()
             if not line is None and not line.replace(" ", "") == "":
                 await remove_line_from_txt(text_path, 1)
-                name = line[line.find("-voice") + 7:]
+                name = line[line.find("-voice") + 7:].replace("\n", "")
                 with open(os.path.join(f"rvc_models/{name}/gender.txt")) as file:
                     pitch = 0
                     if file.read().lower() == "female":
