@@ -907,8 +907,11 @@ async def __dialog(
                 file_content = reader.read().replace("Вот информация о тебе:", "")
                 infos.append(f"Вот информация о {name}: {file_content}")
         # names, theme, infos, prompt, ctx
+        # запустим сразу 6 процессов для обработки голоса
         await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx),
-                             create_audio_dialog(ctx, 0), create_audio_dialog(ctx, 1))
+                             create_audio_dialog(ctx, 0), create_audio_dialog(ctx, 1),
+                             create_audio_dialog(ctx, 2), create_audio_dialog(ctx, 3),
+                             create_audio_dialog(ctx, 4), create_audio_dialog(ctx, 5))
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
@@ -1055,6 +1058,7 @@ async def text_to_speech_file(tts, currentpitch, file_name):
 
 async def create_audio_dialog(ctx, cuda):
     await asyncio.sleep(cuda + 0.05)
+    cuda = cuda % 2
     while await set_get_config_all("dialog", "dialog", None) == "True":
         text_path = "caversAI/dialog_create.txt"
         play_path = "caversAI/dialog_play.txt"
