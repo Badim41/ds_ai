@@ -360,7 +360,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
         else:
             auth = False
         # в зависимости от аутефикации получаем ответ
-        if auth:
+        if auth and not cookie_data == "" and not cookie_data is None:
             result = await g4f.ChatCompletion.create_async(
                 model=gpt_model,
                 provider=provider,
@@ -368,7 +368,6 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
                 cookies={key: value for key, value in cookie_data.items()},
                 auth=True
             )
-            print("AUTH")
         else:
             result = await g4f.ChatCompletion.create_async(
                 model=gpt_model,
@@ -378,6 +377,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
                 cookies={"Fake": ""},
                 auth=True
             )
+            await result_command_change("NOT AUTH", Color.GRAY)
         if "Liaobots" in str(provider) and len(result) > 2000:
             # делаем задержку
             await asyncio.sleep(delay_for_gpt)
