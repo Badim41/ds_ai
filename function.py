@@ -10,7 +10,7 @@ import traceback
 import zipfile
 
 import g4f
-from audiosegment import AudioSegment
+from pydub import AudioSegment
 from translate import Translator
 
 _providers = [
