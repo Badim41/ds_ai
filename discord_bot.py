@@ -1118,7 +1118,9 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
     with open("caversAI/dialog_create.txt", "a") as writer:
         for line in result.split("\n"):
             for name in names:
-                if line.startswith(name + ":"):
+                # Человек: привет
+                # Человек (man): привет
+                if line.startswith(name):
                     line = line[line.find(":") + 1:]
                     writer.write(line + f"-voice {name}\n")
 
@@ -1135,7 +1137,14 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
         print("PROMPT:", prompt)
         result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
         await write_in_discord(ctx, result)
-
+        with open("caversAI/dialog_create.txt", "a") as writer:
+            for line in result.split("\n"):
+                for name in names:
+                    # Человек: привет
+                    # Человек (man): привет
+                    if line.startswith(name):
+                        line = line[line.find(":") + 1:]
+                        writer.write(line + f"-voice {name}\n")
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
     from function import start_bot

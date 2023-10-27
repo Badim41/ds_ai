@@ -11,6 +11,7 @@
 # subprocess.run(ffmpeg_command, shell=True)
 import re
 
+
 # print(round(10 / 3, 4))
 
 
@@ -85,33 +86,57 @@ import re
 # str = re.sub(r"--.*?--", '', str)
 # print(str)
 
-def write_in_discord(text):
-
-    from function import result_command_change, Color
-    if text == "" or text is None:
-        return
-    if len(text) < 1990:
-        print(text)
-    else:
-        while not text == "":
-            last_newline_index = text.rfind("\n", 0, 1990)
-            if last_newline_index == -1:
-                last_newline_index = 1990
-            text_part = text[:last_newline_index]
-            text = text[last_newline_index:]
-            text_part += text[:text.find("||") + 2]
-            text = text[text.find("||") + 2:]
-            if "```" in text_part:
-                if len(text_part) > 1990:
-                    while text_part.find("```") > 1990:
-                        print(text_part[:1990])
-                        text_part = text_part[1990:]
-            while not len(text_part) == 0:
-                print(text_part[:1990])
-                text_part = text_part[1990:]
+# def write_in_discord(text):
+#
+#     from function import result_command_change, Color
+#     if text == "" or text is None:
+#         return
+#     if len(text) < 1990:
+#         print(text)
+#     else:
+#         while not text == "":
+#             last_newline_index = text.rfind("\n", 0, 1990)
+#             if last_newline_index == -1:
+#                 last_newline_index = 1990
+#             text_part = text[:last_newline_index]
+#             text = text[last_newline_index:]
+#             text_part += text[:text.find("||") + 2]
+#             text = text[text.find("||") + 2:]
+#             if "```" in text_part:
+#                 if len(text_part) > 1990:
+#                     while text_part.find("```") > 1990:
+#                         print(text_part[:1990])
+#                         text_part = text_part[1990:]
+#             while not len(text_part) == 0:
+#                 print(text_part[:1990])
+#                 text_part = text_part[1990:]
 
 
 # result = '124\n245\n2342'
 # with open("caversAI/dialog_create", "a") as writer:
 #     for line in result.split("\n"):
 #         writer.write(line + "\n")
+
+int_mal, int_dev = int(input()), int(input())
+for i in range(int_mal):
+    if int_mal - 1 == i * int_dev:
+        # print("true", i)
+        # dev =
+        print(int(5 / (i - 1)), i)
+
+# num_inputs = int(input())
+# inputs = []
+# for i in range(num_inputs):
+#     inputs.append(int(input()))
+# sum = int(input())
+# i = int(sum / (len(inputs) * 5))
+# while True:
+#     i+=1
+#     j = 0
+#     sum_new = 0
+#     for input in inputs:
+#         j += 1
+#         sum_new += input * (i * (len(inputs) - j) + 1)
+#     if sum_new > sum:
+#         break
+# print(int(i - 1))
