@@ -1035,6 +1035,8 @@ async def text_to_speech_file(tts, currentpitch, file_name):
         except Exception as e:
             from function import remove_unavaible_voice_token
             print(f"Ошибка при выполнении команды (ID:f16): {e}")
+            traceback_str = traceback.format_exc()
+            print(str(traceback_str))
             await remove_unavaible_voice_token()
             pitch = await text_to_speech_file(tts, currentpitch, file_name)
             return pitch
@@ -1128,7 +1130,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                   f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
                   f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
                   f"Временной промежуток между этим и прошлым диалогом несколько секунд. "
-                  f"Вот прошлый диалог:\"{result}\"\nОбязательно в конце диалога напиши, что должно произойти дальше."
+                  f"Вот что должно быть в этом диалоге:\"\b{result}\"\nОбязательно в конце диалога напиши, что должно произойти дальше."
                   f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
         print("PROMPT:", prompt)
         result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
