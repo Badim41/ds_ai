@@ -1248,7 +1248,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 while True:
                     # 45 секунд
                     if attempt > 90:
-                        await gpt_dialog(names, \"\b{result}\", infos, prompt_global, ctx)
+                        await gpt_dialog(names, result, infos, prompt_global, ctx)
                         return
                     spoken_text = await set_get_config_all("dialog", "user_spoken_text", None)
                     if spoken_text == "None":
