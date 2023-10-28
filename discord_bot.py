@@ -1207,6 +1207,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
         # отчищаем очередь
         with open("caversAI/dialog_create.txt", "w") as writer:
             pass
+        # ждём пока все записи сгенерируются
         await asyncio.sleep(5)
         with open("caversAI/dialog_create.txt", "w") as writer:
             frazes = ["Стоп, кажется мы не одни, вы тоже слышали другого человека?",
