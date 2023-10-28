@@ -358,6 +358,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
             with open('cookies.json', 'r') as file:
                 cookie_data = json.load(file)
             auth = True
+            print(os.path.abspath('cookies.json') + "found!")
         else:
             auth = False
             print(os.path.abspath('cookies.json') + "not found!")
