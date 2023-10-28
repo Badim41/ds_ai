@@ -48,7 +48,7 @@ _providers = [
     # g4f.Provider.GptForLove,  # error no module
     g4f.Provider.Opchatgpts,  # bad
     g4f.Provider.Chatgpt4Online,  # - bad
-    g4f.Provider.ChatBase,  # - bad
+    #g4f.Provider.ChatBase,  # - bad, but you can use it
     # g4f.Provider.Llama2, # no model
 ]
 
