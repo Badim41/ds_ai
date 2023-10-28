@@ -1463,10 +1463,13 @@ async def recognize(ctx, record_for_dialog=False):
             continue
         # переключаем режим на диалог с пользователем
         if await set_get_config_all("dialog", "dialog", None) == "True":
-            await set_get_config_all("dialog", "dialog", "False")
             await set_get_config_all("dialog", "dialog_with_user", "True")
-            await asyncio.sleep(7)
+            await set_get_config_all("dialog", "dialog", "False")
+            await asyncio.sleep(2)
             voice_client = ctx.voice_client
+            if voice_client.is_playing():
+                await set_get_config_all("Sound", "pause", "True")
+            await asyncio.sleep(3)
             if voice_client.is_playing():
                 voice_client.stop()
             await asyncio.sleep(3)
