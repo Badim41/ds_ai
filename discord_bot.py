@@ -924,11 +924,10 @@ async def __dialog(
                 file_content = reader.read().replace("Вот информация о тебе:", "")
                 infos.append(f"Вот информация о {name}: {file_content}")
         # names, theme, infos, prompt, ctx
-        # запустим сразу 6 процессов для обработки голоса
+        # запустим сразу 4 процессов для обработки голоса
         await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx),
                              create_audio_dialog(ctx, 0), create_audio_dialog(ctx, 1),
-                             create_audio_dialog(ctx, 2), create_audio_dialog(ctx, 3),
-                             create_audio_dialog(ctx, 4), create_audio_dialog(ctx, 5))
+                             create_audio_dialog(ctx, 2), create_audio_dialog(ctx, 3))
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
@@ -1179,7 +1178,8 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                           f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
                           f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
                           f"Временной промежуток между этим и прошлым диалогом несколько секунд. "
-                          f"Вот что должно быть в этом диалоге:\"\b{result}\"\nОбязательно в конце диалога напиши, что должно произойти дальше."
+                          f"Вот что было в ПРОШЛОМ диалоге:\"\b{result}\""
+                          f"\nОбязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
                           f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
             else:
                 prompt = (
@@ -1211,9 +1211,14 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
         # отчищаем очередь
         with open("caversAI/dialog_create.txt", "w") as writer:
             pass
+        with open("caversAI/dialog_create.txt", "w") as writer:
+            frazes = ["Эй, похоже, здесь кто-то ещё есть!", "Стоп, кажется мы не одни",
+                      "Что-то мне подсказывает, что мы не в одиночестве.", "Слышал это? Не мы одни, это точно!",
+                      "Не знаю, как вы, но мне кажется, мы здесь не одни."]
+            writer.write(
+                frazes[random.randint(0, len(frazes)) - 1] + f"-voice {names[random.randint(0, len(names)) - 1]}\n")
         with open("caversAI/dialog_play.txt", "w") as writer:
-            frazes = ["Эй, похоже, здесь кто-то ещё есть!", "Стоп, кажется мы не одни", "Что-то мне подсказывает, что мы не в одиночестве.", "Слышал это? Не мы одни, это точно!", "Не знаю, как вы, но мне кажется, мы здесь не одни."]
-            writer.write(frazes[random.randint(0, len(frazes)) - 1] + f"-voice {names[random.randint(0, len(names)) - 1]}\n")
+            pass
         # Делаем диалог где спрашиваем что-то у зрителей
         try:
             prompt = (
@@ -1222,8 +1227,8 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 f"Фразы в сгенерированном диалоге должны быть естественными и короткими,  "
                 f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
                 f"{'.'.join(infos)}. {prompt_global}. "
-                f"В конце диалога вы ОБЯЗАТЕЛЬНО должны спросить что-то у зрителей, "
-                f"касательно темы диалога. В самом конце напиши очень краткое содержание диалога."
+                f"Перед самым концом вы ОБЯЗАТЕЛЬНО должны спросить что-то у зрителей, "
+                f"касательно темы диалога. А в самом конце напиши очень краткое содержание диалога. "
                 f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
             print("PROMPT:", prompt)
             result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
@@ -1266,8 +1271,8 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                         question = lines[len(lines) - 2]
                     prompt = (
                         f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)} на случайную тему, "
-                        f"которая должна относиться к событиям сервера. Вот что было в конце предыдущего диалога: \"\b{short_description}\""
-                        f"Зрители ответили {spoken_text} на {question}"
+                        f"которая должна относиться к событиям сервера. Вот что было в конце предыдущего диалога: \"\b{short_description}\" "
+                        f"Зрители ответили \"{spoken_text}\" на \"{question}\" "
                         f"Фразы в сгенерированном диалоге должны быть естественными и короткими,  "
                         f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
                         f"{'.'.join(infos)}. {prompt_global}. "
