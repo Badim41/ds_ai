@@ -148,7 +148,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     global currentAIpitch
     currentAIpitch = config.getint('Default', 'currentaipitch')
     global robot_names
-    robot_names = ["robot", "robots", "робот", "нейросеть", "hello", "роботы", "ропот"]
+    robot_names = ["robot", "robots", "робот", "нейросеть", "hello", "роботы", "ропот", currentAIname]
 
     await result_command_change(f"RowInput:{spokenText}", Color.GRAY)
     temp_spokenText = spokenText
@@ -237,7 +237,7 @@ async def is_robot_name(text, ctx):
     if text.startswith("Михаил"):
         return True
 
-    if text.startswith(currentAIname.lower()[:-1]):
+    if text.startswith(currentAIname[:-1]):
         if text == currentAIname:
             await text_to_speech("да?", False, ctx)
             return False
@@ -247,7 +247,7 @@ async def is_robot_name(text, ctx):
         if text.startswith(name):
             return True
     await result_command_change(f"Имя робота не найдено", Color.RED)
-    return False
+    return True
 
 
 number_map = {
