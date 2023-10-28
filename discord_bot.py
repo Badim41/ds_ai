@@ -1207,10 +1207,11 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 traceback_str = traceback.format_exc()
                 print(str(traceback_str))
                 await ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
-
+    print("TEMP_DEF_DIALOG1")
     # Делаем диалог со зрителями
     if await set_get_config_all("dialog", "dialog_with_user", None) == "True":
         # отчищаем очередь
+        print("TEMP_DEF_DIALOG2")
         with open("caversAI/dialog_create.txt", "w") as writer:
             pass
         with open("caversAI/dialog_create.txt", "w") as writer:
@@ -1219,9 +1220,11 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                       "Не знаю, как вы, но мне кажется, мы здесь не одни. Кто-то ещё в нашем войс-чате"]
             writer.write(
                 frazes[random.randint(0, len(frazes)) - 1] + f"-voice {names[random.randint(0, len(names)) - 1]}\n")
+        print("TEMP_DEF_DIALOG3")
         with open("caversAI/dialog_play.txt", "w") as writer:
             pass
         # Делаем диалог где спрашиваем что-то у зрителей
+        print("TEMP_DEF_DIALOG4")
         try:
             prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)} на случайную тему, "
                 f"которая должна относиться к событиям сервера. "
@@ -1246,8 +1249,9 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
             traceback_str = traceback.format_exc()
             print(str(traceback_str))
             await ctx.send(f"Ошибка при изменении голоса(ID:d6): {e}")
-
+        print("TEMP_DEF_DIALOG5")
         while await set_get_config_all("dialog", "dialog_with_user", None) == "True":
+            print("TEMP_DEF_DIALOG6")
             # ждём ответа пользователей
             attempt = 0
             while True:
@@ -1262,6 +1266,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 else:
                     break
             try:
+                print("TEMP_DEF_DIALOG7")
                 short_description = ""
                 question = ""
                 if "\n" in result:
