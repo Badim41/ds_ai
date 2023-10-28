@@ -1238,7 +1238,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
             print("PROMPT:", prompt)
             result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
-            await write_in_discord(ctx, result)
+            # await write_in_discord(ctx, result)
             with open("caversAI/dialog_create.txt", "a") as writer:
                 for line in result.split("\n"):
                     for name in names:
@@ -1366,11 +1366,11 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
             pause = await set_get_config_all("Sound", "pause", None) == "True"
             if pause:
                 resume = True
-                await voice_client.pause()
+                voice_client.pause()
                 while await set_get_config_all("Sound", "pause", None) == "True":
                     await asyncio.sleep(0.25)
             if resume:
-                await voice_client.resume()
+                voice_client.resume()
 
             # stop_milliseconds += 1000
             await set_get_config("stop_milliseconds", int(await set_get_config("stop_milliseconds")) + 1000)
@@ -1473,14 +1473,12 @@ async def recognize(ctx, record_for_dialog=False):
         if await set_get_config_all("dialog", "dialog", None) == "True":
             await set_get_config_all("dialog", "dialog_with_user", "True")
             await set_get_config_all("dialog", "dialog", "False")
-            await asyncio.sleep(2)
+            print("кто-то что-то сказал, переключаем режим на разговор с пользователем")
+            await asyncio.sleep(20)
             voice_client = ctx.voice_client
             if voice_client.is_playing():
-                await set_get_config_all("Sound", "pause", "True")
-            await asyncio.sleep(3)
-            if voice_client.is_playing():
                 voice_client.stop()
-            await asyncio.sleep(3)
+                await asyncio.sleep(2)
         # запись непустых файлов
         loudness = await max_volume(file_found)
         if loudness == float('-inf'):
