@@ -1207,10 +1207,11 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
         # отчищаем очередь
         with open("caversAI/dialog_create.txt", "w") as writer:
             pass
+        await asyncio.sleep(5)
         with open("caversAI/dialog_create.txt", "w") as writer:
-            frazes = ["Эй, похоже, здесь кто-то ещё есть!", "Стоп, кажется мы не одни",
-                      "Что-то мне подсказывает, что мы не в одиночестве.", "Слышал это? Не мы одни, это точно!",
-                      "Не знаю, как вы, но мне кажется, мы здесь не одни."]
+            frazes = ["Стоп, кажется мы не одни, вы тоже слышали другого человека?",
+                      "Что-то мне подсказывает, что мы не в одиночестве. Признавайся, кто с нами в войсе?!", "Слышал это? Не мы одни, это точно! Похоже, у нас на стрим пришли зрители",
+                      "Не знаю, как вы, но мне кажется, мы здесь не одни. Кто-то  ещё в нашем войс-чате"]
             writer.write(
                 frazes[random.randint(0, len(frazes)) - 1] + f"-voice {names[random.randint(0, len(names)) - 1]}\n")
         with open("caversAI/dialog_play.txt", "w") as writer:
