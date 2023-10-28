@@ -357,7 +357,7 @@ async def __image(ctx,
             x, y = await get_image_dimensions(input_image)
             x = int(x)
             y = int(y)
-        # скэйлинг
+        # скэйлинг во избежания ошибок из-за нехватки памяти
         scale_factor = (589824 / x * y) ** 0.5
         x = int(x * scale_factor)
         y = int(y * scale_factor)
@@ -366,7 +366,6 @@ async def __image(ctx,
         if not y % 64 == 0:
             y = ((y // 64) + 1) * 64
         print("X:", x, "Y:", y)
-        # во избежания ошибок из-за нехватки памяти, ограничим изображение 768x768
         # loading params
         await set_get_config_all(f"Image{cuda_number}", "strength_negative_prompt", strength_negative_prompt)
         await set_get_config_all(f"Image{cuda_number}", "strength_prompt", strength_prompt)
@@ -1021,7 +1020,6 @@ async def play_dialog(ctx):
                     from function import playSoundFile
                     # audio_file_path, duration, start_seconds, ctx
                     await playSoundFile(line, -1, 0, ctx)
-                    await asyncio.sleep(random.randint(1, 3))
                 else:
                     await asyncio.sleep(0.1)
         except Exception as e:
