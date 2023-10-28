@@ -1167,8 +1167,8 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 if "\n" in result:
                     result = result[result.rfind("\n"):]
                 spoken_text = ""
-                spoken_text_config = await set_get_config_all("dialog", "user_spoken_text", None) == "None"
-                if not spoken_text_config:
+                spoken_text_config = await set_get_config_all("dialog", "user_spoken_text", None)
+                if not spoken_text_config == "None":
                     spoken_text = "Отвечайт зрителям! Зрители за прошлый диалог написали:\"" + spoken_text_config + "\""
                     await set_get_config_all("dialog", "user_spoken_text", "None")
                 random_int = random.randint(1, 25)
