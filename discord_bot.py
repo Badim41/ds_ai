@@ -1142,7 +1142,6 @@ async def remove_line_from_txt(file_path, delete_line):
 
 async def gpt_dialog(names, theme, infos, prompt_global, ctx):
     from function import chatgpt_get_result
-    result = ""
     # Делаем диалог между собой
     if await set_get_config_all("dialog", "dialog", None) == "True":
         prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)}. На тему \"{theme}\". "
@@ -1171,7 +1170,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 if not spoken_text_config == "None":
                     spoken_text = "Отвечайт зрителям! Зрители за прошлый диалог написали:\"" + spoken_text_config + "\""
                     await set_get_config_all("dialog", "user_spoken_text", "None")
-                random_int = random.randint(1, 25)
+                random_int = random.randint(1, 33)
                 if not random_int == 0:
                     prompt = (f"Придумай продолжение диалога между {', '.join(names)}. "
                               f"{'.'.join(infos)}. {prompt_global} "
@@ -1310,17 +1309,8 @@ async def recognize(ctx):
             print("Stopped listening2.")
             return
         file_found = None
-        # удаляём все output, если файлов больше 150
-        file_list = os.listdir(os.getcwd())
-        if len([f for f in file_list if os.path.isfile(f)]) > 150:
-            for filename in file_list:
-                if filename.startswith("output") and filename.endswith(".wav"):
-                    if os.path.exists(filename):
-                        Path(filename).unlink()
-                    break
-            print("Deleted all output files!")
         # проверяем наличие временных файлов
-        for filename in file_list:
+        for filename in os.listdir(os.getcwd()):
             if filename.startswith("output") and filename.endswith(".wav"):
                 file_found = filename
                 break
