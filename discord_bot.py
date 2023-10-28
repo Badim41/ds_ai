@@ -1162,7 +1162,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
               f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
               f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
     result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
-    await write_in_discord(ctx, result)
+    # await write_in_discord(ctx, result)
     with open("caversAI/dialog_create.txt", "a") as writer:
         for line in result.split("\n"):
             for name in names:
@@ -1183,7 +1183,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                           f"{'.'.join(infos)}. {prompt_global} "
                           f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
                           f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
-                          f"Временной промежуток между этим и прошлым диалогом несколько секунд. "
+                          f"Временной промежуток между этим и прошлым диалогом несколько секунд, поэтому не пиши приветствие в начале этого диалога. "
                           f"Вот что было в ПРОШЛОМ диалоге:\"\b{result}\""
                           f"\nОбязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
                           f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
@@ -1193,12 +1193,13 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                     f" которая должна относиться к событиям сервера. "
                     f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
                     f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
+                    f"Временной промежуток между этим и прошлым диалогом несколько секунд, поэтому не пиши приветствие в начале этого диалога. "
                     f"{'.'.join(infos)}. {prompt_global}. "
                     f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
                     f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
             print("PROMPT:", prompt)
             result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
-            await write_in_discord(ctx, result)
+            # await write_in_discord(ctx, result)
             with open("caversAI/dialog_create.txt", "a") as writer:
                 for line in result.split("\n"):
                     for name in names:
@@ -1281,13 +1282,14 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                         f"Зрители ответили \"{spoken_text}\" на \"{question}\" "
                         f"Фразы в сгенерированном диалоге должны быть естественными и короткими,  "
                         f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
+                        f"Временной промежуток между этим и прошлым диалогом несколько секунд, поэтому не пиши приветствие в начале этого диалога. "
                         f"{'.'.join(infos)}. {prompt_global}. "
                         f"В конце диалога вы ОБЯЗАТЕЛЬНО должны спросить что-то у зрителей, "
                         f"касательно темы диалога. В самом конце напиши очень краткое содержание диалога."
                         f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
                     print("PROMPT:", prompt)
                     result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
-                    await write_in_discord(ctx, result)
+                    # await write_in_discord(ctx, result)
                     with open("caversAI/dialog_create.txt", "a") as writer:
                         for line in result.split("\n"):
                             for name in names:
