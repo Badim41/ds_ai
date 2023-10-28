@@ -393,8 +393,8 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
         result = await remove_last_format_simbols(result)
 
         # убираем имя из результата
-        while currentAIname + ": " in result:
-            result = result[len(currentAIname) + 2:]
+        while currentAIname in result and ":" in result:
+            result = result[result.find(":") + 1:]
 
         # добавляем имя провайдера
         provider = str(provider)
