@@ -1208,7 +1208,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
         with open("caversAI/dialog_create.txt", "w") as writer:
             pass
         # ждём пока все записи сгенерируются
-        await asyncio.sleep(5)
+        await asyncio.sleep(10)
         with open("caversAI/dialog_create.txt", "w") as writer:
             frazes = ["Стоп, кажется мы не одни, вы тоже слышали другого человека?",
                       "Что-то мне подсказывает, что мы не в одиночестве. Признавайся, кто с нами в войсе?!", "Слышал это? Не мы одни, это точно! Похоже, у нас на стрим пришли зрители",
@@ -1459,6 +1459,11 @@ async def recognize(ctx, record_for_dialog=False):
                     if await set_get_config_all("dialog", "dialog", None) == "True":
                         await set_get_config_all("dialog", "dialog", "False")
                         await set_get_config_all("dialog", "dialog_with_user", "True")
+                        await asyncio.sleep(7)
+                        voice_client = ctx.voice_client
+                        if voice_client.is_playing():
+                            voice_client.stop()
+                        await asyncio.sleep(3)
                     # запись сказанного для диалога
                     elif await set_get_config_all("dialog", "dialog_with_user", None) == "True":
                         await set_get_config_all("dialog", "user_spoken_text", text)
