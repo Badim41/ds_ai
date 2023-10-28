@@ -357,18 +357,16 @@ async def __image(ctx,
             x, y = await get_image_dimensions(input_image)
             x = int(x)
             y = int(y)
-        print("1X", x, "1Y", y)
+        # скэйлинг
+        scale_factor = (589824 / x * y) ** 0.5
+        x = int(x * scale_factor)
+        y = int(y * scale_factor)
         if not x % 64 == 0:
             x = ((x // 64) + 1) * 64
         if not y % 64 == 0:
             y = ((y // 64) + 1) * 64
-        print("2X", x, "2Y", y)
+        print("X:", x, "Y:", y)
         # во избежания ошибок из-за нехватки памяти, ограничим изображение 768x768
-        while x * y > 589824:
-            if x > 64:
-                x -= 64
-            if y > 64:
-                y -= 64
         # loading params
         await set_get_config_all(f"Image{cuda_number}", "strength_negative_prompt", strength_negative_prompt)
         await set_get_config_all(f"Image{cuda_number}", "strength_prompt", strength_prompt)

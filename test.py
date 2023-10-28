@@ -1,11 +1,7 @@
-from pydub import AudioSegment
+x = 2
+y = 1
+scale_factor = (589824 / x*y) ** 0.5
+x = int(x * scale_factor)
+y = int(y * scale_factor)
 
-
-def speed_up_audio(input_file, speed_factor):
-    audio = AudioSegment.from_file(input_file)
-    sped_up_audio = audio.speedup(playback_speed=speed_factor)
-    sped_up_audio.export(input_file, format="mp3")
-
-input_file = "C:/Users/as280/Downloads/107.mp3"
-
-speed_up_audio(input_file, 1.2)
+print(x, y)
