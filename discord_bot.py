@@ -1107,7 +1107,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                     from function import execute_command
                     await execute_command(' '.join(command), ctx)
                     # диалог завершён. Е
-                    print("DIALOG_TEMP:", set_get_config_all("dialog", wait_untill, None))
+                    print("DIALOG_TEMP:", await set_get_config_all("dialog", wait_untill, None))
                     if await set_get_config_all("dialog", wait_untill, None) == "False":
                         # если диалог переключился в другой режим
                         if wait_untill == "dialog":
