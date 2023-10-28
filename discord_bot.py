@@ -1454,24 +1454,23 @@ async def recognize(ctx, record_for_dialog=False):
                     text = await replace_mat_in_sentence(text)
                     print(text)
 
-
-                    # переключаем режим на диалог с пользователем
-                    if await set_get_config_all("dialog", "dialog", None) == "True":
-                        await set_get_config_all("dialog", "dialog", "False")
-                        await set_get_config_all("dialog", "dialog_with_user", "True")
-                        await asyncio.sleep(7)
-                        voice_client = ctx.voice_client
-                        if voice_client.is_playing():
-                            voice_client.stop()
-                        await asyncio.sleep(3)
-                    # запись сказанного для диалога
-                    elif await set_get_config_all("dialog", "dialog_with_user", None) == "True":
+                    if await set_get_config_all("dialog", "dialog_with_user", None) == "True":
                         await set_get_config_all("dialog", "user_spoken_text", text)
                     else:
                         await set_get_config_default("user_name", value=ctx.author.name)
                         await run_main_with_settings(ctx, await set_get_config_default("currentainame") + ", " + text, True)
 
             continue
+        # переключаем режим на диалог с пользователем
+        if await set_get_config_all("dialog", "dialog", None) == "True":
+            await set_get_config_all("dialog", "dialog", "False")
+            await set_get_config_all("dialog", "dialog_with_user", "True")
+            await asyncio.sleep(7)
+            voice_client = ctx.voice_client
+            if voice_client.is_playing():
+                voice_client.stop()
+            await asyncio.sleep(3)
+        # запись непустых файлов
         loudness = await max_volume(file_found)
         if loudness == float('-inf'):
             Path(file_found).unlink()
