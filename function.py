@@ -32,7 +32,6 @@ _providers = [
     g4f.Provider.ChatgptLogin,  # error 403
     g4f.Provider.ChatgptX,  # error
     g4f.Provider.Theb,
-    g4f.Provider.Llama2,
     g4f.Provider.ChatgptFree,
     g4f.Provider.AItianhuSpace,
     g4f.Provider.AItianhu,
