@@ -576,11 +576,8 @@ async def pause(ctx):
     try:
         await ctx.defer()
         await ctx.respond('Выполнение...')
-        if await set_get_config_all("dialog", "dialog", None) == "True" or await set_get_config_all("dialog",
-                                                                                                       "dialog_with_user",
-                                                                                                       None) == "True":
+        if await set_get_config_all("dialog", "dialog", None) == "True":
             await set_get_config_all("dialog", "dialog", "False")
-            await set_get_config_all("dialog", "dialog_with_user", "False")
             await ctx.send("Диалог остановлен")
             return
         voice_client = ctx.voice_client
@@ -893,9 +890,7 @@ async def __dialog(
     try:
         await ctx.defer()
         await ctx.respond('Выполнение...')
-        if await set_get_config_all("dialog", "dialog", None) == "True" or await set_get_config_all("dialog",
-                                                                                                  "dialog_with_user",
-                                                                                                  None) == "True":
+        if await set_get_config_all("dialog", "dialog", None) == "True":
             await ctx.send("Уже идёт диалог!")
             return
         # отчищаем прошлые диалоги
@@ -1008,9 +1003,7 @@ async def command_line(ctx, *args):
 
 
 async def play_dialog(ctx):
-    while await set_get_config_all("dialog", "dialog", None) == "True" or await set_get_config_all("dialog",
-                                                                                                   "dialog_with_user",
-                                                                                                   None) == "True":
+    while await set_get_config_all("dialog", "dialog", None) == "True":
         try:
             play_path = "caversAI/dialog_play.txt"
             with open(play_path, "r") as reader:
@@ -1173,6 +1166,10 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
             try:
                 if "\n" in result:
                     result = result[result.rfind("\n"):]
+                spoken_text = ""
+                spoken_text_config = await set_get_config_all("dialog", "user_spoken_text", None) == "None"
+                if not spoken_text_config:
+                    spoken_text = "Отвечайт зрителям! Зрители за прошлый диалог написали:\"" + spoken_text_config + "\""
                 random_int = random.randint(1, 25)
                 if not random_int == 0:
                     prompt = (f"Придумай продолжение диалога между {', '.join(names)}. "
@@ -1180,7 +1177,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                               f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
                               f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
                               f"Временной промежуток между этим и прошлым диалогом несколько секунд, поэтому не пиши приветствие в начале этого диалога. "
-                              f"Вот что было в ПРОШЛОМ диалоге:\"\b{result}\""
+                              f"Вот что было в ПРОШЛОМ диалоге:\"\b{result}\". {spoken_text}"
                               f"\nОбязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
                               f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
                 else:
@@ -1189,7 +1186,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                         f"Фразы в сгенерированном диалоге должны быть естественными и короткими, "
                         f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
                         f"Временной промежуток между этим и прошлым диалогом несколько секунд, поэтому не пиши приветствие в начале этого диалога. "
-                        f"{'.'.join(infos)}. {prompt_global}. "
+                        f"{'.'.join(infos)}. {prompt_global}. {spoken_text}"
                         f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
                         f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
                 print("PROMPT:", prompt)
@@ -1207,98 +1204,6 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 traceback_str = traceback.format_exc()
                 print(str(traceback_str))
                 await ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
-    print("TEMP_DEF_DIALOG1")
-    # Делаем диалог со зрителями
-    if await set_get_config_all("dialog", "dialog_with_user", None) == "True":
-        # отчищаем очередь
-        print("TEMP_DEF_DIALOG2")
-        with open("caversAI/dialog_create.txt", "w") as writer:
-            pass
-        with open("caversAI/dialog_create.txt", "w") as writer:
-            frazes = ["Стоп, кажется мы не одни, вы тоже слышали, что кто-то говорил?",
-                      "Что-то мне подсказывает, что мы не в одиночестве. Кто с нами в войсе?!",
-                      "Не знаю, как вы, но мне кажется, мы здесь не одни. Кто-то ещё в нашем войс-чате"]
-            writer.write(
-                frazes[random.randint(0, len(frazes)) - 1] + f"-voice {names[random.randint(0, len(names)) - 1]}\n")
-        print("TEMP_DEF_DIALOG3")
-        with open("caversAI/dialog_play.txt", "w") as writer:
-            pass
-        # Делаем диалог где спрашиваем что-то у зрителей
-        print("TEMP_DEF_DIALOG4")
-        try:
-            prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)} на случайную тему, "
-                f"которая должна относиться к событиям сервера. "
-                f"Фразы в сгенерированном диалоге должны быть естественными и короткими,  "
-                f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
-                f"{'.'.join(infos)}. {prompt_global}. "
-                f"Перед самым концом вы ОБЯЗАТЕЛЬНО должны спросить что-то у зрителей, "
-                f"касательно темы диалога. А в самом конце напиши очень краткое содержание диалога. "
-                f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
-            print("PROMPT:", prompt)
-            result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
-            # await write_in_discord(ctx, result)
-            with open("caversAI/dialog_create.txt", "a") as writer:
-                for line in result.split("\n"):
-                    for name in names:
-                        # Человек: привет
-                        # Человек (man): привет
-                        if line.startswith(name):
-                            line = line[line.find(":") + 1:]
-                            writer.write(line + f"-voice {name}\n")
-        except Exception as e:
-            traceback_str = traceback.format_exc()
-            print(str(traceback_str))
-            await ctx.send(f"Ошибка при изменении голоса(ID:d6): {e}")
-        print("TEMP_DEF_DIALOG5")
-        while await set_get_config_all("dialog", "dialog_with_user", None) == "True":
-            print("TEMP_DEF_DIALOG6")
-            # ждём ответа пользователей
-            attempt = 0
-            while True:
-                # 45 секунд
-                if attempt > 90:
-                    await gpt_dialog(names, result, infos, prompt_global, ctx)
-                    return
-                spoken_text = await set_get_config_all("dialog", "user_spoken_text", None)
-                if spoken_text == "None":
-                    attempt += 1
-                    await asyncio.sleep(0.5)
-                else:
-                    break
-            try:
-                print("TEMP_DEF_DIALOG7")
-                short_description = ""
-                question = ""
-                if "\n" in result:
-                    lines = ["", ""]
-                    lines += result.split("\n")
-                    short_description = lines[len(lines) - 1]
-                    question = lines[len(lines) - 2]
-                prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)} на случайную тему, "
-                    f"которая должна относиться к событиям сервера. Вот что было в конце предыдущего диалога: \"\b{short_description}\" "
-                    f"Зрители ответили \"{spoken_text}\" на \"{question}\" "
-                    f"Фразы в сгенерированном диалоге должны быть естественными и короткими,  "
-                    f"персонажи должны соответствовать своему образу, настолько сильно, насколько это возможно. "
-                    f"Временной промежуток между этим и прошлым диалогом несколько секунд, поэтому не пиши приветствие в начале этого диалога. "
-                    f"{'.'.join(infos)}. {prompt_global}. "
-                    f"В конце диалога вы ОБЯЗАТЕЛЬНО должны спросить что-то у зрителей, "
-                    f"касательно темы диалога. В самом конце напиши очень краткое содержание диалога."
-                    f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
-                print("PROMPT:", prompt)
-                result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
-                # await write_in_discord(ctx, result)
-                with open("caversAI/dialog_create.txt", "a") as writer:
-                    for line in result.split("\n"):
-                        for name in names:
-                            # Человек: привет
-                            # Человек (man): привет
-                            if line.startswith(name):
-                                line = line[line.find(":") + 1:]
-                                writer.write(line + f"-voice {name}\n")
-            except Exception as e:
-                traceback_str = traceback.format_exc()
-                print(str(traceback_str))
-                await ctx.send(f"Ошибка при изменении голоса(ID:d7): {e}")
 
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
@@ -1460,23 +1365,13 @@ async def recognize(ctx):
                     text = await replace_mat_in_sentence(text)
                     print(text)
 
-                    if await set_get_config_all("dialog", "dialog_with_user", None) == "True":
+                    if await set_get_config_all("dialog", "dialog", None) == "True":
                         await set_get_config_all("dialog", "user_spoken_text", text)
                     else:
                         await set_get_config_default("user_name", value=ctx.author.name)
                         await run_main_with_settings(ctx, await set_get_config_default("currentainame") + ", " + text, True)
 
             continue
-        # переключаем режим на диалог с пользователем
-        if await set_get_config_all("dialog", "dialog", None) == "True":
-            await set_get_config_all("dialog", "dialog_with_user", "True")
-            await set_get_config_all("dialog", "dialog", "False")
-            print("кто-то что-то сказал, переключаем режим на разговор с пользователем")
-            await asyncio.gather(recognize(ctx), create_audio_dialog(ctx, 0, "dialog_with_user"),
-                                 create_audio_dialog(ctx, 1, "dialog_with_user"),
-                                 create_audio_dialog(ctx, 2, "dialog_with_user"),
-                                 create_audio_dialog(ctx, 3, "dialog_with_user"))
-            return
         # запись непустых файлов
         loudness = await max_volume(file_found)
         if loudness == float('-inf'):
