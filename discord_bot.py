@@ -1170,6 +1170,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 spoken_text_config = await set_get_config_all("dialog", "user_spoken_text", None) == "None"
                 if not spoken_text_config:
                     spoken_text = "Отвечайт зрителям! Зрители за прошлый диалог написали:\"" + spoken_text_config + "\""
+                    await set_get_config_all("dialog", "user_spoken_text", "None")
                 random_int = random.randint(1, 25)
                 if not random_int == 0:
                     prompt = (f"Придумай продолжение диалога между {', '.join(names)}. "
@@ -1366,7 +1367,10 @@ async def recognize(ctx):
                     print(text)
 
                     if await set_get_config_all("dialog", "dialog", None) == "True":
-                        await set_get_config_all("dialog", "user_spoken_text", text)
+                        spoken_text_config = await set_get_config_all("dialog", "user_spoken_text", None)
+                        if spoken_text_config == "None":
+                            spoken_text_config = ""
+                        await set_get_config_all("dialog", "user_spoken_text", spoken_text_config + text)
                     else:
                         await set_get_config_default("user_name", value=ctx.author.name)
                         await run_main_with_settings(ctx, await set_get_config_default("currentainame") + ", " + text, True)
