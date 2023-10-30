@@ -358,7 +358,7 @@ async def __image(ctx,
             x = int(x)
             y = int(y)
         # скэйлинг во избежания ошибок из-за нехватки памяти
-        scale_factor = (589824 / x * y) ** 0.5
+        scale_factor = (500000 / (x * y)) ** 0.5
         x = int(x * scale_factor)
         y = int(y * scale_factor)
         if not x % 64 == 0:
@@ -935,8 +935,8 @@ async def __add_voice(
                        choices=['мужчина', 'женщина']),
         info: Option(str, description=f'Какие-то сведения о данном человеке', required=False,
                      default="Отсутствует"),
-        speed: Option(float, description=f'Ускорение голоса', required=False,
-                      default=1, min_value=0.5, max_value=2),
+        speed: Option(float, description=f'Ускорение голоса (от 1.0 до 2.0)', required=False,
+                      default=1, min_value=1, max_value=2),
         change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
                              default=False)
 ):
