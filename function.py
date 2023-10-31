@@ -867,18 +867,20 @@ async def createAICaver(ctx):
             # удаляем аудиофайлы
             with open("caversAI/queue.txt", 'w') as file:
                 pass
-            functions = []
+            cuda_used = []
             if await check_cuda_async(0) == "False":
                 print("CHECK_0", await check_cuda_async(0))
-                functions += [prepare_audio_pipeline(0, ctx)]
+                await use_cuda_async(0)
+                cuda_used.append(0)
             if await check_cuda_async(1) == "False":
                 print("CHECK_1", await check_cuda_async(1))
-                functions += [prepare_audio_pipeline(1, ctx)]
-            if len(functions) == 0:
+                await use_cuda_async(0)
+                cuda_used.append(1)
+            if len(cuda_used) == 0:
                 await ctx.send("Нет свободных видеокарт!")
                 return
             await write_in_discord(ctx, "Начинаю обработку аудио")
-            await asyncio.gather(play_audio_process(ctx), *functions)  #
+            await asyncio.gather(play_audio_process(ctx), *[prepare_audio_pipeline(cuda_number, ctx) for cuda_number in cuda_used])  #
             await result_command_change(f"ready audios", Color.GRAY)
             # освобождаем видеокарты
             await stop_use_cuda_async(0)
