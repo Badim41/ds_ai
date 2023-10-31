@@ -37,6 +37,22 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='\\', intents=intents)
 
 
+def set_get_config_no_async(section, key, value=None):
+    try:
+        config.read('config.ini')
+        if value is None:
+            return config.get(section, key)
+
+        config.set(section, key, str(value))
+        # Сохранение
+        with open('config.ini', 'w') as configfile:
+            config.write(configfile)
+    except Exception as e:
+        print(f"Ошибка при чтении конфига:{e}")
+        time.sleep(0.1)
+        result = set_get_config_no_async(section, key, value=value)
+        return result
+
 async def set_get_config_all(section, key, value, error=0):
     if error == 5:
         raise "Ошибка при записи в конфиг"
@@ -1436,15 +1452,15 @@ if __name__ == "__main__":
                 if "gpt_local" in args:
                     load_gpt = True
                 if "gpt_provider" in args:
-                    asyncio.run(set_get_config_all("gpt", "use_gpt_provider", "True"))
+                    set_get_config_no_async("gpt", "use_gpt_provider", "True")
                 if "img1" in args:
                     load_images1 = True
-                    asyncio.run(set_get_config_all("Values", "cuda0_is_busy", True))
+                    set_get_config_no_async("Values", "cuda0_is_busy", "True")
                 if "img2" in args:
                     load_images1 = True
-                    asyncio.run(set_get_config_all("Values", "cuda0_is_busy", True))
+                    set_get_config_no_async("Values", "cuda0_is_busy", "True")
                     load_images2 = True
-                    asyncio.run(set_get_config_all("Values", "cuda1_is_busy", True))
+                    set_get_config_no_async("Values", "cuda1_is_busy", "True")
         else:
             # raise error & exit
             print("Укажите discord_TOKEN")
