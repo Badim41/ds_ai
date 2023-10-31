@@ -929,7 +929,7 @@ async def run_ai_cover_gen(line, ctx, wait=False, cuda=None):
         print("Pitch in line")
         pitch = await extract_number_after_keyword(line, "-pitch")
         print("Pitch", pitch)
-        if pitch < -2 or pitch > 2:
+        if pitch < -24 or pitch > 24:
             pitch = 0
 
     # время (не является аргументом для RVC)
