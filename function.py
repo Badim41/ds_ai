@@ -1233,7 +1233,7 @@ async def play_audio_process(ctx):
                     continue_process = config.getboolean('Values', 'queue')
                     await asyncio.sleep(0.5)
                     if not continue_process:
-                        await result_command_change(f"file_have_links - False", Color.CYAN)
+                        await result_command_change(f"play_audio_process - False", Color.CYAN)
                         await set_get_config_all('Values', "play_audio_process", "False")
                         break
     except (IOError, KeyboardInterrupt) as e:
