@@ -936,7 +936,7 @@ async def run_ai_cover_gen(line, ctx, wait=False, cuda=None):
     time = -1
     if "-time" in line:
         time = await extract_number_after_keyword(line, "-time")
-        if time < 0:
+        if time < 0 or time == -2:
             time = -1
 
     # INDEX_RATE
