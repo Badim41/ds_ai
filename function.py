@@ -863,12 +863,12 @@ async def createAICaver(ctx):
             # удаляем аудиофайлы
             with open("caversAI/queue.txt", 'w') as file:
                 pass
-            functions = None
+            functions = []
             if await check_cuda_async(0) == "False":
                 functions += [prepare_audio_pipeline(0, ctx)]
             if await check_cuda_async(1) == "False":
                 functions += [prepare_audio_pipeline(1, ctx)]
-            if functions is None:
+            if len(functions) == 0:
                 await ctx.send("Нет свободных видеокарт!")
                 return
             await write_in_discord(ctx, "Начинаю обработку аудио")
