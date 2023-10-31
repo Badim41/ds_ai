@@ -859,8 +859,8 @@ async def createAICaver(ctx):
                 if line.strip():
                     print("line:", line)
                     writer.write(line + "\n")
-        start_process = await set_get_config_all('Values', "play_audio_process", None) == "False"
-        if not start_process:
+        start_process = await set_get_config_all('Values', "play_audio_process") == "False"
+        if start_process:
             # удаляем аудиофайлы
             with open("caversAI/queue.txt", 'w') as file:
                 pass
