@@ -851,16 +851,14 @@ async def createAICaver(ctx):
         global spokenText
         message = spokenText
         lines = message.split("\n")
-        print("line_write:", lines)
         if not os.path.exists("caversAI/audio_links.txt"):
             with open("caversAI/audio_links.txt", "w"):
                 pass
-        print("line1")
         with open("caversAI/audio_links.txt", "a") as writer:
-            print("line2")
             for line in lines:
-                print("line:", line)
-                writer.write(line + "\n")
+                if line.strip():
+                    print("line:", line)
+                    writer.write(line + "\n")
         config.read('config.ini')
         continue_process = config.getboolean('Values', 'queue')
         if not continue_process:
