@@ -874,8 +874,7 @@ async def createAICaver(ctx):
                 await ctx.send("Нет свободных видеокарт!")
                 return
             await write_in_discord(ctx, "Начинаю обработку аудио")
-            await asyncio.gather(play_audio_process(ctx), prepare_audio_pipeline(1, ctx),
-                                 prepare_audio_pipeline(0, ctx))  #
+            await asyncio.gather(play_audio_process(ctx), *functions)  #
             await result_command_change(f"ready audios", Color.GRAY)
             # освобождаем видеокарты
             await stop_use_cuda_async(0)
