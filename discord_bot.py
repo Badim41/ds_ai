@@ -779,7 +779,7 @@ async def __cover(
                         max_value=1),
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.8, min_value=0,
                         max_value=1),
-        start: Option(int, description='Начать воспроизводить с (в секундах). -1 для продолжения', required=False, default=0, min_value=-1),
+        start: Option(int, description='Начать воспроизводить с (в секундах). -1 для продолжения', required=False, default=0, min_value=-2),
         output: Option(str, description='Отправить результат', choices=["link", "file", "all_files", "None"],
                        required=False, default="file"),
         only_voice_change: Option(bool,
