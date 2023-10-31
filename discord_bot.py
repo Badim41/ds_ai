@@ -828,7 +828,10 @@ async def __cover(
             params.append(f"-wetness {wetness}")
         if dryness != 0.85:
             params.append(f"-dryness {dryness}")
-        if start == -1 or start != 0:
+        if start == -2:
+            stop_seconds = int(await set_get_config_all("Sound", "stop_milliseconds", None)) // 1000
+            params.append(f"-start {stop_seconds}")
+        elif start == -1 or start != 0:
             params.append(f"-start {start}")
         if output != "None":
             params.append(f"-output {output}")
