@@ -945,12 +945,13 @@ async def run_ai_cover_gen(line, ctx, wait=False, cuda=None):
         indexrate = await extract_double_after_keyword(line, "-indexrate")
         if indexrate < 0 or indexrate > 1:
             indexrate = 0.5
+
     # FILTER_RADIUS
     filter_radius = 3
     if "-filter_radius" in line:
         filter_radius = await extract_double_after_keyword(line, "-filter_radius")
         if filter_radius < 0 or filter_radius > 7:
-            filter_radius = 0.5
+            filter_radius = 3
 
     # RMS_MIX_RATE
     loudness = 0.2
@@ -1018,7 +1019,7 @@ async def run_ai_cover_gen(line, ctx, wait=False, cuda=None):
     if url == ".":
         return
     await execute_command(
-        f"python main_cuda{cuda}.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda}",
+        f"python main_cuda{cuda}.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -fr{filter_radius} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda}",
         ctx)
     # if cuda == 0:
     #     from main_cuda0 import run_ai_cover_gen
