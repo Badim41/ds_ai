@@ -859,9 +859,8 @@ async def createAICaver(ctx):
                 if line.strip():
                     print("line:", line)
                     writer.write(line + "\n")
-        config.read('config.ini')
-        continue_process = config.getboolean('Values', 'queue')
-        if not continue_process:
+        start_process = await set_get_config_all('Values', "play_audio_process", None) == "False"
+        if not start_process:
             # удаляем аудиофайлы
             with open("caversAI/queue.txt", 'w') as file:
                 pass
@@ -1187,6 +1186,7 @@ async def play_audio_process(ctx):
     await asyncio.sleep(0.1)
     try:
         await set_get_config_all('Values', "queue", "True")
+        await set_get_config_all('Values', "play_audio_process", "True")
         while True:
             with open("caversAI/queue.txt") as reader:
                 line = reader.readline()
@@ -1234,6 +1234,7 @@ async def play_audio_process(ctx):
                     await asyncio.sleep(0.5)
                     if not continue_process:
                         await result_command_change(f"file_have_links - False", Color.CYAN)
+                        await set_get_config_all('Values', "play_audio_process", "False")
                         break
     except (IOError, KeyboardInterrupt) as e:
         await result_command_change("Произошла ошибка (ID:f12):" + str(e), Color.RED)
