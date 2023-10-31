@@ -1008,7 +1008,7 @@ async def run_ai_cover_gen(line, ctx, wait=False, cuda=None):
     start = 0
     if "-start" in line:
         start = await extract_number_after_keyword(line, "-start")
-        if start < 0:
+        if start < -1:
             start = 0
 
     output = "None"

@@ -828,10 +828,7 @@ async def __cover(
             params.append(f"-wetness {wetness}")
         if dryness != 0.85:
             params.append(f"-dryness {dryness}")
-        if start == -1:
-            stop_seconds = int(await set_get_config_all("Sound", "stop_milliseconds", None)) // 1000
-            params.append(f"-start {stop_seconds}")
-        elif start != 0:
+        if start == -1 or start != 0:
             params.append(f"-start {start}")
         if output != "None":
             params.append(f"-output {output}")
@@ -1266,6 +1263,8 @@ async def send_file(ctx, file_path, delete_file=False):
 
 async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
     # Проверяем, находится ли бот в голосовом канале
+    if start_seconds == -1:
+        start_seconds = int(await set_get_config_all("Sound", "stop_milliseconds", None)) // 1000
     try:
         if not ctx.voice_client:
             await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
