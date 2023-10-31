@@ -765,7 +765,7 @@ async def __cover(
                          max_value=1),
         filter_radius: Option(int,
                               description='Насколько далеко от каждой точки в данных будут учитываться значения... (от 1 до 7)',
-                              required=False, default=5, min_value=0,
+                              required=False, default=3, min_value=0,
                               max_value=7),
         main_vocal: Option(int, description='Громкость основного вокала (от -20 до 0)', required=False, default=0,
                            min_value=-20, max_value=0),
