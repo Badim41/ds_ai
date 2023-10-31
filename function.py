@@ -856,6 +856,7 @@ async def createAICaver(ctx):
                 pass
         with open("caversAI/audio_links.txt", "a") as writer:
             for line in lines:
+                print("line_write:", line)
                 writer.write(line + "\n")
         config.read('config.ini')
         continue_process = config.getboolean('Values', 'queue')
@@ -926,9 +927,7 @@ async def run_ai_cover_gen(line, ctx, wait=False, cuda=None):
     # PITCH_CHANGE
     pitch = 0
     if "-pitch" in line:
-        print("Pitch in line")
         pitch = await extract_number_after_keyword(line, "-pitch")
-        print("Pitch", pitch)
         if pitch < -24 or pitch > 24:
             pitch = 0
 
