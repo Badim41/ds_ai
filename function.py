@@ -883,7 +883,7 @@ async def createAICaver(ctx):
         else:
             # добавляем те, которые сейчас обрабатываются
             # queue_position = check_cuda()
-            queue_position = 1
+            queue_position = 0
             with open("caversAI/audio_links.txt", "r") as reader:
                 lines = reader.readlines()
                 queue_position += len(lines)
