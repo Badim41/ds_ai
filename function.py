@@ -54,7 +54,8 @@ _providers = [
 from gtts import gTTS
 from discord_bot import config, send_file
 from discord_bot import write_in_discord
-from use_free_cuda import check_cuda, stop_use_cuda_async, use_cuda_async, stop_use_cuda_images, use_cuda_images
+from use_free_cuda import check_cuda, stop_use_cuda_async, use_cuda_async, stop_use_cuda_images, use_cuda_images, \
+    check_cuda_async
 
 
 class Color:
@@ -862,8 +863,14 @@ async def createAICaver(ctx):
             # удаляем аудиофайлы
             with open("caversAI/queue.txt", 'w') as file:
                 pass
-            await use_cuda_async(0)
-            await use_cuda_async(1)
+            functions = None
+            if await check_cuda_async(0) == "False":
+                functions += [prepare_audio_pipeline(0, ctx)]
+            if await check_cuda_async(1) == "False":
+                functions += [prepare_audio_pipeline(1, ctx)]
+            if functions is None:
+                await ctx.send("Нет свободных видеокарт!")
+                return
             await write_in_discord(ctx, "Начинаю обработку аудио")
             await asyncio.gather(play_audio_process(ctx), prepare_audio_pipeline(1, ctx),
                                  prepare_audio_pipeline(0, ctx))  #
