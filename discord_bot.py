@@ -627,6 +627,7 @@ async def skip(ctx):
             voice_client.stop()
             await ctx.respond("Аудио пропущено ⏭️")
             await set_get_config("stop_milliseconds", 0)
+            await set_get_config_all("Sound", "playing", "False")
         else:
             await ctx.respond("Нет активного аудио для пропуска.")
     except Exception as e:
