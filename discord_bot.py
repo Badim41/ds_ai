@@ -353,7 +353,7 @@ async def __image(ctx,
         input_image = "images/image" + str(random.randint(1, 1000000)) + ".png"
         await image.save(input_image)
         # get image size and round to 64
-        if x is None and y is None:
+        if x is None or y is None:
             x, y = await get_image_dimensions(input_image)
             x = int(x)
             y = int(y)
@@ -740,11 +740,11 @@ async def __cover(
                      default=-1, min_value=-2),
         indexrate: Option(float, description='Индекс голоса (от 0 до 1)', required=False, default=0.5, min_value=0,
                           max_value=1),
-        loudness: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.2, min_value=0,
+        loudness: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.4, min_value=0,
                          max_value=1),
         filter_radius: Option(int,
                               description='Насколько далеко от каждой точки в данных будут учитываться значения... (от 1 до 7)',
-                              required=False, default=3, min_value=0,
+                              required=False, default=5, min_value=0,
                               max_value=7),
         main_vocal: Option(int, description='Громкость основного вокала (от -20 до 0)', required=False, default=0,
                            min_value=-20, max_value=0),
@@ -754,9 +754,9 @@ async def __cover(
                       max_value=0),
         roomsize: Option(float, description='Размер помещения (от 0 до 1)', required=False, default=0.2, min_value=0,
                          max_value=1),
-        wetness: Option(float, description='Влажность (от 0 до 1)', required=False, default=0.1, min_value=0,
+        wetness: Option(float, description='Влажность (от 0 до 1)', required=False, default=0.2, min_value=0,
                         max_value=1),
-        dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
+        dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.8, min_value=0,
                         max_value=1),
         start: Option(int, description='Начать воспроизводить с (в секундах)', required=False, default=0, min_value=0),
         output: Option(str, description='Отправить результат', choices=["link", "file", "all_files", "None"],
@@ -1222,10 +1222,10 @@ async def write_in_discord(ctx, text):
         for line in lines:
             if "```" in line:
                 add_format = not add_format
-            if add_format:
-                line = line.replace("```", "")
-                line = "```" + line + "```"
             if line.strip():
+                if add_format:
+                    line = line.replace("```", "")
+                    line = "```" + line + "```"
                 await ctx.send(line)
 
 
