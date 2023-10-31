@@ -1254,9 +1254,9 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
             await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
             return
         # Проверяем, играет ли что-то уже
-        if ctx.voice_client.is_playing():
+        while await set_get_config_all("Sound", "playing", None) =="True":
             await asyncio.sleep(0.1)
-
+        await set_get_config_all("Sound", "playing", "True")
         # проигрываем
         source = discord.FFmpegPCMAudio(audio_file_path, options=f"-ss {start_seconds} -t {duration}")
         ctx.voice_client.play(source)
@@ -1278,10 +1278,12 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
 
             # stop_milliseconds += 1000
             await set_get_config("stop_milliseconds", int(await set_get_config("stop_milliseconds")) + 1000)
+        await set_get_config_all("Sound", "playing", "False")
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
         print(f"Ошибка, {e}")
+        await set_get_config_all("Sound", "playing", "False")
 
 
 async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
