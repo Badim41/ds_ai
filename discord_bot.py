@@ -1270,7 +1270,7 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
             await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
             return
         # Проверяем, играет ли что-то уже
-        while await set_get_config_all("Sound", "playing", None) =="True":
+        while await set_get_config_all("Sound", "playing", None) == "True":
             await asyncio.sleep(0.1)
         await set_get_config_all("Sound", "playing", "True")
         # проигрываем

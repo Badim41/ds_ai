@@ -865,8 +865,10 @@ async def createAICaver(ctx):
                 pass
             functions = []
             if await check_cuda_async(0) == "False":
+                print("CHECK_0", await check_cuda_async(0))
                 functions += [prepare_audio_pipeline(0, ctx)]
             if await check_cuda_async(1) == "False":
+                print("CHECK_1", await check_cuda_async(1))
                 functions += [prepare_audio_pipeline(1, ctx)]
             if len(functions) == 0:
                 await ctx.send("Нет свободных видеокарт!")
