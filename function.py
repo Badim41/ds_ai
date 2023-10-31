@@ -54,7 +54,7 @@ _providers = [
 from gtts import gTTS
 from discord_bot import config, send_file
 from discord_bot import write_in_discord
-from use_free_cuda import check_cuda, stop_use_cuda_async, use_cuda_async
+from use_free_cuda import check_cuda, stop_use_cuda_async, use_cuda_async, stop_use_cuda_images, use_cuda_images
 
 
 class Color:
@@ -655,7 +655,7 @@ async def voice_commands(sentence, ctx):
                 return await ctx.respond("модель для картинок не загружена")
             if spoken_text_temp is None:
                 spoken_text_temp = " "
-            await use_cuda_async(0)
+            await use_cuda_images(0)
             await set_get_config_all(f"Image", "result", "None")
             # run timer
             start_time = datetime.datetime.now()
@@ -691,7 +691,7 @@ async def voice_commands(sentence, ctx):
             # удаляем временные файлы
             os.remove(output_image)
             # перестаём использовать видеокарту
-            await stop_use_cuda_async(0)
+            await stop_use_cuda_images(0)
             return True
         await text_to_speech("Протокол не найден.", False, ctx)
         return True

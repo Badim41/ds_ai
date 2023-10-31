@@ -22,7 +22,8 @@ from pathlib import Path
 import sys
 import discord
 from discord.ext import commands
-from use_free_cuda import use_cuda_async, stop_use_cuda_async, check_cuda_async
+from use_free_cuda import use_cuda_async, stop_use_cuda_async, check_cuda_async, use_cuda_images, check_cuda_images, \
+    stop_use_cuda_images
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
@@ -212,7 +213,7 @@ async def __change_video(
         if not video_path:
             return
         # используем видеокарты
-        cuda_avaible = await check_cuda_async()
+        cuda_avaible = await check_cuda_images()
         if cuda_avaible == 0:
             await ctx.respond("Нет свободных видеокарт")
             return
@@ -221,7 +222,7 @@ async def __change_video(
 
         cuda_numbers = []
         for i in range(cuda_avaible):
-            cuda_numbers.append(await use_cuda_async())
+            cuda_numbers.append(await use_cuda_images())
 
         # run timer
         start_time = datetime.datetime.now()
@@ -291,11 +292,14 @@ async def __change_video(
         await send_file(ctx, video_path)
         # освобождаем видеокарты
         for i in cuda_numbers:
-            await stop_use_cuda_async(i)
+            await stop_use_cuda_images(i)
     except Exception as e:
         await ctx.send(f"Ошибка при изменении картинки (с параметрами\
                           {fps, extension, prompt, negative_prompt, steps, seed, strength, strength_prompt, voice, pitch, indexrate, loudness, main_vocal, back_vocal, music, roomsize, wetness, dryness}\
                           ): {e}")
+        if cuda_numbers:
+            for i in range(cuda_avaible):
+                await stop_use_cuda_images(i)
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
         raise e
@@ -342,7 +346,7 @@ async def __image(ctx,
                                                    max_value=1)
                   ):
     try:
-        cuda_number = await use_cuda_async()
+        cuda_number = await use_cuda_images()
         await set_get_config_all(f"Image{cuda_number}", "result", "None")
         await ctx.defer()
         # throw extensions
@@ -1433,9 +1437,12 @@ if __name__ == "__main__":
                     asyncio.run(set_get_config_all("gpt", "use_gpt_provider", "True"))
                 if "img1" in args:
                     load_images1 = True
+                    asyncio.run(set_get_config_all("Values", "cuda0_is_busy", True))
                 if "img2" in args:
                     load_images1 = True
+                    asyncio.run(set_get_config_all("Values", "cuda0_is_busy", True))
                     load_images2 = True
+                    asyncio.run(set_get_config_all("Values", "cuda1_is_busy", True))
         else:
             # raise error & exit
             print("Укажите discord_TOKEN")

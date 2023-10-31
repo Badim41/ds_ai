@@ -21,7 +21,7 @@ def set_get_config_all(key, value=None):
         return result
 
 
-async def set_get_config_all_async(key, value=None):
+async def set_get_config_all_async(key, value=None, section="Values"):
     try:
         config.read('config.ini')
         if value is None:
@@ -33,7 +33,7 @@ async def set_get_config_all_async(key, value=None):
     except Exception as e:
         print(f"Ошибка при чтении конфига:{e}")
         await asyncio.sleep(0.1)
-        result = await set_get_config_all_async(key, value)
+        result = await set_get_config_all_async(key, value, section=section)
         return result
 
 
@@ -108,3 +108,37 @@ async def check_cuda_async(index=None):
         return cuda_avaible
     else:
         return await set_get_config_all_async(f"cuda{index}_is_busy")
+
+
+async def use_cuda_images(index=None):
+    if not index is None:
+        if await set_get_config_all_async("model_loaded", None, section=f"Image{index}") == "True":
+            await set_get_config_all_async("model_loaded", "using", section=f"Image{index}")
+            return
+        else:
+            raise "1-ая видеокарта занята"
+    else:
+        if await set_get_config_all_async("model_loaded", None, section=f"Image0") == "True":
+            return 0
+        if await set_get_config_all_async("model_loaded", None, section=f"Image1") == "True":
+            return 1
+        raise "Нет свободных видеокарт!"
+
+async def check_cuda_images(index=None):
+    if index is None:
+        image_models_avaible = 0
+        if await set_get_config_all_async("model_loaded", None, section=f"Image0") == "True":
+            image_models_avaible += 1
+        if await set_get_config_all_async("model_loaded", None, section=f"Image1") == "True":
+            image_models_avaible += 1
+        return image_models_avaible
+    else:
+        return await set_get_config_all_async("model_loaded", None, section=f"Image{index}")
+
+
+async def stop_use_cuda_images(index=None):
+    if not index is None:
+        await set_get_config_all_async("model_loaded", "True", section=f"Image{index}")
+    else:
+        await set_get_config_all_async("model_loaded", "True", section=f"Image0")
+        await set_get_config_all_async("model_loaded", "True", section=f"Image1")
