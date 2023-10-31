@@ -806,10 +806,7 @@ async def __cover(
             if not await set_get_config_default("currentaipitch") == "0":
                 pitch_int = -12
         params.append(f"-pitch {pitch_int}")
-        if time == -2:
-            stop_seconds = int(await set_get_config_all("Sound", "stop_milliseconds", None)) // 1000
-            params.append(f"-time {stop_seconds}")
-        elif time is None:
+        if time is None:
             params.append(f"-time -1")
         else:
             params.append(f"-time {time}")
@@ -831,7 +828,10 @@ async def __cover(
             params.append(f"-wetness {wetness}")
         if dryness != 0.85:
             params.append(f"-dryness {dryness}")
-        if start != 0:
+        if start == -1:
+            stop_seconds = int(await set_get_config_all("Sound", "stop_milliseconds", None)) // 1000
+            params.append(f"-start {stop_seconds}")
+        elif start != 0:
             params.append(f"-start {start}")
         if output != "None":
             params.append(f"-output {output}")
