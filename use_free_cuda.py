@@ -25,8 +25,8 @@ async def set_get_config_all_async(key, value=None, section="Values"):
     try:
         config.read('config.ini')
         if value is None:
-            return config.get("Values", key)
-        config.set("Values", key, str(value))
+            return config.get(section, key)
+        config.set(section, key, str(value))
         # Сохранение
         with open('config.ini', 'w') as configfile:
             config.write(configfile)
