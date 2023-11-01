@@ -950,7 +950,7 @@ async def run_ai_cover_gen(line, ctx, wait=False, cuda=None):
     # FILTER_RADIUS
     filter_radius = 3
     if "-filter_radius" in line:
-        filter_radius = await extract_double_after_keyword(line, "-filter_radius")
+        filter_radius = await extract_number_after_keyword(line, "-filter_radius")
         if filter_radius < 0 or filter_radius > 7:
             filter_radius = 3
 
