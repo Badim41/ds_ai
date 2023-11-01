@@ -1096,6 +1096,7 @@ async def prepare_audio_pipeline(cuda_number, ctx):
                     if await set_get_config_all("Values", f"cuda{1 - cuda_number}_is_busy") == "False":
                         print("Больше нет ссылок")
                         await set_get_config_all("Values", "queue", "False")
+                        await set_get_config_all('Values', "play_audio_process", "False")
                         break
 
         except (IOError, KeyboardInterrupt) as e:
