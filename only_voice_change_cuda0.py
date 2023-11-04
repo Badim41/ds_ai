@@ -98,7 +98,7 @@ if __name__ == '__main__':
     print("temp_vc2")
 
     print("temp_vc3")
-    if rvc_dirname == set_get_config_all_not_async(f"rvc{cuda_number}", "dir"):
+    if not rvc_dirname == set_get_config_all_not_async(f"rvc{cuda_number}", "dir"):
         print("start_vc")
         if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
             raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
