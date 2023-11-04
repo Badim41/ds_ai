@@ -92,14 +92,13 @@ if __name__ == '__main__':
     set_get_config_all_not_async(f"rvc{cuda_number}", "filter_radius", args.filter_radius)
     set_get_config_all_not_async(f"rvc{cuda_number}", "index_rate", args.index_rate)
     set_get_config_all_not_async(f"rvc{cuda_number}", "pitch_change", args.pitch_change)
-    set_get_config_all_not_async(f"rvc{cuda_number}", "dir", rvc_dirname)
     set_get_config_all_not_async(f"rvc{cuda_number}", "output", args.output)
     set_get_config_all_not_async(f"rvc{cuda_number}", "input", args.input)
     print("temp_vc2")
 
     print("temp_vc3")
-    if rvc_dirname == set_get_config_all_not_async(f"rvc{cuda_number}", "dir"):
-        print("start_vc", set_get_config_all_not_async(f"rvc{cuda_number}", "dir"))
+    if not rvc_dirname == set_get_config_all_not_async(f"rvc{cuda_number}", "dir"):
+        set_get_config_all_not_async(f"rvc{cuda_number}", "dir", rvc_dirname)
         if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
             raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
         # voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
