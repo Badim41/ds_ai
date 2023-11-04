@@ -85,20 +85,29 @@ if __name__ == '__main__':
     parser.add_argument('-pro', '--protect', type=float, default=0.33,
                         help='A decimal number e.g. 0.33. Protect voiceless consonants and breath sounds to prevent artifacts such as tearing in electronic music. Set to 0.5 to disable. Decrease the value to increase protection, but it may reduce indexing accuracy.')
     args = parser.parse_args()
-
+    print("temp_vc1")
+    rvc_dirname = args.rvc_dirname
     set_get_config_all_not_async(f"rvc{cuda_number}", "protect", args.protect)
     set_get_config_all_not_async(f"rvc{cuda_number}", "rms_mix_rate", args.rms_mix_rate)
     set_get_config_all_not_async(f"rvc{cuda_number}", "filter_radius", args.filter_radius)
     set_get_config_all_not_async(f"rvc{cuda_number}", "index_rate", args.index_rate)
     set_get_config_all_not_async(f"rvc{cuda_number}", "pitch_change", args.pitch_change)
-    set_get_config_all_not_async(f"rvc{cuda_number}", "dir", args.rvc_dirname)
+    set_get_config_all_not_async(f"rvc{cuda_number}", "dir", rvc_dirname)
     set_get_config_all_not_async(f"rvc{cuda_number}", "output", args.output)
     set_get_config_all_not_async(f"rvc{cuda_number}", "input", args.input)
-    
-    rvc_dirname = args.rvc_dirname
+    print("temp_vc2")
+
+    print("temp_vc3")
     if not rvc_dirname == set_get_config_all_not_async(f"rvc{cuda_number}", "dir"):
         if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
             raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
         # voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
         #                  rms_mix_rate, protect, crepe_hop_length
         voice_change(rvc_dirname)
+    else:
+        # wait for answer
+        set_get_config_all_not_async(f"rvc{cuda_number}", "output", "None")
+        while True:
+            if not set_get_config_all_not_async(f"rvc{cuda_number}", "output") == "None":
+                break
+    print("temp_vc4")
