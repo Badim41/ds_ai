@@ -19,14 +19,14 @@ def use_cuda(index=None):
 
 async def use_cuda_async(index=None):
     if not index is None:
-        await set_get_config_all(f"cuda{index}_is_busy", True)
+        await set_get_config_all("Values", f"cuda{index}_is_busy", True)
         return
     while True:
         if await set_get_config_all("Values", "cuda0_is_busy") == "False":
-            await set_get_config_all("cuda0_is_busy", True)
+            await set_get_config_all("Values", "cuda0_is_busy", True)
             return 0
         if await set_get_config_all("Values", "cuda1_is_busy") == "False":
-            await set_get_config_all("cuda0_is_busy", True)
+            await set_get_config_all("Values", "cuda0_is_busy", True)
             return 1
         await asyncio.sleep(0.25)
 
@@ -51,7 +51,7 @@ def stop_use_cuda(index):
 
 
 async def stop_use_cuda_async(index):
-    await set_get_config_all(f"cuda{index}_is_busy", False)
+    await set_get_config_all("Values", f"cuda{index}_is_busy", False)
 
 
 def check_cuda(index=None):
