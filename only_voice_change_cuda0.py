@@ -2,6 +2,7 @@ import argparse
 import gc
 import os
 import time
+import traceback
 
 cuda_number = "0"
 os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
@@ -14,32 +15,36 @@ rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
 from set_get_config import set_get_config_all_not_async
 
 def voice_change(voice_model):
-    rvc_model_path, rvc_index_path = get_rvc_model(voice_model)
-    print("voice_change")
-    device = 'cuda:0'
-    config2 = Config(device, True)
-    hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
-    cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
-    print("dev_temp:load voice to GPU")
-    while voice_model == set_get_config_all_not_async(f"rvc{cuda_number}", "dir"):
-        input_path = set_get_config_all_not_async(f"rvc{cuda_number}", "input")
-        if not input_path == "None":
-            set_get_config_all_not_async(f"rvc{cuda_number}", "input", "None")
-            
-            # получем значения
-            index_rate = float(set_get_config_all_not_async(f"rvc{cuda_number}", "index_rate"))
-            output_path = set_get_config_all_not_async(f"rvc{cuda_number}", "output")
-            pitch_change = float(set_get_config_all_not_async(f"rvc{cuda_number}", "pitch_change"))
-            filter_radius = int(set_get_config_all_not_async(f"rvc{cuda_number}", "filter_radius"))
-            rms_mix_rate = float(set_get_config_all_not_async(f"rvc{cuda_number}", "rms_mix_rate"))
-            protect = float(set_get_config_all_not_async(f"rvc{cuda_number}", "protect"))
-            
-            rvc_infer(rvc_index_path, index_rate, input_path, output_path, pitch_change, "rmvpe", cpt, version, net_g,
-                      filter_radius, tgt_sr, rms_mix_rate, protect, 128, vc, hubert_model)
-            gc.collect()
-        else:
-            time.sleep(0.2)
-    print("dev_temp:unload voice from GPU")
+    try:
+        rvc_model_path, rvc_index_path = get_rvc_model(voice_model)
+        print("voice_change")
+        device = 'cuda:0'
+        config2 = Config(device, True)
+        hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
+        cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
+        print("dev_temp:load voice to GPU")
+        while voice_model == set_get_config_all_not_async(f"rvc{cuda_number}", "dir"):
+            input_path = set_get_config_all_not_async(f"rvc{cuda_number}", "input")
+            if not input_path == "None":
+                set_get_config_all_not_async(f"rvc{cuda_number}", "input", "None")
+
+                # получем значения
+                index_rate = float(set_get_config_all_not_async(f"rvc{cuda_number}", "index_rate"))
+                output_path = set_get_config_all_not_async(f"rvc{cuda_number}", "output")
+                pitch_change = float(set_get_config_all_not_async(f"rvc{cuda_number}", "pitch_change"))
+                filter_radius = int(set_get_config_all_not_async(f"rvc{cuda_number}", "filter_radius"))
+                rms_mix_rate = float(set_get_config_all_not_async(f"rvc{cuda_number}", "rms_mix_rate"))
+                protect = float(set_get_config_all_not_async(f"rvc{cuda_number}", "protect"))
+
+                rvc_infer(rvc_index_path, index_rate, input_path, output_path, pitch_change, "rmvpe", cpt, version, net_g,
+                          filter_radius, tgt_sr, rms_mix_rate, protect, 128, vc, hubert_model)
+                gc.collect()
+            else:
+                time.sleep(0.2)
+        print("dev_temp:unload voice from GPU")
+    except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(f"Произошла ошибка (ID:f6): {str(e)}\n{str(traceback_str)}")
 
 
 def get_rvc_model(voice_model):
