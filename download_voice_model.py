@@ -31,6 +31,7 @@ def extract_zip(extraction_folder, zip_name, gender, info, speed):
         with open(os.path.join(extraction_folder + "/gender.txt"), 'w') as writer:
             writer.writelines(gender)
         with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
+            print("speedWrite:", str(speed))
             writer.writelines(str(speed))
     except IOError as e:
         print(e)
