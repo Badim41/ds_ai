@@ -21,7 +21,7 @@ def voice_change(voice_model):
     hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
     cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
     print("dev_temp:load voice to GPU")
-    while voice_model == set_get_config_all_not_async(f"rvc{cuda_number}", "input"):
+    while voice_model == set_get_config_all_not_async(f"rvc{cuda_number}", "dir"):
         input_path = set_get_config_all_not_async(f"rvc{cuda_number}", "input")
         if not input_path == "None":
             set_get_config_all_not_async(f"rvc{cuda_number}", "input", "None")
