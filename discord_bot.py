@@ -15,7 +15,6 @@ from pydub import AudioSegment
 from moviepy.editor import VideoFileClip
 
 from discord import Option
-from function import text_to_speech
 from modifed_sinks import StreamSink
 import speech_recognition as sr
 from pathlib import Path
@@ -649,6 +648,7 @@ async def __tts(
             return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
         await set_get_config_all("Default", "currentainame", ai_voice)
         # запускаем TTS
+        from function import text_to_speech
         await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
         # await run_main_with_settings(ctx, f"робот протокол 24 {text}",
         #                              False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
