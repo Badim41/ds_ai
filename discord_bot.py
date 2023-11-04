@@ -15,6 +15,7 @@ from pydub import AudioSegment
 from moviepy.editor import VideoFileClip
 
 from discord import Option
+from function import text_to_speech
 from modifed_sinks import StreamSink
 import speech_recognition as sr
 from pathlib import Path
@@ -620,7 +621,7 @@ async def __say(
 async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
-        ai_voice: Option(str, description='Голос для озвучки', required=False, default="None")
+        ai_voice: Option(str, description='Голос для озвучки', required=False, default=None)
 ):
     ai_voice_temp = None
     try:
@@ -630,7 +631,7 @@ async def __tts(
         start_time = datetime.datetime.now()
         await use_cuda_async(0)
         voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
-        if ai_voice not in voices:
+        if str(ai_voice) not in voices:
             return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
         from function import replace_mat_in_sentence, mat_found
         text = await replace_mat_in_sentence(text)
@@ -641,17 +642,16 @@ async def __tts(
         # меняем голос
         voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
         ai_voice_temp = await set_get_config_all("Default", "currentainame")
-        if ai_voice == "None":
+        if ai_voice is None:
             ai_voice = await set_get_config_all("Default", "currentainame")
             print(await set_get_config_all("Default", "currentainame"))
         elif ai_voice not in voices:
             return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
         await set_get_config_all("Default", "currentainame", ai_voice)
         # запускаем TTS
-        await run_main_with_settings(ctx, f"робот протокол 24 {text}",
-                                     False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
-        # возращаем голос
-        await set_get_config_all("Default", "currentainame", ai_voice_temp)
+        await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
+        # await run_main_with_settings(ctx, f"робот протокол 24 {text}",
+        #                              False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
         # перестаём использовать видеокарту
         await stop_use_cuda_async(0)
 

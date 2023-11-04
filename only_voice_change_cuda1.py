@@ -15,7 +15,7 @@ rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
 from set_get_config import set_get_config_all_not_async
 
 
-def voice_change1():
+def voice_change0():
     rvc_index_path, hubert_model, cpt, version, net_g, tgt_sr, vc, voice_model = None, None, None, None, None, None, None, ""
     while True:
         try:
@@ -23,23 +23,19 @@ def voice_change1():
 
             # не выставлена модель
             if new_voice_model == "None":
-                time.sleep(1)
+                time.sleep(0.2)
                 continue
-            if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
-                print(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
-                set_get_config_all_not_async(f"rvc{cuda_number}", "dir", "None")
-                set_get_config_all_not_async(f"rvc{cuda_number}", "result", "Голосовая модель не существует")
 
             if not voice_model == new_voice_model:
+                print("reload voice")
+                if hubert_model and cpt:
+                    del hubert_model, cpt
                 voice_model = new_voice_model
                 rvc_model_path, rvc_index_path = get_rvc_model(voice_model)
-                print("voice_change")
                 device = 'cuda:0'
                 config2 = Config(device, True)
                 hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
                 cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
-                print("dev_temp:load voice to GPU")
-                break
             input_path = set_get_config_all_not_async(f"rvc{cuda_number}", "input")
             if not input_path == "None":
                 set_get_config_all_not_async(f"rvc{cuda_number}", "input", "None")
@@ -60,7 +56,6 @@ def voice_change1():
                 set_get_config_all_not_async(f"rvc{cuda_number}", "result", output_path)
             else:
                 time.sleep(0.2)
-            print("dev_temp:unload voice from GPU")
         except Exception as e:
             traceback_str = traceback.format_exc()
             raise f"Произошла ошибка (ID:vc1): {str(e)}\n{str(traceback_str)}"
@@ -105,20 +100,17 @@ if __name__ == '__main__':
                         help='A decimal number e.g. 0.33. Protect voiceless consonants and breath sounds to prevent artifacts such as tearing in electronic music. Set to 0.5 to disable. Decrease the value to increase protection, but it may reduce indexing accuracy.')
     parser.add_argument('-load', '--load', action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
-    print("temp_vc1")
     rvc_dirname = args.rvc_dirname
+    if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
+        raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
     set_get_config_all_not_async(f"rvc{cuda_number}", "protect", args.protect)
     set_get_config_all_not_async(f"rvc{cuda_number}", "rms_mix_rate", args.rms_mix_rate)
     set_get_config_all_not_async(f"rvc{cuda_number}", "filter_radius", args.filter_radius)
     set_get_config_all_not_async(f"rvc{cuda_number}", "index_rate", args.index_rate)
     set_get_config_all_not_async(f"rvc{cuda_number}", "pitch_change", args.pitch_change)
     set_get_config_all_not_async(f"rvc{cuda_number}", "output", args.output)
-
-    print("continue_vc")
-    # wait for answer
-    set_get_config_all_not_async(f"rvc{cuda_number}", "result", "None")
+    set_get_config_all_not_async(f"rvc{cuda_number}", "dir", rvc_dirname)
     set_get_config_all_not_async(f"rvc{cuda_number}", "input", args.input)
     while True:
         if not set_get_config_all_not_async(f"rvc{cuda_number}", "result") == "None":
             break
-    print("temp_vc4")
