@@ -906,8 +906,6 @@ async def __add_voice(
         gender = "male"
     else:
         gender = "male"
-    if speed == 1:
-        speed = 1.01
     try:
         command = [
             "python",
