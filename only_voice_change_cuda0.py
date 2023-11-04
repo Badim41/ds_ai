@@ -30,17 +30,24 @@ def voice_change(voice_model):
             input_path = set_get_config_all_not_async(f"rvc{cuda_number}", "input")
             if not input_path == "None":
                 set_get_config_all_not_async(f"rvc{cuda_number}", "input", "None")
-
+                print("temp__1")
                 # получем значения
                 index_rate = float(set_get_config_all_not_async(f"rvc{cuda_number}", "index_rate"))
+                print("temp__2")
                 output_path = set_get_config_all_not_async(f"rvc{cuda_number}", "output")
+                print("temp__3")
                 pitch_change = float(set_get_config_all_not_async(f"rvc{cuda_number}", "pitch_change"))
+                print("temp__3")
                 filter_radius = int(set_get_config_all_not_async(f"rvc{cuda_number}", "filter_radius"))
+                print("temp__4")
                 rms_mix_rate = float(set_get_config_all_not_async(f"rvc{cuda_number}", "rms_mix_rate"))
+                print("temp__5")
                 protect = float(set_get_config_all_not_async(f"rvc{cuda_number}", "protect"))
+                print("temp__6")
 
                 rvc_infer(rvc_index_path, index_rate, input_path, output_path, pitch_change, "rmvpe", cpt, version, net_g,
                           filter_radius, tgt_sr, rms_mix_rate, protect, 128, vc, hubert_model)
+                print("temp__7")
                 gc.collect()
             else:
                 time.sleep(0.2)

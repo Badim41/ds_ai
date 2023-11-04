@@ -8,7 +8,6 @@ async def set_get_config_all(section, key, value=None, error=0):
     try:
         config.read('config.ini')
         if value is None:
-            config.read('config.ini')
             return config.get(section, key)
         config.set(section, key, str(value))
         # Сохранение
@@ -26,7 +25,6 @@ def set_get_config_all_not_async(section, key, value=None, error=0):
     try:
         config.read('config.ini')
         if value is None:
-            config.read('config.ini')
             return config.get(section, key)
         config.set(section, key, str(value))
         # Сохранение
