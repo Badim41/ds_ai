@@ -6,12 +6,12 @@ config = configparser.ConfigParser()
 
 async def set_get_config_all(section, key, value=None, error=0):
     try:
-        config.read('config.ini')
+        config.read('config.ini', encoding='utf-8')
         if value is None:
             return config.get(section, key)
         config.set(section, key, str(value))
         # Сохранение
-        with open('config.ini', 'w') as configfile:
+        with open('config.ini', 'w', encoding='utf-8') as configfile:
             config.write(configfile)
     except Exception as e:
         if error == 5:
@@ -23,12 +23,12 @@ async def set_get_config_all(section, key, value=None, error=0):
 def set_get_config_all_not_async(section, key, value=None, error=0):
 
     try:
-        config.read('config.ini')
+        config.read('config.ini', encoding='utf-8')
         if value is None:
             return config.get(section, key)
         config.set(section, key, str(value))
         # Сохранение
-        with open('config.ini', 'w') as configfile:
+        with open('config.ini', 'w', encoding='utf-8') as configfile:
             config.write(configfile)
     except Exception as e:
         if error == 5:
