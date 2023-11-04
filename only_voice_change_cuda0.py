@@ -113,4 +113,5 @@ if __name__ == '__main__':
     set_get_config_all_not_async(f"rvc{cuda_number}", "input", args.input)
     while True:
         if not set_get_config_all_not_async(f"rvc{cuda_number}", "result") == "None":
+            set_get_config_all_not_async(f"rvc{cuda_number}", "result", "None")
             break
