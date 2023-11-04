@@ -1324,7 +1324,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     from discord_bot import text_to_speech_file
     pitch = await text_to_speech_file(tts, currentpitch, file_name)
     # если голос не выставлен
-    if ai_dictionary == "None":
+    if ai_dictionary == "None" or await set_get_config_all("Default", "currentainame") == "None":
         await playSoundFile(file_name, -1, 0, ctx)
         await result_command_change(f"tts(No RVC)", Color.CYAN)
         return
