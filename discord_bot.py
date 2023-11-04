@@ -367,7 +367,8 @@ async def __config(
 ):
     try:
         await ctx.defer()
-        await ctx.respond(section, key, value)
+        await set_get_config_all(section, key, value)
+        await ctx.respond(section + " " + key + " " + value)
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
