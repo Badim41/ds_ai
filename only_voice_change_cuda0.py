@@ -86,7 +86,7 @@ if __name__ == '__main__':
     set_get_config_all_not_async(f"rvc{cuda_number}", "filter_radius", args.filter_radius)
     set_get_config_all_not_async(f"rvc{cuda_number}", "index_rate", args.index_rate)
     set_get_config_all_not_async(f"rvc{cuda_number}", "pitch_change", args.pitch_change)
-    set_get_config_all_not_async(f"rvc{cuda_number}", "dir", args.dir)
+    set_get_config_all_not_async(f"rvc{cuda_number}", "dir", args.rvc_dirname)
     set_get_config_all_not_async(f"rvc{cuda_number}", "output", args.output)
     set_get_config_all_not_async(f"rvc{cuda_number}", "input", args.input)
     
