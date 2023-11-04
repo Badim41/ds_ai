@@ -98,14 +98,15 @@ if __name__ == '__main__':
     print("temp_vc2")
 
     print("temp_vc3")
-    if not rvc_dirname == set_get_config_all_not_async(f"rvc{cuda_number}", "dir"):
-        print("start_vc")
+    if rvc_dirname == set_get_config_all_not_async(f"rvc{cuda_number}", "dir"):
+        print("start_vc", set_get_config_all_not_async(f"rvc{cuda_number}", "dir"))
         if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
             raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
         # voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
         #                  rms_mix_rate, protect, crepe_hop_length
         voice_change(rvc_dirname)
     else:
+        print("continue_vc")
         # wait for answer
         set_get_config_all_not_async(f"rvc{cuda_number}", "output", "None")
         while True:
