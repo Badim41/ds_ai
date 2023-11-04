@@ -1265,7 +1265,7 @@ async def console_command_runner(command, ctx):
 
 async def speed_up_audio(input_file, speed_factor):
     if speed_factor > 1:
-        speed_factor) = 1.001
+        speed_factor = 1.001
     print("SPEED", speed_factor)
     audio = AudioSegment.from_file(input_file)
     sped_up_audio = audio.speedup(playback_speed=speed_factor)
