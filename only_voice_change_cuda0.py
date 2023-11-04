@@ -29,6 +29,8 @@ def voice_change0():
                 continue
 
             if not voice_model == new_voice_model:
+                if hubert_model and cpt:
+                    del hubert_model, cpt
                 voice_model = new_voice_model
                 rvc_model_path, rvc_index_path = get_rvc_model(voice_model)
                 print("voice_change")
