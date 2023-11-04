@@ -52,8 +52,16 @@ def download_online_model(url, dir_name, gender, info, speed):
         zip_name = url.split('/')[-1]
         extraction_folder = os.path.join(rvc_models_dir, dir_name)
         if os.path.exists(extraction_folder):
+            with open(os.path.join(extraction_folder + "/info.txt"), 'w') as writer:
+                writer.writelines(info)
+            with open(os.path.join(extraction_folder + "/gender.txt"), 'w') as writer:
+                writer.writelines(gender)
+            with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
+                print("speedWrite:", str(speed))
+                writer.writelines(str(speed))
             raise Exception \
-                (f'Модель {dir_name} уже существует! Выберите другое имя модели.')
+                (f'Модель {dir_name} уже существует, но её информация/скорость были изменены')
+
 
         if 'pixeldrain.com' in url:
             url = f'https://pixeldrain.com/api/file/{zip_name}'
