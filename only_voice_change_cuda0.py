@@ -18,6 +18,7 @@ from set_get_config import set_get_config_all_not_async
 def voice_change0():
     rvc_index_path, hubert_model, cpt, version, net_g, tgt_sr, vc, voice_model = None, None, None, None, None, None, None, ""
     while True:
+        print("temp")
         try:
             new_voice_model = set_get_config_all_not_async(f"rvc{cuda_number}", "dir")
 
@@ -105,7 +106,6 @@ if __name__ == '__main__':
                         help='A decimal number e.g. 0.33. Protect voiceless consonants and breath sounds to prevent artifacts such as tearing in electronic music. Set to 0.5 to disable. Decrease the value to increase protection, but it may reduce indexing accuracy.')
     parser.add_argument('-load', '--load', action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
-    print("temp_vc1")
     rvc_dirname = args.rvc_dirname
     set_get_config_all_not_async(f"rvc{cuda_number}", "protect", args.protect)
     set_get_config_all_not_async(f"rvc{cuda_number}", "rms_mix_rate", args.rms_mix_rate)
