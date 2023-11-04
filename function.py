@@ -1317,9 +1317,12 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         await result_command_change("skip tts", Color.CYAN)
         return
     file_name = "1.mp3"
+    output_name = "2.mp3"
 
     if os.path.exists(file_name):
         os.remove(file_name)
+    if os.path.exists(output_name):
+        os.remove(output_name)
 
     from discord_bot import text_to_speech_file
     pitch = await text_to_speech_file(tts, currentpitch, file_name)
@@ -1335,7 +1338,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
             "python",
             "only_voice_change_cuda0.py",
             "-i", f"\"{file_name}\"",
-            "-o", "2.mp3",
+            "-o", output_name,
             "-dir", str(ai_dictionary),
             "-p", f"{pitch}",
             "-ir", "0.5",
@@ -1354,10 +1357,10 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
     if await set_get_config_all("Sound", "change_speed", None) == "True":
         with open(os.path.join(f"rvc_models/{ai_dictionary}/speed.txt"), "r") as reader:
             speed = float(reader.read())
-        await speed_up_audio("2.mp3", speed)
+        await speed_up_audio(output_name, speed)
 
     # "2.mp3"
-    await playSoundFile("2.mp3", -1, 0, ctx)
+    await playSoundFile(output_name, -1, 0, ctx)
     await result_command_change(f"tts: {tts}", Color.GRAY)
 
 
