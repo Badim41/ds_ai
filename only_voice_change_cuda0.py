@@ -23,7 +23,10 @@ def voice_change(voice_model):
         hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
         cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
         print("dev_temp:load voice to GPU")
-        while voice_model == set_get_config_all_not_async(f"rvc{cuda_number}", "dir"):
+        while True:
+            # stop
+            if not voice_model == set_get_config_all_not_async(f"rvc{cuda_number}", "dir"):
+                break
             input_path = set_get_config_all_not_async(f"rvc{cuda_number}", "input")
             if not input_path == "None":
                 set_get_config_all_not_async(f"rvc{cuda_number}", "input", "None")
@@ -44,7 +47,7 @@ def voice_change(voice_model):
         print("dev_temp:unload voice from GPU")
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(f"Произошла ошибка (ID:f6): {str(e)}\n{str(traceback_str)}")
+        print(f"Произошла ошибка (ID:vc1): {str(e)}\n{str(traceback_str)}")
 
 
 def get_rvc_model(voice_model):
