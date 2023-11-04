@@ -1436,6 +1436,14 @@ if __name__ == "__main__":
                 time.sleep(0.5)
                 if set_get_config_all_not_async("Image1", "model_loaded") == "True":
                     break
+        # === load voice models ===
+        from only_voice_change_cuda0 import voice_change0
+        from only_voice_change_cuda1 import voice_change1
+        pool = multiprocessing.Pool(processes=2)
+        pool.apply_async(voice_change0)
+        pool.apply_async(voice_change1)
+        pool.close()
+
         # ==== load bot ====
         print("====load bot====")
         loop = asyncio.get_event_loop()
