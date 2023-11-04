@@ -25,6 +25,7 @@ def voice_change0():
             # не выставлена модель
             if new_voice_model == "None":
                 time.sleep(1)
+                print("skip_temp")
                 continue
             if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
                 print(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
