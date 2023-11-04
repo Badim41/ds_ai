@@ -1,6 +1,8 @@
-import multiprocessing
 import os
 import argparse
+
+from set_get_config import set_get_config_all_not_async
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import torch
 import gc
@@ -10,8 +12,6 @@ import shlex
 import subprocess
 from contextlib import suppress
 from urllib.parse import urlparse, parse_qs
-from IPython.display import FileLink
-import zipfile
 import shutil
 
 import librosa
@@ -22,9 +22,6 @@ import yt_dlp
 from pedalboard import Pedalboard, Reverb, Compressor, HighpassFilter
 from pedalboard.io import AudioFile
 from pydub import AudioSegment
-import configparser
-
-config = configparser.ConfigParser()
 
 from rvc import Config, load_hubert, get_vc, rvc_infer
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -404,11 +401,7 @@ def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radi
     else:
         if not write_in_queue:
             print("WRITING3!!!")
-            config.read('config.ini')
-            config.set('voice', 'generated_path', cover_path)
-            # Сохранение
-            with open('config.ini', 'w') as configfile:
-                config.write(configfile)
+            set_get_config_all_not_async('voice', 'generated_path', cover_path)
         else:
             try:
                 # Записываем путь файла в очередь
@@ -501,11 +494,7 @@ if __name__ == '__main__':
     else:
         if not args.write_in_queue:
             print("WRITING1!!!")
-            config.read('config.ini')
-            config.set('voice', 'generated', cover_path)
-            # Сохранение
-            with open('config.ini', 'w') as configfile:
-                config.write(configfile)
+            set_get_config_all_not_async('voice', 'generated_path', cover_path)
         else:
             print("WRITING2!!!")
             try:

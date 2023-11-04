@@ -27,7 +27,7 @@ _providers = [
     g4f.Provider.GPTalk,
     g4f.Provider.AiAsk,  # - rate limit
     g4f.Provider.GeekGpt,  # short answer
-    g4f.Provider.Vercel, # cut answer
+    g4f.Provider.Vercel,  # cut answer
     g4f.Provider.ChatgptDemo,  # error 403
     g4f.Provider.ChatgptLogin,  # error 403
     g4f.Provider.ChatgptX,  # error
@@ -47,15 +47,16 @@ _providers = [
     # g4f.Provider.GptForLove,  # error no module
     g4f.Provider.Opchatgpts,  # bad
     g4f.Provider.Chatgpt4Online,  # - bad
-    #g4f.Provider.ChatBase,  # - bad, but you can use it
+    # g4f.Provider.ChatBase,  # - bad, but you can use it
     # g4f.Provider.Llama2, # no model
 ]
 
 from gtts import gTTS
-from discord_bot import config, send_file
+from discord_bot import send_file
 from discord_bot import write_in_discord
-from use_free_cuda import check_cuda, stop_use_cuda_async, use_cuda_async, stop_use_cuda_images, use_cuda_images, \
+from use_free_cuda import stop_use_cuda_async, use_cuda_async, stop_use_cuda_images, use_cuda_images, \
     check_cuda_async
+from set_get_config import set_get_config_all
 
 
 class Color:
@@ -89,65 +90,33 @@ currentAIpitch = 0
 robot_names = []
 
 
-async def set_config(key, value):
-    try:
-        config.read('config.ini')
-        config.set('Default', key, str(value))
-        # Сохранение
-        with open('config.ini', 'w') as configfile:
-            config.write(configfile)
-    except Exception as e:
-        print(f"Ошибка при чтении конфига:{e}")
-        await asyncio.sleep(0.1)
-        result = await set_config(key, value)
-        return result
-
-
-async def set_get_config_all(section, key, value=None):
-    try:
-        config.read('config.ini')
-        if value is None:
-            config.read('config.ini')
-            return config.get(section, key)
-        config.set(section, key, str(value))
-        # Сохранение
-        with open('config.ini', 'w') as configfile:
-            config.write(configfile)
-    except Exception as e:
-        print(f"Ошибка при чтении конфига:{e}")
-        await asyncio.sleep(0.1)
-        result = await set_get_config_all(section, key, value)
-        return result
-
-
 async def start_bot(ctx, spokenTextArg, writeAnswer):
     # Добавление глобальных переменных
     global spokenText
     spokenText = spokenTextArg
     global language
-    config.read('config.ini')
-    language = config.get('Default', 'language')
+    language = await set_get_config_all('Default', 'language')
     global prompt_length
-    prompt_length = config.getint('gpt', 'prompt_length')
+    prompt_length = int(await set_get_config_all('gpt', 'prompt_length'))
     global admin
-    admin = config.getboolean('Default', 'admin')
+    admin = bool(await set_get_config_all('Default', 'admin'))
     global all_admin
-    all_admin = config.getboolean('Default', 'all_admin')
+    all_admin = bool(await set_get_config_all('Default', 'all_admin'))
     global video_length
-    video_length = config.getint('Default', 'video_length')
+    video_length = int(await set_get_config_all('Default', 'video_length'))
     global user_name
-    user_name = config.get('Default', 'user_name')
+    user_name = await set_get_config_all('Default', 'user_name')
     global currentAIname
-    name = config.get('Default', 'currentainame')
+    name = await set_get_config_all('Default', 'currentainame')
     if name == "None":
         currentAIname = "Михаил"
         spokenText = spokenText.replace("none", "Михаил")
     else:
         currentAIname = name
     global currentAIinfo
-    currentAIinfo = config.get('Default', 'currentaiinfo')
+    currentAIinfo = await set_get_config_all('Default', 'currentaiinfo')
     global currentAIpitch
-    currentAIpitch = config.getint('Default', 'currentaipitch')
+    currentAIpitch = int(await set_get_config_all('Default', 'currentaipitch'))
     global robot_names
     robot_names = ["robot", "robots", "робот", "нейросеть", "hello", "роботы", "ропот", currentAIname]
 
@@ -208,7 +177,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                         temp_spokenText = prompt
                     await set_get_config_all("gpt", "gpt_custom_prompt", "None")
                     # удаляем память
-                    with open("texts/memories/{currentAIname}.txt", 'w') as file:
+                    with open("texts/memories/{currentAIname}.txt", 'w'):
                         pass
                 else:
                     await text_to_speech("Промпт не найден!", False, ctx)
@@ -346,7 +315,7 @@ async def remove_last_format_simbols(text, format="```"):
 
 
 async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_model="gpt-3.5-turbo"):
-    if not provider_name in str(provider):
+    if provider_name not in str(provider):
         return None
     try:
         if "Bing" in str(provider):
@@ -448,10 +417,9 @@ async def run_all_gpt(prompt, mode):
 
 async def chatgpt_get_result(prompt, ctx, provider_number=0, gpt_model="gpt-3.5-turbo"):
     global currentAIname  # , gpt_errors
-    config.read('config.ini')
-    gpt_provider = config.getboolean('gpt', 'use_gpt_provider')
+    gpt_provider = bool(await set_get_config_all('gpt', 'use_gpt_provider'))
     if not gpt_provider:
-        gpt_loaded = config.getboolean('gpt', 'gpt')
+        gpt_loaded = bool(await set_get_config_all('gpt', 'gpt'))
         if not gpt_loaded:
             await write_in_discord(ctx, "модель чат-бота не загрузилась, подождите пару минут")
             return
@@ -639,7 +607,6 @@ async def voice_commands(sentence, ctx):
                 await text_to_speech("нужны права администратора", False, ctx)
                 return True
             if spoken_text_temp is None:
-                spoken_text_temp = "вы ничего не сказали"
                 return True
             await textInDiscord(spoken_text_temp, ctx)
             return True
@@ -726,21 +693,21 @@ async def voice_commands(sentence, ctx):
         await text_to_speech("Длина запроса: " + str(number), False, ctx)
         return True
 
-    if "длина видео" in sentence:
-        if not admin:
-            await text_to_speech("нужны права администратора", False, ctx)
-            return True
-        if sentence != "длина видео":
-            number = await extract_number_after_keyword(sentence, "длина видео")
-            if number > 30:
-                await set_config(video_length, "30")
-                await text_to_speech(f"Слишком большое число. Длина видео: {30}", False, ctx)
-            if number != -1:
-                await set_config(video_length, number)
-                return True
-        config.read('config.ini')
-        await text_to_speech("Длина видео: " + str(config.get('Default', 'video_length')), False, ctx)
-        return True
+    # if "длина видео" in sentence:
+    #     if not admin:
+    #         await text_to_speech("нужны права администратора", False, ctx)
+    #         return True
+    #     if sentence != "длина видео":
+    #         number = await extract_number_after_keyword(sentence, "длина видео")
+    #         if number > 30:
+    #             await set_get_config_all("Default", video_length, "30")
+    #             await text_to_speech(f"Слишком большое число. Длина видео: {30}", False, ctx)
+    #         if number != -1:
+    #             await set_get_config_all("Default", video_length, number)
+    #             return True
+    #     config.read('config.ini')
+    #     await text_to_speech("Длина видео: " + str(config.get('Default', 'video_length')), False, ctx)
+    #     return True
 
     if "измени" in sentence and "голос на" in sentence:
         sentence = sentence[sentence.index("голос на") + 9:]
@@ -755,13 +722,13 @@ async def voice_commands(sentence, ctx):
         if language_input in ["русский", "английский", "украинский", "татарский"]:
             await text_to_speech(f"язык изменён на {language_input}", False, ctx)
             if language == "русский":
-                await set_config("language", "russian")
+                await set_get_config_all("Default", "language", "russian")
             elif language == "английский":
-                await set_config("language", "english")
+                await set_get_config_all("Default", "language", "english")
             elif language == "украинский":
-                await set_config("language", "ukrainian")
+                await set_get_config_all("Default", "language", "ukrainian")
             elif language == "татарский":
-                await set_config("language", "tatar")
+                await set_get_config_all("Default", "language", "tatar")
         else:
             await text_to_speech("Не подходящий язык!", False, ctx)
         return True
@@ -775,18 +742,18 @@ async def setAIvoice(name, ctx):
 
         # Info
         with open(os.path.join(f"rvc_models/{name}/info.txt")) as file:
-            await set_config(currentAIinfo, file.read())
+            await set_get_config_all("Default", currentAIinfo, file.read())
 
         # Name
         currentAIname = name
-        await set_config("currentainame", name)
+        await set_get_config_all("Default", "currentainame", name)
 
         # Pitch
         with open(os.path.join(f"rvc_models/{name}/gender.txt")) as file:
             if file.read().lower() == "female":
-                await set_config("currentaipitch", 12)
+                await set_get_config_all("Default", "currentaipitch", 12)
             else:
-                await set_config("currentaipitch", 0)
+                await set_get_config_all("Default", "currentaipitch", 0)
 
     else:
         await result_command_change(f"currentainame: {currentAIname}", Color.GRAY)
@@ -877,7 +844,8 @@ async def createAICaver(ctx):
                 await ctx.send("Нет свободных видеокарт!")
                 return
             await write_in_discord(ctx, "Начинаю обработку аудио")
-            await asyncio.gather(play_audio_process(ctx), *[prepare_audio_pipeline(cuda_number, ctx) for cuda_number in cuda_used])  #
+            await asyncio.gather(play_audio_process(ctx),
+                                 *[prepare_audio_pipeline(cuda_number, ctx) for cuda_number in cuda_used])  #
             await result_command_change(f"ready audios", Color.GRAY)
             # освобождаем видеокарты
             await stop_use_cuda_async(0)
@@ -1230,8 +1198,7 @@ async def play_audio_process(ctx):
                     await playSoundFile(audio_path, time, stop_milliseconds, ctx)
                     await remove_line_from_txt("caversAI/queue.txt", 1)
                 else:
-                    config.read('config.ini')
-                    continue_process = config.getboolean('Values', 'queue')
+                    continue_process = bool(await set_get_config_all('Values', 'queue'))
                     await asyncio.sleep(0.5)
                     if not continue_process:
                         await result_command_change(f"play_audio_process - False", Color.CYAN)
@@ -1294,6 +1261,7 @@ async def console_command_runner(command, ctx):
         return True
     except (subprocess.CalledProcessError, IOError, Exception) as e:
         await result_command_change("Произошла ошибка (ID:f13):" + str(e), Color.RED)
+
 
 async def speed_up_audio(input_file, speed_factor):
     audio = AudioSegment.from_file(input_file)

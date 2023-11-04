@@ -4,7 +4,6 @@ import os
 import random
 import re
 import subprocess
-import configparser
 import asyncio
 import time
 import traceback
@@ -22,12 +21,12 @@ from pathlib import Path
 import sys
 import discord
 from discord.ext import commands
-from use_free_cuda import use_cuda_async, stop_use_cuda_async, check_cuda_async, use_cuda_images, check_cuda_images, \
+from use_free_cuda import use_cuda_async, stop_use_cuda_async, use_cuda_images, check_cuda_images, \
     stop_use_cuda_images
+from set_get_config import set_get_config_all, set_get_config_all_not_async
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
-config = configparser.ConfigParser()
 
 connections = {}
 
@@ -35,73 +34,6 @@ stream_sink = StreamSink()
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='\\', intents=intents)
-
-
-def set_get_config_no_async(section, key, value=None):
-    try:
-        config.read('config.ini')
-        if value is None:
-            return config.get(section, key)
-
-        config.set(section, key, str(value))
-        # Сохранение
-        with open('config.ini', 'w') as configfile:
-            config.write(configfile)
-    except Exception as e:
-        print(f"Ошибка при чтении конфига:{e}")
-        time.sleep(0.1)
-        result = set_get_config_no_async(section, key, value=value)
-        return result
-
-async def set_get_config_all(section, key, value, error=0):
-    if error == 5:
-        raise "Ошибка при записи в конфиг"
-    try:
-        config.read('config.ini')
-        if value is None:
-            return config.get(section, key)
-        config.set(section, key, str(value))
-        # Сохранение
-        with open('config.ini', 'w') as configfile:
-            config.write(configfile)
-        return ' '.join([section, key, str(value)])
-    except Exception as e:
-        print(f"Ошибка при чтении конфига:{e}")
-        await asyncio.sleep(0.1)
-        result = await set_get_config_all(section, key, value, error + 1)
-        return result
-
-
-async def set_get_config(key="record", value=None):
-    try:
-        config.read('config.ini')
-        if value is None:
-            return config.get("Sound", key)
-        config.set('Sound', key, str(value))
-        # Сохранение
-        with open('config.ini', 'w') as configfile:
-            config.write(configfile)
-    except Exception as e:
-        print(f"Ошибка при чтении конфига:{e}")
-        await asyncio.sleep(0.1)
-        result = await set_get_config(key, value)
-        return result
-
-
-async def set_get_config_default(key, value=None):
-    try:
-        config.read('config.ini')
-        if value is None:
-            return config.get("Default", key)
-        config.set('Default', key, str(value))
-        # Сохранение
-        with open('config.ini', 'w') as configfile:
-            config.write(configfile)
-    except Exception as e:
-        print(f"Ошибка при чтении конфига:{e}")
-        await asyncio.sleep(0.1)
-        result = await set_get_config_default(key, value)
-        return result
 
 
 @bot.event
@@ -119,20 +51,20 @@ async def on_message(message):
         ctx = await bot.get_context(message)
         from function import replace_mat_in_sentence
 
-        if await set_get_config_default("robot_name_need") == "False":
-            text = await set_get_config_default("currentainame") + ", " + text
+        if await set_get_config_all("Default", "robot_name_need") == "False":
+            text = await set_get_config_all("Default", "currentainame") + ", " + text
         text = await replace_mat_in_sentence(text)
         user = text[:text.find(":")]
         if "[" in text and "]" in text:
             text = re.sub(r'[.*?]', '', text)
-        await set_get_config_default("user_name", value=user)
+        await set_get_config_all("Default", "user_name", value=user)
         # info
-        info_was = await set_get_config_default("currentaiinfo")
-        await set_get_config_default("currentaiinfo",
+        info_was = await set_get_config_all("Default", "currentaiinfo")
+        await set_get_config_all("Default", "currentaiinfo",
                                      "Ты сейчас играешь на сервере майнкрафт GoldenFire и отвечаешь на сообщения игроков из чата")
         await run_main_with_settings(ctx, text, True)
         # info2
-        await set_get_config_default("currentaiinfo", info_was)
+        await set_get_config_all("Default", "currentaiinfo", info_was)
         return
 
     # other users
@@ -150,10 +82,10 @@ async def on_message(message):
                     reply_on_message = re.sub(r'\|\|.*?\|\|', '', reply_on_message)
                 text += f" (Пользователь отвечает на ваше сообщение \"{reply_on_message}\")"
             from function import replace_mat_in_sentence
-            if await set_get_config_default("robot_name_need") == "False":
-                text = await set_get_config_default("currentainame") + ", " + text
+            if await set_get_config_all("Default", "robot_name_need") == "False":
+                text = await set_get_config_all("Default", "currentainame") + ", " + text
             text = await replace_mat_in_sentence(text)
-            await set_get_config_default("user_name", value=message.author)
+            await set_get_config_all("Default", "user_name", value=message.author)
             await run_main_with_settings(ctx, text, True)
         except Exception as e:
             traceback_str = traceback.format_exc()
@@ -218,8 +150,9 @@ async def __change_video(
     try:
         # ошибки входных данных
         await ctx.defer()
-        config.read('config.ini')
-        voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
+
+        # config.get("Sound", "voices")
+        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
         if voice not in voices:
             await ctx.respond("Выберите голос из списка: " + ','.join(voices))
             return
@@ -522,7 +455,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
             once_done,  # what to do once done.
             ctx.channel  # the channel to disconnect from.
         )
-        await set_get_config(value=True)
+        await set_get_config_all("Sound", "record", "True")
         await ctx.respond("Started listening.")
         await recognize(ctx)
     except Exception as e:
@@ -626,7 +559,7 @@ async def skip(ctx):
         if voice_client.is_playing():
             voice_client.stop()
             await ctx.respond("Аудио пропущено ⏭️")
-            await set_get_config("stop_milliseconds", 0)
+            await set_get_config_all("Sound", "stop_milliseconds", 0)
             await set_get_config_all("Sound", "playing", "False")
         else:
             await ctx.respond("Нет активного аудио для пропуска.")
@@ -669,11 +602,11 @@ async def __say(
             await set_get_config_all("gpt", "gpt_mode", gpt_mode)
 
         from function import replace_mat_in_sentence
-        if await set_get_config_default("robot_name_need") == "False":
-            text = await set_get_config_default("currentainame") + ", " + text
+        if await set_get_config_all("Default", "robot_name_need") == "False":
+            text = await set_get_config_all("Default", "currentainame") + ", " + text
         text = await replace_mat_in_sentence(text)
         print(f'{text} ({type(text).__name__})\n')
-        await set_get_config_default("user_name", value=ctx.author.name)
+        await set_get_config_all("Default", "user_name", value=ctx.author.name)
 
         await run_main_with_settings(ctx, text, True)
     except Exception as e:
@@ -693,8 +626,7 @@ async def __tts(
         await ctx.defer()
         await ctx.respond('Выполнение...')
         await use_cuda_async(0)
-        config.read('config.ini')
-        voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
+        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
         if ai_voice not in voices:
             return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
         from function import replace_mat_in_sentence, mat_found
@@ -704,19 +636,19 @@ async def __tts(
             return
         print(f'{text} ({type(text).__name__})\n')
         # меняем голос
-        voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
-        ai_voice_temp = await set_get_config_default("currentainame")
+        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
+        ai_voice_temp = await set_get_config_all("Default", "currentainame")
         if ai_voice == "None":
-            ai_voice = await set_get_config_default("currentainame")
-            print(await set_get_config_default("currentainame"))
+            ai_voice = await set_get_config_all("Default", "currentainame")
+            print(await set_get_config_all("Default", "currentainame"))
         elif ai_voice not in voices:
             return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
-        await set_get_config_default("currentainame", ai_voice)
+        await set_get_config_all("Default", "currentainame", ai_voice)
         # запускаем TTS
         await run_main_with_settings(ctx, f"робот протокол 24 {text}",
                                      False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
         # возращаем голос
-        await set_get_config_default("currentainame", ai_voice_temp)
+        await set_get_config_all("Default", "currentainame", ai_voice_temp)
         # перестаём использовать видеокарту
         await stop_use_cuda_async(0)
     except Exception as e:
@@ -725,7 +657,7 @@ async def __tts(
         await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
         # возращаем голос
         if not ai_voice_temp is None:
-            await set_get_config_default("currentainame", ai_voice_temp)
+            await set_get_config_all("Default", "currentainame", ai_voice_temp)
         # перестаём использовать видеокарту
         await stop_use_cuda_async(0)
 
@@ -756,7 +688,7 @@ async def __cover(
                        choices=['мужчина', 'женщина'], default=None),
         pitch: Option(int, description='Какую использовать тональность (от -24 до 24) (или указать gender)',
                       required=False,
-                      default=None, min_value=-24, max_value=24),
+                      default=0, min_value=-24, max_value=24),
         time: Option(int, description='Ограничить длительность воспроизведения (в секундах)', required=False,
                      default=-1, min_value=-1),
         indexrate: Option(float, description='Индекс голоса (от 0 до 1)', required=False, default=0.5, min_value=0,
@@ -792,23 +724,19 @@ async def __cover(
         await ctx.respond('Выполнение...')
         params = []
         if voice is None:
-            voice = await set_get_config_default("currentAIname")
+            voice = await set_get_config_all("Default", "currentAIname")
         if voice:
             params.append(f"-voice {voice}")
         # если мужчина-мужчина, женщина-женщина, pitch не меняем
         pitch_int = pitch
         # если женщина, а AI мужчина = 12,
         if gender == 'женщина':
-            if await set_get_config_default("currentaipitch") == "0":
+            if await set_get_config_all("Default", "currentaipitch") == "0":
                 pitch_int = 12
-            else:
-                pitch_int = 0
         # если мужчина, а AI женщина = -12,
         elif gender == 'мужчина':
-            if not await set_get_config_default("currentaipitch") == "0":
+            if not await set_get_config_all("Default", "currentaipitch") == "0":
                 pitch_int = -12
-            else:
-                pitch_int = 0
         params.append(f"-pitch {pitch_int}")
         if time is None:
             params.append(f"-time -1")
@@ -925,8 +853,7 @@ async def __dialog(
             pass
         await set_get_config_all("dialog", "dialog", "True")
         await set_get_config_all("gpt", "gpt_mode", "None")
-        config.read('config.ini')
-        voices = config.get("Sound", "voices").replace("\"", "").replace(",", "").split(";")
+        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
         voices.remove("None")  # убираем, чтобы не путаться
         names = names.split(";")
         if len(names) < 2:
@@ -989,13 +916,9 @@ async def __add_voice(
             str(speed)
         ]
         subprocess.run(command, check=True)
-        config.read('config.ini')
-        voices = config.get("Sound", "voices").split(";")
+        voices = (await set_get_config_all("Sound", "voices")).split(";")
         voices.append(name)
-        config.set('Sound', "voices", ';'.join(voices))
-        # Сохранение
-        with open('config.ini', 'w') as configfile:
-            config.write(configfile)
+        await set_get_config_all("Sound", "voices", ';'.join(voices))
         if change_voice:
             await run_main_with_settings(ctx, f"робот измени голос на {name}", True)
     except subprocess.CalledProcessError as e:
@@ -1300,7 +1223,7 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
                 voice_client.resume()
 
             # stop_milliseconds += 1000
-            await set_get_config("stop_milliseconds", int(await set_get_config("stop_milliseconds")) + 1000)
+            await set_get_config_all("Sound", "stop_milliseconds", int(await set_get_config_all("Sound", "stop_milliseconds")) + 1000)
         await set_get_config_all("Sound", "playing", "False")
     except Exception as e:
         traceback_str = traceback.format_exc()
@@ -1310,7 +1233,7 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
 
 
 async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
-    await set_get_config(value=False)
+    await set_get_config_all("Sound", "record", "False")
     # await sink.vc.disconnect()  # disconnect from the voice channel.
     print("Stopped listening.")
 
@@ -1331,7 +1254,7 @@ async def recognize(ctx):
     recognizer = sr.Recognizer()
     while True:
         # распознаём, пока не произойдёт once_done
-        if await set_get_config() == "False":
+        if await set_get_config_all("Sound", "record") == "False":
             print("Stopped listening2.")
             return
         file_found = None
@@ -1344,7 +1267,7 @@ async def recognize(ctx):
             await asyncio.sleep(0.1)
             last_speaking += 1
             # если долго не было файлов (человек перестал говорить)
-            if last_speaking > float(await set_get_config("delay_record")) * 10:
+            if last_speaking > float(await set_get_config_all("Sound", "delay_record")) * 10:
                 text = None
                 # очищаем поток
                 stream_sink.cleanup()
@@ -1388,8 +1311,8 @@ async def recognize(ctx):
                             spoken_text_config = ""
                         await set_get_config_all("dialog", "user_spoken_text", spoken_text_config + text)
                     else:
-                        await set_get_config_default("user_name", value=ctx.author.name)
-                        await run_main_with_settings(ctx, await set_get_config_default("currentainame") + ", " + text, True)
+                        await set_get_config_all("Default", "user_name", value=ctx.author.name)
+                        await run_main_with_settings(ctx, await set_get_config_all("Default", "currentainame") + ", " + text, True)
 
             continue
         # запись непустых файлов
@@ -1459,15 +1382,15 @@ if __name__ == "__main__":
                 if "gpt_local" in args:
                     load_gpt = True
                 if "gpt_provider" in args:
-                    set_get_config_no_async("gpt", "use_gpt_provider", "True")
+                    set_get_config_all_not_async("gpt", "use_gpt_provider", "True")
                 if "img1" in args:
                     load_images1 = True
-                    set_get_config_no_async("Values", "cuda0_is_busy", "True")
+                    set_get_config_all_not_async("Values", "cuda0_is_busy", "True")
                 if "img2" in args:
                     load_images1 = True
-                    set_get_config_no_async("Values", "cuda0_is_busy", "True")
+                    set_get_config_all_not_async("Values", "cuda0_is_busy", "True")
                     load_images2 = True
-                    set_get_config_no_async("Values", "cuda1_is_busy", "True")
+                    set_get_config_all_not_async("Values", "cuda1_is_busy", "True")
         else:
             # raise error & exit
             print("Укажите discord_TOKEN")
@@ -1484,8 +1407,7 @@ if __name__ == "__main__":
 
             while True:
                 time.sleep(0.5)
-                config.read('config.ini')
-                if config.getboolean("gpt", "gpt"):
+                if set_get_config_all_not_async("gpt", "gpt") == "True":
                     break
 
         # == load images ==
@@ -1499,8 +1421,7 @@ if __name__ == "__main__":
             pool.close()
             while True:
                 time.sleep(0.5)
-                config.read('config.ini')
-                if config.getboolean("Image0", "model_loaded"):
+                if set_get_config_all_not_async("Image0", "model_loaded") == "True":
                     break
         if load_images2:
             print("load image model on GPU-1")
@@ -1512,8 +1433,7 @@ if __name__ == "__main__":
             pool.close()
             while True:
                 time.sleep(0.5)
-                config.read('config.ini')
-                if config.getboolean("Image1", "model_loaded"):
+                if set_get_config_all_not_async("Image1", "model_loaded") == "True":
                     break
         # ==== load bot ====
         print("====load bot====")

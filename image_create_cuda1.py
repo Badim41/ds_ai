@@ -1,8 +1,5 @@
-import asyncio
 import os
-import struct
 import time
-import configparser
 cuda_number = "1"
 os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
 import torch
@@ -12,40 +9,7 @@ from diffusers.utils import load_image
 from transformers import pipeline
 import datetime
 
-config = configparser.ConfigParser()
-
-def set_get_config(key, value=None):
-    try:
-        config.read('config.ini')
-        if value is None:
-            return config.get(f'Image{cuda_number}', key)
-
-        config.set(f'Image{cuda_number}', key, str(value))
-        # Сохранение
-        with open('config.ini', 'w') as configfile:
-            config.write(configfile)
-    except Exception as e:
-        print(f"Ошибка при чтении конфига:{e}")
-        time.sleep(0.1)
-        result = set_get_config(key, value)
-        return result
-
-
-
-async def get_image_dimensions(file_path):
-    with open(file_path, 'rb') as file:
-        data = file.read(24)
-
-    if data.startswith(b'\x89PNG\r\n\x1a\n'):
-        return struct.unpack('>ii', data[16:24])
-    elif data[:6] in (b'GIF87a', b'GIF89a') and data[10:12] == b'\x00\x00':
-        return struct.unpack('<HH', data[6:10])
-    elif data.startswith(b'\xff\xd8\xff\xe0') and data[6:10] == b'JFIF':
-        return struct.unpack('>H', data[7:9])[0], struct.unpack('>H', data[9:11])[0]
-    elif data.startswith(b'\xff\xd8\xff\xe1') and data[6:10] == b'Exif':
-        return struct.unpack('<HH', data[10:14])[0], struct.unpack('<HH', data[14:18])[0]
-    else:
-        raise ValueError("Формат не поддерживается")
+from set_get_config import set_get_config_all_not_async
 
 
 def generate_picture1():
@@ -68,29 +32,29 @@ def generate_picture1():
     )
 
     print(f"==========Images Model Loaded{cuda_number}!==========")
-    set_get_config("model_loaded", True)
+    set_get_config_all_not_async(f'Image{cuda_number}', "model_loaded", True)
     # loop update image prompt
     while True:
         try:
             # print(f"check prompt{cuda_number}")
-            prompt = set_get_config("prompt")
+            prompt = set_get_config_all_not_async(f'Image{cuda_number}', "prompt")
             if prompt == "None":
                 time.sleep(0.1)
                 continue
-            set_get_config("prompt", "None")
+            set_get_config_all_not_async(f'Image{cuda_number}', "prompt", "None")
             start_time = datetime.datetime.now()
             current_time = start_time.time()
             print("Начало:", current_time)
 
-            negative_prompt = set_get_config("negative_prompt")
-            x = int(set_get_config("x"))
-            y = int(set_get_config("y"))
-            steps = int(set_get_config("steps"))
-            seed = int(set_get_config("seed"))
-            strength = float(set_get_config("strength"))
-            strength_prompt = float(set_get_config("strength_prompt"))
-            strength_negative_prompt = float(set_get_config("strength_negative_prompt"))
-            image_name = set_get_config("input")
+            negative_prompt = set_get_config_all_not_async(f'Image{cuda_number}', "negative_prompt")
+            x = int(set_get_config_all_not_async(f'Image{cuda_number}', "x"))
+            y = int(set_get_config_all_not_async(f'Image{cuda_number}', "y"))
+            steps = int(set_get_config_all_not_async(f'Image{cuda_number}', "steps"))
+            seed = int(set_get_config_all_not_async(f'Image{cuda_number}', "seed"))
+            strength = float(set_get_config_all_not_async(f'Image{cuda_number}', "strength"))
+            strength_prompt = float(set_get_config_all_not_async(f'Image{cuda_number}', "strength_prompt"))
+            strength_negative_prompt = float(set_get_config_all_not_async(f'Image{cuda_number}', "strength_negative_prompt"))
+            image_name = set_get_config_all_not_async(f'Image{cuda_number}', "input")
             # create pipes
             print(f"image_generate(1/5), GPU:{cuda_number}")
             pipe_prior = pipe_prior.to("cuda:0")
@@ -133,7 +97,7 @@ def generate_picture1():
 
             spent_time = end_time - start_time
             print("Прошло времени:", spent_time)
-            set_get_config("spent_time", spent_time)
-            set_get_config("result", image_name)
+            set_get_config_all_not_async(f'Image{cuda_number}', "spent_time", spent_time)
+            set_get_config_all_not_async(f'Image{cuda_number}', "result", image_name)
         except Exception as e:
             print(f"Произошла ошибка: {e}")

@@ -6,27 +6,9 @@ import subprocess
 import time
 from PIL import Image
 from moviepy.editor import VideoFileClip, AudioFileClip
-import configparser
 import imageio
 import os
-
-config = configparser.ConfigParser()
-
-
-async def set_get_config_all(section, key, value):
-    try:
-        config.read('config.ini')
-        if value is None:
-            return config.get(section, key)
-        config.set(section, key, str(value))
-        # Сохранение
-        with open('config.ini', 'w') as configfile:
-            config.write(configfile)
-    except Exception as e:
-        print(f"Ошибка при чтении конфига:{e}")
-        await asyncio.sleep(0.1)
-        result = await set_get_config_all(section, key, value)
-        return result
+from set_get_config import set_get_config_all
 
 #                                       количество---индекс
 async def image_change(output_folder, prompt, cuda_number, cuda_index):
