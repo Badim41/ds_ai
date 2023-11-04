@@ -47,7 +47,7 @@ def voice_change(voice_model):
         print("dev_temp:unload voice from GPU")
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(f"Произошла ошибка (ID:vc1): {str(e)}\n{str(traceback_str)}")
+        raise f"Произошла ошибка (ID:vc1): {str(e)}\n{str(traceback_str)}"
 
 
 def get_rvc_model(voice_model):
