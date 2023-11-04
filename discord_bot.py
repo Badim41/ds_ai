@@ -1441,7 +1441,7 @@ if __name__ == "__main__":
         from only_voice_change_cuda1 import voice_change1
         pool = multiprocessing.Pool(processes=2)
         pool.apply_async(voice_change0)
-        pool.apply_async(voice_change1)
+        # pool.apply_async(voice_change1)
         pool.close()
 
         # ==== load bot ====
