@@ -27,10 +27,6 @@ def voice_change0():
                 time.sleep(1)
                 print("skip_temp")
                 continue
-            if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
-                print(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
-                set_get_config_all_not_async(f"rvc{cuda_number}", "dir", "None")
-                set_get_config_all_not_async(f"rvc{cuda_number}", "result", "Голосовая модель не существует")
 
             if not voice_model == new_voice_model:
                 voice_model = new_voice_model
@@ -108,16 +104,15 @@ if __name__ == '__main__':
     parser.add_argument('-load', '--load', action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
     rvc_dirname = args.rvc_dirname
+    if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
+        raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
     set_get_config_all_not_async(f"rvc{cuda_number}", "protect", args.protect)
     set_get_config_all_not_async(f"rvc{cuda_number}", "rms_mix_rate", args.rms_mix_rate)
     set_get_config_all_not_async(f"rvc{cuda_number}", "filter_radius", args.filter_radius)
     set_get_config_all_not_async(f"rvc{cuda_number}", "index_rate", args.index_rate)
     set_get_config_all_not_async(f"rvc{cuda_number}", "pitch_change", args.pitch_change)
     set_get_config_all_not_async(f"rvc{cuda_number}", "output", args.output)
-
-    print("continue_vc")
-    # wait for answer
-    set_get_config_all_not_async(f"rvc{cuda_number}", "result", "None")
+    set_get_config_all_not_async(f"rvc{cuda_number}", "dir", rvc_dirname)
     set_get_config_all_not_async(f"rvc{cuda_number}", "input", args.input)
     while True:
         if not set_get_config_all_not_async(f"rvc{cuda_number}", "result") == "None":
