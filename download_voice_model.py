@@ -86,8 +86,10 @@ if len(arguments) > 1:
     speed = None
     if len(arguments) > 5:
         speed = float(arguments[5])
+        print("speedWrite0:", str(speed))
     if speed is None or speed < 0 or speed > 2:
         speed = 1
+    print("speedWrite1:", str(speed))
     download_online_model(url_input, dir_name_input, gender, info, speed)
 else:
     print("Нужно указать ссылку и имя модели")
