@@ -23,7 +23,6 @@ def voice_change(voice_model, vocals_path, output_path, pitch_change, f0_method,
     # convert main vocals
     rvc_infer(rvc_index_path, index_rate, vocals_path, output_path, pitch_change, f0_method, cpt, version, net_g,
               filter_radius, tgt_sr, rms_mix_rate, protect, 128, vc, hubert_model)
-    del hubert_model, cpt
     gc.collect()
 
 
