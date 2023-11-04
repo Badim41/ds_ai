@@ -913,7 +913,7 @@ async def __add_voice(
             url,
             name,
             gender,
-            info,
+            f"{info}",
             str(speed)
         ]
         subprocess.run(command, check=True)
