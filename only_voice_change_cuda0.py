@@ -18,17 +18,16 @@ from set_get_config import set_get_config_all_not_async
 def voice_change0():
     rvc_index_path, hubert_model, cpt, version, net_g, tgt_sr, vc, voice_model = None, None, None, None, None, None, None, ""
     while True:
-        print("temp")
         try:
             new_voice_model = set_get_config_all_not_async(f"rvc{cuda_number}", "dir")
 
             # не выставлена модель
             if new_voice_model == "None":
                 time.sleep(1)
-                print("skip_temp")
                 continue
 
             if not voice_model == new_voice_model:
+                print("reload voice")
                 if hubert_model and cpt:
                     del hubert_model, cpt
                 voice_model = new_voice_model
@@ -59,7 +58,6 @@ def voice_change0():
                 set_get_config_all_not_async(f"rvc{cuda_number}", "result", output_path)
             else:
                 time.sleep(0.2)
-            print("dev_temp:unload voice from GPU")
         except Exception as e:
             traceback_str = traceback.format_exc()
             raise f"Произошла ошибка (ID:vc1): {str(e)}\n{str(traceback_str)}"
