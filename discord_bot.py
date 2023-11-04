@@ -626,6 +626,8 @@ async def __tts(
     try:
         await ctx.defer()
         await ctx.respond('Выполнение...')
+        # count time
+        start_time = datetime.datetime.now()
         await use_cuda_async(0)
         voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
         if ai_voice not in voices:
@@ -652,6 +654,14 @@ async def __tts(
         await set_get_config_all("Default", "currentainame", ai_voice_temp)
         # перестаём использовать видеокарту
         await stop_use_cuda_async(0)
+
+        # count time
+        end_time = datetime.datetime.now()
+        spent_time = str(end_time - start_time)
+        # убираем миллисекунды
+        spent_time = spent_time[:spent_time.find(".")]
+        if not "0:00:00" in str(spent_time):
+            await ctx.send("Потрачено на обработку:" + spent_time)
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
