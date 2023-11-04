@@ -4,7 +4,7 @@ import time
 
 config = configparser.ConfigParser()
 
-async def set_get_config_all(section, key, value=None):
+async def set_get_config_all(section, key, value=None, error=0):
     try:
         config.read('config.ini')
         if value is None:
@@ -15,12 +15,14 @@ async def set_get_config_all(section, key, value=None):
         with open('config.ini', 'w') as configfile:
             config.write(configfile)
     except Exception as e:
-        print(f"Ошибка при чтении конфига:{e}")
+        if error == 5:
+            raise f"Ошибка при чтении конфига со значениями: {section}, {key}, {value}.\n{e}"
         await asyncio.sleep(0.1)
-        result = await set_get_config_all(section, key, value)
+        result = await set_get_config_all(section, key, value, error=error+1)
         return result
 
-def set_get_config_all_not_async(section, key, value=None):
+def set_get_config_all_not_async(section, key, value=None, error=0):
+
     try:
         config.read('config.ini')
         if value is None:
@@ -31,7 +33,8 @@ def set_get_config_all_not_async(section, key, value=None):
         with open('config.ini', 'w') as configfile:
             config.write(configfile)
     except Exception as e:
-        print(f"Ошибка при чтении конфига:{e}")
+        if error == 5:
+            raise f"Ошибка при чтении конфига со значениями: {section}, {key}, {value}.\n{e}"
         time.sleep(0.1)
-        result = set_get_config_all_not_async(section, key, value)
+        result = set_get_config_all_not_async(section, key, value, error=error+1)
         return result

@@ -1,29 +1,45 @@
 import argparse
 import gc
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+import time
+
+cuda_number = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
 import torch
 
 from rvc import Config, load_hubert, get_vc, rvc_infer
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
+from set_get_config import set_get_config_all_not_async
 
-
-def voice_change(voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
-                 rms_mix_rate, protect):
+def voice_change(voice_model):
     rvc_model_path, rvc_index_path = get_rvc_model(voice_model)
-    # os.environ["CUDA_VISIBLE_DEVICES"] = str(cuda_number)
     print("voice_change")
     device = 'cuda:0'
     config2 = Config(device, True)
     hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
     cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
-
-    # convert main vocals
-    rvc_infer(rvc_index_path, index_rate, vocals_path, output_path, pitch_change, f0_method, cpt, version, net_g,
-              filter_radius, tgt_sr, rms_mix_rate, protect, 128, vc, hubert_model)
-    gc.collect()
+    print("dev_temp:load voice to GPU")
+    while voice_model == set_get_config_all_not_async(f"rvc{cuda_number}", "input"):
+        input_path = set_get_config_all_not_async(f"rvc{cuda_number}", "input")
+        if not input_path == "None":
+            set_get_config_all_not_async(f"rvc{cuda_number}", "input", "None")
+            
+            # получем значения
+            index_rate = float(set_get_config_all_not_async(f"rvc{cuda_number}", "index_rate"))
+            output_path = set_get_config_all_not_async(f"rvc{cuda_number}", "output")
+            pitch_change = float(set_get_config_all_not_async(f"rvc{cuda_number}", "pitch_change"))
+            filter_radius = int(set_get_config_all_not_async(f"rvc{cuda_number}", "filter_radius"))
+            rms_mix_rate = float(set_get_config_all_not_async(f"rvc{cuda_number}", "rms_mix_rate"))
+            protect = float(set_get_config_all_not_async(f"rvc{cuda_number}", "protect"))
+            
+            rvc_infer(rvc_index_path, index_rate, input_path, output_path, pitch_change, "rmvpe", cpt, version, net_g,
+                      filter_radius, tgt_sr, rms_mix_rate, protect, 128, vc, hubert_model)
+            gc.collect()
+        else:
+            time.sleep(0.2)
+    print("dev_temp:unload voice from GPU")
 
 
 def get_rvc_model(voice_model):
@@ -64,11 +80,19 @@ if __name__ == '__main__':
     parser.add_argument('-pro', '--protect', type=float, default=0.33,
                         help='A decimal number e.g. 0.33. Protect voiceless consonants and breath sounds to prevent artifacts such as tearing in electronic music. Set to 0.5 to disable. Decrease the value to increase protection, but it may reduce indexing accuracy.')
     args = parser.parse_args()
-    # os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda_number
+
+    set_get_config_all_not_async(f"rvc{cuda_number}", "protect", args.protect)
+    set_get_config_all_not_async(f"rvc{cuda_number}", "rms_mix_rate", args.rms_mix_rate)
+    set_get_config_all_not_async(f"rvc{cuda_number}", "filter_radius", args.filter_radius)
+    set_get_config_all_not_async(f"rvc{cuda_number}", "index_rate", args.index_rate)
+    set_get_config_all_not_async(f"rvc{cuda_number}", "pitch_change", args.pitch_change)
+    set_get_config_all_not_async(f"rvc{cuda_number}", "output", args.output)
+    set_get_config_all_not_async(f"rvc{cuda_number}", "input", args.input)
+    
     rvc_dirname = args.rvc_dirname
-    if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
-        raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
-    # voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
-    #                  rms_mix_rate, protect, crepe_hop_length
-    voice_change(rvc_dirname, args.input, args.output, args.pitch_change, "rmvpe",
-                 args.index_rate, args.filter_radius, args.rms_mix_rate, args.protect)
+    if not rvc_dirname == set_get_config_all_not_async(f"rvc{cuda_number}", "dir"):
+        if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
+            raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
+        # voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
+        #                  rms_mix_rate, protect, crepe_hop_length
+        voice_change(rvc_dirname)
