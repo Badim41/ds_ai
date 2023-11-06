@@ -8,6 +8,8 @@ import subprocess
 import sys
 import traceback
 import zipfile
+from PIL import Image
+import numpy as np
 
 import g4f
 from pydub import AudioSegment
@@ -619,30 +621,36 @@ async def voice_commands(sentence, ctx):
             return True
         elif protocol_number == 12:
             # throw extensions
-            if await set_get_config_all(f"Image", "model_loaded", None) == "False":
+            if await set_get_config_all(f"Image0", "model_loaded", None) == "False":
                 return await ctx.respond("модель для картинок не загружена")
             if spoken_text_temp is None:
                 spoken_text_temp = " "
             await use_cuda_images(0)
-            await set_get_config_all(f"Image", "result", "None")
+            await set_get_config_all(f"Image0", "result", "None")
             # run timer
             start_time = datetime.datetime.now()
+            noise = np.random.randint(0, 256, (512, 512, 3), dtype=np.uint8)
 
+            # Создаем объект Image из массива шума
+            image = Image.fromarray(noise)
+
+            # Сохраняем изображение
+            image.save("1.png")
             # loading params
-            await set_get_config_all(f"Image", "strength_negative_prompt", "1")
-            await set_get_config_all(f"Image", "strength_prompt", "0.85")
-            await set_get_config_all(f"Image", "strength", "1")
-            await set_get_config_all(f"Image", "seed", random.randint(1, 1000000))
-            await set_get_config_all(f"Image", "steps", "60")
-            await set_get_config_all(f"Image", "negative_prompt", "NSFW")
-            await set_get_config_all(f"Image", "prompt", spoken_text_temp)
-            await set_get_config_all(f"Image", "x", "512")
-            await set_get_config_all(f"Image", "y", "512")
-            await set_get_config_all(f"Image", "input", "empty.png")
+            await set_get_config_all(f"Image0", "strength_negative_prompt", "1")
+            await set_get_config_all(f"Image0", "strength_prompt", "0.85")
+            await set_get_config_all(f"Image0", "strength", "1")
+            await set_get_config_all(f"Image0", "seed", random.randint(1, 1000000))
+            await set_get_config_all(f"Image0", "steps", "60")
+            await set_get_config_all(f"Image0", "negative_prompt", "NSFW")
+            await set_get_config_all(f"Image0", "prompt", spoken_text_temp)
+            await set_get_config_all(f"Image0", "x", "512")
+            await set_get_config_all(f"Image0", "y", "512")
+            await set_get_config_all(f"Image0", "input", "empty.png")
             print("params suc")
             # wait for answer
             while True:
-                output_image = await set_get_config_all(f"Image", "result", None)
+                output_image = await set_get_config_all(f"Image0", "result", None)
                 if not output_image == "None":
                     break
                 await asyncio.sleep(0.25)
@@ -654,7 +662,7 @@ async def voice_commands(sentence, ctx):
             spent_time = spent_time[spent_time.find(":") + 1:]
             spent_time = spent_time[:spent_time.find(".")]
             # отправляем
-            await ctx.respond("Вот как я нарисовал ваше изображение🖌. Потрачено " + spent_time)
+            await ctx.send("Вот как я нарисовал ваше изображение🖌. Потрачено " + spent_time)
             await send_file(ctx, output_image)
             # удаляем временные файлы
             os.remove(output_image)
