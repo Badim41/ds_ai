@@ -133,9 +133,12 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     if await is_robot_name(temp_spokenText, ctx):
         await result_command_change("Обработка...", Color.BLACK)
         try:
-            if await voice_commands(temp_spokenText.lower(), ctx):
+            voice_commands_result = await voice_commands(temp_spokenText.lower(), ctx)
+            if voice_commands_result:
                 await result_command_change(f"Голосовая команда", Color.CYAN)
                 return
+            elif not voice_commands_result:
+                await ctx.send("ошибка")
         except Exception as e:
             await result_command_change("Произошла ошибка (ID:f1):" + str(e), Color.RED)
 
