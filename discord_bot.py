@@ -358,14 +358,17 @@ async def __image(ctx,
             spent_time = spent_time[spent_time.find(":") + 1:]
             spent_time = spent_time[:spent_time.find(".")]
             # отправляем
-            await ctx.respond("Вот как я изменил ваше изображение🖌. Потрачено " + spent_time)
+            if repeats == 1:
+                await ctx.respond("Вот как я изменил ваше изображение🖌. Потрачено " + spent_time)
+            else:
+                await ctx.send("Вот как я изменил ваше изображение🖌. Потрачено " + spent_time)
             await send_file(ctx, output_image, delete_file=True)
             # перестаём использовать видеокарту
             await stop_use_cuda_images(cuda_number)
         except Exception as e:
             traceback_str = traceback.format_exc()
             print(str(traceback_str))
-            await ctx.respond(f"Ошибка при изменении видео (с параметрами\
+            await ctx.respond(f"Ошибка при изменении картинки (с параметрами\
                               {prompt, negative_prompt, steps, x, y, strength, strength_prompt, strength_negative_prompt}): {e}")
             # перестаём использовать видеокарту
             if not cuda_number is None:
