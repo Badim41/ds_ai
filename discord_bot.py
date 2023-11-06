@@ -976,7 +976,7 @@ async def __add_voice(
         await set_get_config_all("Sound", "voices", ';'.join(voices))
         if change_voice:
             await run_main_with_settings(ctx, f"робот измени голос на {name}", True)
-        await ctx.send("Модель успешно установлена!")
+        await ctx.send(f"Модель {name} успешно установлена!")
     except subprocess.CalledProcessError as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
