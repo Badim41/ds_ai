@@ -921,9 +921,10 @@ async def __dialog(
                 file_content = reader.read().replace("Вот информация о тебе:", "")
                 infos.append(f"Вот информация о {name}: {file_content}")
         # names, theme, infos, prompt, ctx
-        # запустим сразу 2 процессов для обработки голоса
+        # запустим сразу 4 процессов для обработки голоса
         await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx),
-                             create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"))
+                             create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"),
+                             create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"))
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
@@ -1100,7 +1101,8 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                         "-ir", "0.5",
                         "-fr", "3",
                         "-rms", "0.3",
-                        "-pro", "0.15"
+                        "-pro", "0.15",
+                        "-slow" # значение для диалога
                     ]
                     print("run RVC, AIName:", name)
                     from function import execute_command
