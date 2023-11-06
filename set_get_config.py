@@ -17,7 +17,7 @@ async def set_get_config_all(section, key, value=None, error=0):
                 return config.get(section, key)
             config.set(section, key, str(value))
             async with aio_open('config.ini', 'w') as configfile:
-                await config.write(configfile)
+                config.write(configfile)
     except Exception as e:
         if error == 5:
             raise f"Ошибка при чтении конфига со значениями: {section}, {key}, {value}.\n{e}"
