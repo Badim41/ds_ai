@@ -1013,7 +1013,7 @@ async def play_dialog(ctx):
             with open(play_path, "r") as reader:
                 lines = reader.readlines()
                 if len(lines) > 1:
-                    min_value = 0
+                    min_value = float('inf')
                     min_file = ""
                     files = os.listdir("song_output")
                     for file in files:
