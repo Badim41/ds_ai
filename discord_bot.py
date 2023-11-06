@@ -300,6 +300,7 @@ async def __image(ctx,
                                   default=1, min_value=1,
                                   max_value=16)
                   ):
+    await ctx.defer()
     for i in range(repeats):
         cuda_number = None
         try:
@@ -310,7 +311,6 @@ async def __image(ctx,
                 return
 
             await set_get_config_all(f"Image{cuda_number}", "result", "None")
-            await ctx.defer()
             # throw extensions
             if await set_get_config_all(f"Image{cuda_number}", "model_loaded", None) == "False":
                 return await ctx.respond("модель для картинок не загружена")
@@ -368,7 +368,7 @@ async def __image(ctx,
         except Exception as e:
             traceback_str = traceback.format_exc()
             print(str(traceback_str))
-            await ctx.respond(f"Ошибка при изменении картинки (с параметрами\
+            await ctx.send(f"Ошибка при изменении картинки (с параметрами\
                               {prompt, negative_prompt, steps, x, y, strength, strength_prompt, strength_negative_prompt}): {e}")
             # перестаём использовать видеокарту
             if not cuda_number is None:
