@@ -625,8 +625,12 @@ async def voice_commands(sentence, ctx):
                 return await ctx.respond("модель для картинок не загружена")
             if spoken_text_temp is None:
                 spoken_text_temp = " "
-            await use_cuda_images(0)
-            await set_get_config_all(f"Image0", "result", "None")
+            try:
+                cuda_number = await use_cuda_images()
+            except Exception:
+                await ctx.respond("Нет свободных видеокарт")
+                return
+            await set_get_config_all(f"Image{cuda_number}", "result", "None")
             # run timer
             start_time = datetime.datetime.now()
             noise = np.random.randint(0, 256, (512, 512, 3), dtype=np.uint8)
@@ -635,22 +639,22 @@ async def voice_commands(sentence, ctx):
             image = Image.fromarray(noise)
 
             # Сохраняем изображение
-            image.save("1.png")
+            image.save(f"{cuda_number}.png")
             # loading params
-            await set_get_config_all(f"Image0", "strength_negative_prompt", "1")
-            await set_get_config_all(f"Image0", "strength_prompt", "0.85")
-            await set_get_config_all(f"Image0", "strength", "1")
-            await set_get_config_all(f"Image0", "seed", random.randint(1, 1000000))
-            await set_get_config_all(f"Image0", "steps", "60")
-            await set_get_config_all(f"Image0", "negative_prompt", "NSFW")
-            await set_get_config_all(f"Image0", "prompt", spoken_text_temp)
-            await set_get_config_all(f"Image0", "x", "512")
-            await set_get_config_all(f"Image0", "y", "512")
-            await set_get_config_all(f"Image0", "input", "1.png")
-            print("params suc")
+            await set_get_config_all(f"Image{cuda_number}", "strength_negative_prompt", "1")
+            await set_get_config_all(f"Image{cuda_number}", "strength_prompt", "0.85")
+            await set_get_config_all(f"Image{cuda_number}", "strength", "1")
+            await set_get_config_all(f"Image{cuda_number}", "seed", random.randint(1, 1000000))
+            await set_get_config_all(f"Image{cuda_number}", "steps", "60")
+            await set_get_config_all(f"Image{cuda_number}", "negative_prompt", "NSFW")
+            await set_get_config_all(f"Image{cuda_number}", "prompt", spoken_text_temp)
+            await set_get_config_all(f"Image{cuda_number}", "x", "512")
+            await set_get_config_all(f"Image{cuda_number}", "y", "512")
+            await set_get_config_all(f"Image{cuda_number}", "input", f"{cuda_number}.png")
+            print(f"images suc. GPU:{cuda_number}")
             # wait for answer
             while True:
-                output_image = await set_get_config_all(f"Image0", "result", None)
+                output_image = await set_get_config_all(f"Image{cuda_number}", "result", None)
                 if not output_image == "None":
                     break
                 await asyncio.sleep(0.25)
