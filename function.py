@@ -629,7 +629,7 @@ async def voice_commands(sentence, ctx):
                 cuda_number = await use_cuda_images()
             except Exception:
                 await ctx.respond("Нет свободных видеокарт")
-                return
+                return True
             await set_get_config_all(f"Image{cuda_number}", "result", "None")
             # run timer
             start_time = datetime.datetime.now()
