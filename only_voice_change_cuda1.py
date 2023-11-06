@@ -15,7 +15,7 @@ rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
 from set_get_config import set_get_config_all_not_async
 
 
-def voice_change0():
+def voice_change1():
     rvc_index_path, hubert_model, cpt, version, net_g, tgt_sr, vc, voice_model = None, None, None, None, None, None, None, ""
     while True:
         try:
