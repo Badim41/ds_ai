@@ -914,10 +914,9 @@ async def __dialog(
                 file_content = reader.read().replace("Вот информация о тебе:", "")
                 infos.append(f"Вот информация о {name}: {file_content}")
         # names, theme, infos, prompt, ctx
-        # запустим сразу 4 процессов для обработки голоса
+        # запустим сразу 2 процессов для обработки голоса
         await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx),
-                             create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"),
-                             create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"))
+                             create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"))
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))

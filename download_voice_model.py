@@ -31,7 +31,6 @@ def extract_zip(extraction_folder, zip_name, gender, info, speed):
         with open(os.path.join(extraction_folder + "/gender.txt"), 'w') as writer:
             writer.writelines(gender)
         with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
-            print("speedWrite:", str(speed))
             writer.writelines(str(speed))
     except IOError as e:
         print(e)
@@ -57,7 +56,6 @@ def download_online_model(url, dir_name, gender, info, speed):
             with open(os.path.join(extraction_folder + "/gender.txt"), 'w') as writer:
                 writer.writelines(gender)
             with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
-                print("speedWrite:", str(speed))
                 writer.writelines(str(speed))
             raise Exception \
                 (f'Модель {dir_name} уже существует, но её информация/скорость были изменены')
@@ -94,10 +92,8 @@ if len(arguments) > 1:
     speed = None
     if len(arguments) > 5:
         speed = float(arguments[5])
-        print("speedWrite0:", str(speed))
     if speed is None or speed < 0 or speed > 2:
         speed = 1
-    print("speedWrite1:", str(speed))
     download_online_model(url_input, dir_name_input, gender, info, speed)
 else:
     print("Нужно указать ссылку и имя модели")
