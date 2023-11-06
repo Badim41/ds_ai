@@ -1011,6 +1011,7 @@ async def play_dialog(ctx):
         try:
             for file in os.listdir("song_output"):
                 if os.path.isfile(file):
+                    file = os.path.dirname(file)
                     if file.startswith(str(number)):
                         from function import playSoundFile
                         number += 1
@@ -1185,7 +1186,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                               f"{'.'.join(infos)}. {prompt_global} "
                               f"персонажи должны соответствовать своему образу насколько это возможно. "
                               f"Никогда не пиши приветствие в начале этого диалога. "
-                              f"Вот информация, что было в ПРОШЛОМ диалоге:\"\b{result}\". {spoken_text}"
+                              f"Вот информация, что было в ПРОШЛОМ диалоге:\"ц{result}\". {spoken_text}"
                               f"\nОбязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
                               f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
                 else:
