@@ -1123,7 +1123,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                     print(str(traceback_str))
                     await ctx.send(f"Ошибка при изменении голоса(ID:d3): {e}")
             else:
-                await asyncio.sleep(cuda + 0.05)
+                await asyncio.sleep(cuda * 3 + 0.05)
 
 
 async def remove_line_from_txt(file_path, delete_line):
