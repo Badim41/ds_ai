@@ -554,6 +554,13 @@ async def pause(ctx):
         if await set_get_config_all("dialog", "dialog", None) == "True":
             await set_get_config_all("dialog", "dialog", "False")
             await ctx.respond("Диалог остановлен")
+
+            # скипаем аудио
+            voice_client = ctx.voice_client
+            if voice_client.is_playing():
+                voice_client.stop()
+                await set_get_config_all("Sound", "stop_milliseconds", 0)
+                await set_get_config_all("Sound", "playing", "False")
             return
         voice_client = ctx.voice_client
         if voice_client.is_playing():
@@ -1174,7 +1181,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                               f"{'.'.join(infos)}. {prompt_global} "
                               f"персонажи должны соответствовать своему образу насколько это возможно. "
                               f"Никогда не пиши приветствие в начале этого диалога. "
-                              f"Вот что было в ПРОШЛОМ диалоге:\"\b{result}\". {spoken_text}"
+                              f"Вот информация, что было в ПРОШЛОМ диалоге:\"\b{result}\". {spoken_text}"
                               f"\nОбязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
                               f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
                 else:
