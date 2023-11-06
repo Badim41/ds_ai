@@ -298,7 +298,7 @@ async def __image(ctx,
                                   description='Количество повторов',
                                   required=False,
                                   default=1, min_value=1,
-                                  max_value=16),
+                                  max_value=16)
                   ):
     for i in range(repeats):
         cuda_number = None
