@@ -1073,7 +1073,7 @@ async def text_to_speech_file(tts, currentpitch, file_name):
 
 
 async def create_audio_dialog(ctx, cuda, wait_untill):
-    while cuda > int(await set_get_config_all("dialog", "files_number", None)):
+    while not cuda == int(await set_get_config_all("dialog", "files_number", None)):
         await asyncio.sleep(1)
     cuda = cuda % 2
 
