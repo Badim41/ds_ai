@@ -1015,8 +1015,7 @@ async def play_dialog(ctx):
                 if len(lines) > 1:
                     min_value = float('inf')
                     min_file = ""
-                    files = os.listdir("song_output")
-                    for file in files:
+                    for file in lines:
                         name = file[:file.find(".")]
                         try:
                             numbers_in_file = int(''.join(filter(str.isdigit, name)))
