@@ -354,7 +354,9 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
                 cookies={"Fake": ""},
                 auth=True
             )
-        if "Liaobots" in str(provider) and len(result) > 2000:
+        if "!DOCTYPE" in str(result):
+            await result_command_change("Doker File", Color.RED)
+            print("Doker File")
             # делаем задержку
             await asyncio.sleep(delay_for_gpt)
             return
@@ -453,7 +455,7 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0, gpt_model="gpt-3.5-
                     provider=_providers[provider_number],
                     messages=[{"role": "user", "content": prompt}]
                 )
-                if result is None or result.replace("\n", "").replace(" ", "") == "" or result == "None":
+                if result.replace("\n", "").replace(" ", "") == "" or str(result) == "None" or "!DOCTYPE" in str(result):
                     raise Exception("Пустой текст")
                 print("RESULT:", result)
             except Exception as e:
