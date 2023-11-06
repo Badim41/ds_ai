@@ -1013,8 +1013,17 @@ async def play_dialog(ctx):
             with open(play_path, "r") as reader:
                 lines = reader.readlines()
                 if len(lines) > 1:
-                    # файл с наименьшим значением
-                    file = min(lines, key=lambda s: int(s.split('.')[0]))
+                    min_value = 0
+                    min_file = ""
+                    files = os.listdir("song_output")
+                    for file in files:
+                        name = file[:file.find(".")]
+                        numbers_in_file = int(''.join(filter(str.isdigit, name)))
+                        if numbers_in_file < min_value:
+                            min_value = numbers_in_file
+                            min_file = file
+
+                    print("min_file:", min_file)
 
                     await remove_line_from_txt(play_path, 1)
                     from function import playSoundFile
