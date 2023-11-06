@@ -1030,6 +1030,7 @@ async def play_dialog(ctx):
 
                     await remove_line_from_txt(play_path, 1)
                     from function import playSoundFile
+                    speaker = min_file[:min_file.find(".")]
                     speaker = re.sub(r'\d', '', speaker)
                     await ctx.send(speaker)
                     await playSoundFile(file, -1, 0, ctx)
