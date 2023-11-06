@@ -1007,7 +1007,11 @@ async def play_dialog(ctx):
                     await remove_line_from_txt(play_path, 1)
                     from function import playSoundFile
                     # audio_file_path, duration, start_seconds, ctx
+                    speaker = line[:line.find(".")]
+                    speaker = re.sub(r'\d', '', speaker)
+                    await ctx.send(speaker)
                     await playSoundFile(line, -1, 0, ctx)
+                    await ctx.send("end")
                 else:
                     await asyncio.sleep(0.1)
         except Exception as e:
@@ -1076,7 +1080,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                         pitch = 12
                 filename = int(await set_get_config_all("dialog", "files_number", None))
                 await set_get_config_all("dialog", "files_number", filename + 1)
-                filename = "song_output/" + str(filename) + ".mp3"
+                filename = "song_output/" + str(filename) + name + ".mp3"
                 pitch = await text_to_speech_file(line[:line.find("-voice")], pitch, filename)
                 try:
                     command = [
