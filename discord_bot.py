@@ -35,8 +35,6 @@ stream_sink = StreamSink()
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='\\', intents=intents)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 
 @bot.event
 async def on_ready():
@@ -1013,29 +1011,12 @@ async def play_dialog(ctx):
         try:
             play_path = "caversAI/dialog_play.txt"
             with open(play_path, "r") as reader:
-                lines = reader.readlines()
-                if len(lines) > 1:
-                    min_value = float('inf')
-                    min_file = ""
-                    for file in lines:
-                        name = file[:file.find(".")]
-                        try:
-                            numbers_in_file = int(''.join(filter(str.isdigit, name)))
-                            if numbers_in_file < min_value:
-                                min_value = numbers_in_file
-                                min_file = file
-                        except ValueError:
-                            pass
-
-                    print("min_file:", min_file)
-
+                line = reader.readline().replace("\n", "")
+                if not line is None and not line.replace(" ", "") == "":
                     await remove_line_from_txt(play_path, 1)
                     from function import playSoundFile
-                    speaker = min_file[:min_file.find(".")]
-                    speaker = re.sub(r'\d', '', speaker)
-                    await ctx.send(speaker)
-                    await playSoundFile(os.path.join(BASE_DIR, min_file), -1, 0, ctx)
-                    await ctx.send("end")
+                    # audio_file_path, duration, start_seconds, ctx
+                    await playSoundFile(line, -1, 0, ctx)
                 else:
                     await asyncio.sleep(0.1)
         except Exception as e:
@@ -1088,7 +1069,7 @@ async def text_to_speech_file(tts, currentpitch, file_name):
 
 
 async def create_audio_dialog(ctx, cuda, wait_untill):
-    await asyncio.sleep(cuda * 2 + 0.05)
+    await asyncio.sleep(cuda * 4 + 0.05)
     cuda = cuda % 2
     while True:
         text_path = "caversAI/dialog_create.txt"
