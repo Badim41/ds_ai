@@ -42,7 +42,7 @@ def voice_change0():
                 # получем значения
                 index_rate = float(set_get_config_all_not_async(f"rvc{cuda_number}", "index_rate"))
                 output_path = set_get_config_all_not_async(f"rvc{cuda_number}", "output")
-                pitch_change = float(set_get_config_all_not_async(f"rvc{cuda_number}", "pitch_change"))
+                pitch_change = int(set_get_config_all_not_async(f"rvc{cuda_number}", "pitch_change"))
                 filter_radius = int(set_get_config_all_not_async(f"rvc{cuda_number}", "filter_radius"))
                 rms_mix_rate = float(set_get_config_all_not_async(f"rvc{cuda_number}", "rms_mix_rate"))
                 protect = float(set_get_config_all_not_async(f"rvc{cuda_number}", "protect"))
@@ -127,19 +127,23 @@ if __name__ == '__main__':
                 set_get_config_all_not_async(f"rvc{cuda_number}", "result", "None")
                 break
     else:
-        # обычный режим (для диалога)
-        print("slow-mode RVC")
-        rvc_model_path, rvc_index_path = get_rvc_model(rvc_dirname)
-        device = 'cuda:0'
-        config2 = Config(device, True)
-        hubert_model = load_hubert(device, config2.is_half,
-                                   os.path.join(rvc_models_dir, 'hubert_base.pt'))
-        cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
-        input_path = set_get_config_all_not_async(f"rvc{cuda_number}", "input")
+        try:
+            # обычный режим (для диалога)
+            print("slow-mode RVC")
+            rvc_model_path, rvc_index_path = get_rvc_model(rvc_dirname)
+            device = 'cuda:0'
+            config2 = Config(device, True)
+            hubert_model = load_hubert(device, config2.is_half,
+                                       os.path.join(rvc_models_dir, 'hubert_base.pt'))
+            cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
+            input_path = set_get_config_all_not_async(f"rvc{cuda_number}", "input")
 
-        rvc_infer(rvc_index_path, index_rate, input_path, output, pitch_change, "rmvpe", cpt,
-                  version,
-                  net_g,
-                  filter_radius, tgt_sr, rms_mix_rate, protect, 128, vc, hubert_model)
-        gc.collect()
-        print("Done RVC.1.")
+            rvc_infer(rvc_index_path, index_rate, input_path, output, pitch_change, "rmvpe", cpt,
+                      version,
+                      net_g,
+                      filter_radius, tgt_sr, rms_mix_rate, protect, 128, vc, hubert_model)
+            gc.collect()
+            print("Done RVC.1.")
+        except Exception as e:
+            traceback_str = traceback.format_exc()
+            print(str(traceback_str))
