@@ -1007,10 +1007,13 @@ async def command_line(ctx, *args):
 
 async def play_dialog(ctx):
     number = int(await set_get_config_all("dialog", "play_number", None))
+    print("dev_temp_number:", number)
     while await set_get_config_all("dialog", "dialog", None) == "True":
         try:
             for file in os.listdir("song_output"):
+                print("dev_temp_file0:", file)
                 if os.path.isfile(file):
+                    print("dev_temp_file:", file)
                     file = os.path.dirname(file)
                     if file.startswith(str(number)):
                         from function import playSoundFile
