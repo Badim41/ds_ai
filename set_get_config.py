@@ -12,6 +12,7 @@ config_lock = threading.Lock()
 async def set_get_config_all(section, key, value=None, error=0):
     try:
         async with aio_open('config.ini', 'r') as f:
+            await f.read()
             config.read('config.ini', encoding='utf-8')
             if value is None:
                 return config.get(section, key)
