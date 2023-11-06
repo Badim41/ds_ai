@@ -152,7 +152,6 @@ async def __change_video(
         # ошибки входных данных
         await ctx.defer()
 
-        # config.get("Sound", "voices")
         voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
         if voice not in voices:
             await ctx.respond("Выберите голос из списка: " + ','.join(voices))
