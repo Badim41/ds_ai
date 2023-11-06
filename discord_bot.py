@@ -1011,15 +1011,16 @@ async def play_dialog(ctx):
         try:
             play_path = "caversAI/dialog_play.txt"
             with open(play_path, "r") as reader:
-                line = reader.readline().replace("\n", "")
-                if not line is None and not line.replace(" ", "") == "":
+                lines = reader.readlines()
+                if len(lines) > 1:
+                    # файл с наименьшим значением
+                    file = min(lines, key=lambda s: int(s.split('.')[0]))
+
                     await remove_line_from_txt(play_path, 1)
                     from function import playSoundFile
-                    # audio_file_path, duration, start_seconds, ctx
-                    speaker = line[:line.find(".")]
                     speaker = re.sub(r'\d', '', speaker)
                     await ctx.send(speaker)
-                    await playSoundFile(line, -1, 0, ctx)
+                    await playSoundFile(file, -1, 0, ctx)
                     await ctx.send("end")
                 else:
                     await asyncio.sleep(0.1)
