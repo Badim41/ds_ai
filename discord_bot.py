@@ -1018,10 +1018,13 @@ async def play_dialog(ctx):
                     files = os.listdir("song_output")
                     for file in files:
                         name = file[:file.find(".")]
-                        numbers_in_file = int(''.join(filter(str.isdigit, name)))
-                        if numbers_in_file < min_value:
-                            min_value = numbers_in_file
-                            min_file = file
+                        try:
+                            numbers_in_file = int(''.join(filter(str.isdigit, name)))
+                            if numbers_in_file < min_value:
+                                min_value = numbers_in_file
+                                min_file = file
+                        except ValueError:
+                            pass
 
                     print("min_file:", min_file)
 
