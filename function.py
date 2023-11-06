@@ -669,7 +669,7 @@ async def voice_commands(sentence, ctx):
             spent_time = spent_time[spent_time.find(":") + 1:]
             spent_time = spent_time[:spent_time.find(".")]
             # отправляем
-            await ctx.send("Вот как я нарисовал ваше изображение🖌. Потрачено " + spent_time)
+            await ctx.respond("Вот как я нарисовал ваше изображение🖌. Потрачено " + spent_time)
             await send_file(ctx, output_image)
             # удаляем временные файлы
             os.remove(output_image)
