@@ -114,6 +114,7 @@ if __name__ == '__main__':
     if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
         raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
     if not args.slow:
+        print("fast-mode RVC")
         set_get_config_all_not_async(f"rvc{cuda_number}", "protect", protect)
         set_get_config_all_not_async(f"rvc{cuda_number}", "rms_mix_rate", rms_mix_rate)
         set_get_config_all_not_async(f"rvc{cuda_number}", "filter_radius", filter_radius)
