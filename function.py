@@ -137,7 +137,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
             if voice_commands_result:
                 await result_command_change(f"Голосовая команда", Color.CYAN)
                 return
-            elif not voice_commands_result:
+            elif voice_commands_result is None:
                 await ctx.send("ошибка")
         except Exception as e:
             await result_command_change("Произошла ошибка (ID:f1):" + str(e), Color.RED)
