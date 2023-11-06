@@ -1015,7 +1015,7 @@ async def run_ai_cover_gen(line, ctx, wait=False, cuda=None):
     if url == ".":
         return
     await execute_command(
-        f"python main_cuda{cuda}.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -fr {filter_radius} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda} -palgo {algo} -hop {hop}",
+        f"python main_cuda{cuda}.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -fr {filter_radius} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -palgo {algo} -hop {hop} -cuda {cuda}",
         ctx)
     # if cuda == 0:
     #     from main_cuda0 import run_ai_cover_gen
