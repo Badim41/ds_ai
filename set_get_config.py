@@ -1,25 +1,32 @@
 import asyncio
 import configparser
+from aiofiles import open as aio_open
 import threading
 import time
 
 config = configparser.ConfigParser()
+
 config_lock = threading.Lock()
 
 async def set_get_config_all(section, key, value=None, error=0):
     try:
-        async with config_lock:
-            config.read('config.ini', encoding='utf-8')
-            if value is None:
-                return config.get(section, key)
-            config.set(section, key, str(value))
-            with open('config.ini', 'w', encoding='utf-8') as configfile:
-                config.write(configfile)
+        async with aio_open('config.ini', mode='r', encoding='utf-8') as config_file:
+            config_data = await config_file.read()
+        config.read_string(config_data)
+
+        if value is None:
+            return config.get(section, key)
+
+        config.set(section, key, str(value))
+        config_data = config.get_string()
+
+        async with aio_open('config.ini', mode='w', encoding='utf-8') as config_file:
+            await config_file.write(config_data)
     except Exception as e:
         if error == 5:
             raise f"Ошибка при чтении конфига со значениями: {section}, {key}, {value}.\n{e}"
         await asyncio.sleep(0.1)
-        result = await set_get_config_all(section, key, value, error=error+1)
+        result = await set_get_config_all(section, key, value, error=error + 1)
         return result
 
 def set_get_config_all_not_async(section, key, value=None, error=0):
