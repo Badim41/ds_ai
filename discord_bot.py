@@ -1012,8 +1012,9 @@ async def play_dialog(ctx):
             play_path = "caversAI/dialog_play.txt"
             with open(play_path, "r") as reader:
                 lines = reader.readlines()
-                lines = sorted(lines)
-                line = lines[0]
+                if lines:
+                    lines = sorted(lines)
+                    line = lines[0]
                 if not line is None and not line.replace(" ", "") == "":
                     await remove_line_from_txt(play_path, 1)
                     from function import playSoundFile
