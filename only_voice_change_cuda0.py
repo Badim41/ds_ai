@@ -128,20 +128,18 @@ if __name__ == '__main__':
                 break
     else:
         try:
-            # обычный режим (для диалога)
             print("slow-mode RVC")
             rvc_model_path, rvc_index_path = get_rvc_model(rvc_dirname)
             device = 'cuda:0'
             config2 = Config(device, True)
-            hubert_model = load_hubert(device, config2.is_half,
-                                       os.path.join(rvc_models_dir, 'hubert_base.pt'))
+            hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
             cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
-            input_path = set_get_config_all_not_async(f"rvc{cuda_number}", "input")
 
-            rvc_infer(rvc_index_path, index_rate, input_path, output, pitch_change, "rmvpe", cpt,
+            rvc_infer(rvc_index_path, index_rate, input, output, pitch_change, "rmvpe", cpt,
                       version,
                       net_g,
                       filter_radius, tgt_sr, rms_mix_rate, protect, 128, vc, hubert_model)
+            del hubert_model, cpt
             gc.collect()
             print("Done RVC.1.")
         except Exception as e:
