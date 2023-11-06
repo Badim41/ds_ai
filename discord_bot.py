@@ -1006,22 +1006,22 @@ async def command_line(ctx, *args):
 
 
 async def play_dialog(ctx):
+    number = int(await set_get_config_all("dialog", "play_number", None))
     while await set_get_config_all("dialog", "dialog", None) == "True":
         try:
-            play_path = "caversAI/dialog_play.txt"
-            with open(play_path, "r") as reader:
-                line = reader.readline().replace("\n", "")
-                if not line is None and not line.replace(" ", "") == "":
-                    await remove_line_from_txt(play_path, 1)
-                    from function import playSoundFile
-                    # audio_file_path, duration, start_seconds, ctx
-                    speaker = line[:line.find(".")]
-                    speaker = re.sub(r'\d', '', speaker)
-                    await ctx.send(speaker)
-                    await playSoundFile(line, -1, 0, ctx)
-                    await ctx.send("end")
+            for file in os.listdir("song_output"):
+                if os.path.isfile(file):
+                    if file.startswith(str(number)):
+                        from function import playSoundFile
+                        number += 1
+                        await set_get_config_all("dialog", "play_number", number)
+                        speaker = file[:file.find(".")]
+                        speaker = re.sub(r'\d', '', speaker)
+                        await ctx.send(speaker)
+                        await playSoundFile("song_output/" + file, -1, 0, ctx)
+                        await ctx.send("end")
                 else:
-                    await asyncio.sleep(0.1)
+                    await asyncio.sleep(0.5)
         except Exception as e:
             traceback_str = traceback.format_exc()
             print(str(traceback_str))
@@ -1181,7 +1181,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                     await set_get_config_all("dialog", "user_spoken_text", "None")
                 random_int = random.randint(1, 33)
                 if not random_int == 0:
-                    prompt = (f"Придумай продолжение диалога между {', '.join(names)}. "
+                    prompt = (f"Привет chatGPT, продолжи диалог между {', '.join(names)}. "
                               f"{'.'.join(infos)}. {prompt_global} "
                               f"персонажи должны соответствовать своему образу насколько это возможно. "
                               f"Никогда не пиши приветствие в начале этого диалога. "

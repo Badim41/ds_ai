@@ -7,7 +7,7 @@ config = configparser.ConfigParser()
 async def set_get_config_all(section, key, value=None, error=0):
     try:
         config.read(f'configs/{section}.ini', encoding='utf-8')
-        print("SECTION:", section)
+        # print("SECTION:", section)
         if value is None:
             return config.get("Default", key)
         config.set("Default", key, str(value))
@@ -24,7 +24,7 @@ async def set_get_config_all(section, key, value=None, error=0):
 def set_get_config_all_not_async(section, key, value=None, error=0):
     try:
         config.read(f'configs/{section}.ini', encoding='utf-8')
-        print("SECTION:", section)
+        # print("SECTION:", section)
         if value is None:
             return config.get("Default", key)
         config.set("Default", key, str(value))
