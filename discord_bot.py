@@ -35,6 +35,8 @@ stream_sink = StreamSink()
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='\\', intents=intents)
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 @bot.event
 async def on_ready():
@@ -1032,7 +1034,7 @@ async def play_dialog(ctx):
                     speaker = min_file[:min_file.find(".")]
                     speaker = re.sub(r'\d', '', speaker)
                     await ctx.send(speaker)
-                    await playSoundFile(file, -1, 0, ctx)
+                    await playSoundFile(os.path.join(BASE_DIR, min_file), -1, 0, ctx)
                     await ctx.send("end")
                 else:
                     await asyncio.sleep(0.1)
