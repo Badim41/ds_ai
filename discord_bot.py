@@ -765,14 +765,14 @@ async def __cover(
             params.append(f"-voice {voice}")
         # если мужчина-мужчина, женщина-женщина, pitch не меняем
         pitch_int = pitch
-        # если женщина, а AI мужчина = 12,
+        # если женщина, а AI мужчина = -12,
         if gender == 'женщина':
             if await set_get_config_all("Default", "currentaipitch") == "0":
-                pitch_int = 12
-        # если мужчина, а AI женщина = -12,
+                pitch_int = -12
+        # если мужчина, а AI женщина = 12,
         elif gender == 'мужчина':
             if not await set_get_config_all("Default", "currentaipitch") == "0":
-                pitch_int = -12
+                pitch_int = 12
         params.append(f"-pitch {pitch_int}")
         if time is None:
             params.append(f"-time -1")
