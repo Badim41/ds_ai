@@ -1198,6 +1198,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                             if line.startswith(name):
                                 line = line[line.find(":") + 1:]
                                 writer.write(line + f"-voice {name}\n")
+                                break
             except Exception as e:
                 traceback_str = traceback.format_exc()
                 print(str(traceback_str))
