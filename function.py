@@ -647,7 +647,7 @@ async def voice_commands(sentence, ctx):
             await set_get_config_all(f"Image{cuda_number}", "strength_negative_prompt", "1")
             await set_get_config_all(f"Image{cuda_number}", "strength_prompt", "0.85")
             await set_get_config_all(f"Image{cuda_number}", "strength", "1")
-            await set_get_config_all(f"Image{cuda_number}", "seed", random.randint(1, 1000000))
+            await set_get_config_all(f"Image{cuda_number}", "seed", random.randint(1, sys.maxsize))
             await set_get_config_all(f"Image{cuda_number}", "steps", "60")
             await set_get_config_all(f"Image{cuda_number}", "negative_prompt", "NSFW")
             await set_get_config_all(f"Image{cuda_number}", "prompt", spoken_text_temp)

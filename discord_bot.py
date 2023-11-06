@@ -270,7 +270,7 @@ async def __image(ctx,
                   seed: Option(int, description='сид изображения', required=False,
                                default=None,
                                min_value=1,
-                               max_value=1000000),
+                               max_value=sys.maxsize),
                   x: Option(int,
                             description='изменить размер картинки по x',
                             required=False,
@@ -334,7 +334,7 @@ async def __image(ctx,
             print("X:", x, "Y:", y)
             # loading params
             if seed is None:
-                seed = random.randint(1, 1000000)
+                seed = random.randint(1, sys.maxsize)
             await set_get_config_all(f"Image{cuda_number}", "strength_negative_prompt", strength_negative_prompt)
             await set_get_config_all(f"Image{cuda_number}", "strength_prompt", strength_prompt)
             await set_get_config_all(f"Image{cuda_number}", "strength", strength)
