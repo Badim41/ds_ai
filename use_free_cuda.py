@@ -92,7 +92,9 @@ async def use_cuda_images(index=None):
         if await set_get_config_all(f"Image1", "model_loaded", None) == "True":
             await set_get_config_all(f"Image1", "model_loaded", "using")
             return 1
-        raise "Нет свободных видеокарт!"
+        # raise "Нет свободных видеокарт!"
+        await asyncio.sleep(1)
+        return use_cuda_images()
 
 
 async def check_cuda_images(index=None):
