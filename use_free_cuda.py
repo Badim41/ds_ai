@@ -94,7 +94,7 @@ async def use_cuda_images(index=None):
             return 1
         # raise "Нет свободных видеокарт!"
         await asyncio.sleep(1)
-        return use_cuda_images()
+        return await use_cuda_images()
 
 
 async def check_cuda_images(index=None):
