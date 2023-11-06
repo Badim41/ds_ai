@@ -646,7 +646,7 @@ async def voice_commands(sentence, ctx):
             await set_get_config_all(f"Image0", "prompt", spoken_text_temp)
             await set_get_config_all(f"Image0", "x", "512")
             await set_get_config_all(f"Image0", "y", "512")
-            await set_get_config_all(f"Image0", "input", "empty.png")
+            await set_get_config_all(f"Image0", "input", "1.png")
             print("params suc")
             # wait for answer
             while True:
