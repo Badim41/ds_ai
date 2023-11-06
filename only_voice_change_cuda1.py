@@ -23,7 +23,7 @@ def voice_change1():
 
             # не выставлена модель
             if new_voice_model == "None":
-                time.sleep(0.2)
+                time.sleep(1)
                 continue
 
             if not voice_model == new_voice_model:
@@ -55,7 +55,7 @@ def voice_change1():
                 set_get_config_all_not_async(f"rvc{cuda_number}", "input", "None")
                 set_get_config_all_not_async(f"rvc{cuda_number}", "result", output_path)
             else:
-                time.sleep(0.2)
+                time.sleep(0.5)
         except Exception as e:
             traceback_str = traceback.format_exc()
             raise f"Произошла ошибка (ID:vc1): {str(e)}\n{str(traceback_str)}"
