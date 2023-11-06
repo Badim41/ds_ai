@@ -1069,7 +1069,6 @@ async def text_to_speech_file(tts, currentpitch, file_name):
 
 
 async def create_audio_dialog(ctx, cuda, wait_untill):
-    await asyncio.sleep(cuda * 4 + 0.05)
     cuda = cuda % 2
     while True:
         text_path = "caversAI/dialog_create.txt"
@@ -1124,7 +1123,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                     print(str(traceback_str))
                     await ctx.send(f"Ошибка при изменении голоса(ID:d3): {e}")
             else:
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(cuda + 0.05)
 
 
 async def remove_line_from_txt(file_path, delete_line):
