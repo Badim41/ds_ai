@@ -295,7 +295,12 @@ async def __image(ctx,
                                                    max_value=1)
                   ):
     try:
-        cuda_number = await use_cuda_images()
+        try:
+            cuda_number = await use_cuda_images()
+        except Exception:
+            await ctx.respond("Нет свободных видеокарт")
+            return
+
         await set_get_config_all(f"Image{cuda_number}", "result", "None")
         await ctx.defer()
         # throw extensions
@@ -352,7 +357,7 @@ async def __image(ctx,
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        await ctx.send(f"Ошибка при изменении видео (с параметрами\
+        await ctx.respond(f"Ошибка при изменении видео (с параметрами\
                           {prompt, negative_prompt, steps, x, y, strength, strength_prompt, strength_negative_prompt}): {e}")
         # перестаём использовать видеокарту
         await stop_use_cuda_async(0)
@@ -529,10 +534,9 @@ async def disconnect(ctx):
 async def pause(ctx):
     try:
         await ctx.defer()
-        await ctx.respond('Выполнение...')
         if await set_get_config_all("dialog", "dialog", None) == "True":
             await set_get_config_all("dialog", "dialog", "False")
-            await ctx.send("Диалог остановлен")
+            await ctx.respond("Диалог остановлен")
             return
         voice_client = ctx.voice_client
         if voice_client.is_playing():
@@ -620,7 +624,8 @@ async def __say(
 async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
-        ai_voice: Option(str, description='Голос для озвучки', required=False, default=None)
+        ai_voice: Option(str, description='Голос для озвучки', required=False, default=None),
+        output: Option(bool, description='Отправить результат', required=False, default=False)
 ):
     ai_voice_temp = None
     try:
@@ -660,8 +665,10 @@ async def __tts(
         spent_time = str(end_time - start_time)
         # убираем миллисекунды
         spent_time = spent_time[:spent_time.find(".")]
-        if not "0:00:00" in str(spent_time):
-            await ctx.send("Потрачено на обработку:" + spent_time)
+        if "0:00:00" not in str(spent_time):
+            await ctx.respond("Потрачено на обработку:" + spent_time)
+        if output:
+            await send_file(ctx, "2.mp3")
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
@@ -807,7 +814,7 @@ async def __cover(
                 except subprocess.CalledProcessError as e:
                     traceback_str = traceback.format_exc()
                     print(str(traceback_str))
-                    await ctx.send(f"Ошибка при изменении голоса(ID:d1): {e}")
+                    await ctx.respond(f"Ошибка при изменении голоса(ID:d1): {e}")
             else:
                 # изменить голос без музыки
                 param_string += f" -url {filename} "
@@ -836,11 +843,11 @@ async def __cover(
         # убираем миллисекунды
         spent_time = spent_time[:spent_time.find(".")]
         if not "0:00:00" in str(spent_time):
-            await ctx.send("Потрачено на обработку:" + spent_time)
+            await ctx.respond("Потрачено на обработку:" + spent_time)
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        await ctx.send(f"Ошибка при изменении голоса(ID:d5) (с параметрами {param_string}): {e}")
+        await ctx.respond(f"Ошибка при изменении голоса(ID:d5) (с параметрами {param_string}): {e}")
 
 
 @bot.slash_command(name="create_dialog", description='Имитировать диалог людей')
@@ -855,7 +862,7 @@ async def __dialog(
         await ctx.defer()
         await ctx.respond('Выполнение...')
         if await set_get_config_all("dialog", "dialog", None) == "True":
-            await ctx.send("Уже идёт диалог!")
+            await ctx.respond("Уже идёт диалог!")
             return
         # отчищаем прошлые диалоги
         with open("caversAI/dialog_create.txt", "w") as writer:
@@ -868,7 +875,7 @@ async def __dialog(
         voices.remove("None")  # убираем, чтобы не путаться
         names = names.split(";")
         if len(names) < 2:
-            await ctx.send("Должно быть как минимум 2 персонажа")
+            await ctx.respond("Должно быть как минимум 2 персонажа")
             return
         infos = []
         for name in names:
@@ -886,7 +893,7 @@ async def __dialog(
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        await ctx.send(f"Ошибка при диалоге: {e}")
+        await ctx.respond(f"Ошибка при диалоге: {e}")
 
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
@@ -1098,7 +1105,7 @@ async def remove_line_from_txt(file_path, delete_line):
             for line in lines:
                 writer.write(line)
     except Exception as e:
-        print(f"Ошибка при удалении строки: {e}")
+        raise f"Ошибка при удалении строки: {e}"
 
 
 async def gpt_dialog(names, theme, infos, prompt_global, ctx):
