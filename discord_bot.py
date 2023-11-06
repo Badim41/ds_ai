@@ -1009,7 +1009,6 @@ async def play_dialog(ctx):
                     # audio_file_path, duration, start_seconds, ctx
                     speaker = line[:line.find(".")]
                     speaker = re.sub(r'\d', '', speaker)
-                    speaker = speaker.replace("song_output/", "")
                     await ctx.send(speaker)
                     await playSoundFile(line, -1, 0, ctx)
                     await ctx.send("end")
