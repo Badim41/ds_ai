@@ -900,9 +900,9 @@ async def __dialog(
             await ctx.respond("Уже идёт диалог!")
             return
         # отчищаем прошлые диалоги
-        with open("caversAI/dialog_create.txt", "w") as writer:
+        with open("caversAI/dialog_create.txt", "w"):
             pass
-        with open("caversAI/dialog_play.txt", "w") as writer:
+        with open("caversAI/dialog_play.txt", "w"):
             pass
         await set_get_config_all("dialog", "dialog", "True")
         await set_get_config_all("gpt", "gpt_mode", "None")
@@ -1073,7 +1073,7 @@ async def text_to_speech_file(tts, currentpitch, file_name):
 
 
 async def create_audio_dialog(ctx, cuda, wait_untill):
-    await asyncio.sleep(cuda + 0.05)
+    await asyncio.sleep(cuda * 2 + 0.05)
     cuda = cuda % 2
     while True:
         text_path = "caversAI/dialog_create.txt"
