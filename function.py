@@ -422,7 +422,7 @@ async def run_all_gpt(prompt, mode):
         return '\n\n\n'.join(new_results)
 
 
-async def chatgpt_get_result(prompt, ctx, provider_number=0, gpt_model="gpt-3.5-turbo"):
+async def chatgpt_get_result(prompt, ctx, provider_number=0):
     global currentAIname  # , gpt_errors
     gpt_provider = bool(await set_get_config_all('gpt', 'use_gpt_provider'))
     if not gpt_provider:
@@ -449,12 +449,18 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0, gpt_model="gpt-3.5-
         # Запуск в начале более качественных (не рекомендовано)
         else:
             try:
-                # Set with provider
-                result = await g4f.ChatCompletion.create_async(
-                    model=gpt_model,
-                    provider=_providers[provider_number],
-                    messages=[{"role": "user", "content": prompt}]
-                )
+                # Использовать все модели
+                for gpt_model in ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003", "gpt-3.5-turbo", "gpt-4"]:
+                    result = await g4f.ChatCompletion.create_async(
+                        model=gpt_model,
+                        provider=_providers[provider_number],
+                        messages=[{"role": "user", "content": prompt}]
+                    )
+                    if result.replace("\n", "").replace(" ", "") == "" or str(result) == "None" or "!DOCTYPE" in str(
+                            result):
+                        continue
+                    else:
+                        break
                 if result.replace("\n", "").replace(" ", "") == "" or str(result) == "None" or "!DOCTYPE" in str(result):
                     raise Exception("Пустой текст")
                 print("RESULT:", result)
@@ -468,11 +474,10 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0, gpt_model="gpt-3.5-
                     provider_number += 1
                     print("change provider:", _providers[provider_number])
 
-                    result = await chatgpt_get_result(prompt, ctx, provider_number=provider_number, gpt_model=gpt_model)
+                    result = await chatgpt_get_result(prompt, ctx, provider_number=provider_number)
                     if result is None or result.replace("\n", "").replace(" ", "") == "" or result == "None":
                         provider_number += 1
-                        result = await chatgpt_get_result(prompt, ctx, provider_number=provider_number,
-                                                          gpt_model=gpt_model)
+                        result = await chatgpt_get_result(prompt, ctx, provider_number=provider_number)
                     return result
                 result = "Ошибка при получении запроса"
         # if not language == "russian":
