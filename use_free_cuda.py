@@ -84,11 +84,13 @@ async def use_cuda_images(index=None):
             await set_get_config_all(f"Image{index}", "model_loaded", "using")
             return
         else:
-            raise "1-ая видеокарта занята"
+            raise f"{index}-ая видеокарта занята"
     else:
         if await set_get_config_all(f"Image0", "model_loaded", None) == "True":
+            await set_get_config_all(f"Image0", "model_loaded", "using")
             return 0
         if await set_get_config_all(f"Image1", "model_loaded", None) == "True":
+            await set_get_config_all(f"Image1", "model_loaded", "using")
             return 1
         raise "Нет свободных видеокарт!"
 
