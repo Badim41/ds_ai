@@ -636,7 +636,7 @@ async def voice_commands(sentence, ctx):
             await set_get_config_all(f"Image{cuda_number}", "result", "None")
             # run timer
             start_time = datetime.datetime.now()
-            noise = np.random.randint(0, 256, (512, 512, 3), dtype=np.uint8)
+            noise = np.random.randint(0, 256, (1024, 1024, 3), dtype=np.uint8)
 
             # Создаем объект Image из массива шума
             image = Image.fromarray(noise)
@@ -651,8 +651,8 @@ async def voice_commands(sentence, ctx):
             await set_get_config_all(f"Image{cuda_number}", "steps", "60")
             await set_get_config_all(f"Image{cuda_number}", "negative_prompt", "NSFW")
             await set_get_config_all(f"Image{cuda_number}", "prompt", spoken_text_temp)
-            await set_get_config_all(f"Image{cuda_number}", "x", "512")
-            await set_get_config_all(f"Image{cuda_number}", "y", "512")
+            await set_get_config_all(f"Image{cuda_number}", "x", "1024")
+            await set_get_config_all(f"Image{cuda_number}", "y", "1024")
             await set_get_config_all(f"Image{cuda_number}", "input", f"{cuda_number}.png")
             print(f"images suc. GPU:{cuda_number}")
             # wait for answer
@@ -674,7 +674,7 @@ async def voice_commands(sentence, ctx):
             # удаляем временные файлы
             os.remove(output_image)
             # перестаём использовать видеокарту
-            await stop_use_cuda_images(0)
+            await stop_use_cuda_images(cuda_number)
             return True
         await text_to_speech("Протокол не найден.", False, ctx)
         return True
