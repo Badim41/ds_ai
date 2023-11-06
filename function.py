@@ -999,11 +999,23 @@ async def run_ai_cover_gen(line, ctx, wait=False, cuda=None):
         if " " in output:
             output = output[0: output.index(" ")]
 
+    algo = "rmvpe"
+    if "-palgo" in line:
+        algo = line[line.index("-palgo") + 7:]
+        if " " in algo:
+            algo = algo[0: algo.index(" ")]
+
+    hop = 128
+    if "-hop" in line:
+        hop = await extract_number_after_keyword(line, "-hop")
+        if hop < 64 or hop > 1280:
+            hop = 128
+
     outputFormat = "mp3"
     if url == ".":
         return
     await execute_command(
-        f"python main_cuda{cuda}.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -fr {filter_radius} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda}",
+        f"python main_cuda{cuda}.py -i \"{url}\" -dir {voice} -p \"{pitch}\" -ir {indexrate} -rms {loudness} -fr {filter_radius} -mv {mainVocal} -bv {backVocal} -iv {music} -rsize {roomsize} -rwet {wetness} -rdry {dryness} -start {start} -time {time} -oformat {outputFormat} -output {output} -cuda {cuda} -palgo {algo} -hop {hop}",
         ctx)
     # if cuda == 0:
     #     from main_cuda0 import run_ai_cover_gen

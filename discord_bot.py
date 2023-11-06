@@ -746,6 +746,12 @@ async def __cover(
                         max_value=1),
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.8, min_value=0,
                         max_value=1),
+        palgo: Option(str, description='Алгоритм. Rmvpe - лучший вариант, mangio-crepe - более мягкий вокал',
+                      required=False,
+                      choices=['rmvpe', 'mangio-crepe'], default="rmvpe"),
+        hop: Option(int, description='Как часто проверяет изменения тона в mango-crepe', required=False, default=128,
+                    min_value=64,
+                    max_value=1280),
         start: Option(int, description='Начать воспроизводить с (в секундах). -1 для продолжения', required=False,
                       default=0, min_value=-2),
         output: Option(str, description='Отправить результат', choices=["link", "file", "all_files", "None"],
@@ -778,6 +784,10 @@ async def __cover(
             params.append(f"-time -1")
         else:
             params.append(f"-time {time}")
+        if palgo != "rmvpe":
+            params.append(f"-palgo {palgo}")
+        if hop != 128:
+            params.append(f"-hop {hop}")
         if indexrate != 0.5:
             params.append(f"-indexrate {indexrate}")
         if loudness != 0.2:
