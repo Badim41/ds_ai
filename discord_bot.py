@@ -1332,7 +1332,7 @@ async def recognize(ctx):
             if filename.startswith("output") and filename.endswith(".wav"):
                 file_found.append(filename)
                 break
-        if file_found is None:
+        if len(file_found) == 0:
             await asyncio.sleep(0.1)
             last_speaking += 1
             # если долго не было файлов (человек перестал говорить)
