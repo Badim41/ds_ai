@@ -453,8 +453,8 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         voice = ctx.author.voice
         voice_channel = voice.channel
         # добавляем ключ к connetions
-        if ctx.author.id not in connections:
-            connections[ctx.author.id] = []
+        if ctx.guild.id not in connections:
+            connections[ctx.guild.id] = []
 
         if not voice:
             return await ctx.respond(voiceChannelErrorText)
@@ -466,10 +466,10 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
             # если бот УЖЕ в войс-чате
             vc = ctx.voice_client
         # если уже записывает
-        if vc in connections[ctx.author.id]:
+        if vc in connections[ctx.guild.id]:
             return await ctx.respond("Уже записываю ваш голос🎤")
         stream_sink.set_user(ctx.author.id)
-        connections[ctx.author.id].append(vc)
+        connections[ctx.guild.id].append(vc)
 
         # Начинаем запись
         vc.start_recording(
@@ -489,10 +489,10 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
 @bot.slash_command(name="stop_recording", description='перестать воспринимать команды из микрофона')
 async def stop_recording(ctx):
     try:
-        if ctx.author.id in connections:
-            vc = connections[ctx.author.id][0]  # Получаем элемент списка
+        if ctx.guild.id in connections:
+            vc = connections[ctx.guild.id][0]  # Получаем элемент списка
             vc.stop_recording()
-            del connections[ctx.author.id][0]
+            del connections[ctx.guild.id]
         else:
             await ctx.respond("Я и так тебя не слушал ._.")
     except Exception as e:
@@ -511,8 +511,8 @@ async def disconnect(ctx):
             await ctx.respond("выхожу")
         else:
             await ctx.respond("Я не в войсе")
-        if ctx.author.id in connections:
-            del connections[ctx.author.id]  # remove the guild from the cache.
+        if ctx.guild.id in connections:
+            del connections[ctx.guild.id]  # remove the guild from the cache.
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
