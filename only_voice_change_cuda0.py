@@ -128,7 +128,6 @@ if __name__ == '__main__':
                 break
     else:
         try:
-            print("slow-mode RVC")
             rvc_model_path, rvc_index_path = get_rvc_model(rvc_dirname)
             device = 'cuda:0'
             config2 = Config(device, True)

@@ -1012,8 +1012,15 @@ async def play_dialog(ctx):
         try:
             for file in os.listdir("song_output"):
                 print("dev_temp_file:", file)
-                file = os.path.dirname(file)
                 if file.startswith(str(number)):
+                    with open("caversAI/dialog_play.txt", "r") as reader:
+                        lines = reader.read()
+                        if file not in lines:
+                            await asyncio.sleep(0.5)
+                            print("dev_temp_skip_file")
+                            continue
+                        else:
+                            print("dev_temp_play_file")
                     print("dev_temp_file1:", file)
                     from function import playSoundFile
                     number += 1
