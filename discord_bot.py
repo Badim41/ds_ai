@@ -1010,18 +1010,15 @@ async def play_dialog(ctx):
     print("dev_temp_number:", number)
     while await set_get_config_all("dialog", "dialog", None) == "True":
         try:
-            for file in os.listdir("song_output"):
-                print("dev_temp_file:", file)
+            files = os.listdir("song_output")
+            files = sorted(files)
+            for file in files:
                 if file.startswith(str(number)):
                     with open("caversAI/dialog_play.txt", "r") as reader:
                         lines = reader.read()
                         if file not in lines:
-                            await asyncio.sleep(0.5)
-                            print("dev_temp_skip_file")
+                            await asyncio.sleep(0.1)
                             continue
-                        else:
-                            print("dev_temp_play_file")
-                    print("dev_temp_file1:", file)
                     from function import playSoundFile
                     number += 1
                     await set_get_config_all("dialog", "play_number", number)
@@ -1029,9 +1026,10 @@ async def play_dialog(ctx):
                     speaker = re.sub(r'\d', '', speaker)
                     await ctx.send("говорит " + speaker)
                     await playSoundFile("song_output/" + file, -1, 0, ctx)
+                    os.remove("song_output/" + file)
                     await ctx.send("end")
                 else:
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(0.2)
         except Exception as e:
             traceback_str = traceback.format_exc()
             print(str(traceback_str))
