@@ -137,7 +137,7 @@ if __name__ == '__main__':
             rvc_infer(rvc_index_path, index_rate, input, output, pitch_change, "mangio-crepe", cpt,
                       version,
                       net_g,
-                      filter_radius, tgt_sr, rms_mix_rate, protect, 128, vc, hubert_model)
+                      filter_radius, tgt_sr, rms_mix_rate, protect, 256, vc, hubert_model)
             del hubert_model, cpt
             gc.collect()
             print("Done RVC.1.")
