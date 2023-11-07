@@ -1011,19 +1011,18 @@ async def play_dialog(ctx):
     while await set_get_config_all("dialog", "dialog", None) == "True":
         try:
             for file in os.listdir("song_output"):
-                print("dev_temp_file0:", file)
-                if os.path.isfile(file):
-                    print("dev_temp_file:", file)
-                    file = os.path.dirname(file)
-                    if file.startswith(str(number)):
-                        from function import playSoundFile
-                        number += 1
-                        await set_get_config_all("dialog", "play_number", number)
-                        speaker = file[:file.find(".")]
-                        speaker = re.sub(r'\d', '', speaker)
-                        await ctx.send(speaker)
-                        await playSoundFile("song_output/" + file, -1, 0, ctx)
-                        await ctx.send("end")
+                print("dev_temp_file:", file)
+                file = os.path.dirname(file)
+                if file.startswith(str(number)):
+                    print("dev_temp_file1:", file)
+                    from function import playSoundFile
+                    number += 1
+                    await set_get_config_all("dialog", "play_number", number)
+                    speaker = file[:file.find(".")]
+                    speaker = re.sub(r'\d', '', speaker)
+                    await ctx.send(speaker)
+                    await playSoundFile("song_output/" + file, -1, 0, ctx)
+                    await ctx.send("end")
                 else:
                     await asyncio.sleep(0.5)
         except Exception as e:
@@ -1108,7 +1107,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                         "-fr", "3",
                         "-rms", "0.3",
                         "-pro", "0.15",
-                        "-slow" # значение для диалога
+                        "-slow"  # значение для диалога
                     ]
                     print("run RVC, AIName:", name)
                     from function import execute_command
