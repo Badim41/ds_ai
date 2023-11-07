@@ -1392,7 +1392,7 @@ async def recognize(ctx):
         for file in file_found:
             volume = await max_volume(file)
             if volume == float('-inf'):
-                Path(file_found).unlink()
+                Path(file).unlink()
                 file_found.remove(file)
                 continue
             if volume > max_loudness_all:
