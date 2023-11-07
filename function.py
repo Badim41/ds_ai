@@ -1301,7 +1301,7 @@ async def speed_up_audio(input_file, speed_factor):
     if speed_factor == 1:
         return
     if speed_factor < 1:
-        slowed_audio = audio.speedup(playback_speed=speed_factor)
+        slowed_audio = audio.slowdown(playback_speed=1/speed_factor)
         slowed_audio.export(input_file, format="mp3")
     else:
         sped_up_audio = audio.speedup(playback_speed=speed_factor)
