@@ -649,6 +649,7 @@ async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
         ai_voice: Option(str, description='Голос для озвучки', required=False, default=None),
+        speed: Option(int, description='Ускорение голоса', required=False, default=None),
         output: Option(bool, description='Отправить результат', required=False, default=False)
 ):
     ai_voice_temp = None
@@ -678,7 +679,7 @@ async def __tts(
         await set_get_config_all("Default", "currentainame", ai_voice)
         # запускаем TTS
         from function import text_to_speech
-        await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
+        await text_to_speech(text, False, ctx, ai_dictionary=ai_voice, speed=speed)
         # await run_main_with_settings(ctx, f"робот протокол 24 {text}",
         #                              False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
         # перестаём использовать видеокарту

@@ -1308,7 +1308,7 @@ async def speed_up_audio(input_file, speed_factor):
         sped_up_audio.export(input_file, format="mp3")
 
 
-async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
+async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=None):
     currentpitch = int(await set_get_config_all("Default", "currentaipitch", None))
     if tts is None or tts.replace("\n", "").replace(" ", "") == "":
         await result_command_change(f"Пустой текст \"{tts}\"", Color.RED)
@@ -1392,10 +1392,11 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
         return
     await result_command_change("done RVC", Color.GREEN)
     # применение ускорения
-    if await set_get_config_all("Sound", "change_speed", None) == "True":
-        with open(os.path.join(f"rvc_models/{ai_dictionary}/speed.txt"), "r") as reader:
-            speed = float(reader.read())
-        await speed_up_audio(output_name, speed)
+    if speed is None:
+        if await set_get_config_all("Sound", "change_speed", None) == "True":
+            with open(os.path.join(f"rvc_models/{ai_dictionary}/speed.txt"), "r") as reader:
+                speed = float(reader.read())
+    await speed_up_audio(output_name, speed)
 
     # "2.mp3"
     await playSoundFile(output_name, -1, 0, ctx)
