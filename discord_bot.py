@@ -453,8 +453,8 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         voice = ctx.author.voice
         voice_channel = voice.channel
         # добавляем ключ к connetions
-        if ctx.guild.id not in connections:
-            connections[ctx.guild.id] = []
+        if ctx.author.id not in connections:
+            connections[ctx.author.id] = []
 
         if not voice:
             return await ctx.respond(voiceChannelErrorText)
@@ -469,7 +469,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         if vc in connections[ctx.author.id]:
             return await ctx.respond("Уже записываю ваш голос🎤")
         stream_sink.set_user(ctx.author.id)
-        connections[ctx.guild.id].append(vc)
+        connections[ctx.author.id].append(vc)
 
         # Начинаем запись
         vc.start_recording(
@@ -489,10 +489,10 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
 @bot.slash_command(name="stop_recording", description='перестать воспринимать команды из микрофона')
 async def stop_recording(ctx):
     try:
-        if ctx.guild.id in connections:
-            vc = connections[ctx.guild.id][0]  # Получаем элемент списка
+        if ctx.author.id in connections:
+            vc = connections[ctx.author.id][0]  # Получаем элемент списка
             vc.stop_recording()
-            del connections[ctx.guild.id]
+            del connections[ctx.author.id][0]
         else:
             await ctx.respond("Я и так тебя не слушал ._.")
     except Exception as e:
@@ -511,8 +511,8 @@ async def disconnect(ctx):
             await ctx.respond("выхожу")
         else:
             await ctx.respond("Я не в войсе")
-        if ctx.guild.id in connections:
-            del connections[ctx.guild.id]  # remove the guild from the cache.
+        if ctx.author.id in connections:
+            del connections[ctx.author.id]  # remove the guild from the cache.
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
@@ -920,10 +920,12 @@ async def __dialog(
         await set_get_config_all("dialog", "dialog", "True")
         await set_get_config_all("gpt", "gpt_mode", "None")
         # names, theme, infos, prompt, ctx
-        # запустим сразу 4 процессов для обработки голоса
+        # запустим сразу 8 процессов для обработки голоса
         await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx),
                              create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"),
-                             create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"))
+                             create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"),
+                             create_audio_dialog(ctx, 4, "dialog"), create_audio_dialog(ctx, 5, "dialog"),
+                             create_audio_dialog(ctx, 6, "dialog"), create_audio_dialog(ctx, 7, "dialog"))
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
@@ -1076,8 +1078,7 @@ async def text_to_speech_file(tts, currentpitch, file_name):
 
 
 async def create_audio_dialog(ctx, cuda, wait_untill):
-    while not cuda == int(await set_get_config_all("dialog", "files_number", None)):
-        await asyncio.sleep(1)
+    await asyncio.sleep(cuda * 0.11 + 0.05)
     cuda = cuda % 2
 
     while True:
