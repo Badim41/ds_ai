@@ -77,7 +77,7 @@ if len(arguments) > 6:
     gender = arguments[3]
     info = "Вот информация о тебе:" + arguments[4]
     voice_model = arguments[5]
-    speed = int(arguments[6])
+    speed = float(arguments[6])
     if speed is None or speed < 0 or speed > 2:
         speed = 1
     download_online_model(url_input, dir_name_input, gender, info, speed, voice_model)

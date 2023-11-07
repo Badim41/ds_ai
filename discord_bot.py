@@ -649,7 +649,7 @@ async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
         ai_voice: Option(str, description='Голос для озвучки', required=False, default=None),
-        speed: Option(bool, description='Ускорение голоса', required=False, default=None),
+        speed: Option(float, description='Ускорение голоса', required=False, default=None),
         voice_model: Option(str, description=f'Какая модель elevenlab будет использована', required=False,
                             choices=['Harry', 'Arnold', 'Clyde', 'Thomas', 'Adam', 'Antoni', 'Daniel', 'Harry', 'James', 'Patrick'],
                      default=None),
