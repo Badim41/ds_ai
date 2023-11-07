@@ -1362,8 +1362,11 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=No
     if os.path.exists(output_name):
         os.remove(output_name)
 
+    with open(f"rvc_models/{ai_dictionary}/voice_model.txt", "r") as reader:
+        voice_model = reader.read()
+
     from discord_bot import text_to_speech_file
-    pitch = await text_to_speech_file(tts, currentpitch, file_name)
+    pitch = await text_to_speech_file(tts, currentpitch, file_name, voice_model=voice_model)
     # если голос не выставлен
     if ai_dictionary == "None" or await set_get_config_all("Default", "currentainame") == "None":
         await playSoundFile(file_name, -1, 0, ctx)
@@ -1394,7 +1397,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=No
     # применение ускорения
     if speed is None:
         if await set_get_config_all("Sound", "change_speed", None) == "True":
-            with open(os.path.join(f"rvc_models/{ai_dictionary}/speed.txt"), "r") as reader:
+            with open(f"rvc_models/{ai_dictionary}/speed.txt", "r") as reader:
                 speed = float(reader.read())
     await speed_up_audio(output_name, speed)
 

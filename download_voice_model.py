@@ -8,7 +8,7 @@ BASE_DIR = os.getcwd()
 rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
 
 
-def extract_zip(extraction_folder, zip_name, gender, info, speed):
+def extract_zip(extraction_folder, zip_name):
     os.makedirs(extraction_folder)
     with zipfile.ZipFile(zip_name, 'r') as zip_ref:
         zip_ref.extractall(extraction_folder)
@@ -25,15 +25,6 @@ def extract_zip(extraction_folder, zip_name, gender, info, speed):
 
     if not model_filepath:
         raise Exception(f'Нет .pth файла в zip. архиву. Проверьте {extraction_folder}.')
-    try:
-        with open(os.path.join(extraction_folder + "/info.txt"), 'w') as writer:
-            writer.writelines(info)
-        with open(os.path.join(extraction_folder + "/gender.txt"), 'w') as writer:
-            writer.writelines(gender)
-        with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
-            writer.writelines(str(speed))
-    except IOError as e:
-        print(e)
     # move model and index file to extraction folder
     os.rename(model_filepath, os.path.join(extraction_folder, os.path.basename(model_filepath)))
     if index_filepath:
@@ -45,7 +36,7 @@ def extract_zip(extraction_folder, zip_name, gender, info, speed):
             shutil.rmtree(os.path.join(extraction_folder, filepath))
 
 
-def download_online_model(url, dir_name, gender, info, speed):
+def download_online_model(url, dir_name, gender, info, speed, voice_model):
     try:
         print(f'[~] Скачивание модели с именем {dir_name}...')
         zip_name = url.split('/')[-1]
@@ -57,6 +48,8 @@ def download_online_model(url, dir_name, gender, info, speed):
                 writer.writelines(gender)
             with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
                 writer.writelines(str(speed))
+            with open(f"rvc_models/{dir_name_input}/voice_model.txt", "w") as writer:
+                writer.write(dir_name_input)
             raise Exception \
                 (f'Модель {dir_name} уже существует, но её информация/скорость были изменены')
 
@@ -70,7 +63,7 @@ def download_online_model(url, dir_name, gender, info, speed):
                 file.write(chunk)
 
         print('[~] Разархивация...')
-        extract_zip(extraction_folder, zip_name, gender, info, speed)
+        extract_zip(extraction_folder, zip_name)
         print(f'[+] {dir_name} модель успешно установлена!')
 
     except Exception as e:
@@ -78,23 +71,16 @@ def download_online_model(url, dir_name, gender, info, speed):
 
 
 arguments = sys.argv
-if len(arguments) > 1:
+if len(arguments) > 6:
     url_input = arguments[1]
     dir_name_input = arguments[2]
-    gender = "male"
-    if len(arguments) > 3:
-        gender = arguments[3]
-    info = "Вот информация о тебе:"
-    if len(arguments) > 4:
-        info += arguments[4]
-    else:
-        info += "Отсутствует"
-    speed = None
-    if len(arguments) > 5:
-        speed = float(arguments[5])
+    gender = arguments[3]
+    info = "Вот информация о тебе:" + arguments[4]
+    voice_model = arguments[5]
+    speed = int(arguments[6])
     if speed is None or speed < 0 or speed > 2:
         speed = 1
-    download_online_model(url_input, dir_name_input, gender, info, speed)
+    download_online_model(url_input, dir_name_input, gender, info, speed, voice_model)
 else:
     print("Нужно указать ссылку и имя модели")
     exit(-1)

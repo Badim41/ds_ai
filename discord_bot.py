@@ -945,6 +945,9 @@ async def __add_voice(
                      default="Отсутствует"),
         speed: Option(float, description=f'Ускорение/замедление голоса', required=False,
                       default=1, min_value=0.5, max_value=2),
+        voice_model: Option(str, description=f'Какая модель elevenlab будет использована', required=False,
+                            choices=['Harry', 'Arnold', 'Clyde', 'Thomas', 'Adam', 'Antoni', 'Daniel', 'Harry', 'James', 'Patrick'],
+                     default="Отсутствует"),
         change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
                              default=False)
 ):
@@ -968,6 +971,7 @@ async def __add_voice(
             name,
             gender,
             f"{info}",
+            voice_model,
             str(speed)
         ]
         subprocess.run(command, check=True)
@@ -1036,7 +1040,7 @@ async def play_dialog(ctx):
             await ctx.send(f"Ошибка при изменении голоса(ID:d2): {e}")
 
 
-async def text_to_speech_file(tts, currentpitch, file_name):
+async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Daniel"):
     from elevenlabs import generate, save, set_api_key
     language = await set_get_config_all("Default", "language", None)
     max_simbols = await set_get_config_all("voice", "max_simbols", None)
@@ -1058,7 +1062,7 @@ async def text_to_speech_file(tts, currentpitch, file_name):
             # голос TTS в зависимости от пола
             if currentpitch == 0:
                 # Arnold(быстрый) Thomas Adam Antoni !Antoni(мяг) !Clyde(тяж) !Daniel(нейтр) !Harry !James Patrick
-                voice = "Daniel"
+                voice = voice_model
             else:
                 # Mimi Matilda
                 voice = "Bella"
