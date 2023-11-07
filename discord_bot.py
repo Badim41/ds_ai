@@ -478,7 +478,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
             ctx.channel  # the channel to disconnect from.
         )
         await set_get_config_all("Sound", "record", "True")
-        await ctx.respond("Started listening.")
+        await ctx.respond("Внимательно вас слушаю")
         await recognize(ctx)
     except Exception as e:
         traceback_str = traceback.format_exc()
@@ -493,6 +493,7 @@ async def stop_recording(ctx):
             vc = connections[ctx.guild.id][0]  # Получаем элемент списка
             vc.stop_recording()
             del connections[ctx.guild.id]
+            await ctx.respond("Я перестал вас слышать")
         else:
             await ctx.respond("Я и так тебя не слушал ._.")
     except Exception as e:
