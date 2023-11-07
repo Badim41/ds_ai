@@ -1007,7 +1007,6 @@ async def command_line(ctx, *args):
 
 async def play_dialog(ctx):
     number = int(await set_get_config_all("dialog", "play_number", None))
-    print("dev_temp_number:", number)
     while await set_get_config_all("dialog", "dialog", None) == "True":
         try:
             files = os.listdir("song_output")
@@ -1127,7 +1126,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                     if await set_get_config_all("Sound", "change_speed", None) == "True":
                         with open(os.path.join(f"rvc_models/{name}/speed.txt"), "r") as reader:
                             speed = float(reader.read())
-                            print("SPEED:", speed)
+                            # print("SPEED:", speed)
                         from function import speed_up_audio
                         await speed_up_audio(filename, speed)
                     with open(play_path, "a") as writer:

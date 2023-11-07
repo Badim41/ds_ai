@@ -1298,12 +1298,13 @@ async def console_command_runner(command, ctx):
 
 
 async def speed_up_audio(input_file, speed_factor):
-    if speed_factor < 1:
-        speed_factor = 1.05
-    print("SPEED", speed_factor)
     audio = AudioSegment.from_file(input_file)
-    sped_up_audio = audio.speedup(playback_speed=speed_factor)
-    sped_up_audio.export(input_file, format="mp3")
+    if speed_factor < 1:
+        slowed_audio = audio.speedup(playback_speed=1 / speed_factor)
+        slowed_audio.export(input_file, format="mp3")
+    else:
+        sped_up_audio = audio.speedup(playback_speed=speed_factor)
+        sped_up_audio.export(input_file, format="mp3")
 
 
 async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None):
