@@ -939,8 +939,8 @@ async def __add_voice(
                        choices=['мужчина', 'женщина']),
         info: Option(str, description=f'Какие-то сведения о данном человеке', required=False,
                      default="Отсутствует"),
-        speed: Option(float, description=f'Ускорение голоса (от 1.0 до 2.0)', required=False,
-                      default=1.05, min_value=1, max_value=2),
+        speed: Option(float, description=f'Ускорение/замедление голоса', required=False,
+                      default=1, min_value=0.5, max_value=2),
         change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
                              default=False)
 ):
@@ -948,10 +948,7 @@ async def __add_voice(
     await ctx.respond('Выполнение...')
     if name == "None" or ";" in name or "/" in name or "\\" in name:
         await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
-    if speed < 1.05:
-        speed = 1.05
     # !python download_voice_model.py {url} {dir_name} {gender} {info}
-    command = None
     name = name.replace(" ", "_")
     if gender == "женщина":
         gender = "female"
