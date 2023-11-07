@@ -1299,6 +1299,8 @@ async def console_command_runner(command, ctx):
 
 async def speed_up_audio(input_file, speed_factor):
     audio = AudioSegment.from_file(input_file)
+    if speed_factor == 1:
+        return
     if speed_factor < 1:
         slowed_audio = audio.speedup(playback_speed=1 / speed_factor)
         slowed_audio.export(input_file, format="mp3")
