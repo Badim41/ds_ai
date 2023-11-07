@@ -903,8 +903,6 @@ async def __dialog(
             pass
         with open("caversAI/dialog_play.txt", "w"):
             pass
-        await set_get_config_all("dialog", "dialog", "True")
-        await set_get_config_all("gpt", "gpt_mode", "None")
         voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
         voices.remove("None")  # убираем, чтобы не путаться
         names = names.split(";")
@@ -919,6 +917,8 @@ async def __dialog(
             with open(f"rvc_models/{name}/info.txt") as reader:
                 file_content = reader.read().replace("Вот информация о тебе:", "")
                 infos.append(f"Вот информация о {name}: {file_content}")
+        await set_get_config_all("dialog", "dialog", "True")
+        await set_get_config_all("gpt", "gpt_mode", "None")
         # names, theme, infos, prompt, ctx
         # запустим сразу 4 процессов для обработки голоса
         await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx),
