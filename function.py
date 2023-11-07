@@ -356,7 +356,6 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
             )
         if "!DOCTYPE" in str(result):
             await result_command_change("Doker File", Color.RED)
-            print("Doker File")
             # делаем задержку
             await asyncio.sleep(delay_for_gpt)
             return

@@ -466,7 +466,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
             # если бот УЖЕ в войс-чате
             vc = ctx.voice_client
         # если уже записывает
-        if vc in connections[ctx.guild.id]:
+        if vc in connections[ctx.author.id]:
             return await ctx.respond("Уже записываю ваш голос🎤")
         stream_sink.set_user(ctx.author.id)
         connections[ctx.guild.id].append(vc)
