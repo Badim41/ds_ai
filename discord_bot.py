@@ -649,7 +649,7 @@ async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
         ai_voice: Option(str, description='Голос для озвучки', required=False, default=None),
-        speed: Option(int, description='Ускорение голоса', required=False, default=None),
+        speed: Option(bool, description='Ускорение голоса', required=False, default=None),
         output: Option(bool, description='Отправить результат', required=False, default=False)
 ):
     ai_voice_temp = None
@@ -1057,8 +1057,10 @@ async def text_to_speech_file(tts, currentpitch, file_name):
         try:
             # голос TTS в зависимости от пола
             if currentpitch == 0:
-                voice = "Arnold"
+                # Arnold(быстрый) Thomas Adam Antoni !Antoni(мяг) !Clyde(тяж) !Daniel(нейтр) !Harry !James Patrick
+                voice = "Daniel"
             else:
+                # Mimi Matilda
                 voice = "Bella"
             audio = generate(
                 text=tts,
