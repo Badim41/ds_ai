@@ -1326,11 +1326,11 @@ async def recognize(ctx):
         if await set_get_config_all("Sound", "record") == "False":
             print("Stopped listening2.")
             return
-        file_found = None
+        file_found = []
         # проверяем наличие временных файлов
         for filename in os.listdir(os.getcwd()):
             if filename.startswith("output") and filename.endswith(".wav"):
-                file_found = filename
+                file_found.append(filename)
                 break
         if file_found is None:
             await asyncio.sleep(0.1)
@@ -1386,24 +1386,37 @@ async def recognize(ctx):
                                                      True)
 
             continue
+
         # запись непустых файлов
-        loudness = await max_volume(file_found)
-        if loudness == float('-inf'):
-            Path(file_found).unlink()
-            continue
-        if loudness > int(await set_get_config_all("Sound", "min_volume", None)):
+        max_loudness_all = float('-inf')
+        for file in file_found:
+            volume = await max_volume(file)
+            if volume == float('-inf'):
+                Path(file_found).unlink()
+                file_found.remove(file)
+                continue
+            if volume > max_loudness_all:
+                max_loudness_all = volume
+
+        if max_loudness_all > int(await set_get_config_all("Sound", "min_volume", None)):
             last_speaking = 0
-        result = AudioSegment.from_file(wav_filename, format="wav") + AudioSegment.from_file(file_found, format="wav")
-        try:
-            result.export(wav_filename, format="wav")
-        except Exception as e:
-            traceback_str = traceback.format_exc()
-            print(str(traceback_str))
-            print(f"Ошибка при экспорте аудио: {e}")
-        # print("recognize_saved")
+
+            result = AudioSegment.from_file(wav_filename, format="wav")
+
+            for file in file_found:
+                result += AudioSegment.from_file(file, format="wav")
+
+            try:
+                result.export(wav_filename, format="wav")
+            except Exception as e:
+                traceback_str = traceback.format_exc()
+                print(str(traceback_str))
+                print(f"Ошибка при экспорте аудио: {e}")
+
         # удаление временного файла
         try:
-            Path(file_found).unlink()
+            for file in file_found:
+                Path(file).unlink()
         except FileNotFoundError:
             pass
     print("Stop_Recording")
