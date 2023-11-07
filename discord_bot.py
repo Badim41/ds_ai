@@ -1027,7 +1027,7 @@ async def play_dialog(ctx):
                     await set_get_config_all("dialog", "play_number", number)
                     speaker = file[:file.find(".")]
                     speaker = re.sub(r'\d', '', speaker)
-                    await ctx.send(speaker)
+                    await ctx.send("говорит " + speaker)
                     await playSoundFile("song_output/" + file, -1, 0, ctx)
                     await ctx.send("end")
                 else:
