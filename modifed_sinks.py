@@ -52,7 +52,7 @@ class StreamBuffer:
         self.bytes_ps = 192000  # bytes added to buffer per second
         self.block_len = 1  # how long you want each audio block to be in seconds
         # min len to pull bytes from buffer
-        self.buff_lim = int(self.bytes_ps * self.block_len)
+        self.buff_lim = int(192000 // 10)
 
         # temp var for outputting audio
         self.ct = 1
