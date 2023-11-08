@@ -8,7 +8,7 @@ BASE_DIR = os.getcwd()
 rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
 
 
-def extract_zip(extraction_folder, zip_name):
+def extract_zip(extraction_folder, zip_name, info, gender, speed, voice_model):
     os.makedirs(extraction_folder)
     with zipfile.ZipFile(zip_name, 'r') as zip_ref:
         zip_ref.extractall(extraction_folder)
@@ -25,6 +25,16 @@ def extract_zip(extraction_folder, zip_name):
 
     if not model_filepath:
         raise Exception(f'Нет .pth файла в zip. архиву. Проверьте {extraction_folder}.')
+
+    with open(os.path.join(extraction_folder + "/info.txt"), 'w') as writer:
+        writer.write(info)
+    with open(os.path.join(extraction_folder + "/gender.txt"), 'w') as writer:
+        writer.write(gender)
+    with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
+        writer.write(str(speed))
+    with open(os.path.join(extraction_folder + "/voice_model.txt"), "w") as writer:
+        writer.write(voice_model)
+
     # move model and index file to extraction folder
     os.rename(model_filepath, os.path.join(extraction_folder, os.path.basename(model_filepath)))
     if index_filepath:
@@ -41,15 +51,15 @@ def download_online_model(url, dir_name, gender, info, speed, voice_model):
         print(f'[~] Скачивание модели с именем {dir_name}...')
         zip_name = url.split('/')[-1]
         extraction_folder = os.path.join(rvc_models_dir, dir_name)
-        with open(os.path.join(extraction_folder + "/info.txt"), 'w') as writer:
-            writer.writelines(info)
-        with open(os.path.join(extraction_folder + "/gender.txt"), 'w') as writer:
-            writer.writelines(gender)
-        with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
-            writer.writelines(str(speed))
-        with open(f"rvc_models/{dir_name_input}/voice_model.txt", "w") as writer:
-            writer.writelines(dir_name_input)
         if os.path.exists(extraction_folder):
+            with open(os.path.join(extraction_folder + "/info.txt"), 'w') as writer:
+                writer.write(info)
+            with open(os.path.join(extraction_folder + "/gender.txt"), 'w') as writer:
+                writer.write(gender)
+            with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
+                writer.write(str(speed))
+            with open(os.path.join(extraction_folder + "/voice_model.txt"), "w") as writer:
+                writer.write(voice_model)
             raise Exception \
                 (f'Модель {dir_name} уже существует, но её информация/скорость были изменены')
 
@@ -63,7 +73,7 @@ def download_online_model(url, dir_name, gender, info, speed, voice_model):
                 file.write(chunk)
 
         print('[~] Разархивация...')
-        extract_zip(extraction_folder, zip_name)
+        extract_zip(extraction_folder, zip_name, info, gender, speed, voice_model)
         print(f'[+] {dir_name} модель успешно установлена!')
 
     except Exception as e:
