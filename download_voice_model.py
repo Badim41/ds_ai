@@ -48,7 +48,7 @@ def download_online_model(url, dir_name, gender, info, speed, voice_model):
         with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
             writer.writelines(str(speed))
         with open(f"rvc_models/{dir_name_input}/voice_model.txt", "w") as writer:
-            writer.write(dir_name_input)
+            writer.writelines(dir_name_input)
         if os.path.exists(extraction_folder):
             raise Exception \
                 (f'Модель {dir_name} уже существует, но её информация/скорость были изменены')
