@@ -10,6 +10,8 @@ import traceback
 import zipfile
 from PIL import Image
 import numpy as np
+import librosa
+import soundfile as sf
 
 import g4f
 from pydub import AudioSegment
@@ -845,7 +847,7 @@ async def createAICaver(ctx):
         with open("caversAI/audio_links.txt", "a") as writer:
             for line in lines:
                 if line.strip():
-                    print("line:", line)
+                    # print("line:", line)
                     writer.write(line + "\n")
         start_process = await set_get_config_all('Values', "play_audio_process") == "False"
         if start_process:
@@ -1135,9 +1137,9 @@ async def remove_line_from_txt(file_path, delete_line):
         with open(file_path, "r") as reader:
             i = 1
             for line in reader:
-                if i == delete_line:
-                    await result_command_change(f"Line removed: {line}", Color.GRAY)
-                else:
+                if not i == delete_line:
+                    # await result_command_change(f"Line removed: {line}", Color.GRAY)
+                # else:
                     lines.append(line)
                 i += 1
 
@@ -1301,8 +1303,9 @@ async def speed_up_audio(input_file, speed_factor):
     if speed_factor == 1:
         return
     if speed_factor < 1:
-        slowed_audio = audio.slowdown(playback_speed=1/speed_factor)
-        slowed_audio.export(input_file, format="mp3")
+        y, sr = librosa.load(input_file)
+        y_slowed = librosa.effects.time_stretch(y, rate=0.75)
+        sf.write(input_file, y_slowed, sr)
     else:
         sped_up_audio = audio.speedup(playback_speed=speed_factor)
         sped_up_audio.export(input_file, format="mp3")

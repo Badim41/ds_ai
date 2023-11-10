@@ -1,6 +1,14 @@
-input_string = "asdasfd2324sds"
+import librosa
+import soundfile as sf
 
-# Используем метод isdigit() для фильтрации только цифровых символов
-digits = int(''.join(filter(str.isdigit, input_string)))
+from pydub import AudioSegment
+speed_factor = 0.5
+input_file = "C:\\Users\\as280\\Downloads\\Vozhatye_-_YA_vozhatyjj_ty_vozhatyjj_63579162.mp3"
+y, sr = librosa.load(input_file)
 
-print(digits)
+# Замедление аудио
+y_slowed = librosa.effects.time_stretch(y, 0.75)  # Укажите желаемый коэффициент замедления
+
+# Сохранение замедленного аудиофайла
+output_path = 'путь_к_вашему_выходному_аудиофайлу.wav'
+sf.write(input_file, y_slowed, sr)
