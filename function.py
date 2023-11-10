@@ -1312,7 +1312,7 @@ async def speed_up_audio(input_file, speed_factor):
 
         y, sr = sf.read(input_file)
         y_stretch = pyrb.time_stretch(y, sr, speed_factor)
-        sf.write(output_dir + "output1.mp3", y_stretch, sr)
+        sf.write(output_dir + "output2.mp3", y_stretch, sr)
     else:
         sped_up_audio = audio.speedup(playback_speed=speed_factor)
         sped_up_audio.export(input_file, format="mp3")
