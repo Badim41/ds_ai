@@ -1308,7 +1308,7 @@ async def speed_up_audio(input_file, speed_factor):
         y_resampled = librosa.resample(y, sr, sr_new)
         y_slowed = librosa.effects.time_stretch(y_resampled, rate=speed_factor)
         output_dir = os.path.basename(input_file)
-        sf.write(output_dir + "output1.mp3", y_slowed, sr_new)
+        sf.write(input_file, y_slowed, sr_new)
 
         y, sr = sf.read(input_file)
         y_stretch = pyrb.time_stretch(y, sr, speed_factor)
