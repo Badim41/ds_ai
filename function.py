@@ -1302,7 +1302,11 @@ async def speed_up_audio(input_file, speed_factor):
     if speed_factor == 1:
         return
     if speed_factor < 1:
+        import pyrubberband as pyrb
 
+        y, sr = sf.read(input_file)
+        y_stretch = pyrb.time_stretch(y, sr, speed_factor)
+        sf.write(input_file, y_stretch, sr)
     else:
         sped_up_audio = audio.speedup(playback_speed=speed_factor)
         sped_up_audio.export(input_file, format="mp3")
