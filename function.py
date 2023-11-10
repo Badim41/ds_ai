@@ -16,6 +16,12 @@ import soundfile as sf
 import g4f
 from pydub import AudioSegment
 from translate import Translator
+from gtts import gTTS
+from discord_bot import send_file
+from discord_bot import write_in_discord
+from use_free_cuda import stop_use_cuda_async, use_cuda_async, stop_use_cuda_images, use_cuda_images, \
+    check_cuda_async
+from set_get_config import set_get_config_all
 
 _providers = [
     # AUTH
@@ -54,13 +60,6 @@ _providers = [
     # g4f.Provider.ChatBase,  # - bad, but you can use it
     # g4f.Provider.Llama2, # no model
 ]
-
-from gtts import gTTS
-from discord_bot import send_file
-from discord_bot import write_in_discord
-from use_free_cuda import stop_use_cuda_async, use_cuda_async, stop_use_cuda_images, use_cuda_images, \
-    check_cuda_async
-from set_get_config import set_get_config_all
 
 
 class Color:
@@ -1311,7 +1310,7 @@ async def speed_up_audio(input_file, speed_factor):
         sped_up_audio.export(input_file, format="mp3")
 
 
-async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=None, voice_model=None):
+async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=None, voice_model=None, skip_tts=None):
     currentpitch = int(await set_get_config_all("Default", "currentaipitch", None))
     if tts is None or tts.replace("\n", "").replace(" ", "") == "":
         await result_command_change(f"Пустой текст \"{tts}\"", Color.RED)
@@ -1354,7 +1353,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=No
             except IOError as e:
                 await result_command_change(f"Ошибка при выполнении команды (ID:f51): {e}", Color.RED)
 
-    if not ctx.voice_client:
+    if not ctx.voice_client and skip_tts is None:
         await result_command_change("skip tts", Color.CYAN)
         return
     file_name = "1.mp3"

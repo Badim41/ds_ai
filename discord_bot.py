@@ -682,7 +682,7 @@ async def __tts(
         await set_get_config_all("Default", "currentainame", ai_voice)
         # запускаем TTS
         from function import text_to_speech
-        await text_to_speech(text, False, ctx, ai_dictionary=ai_voice, speed=speed, voice_model=voice_model)
+        await text_to_speech(text, False, ctx, ai_dictionary=ai_voice, speed=speed, voice_model=voice_model, skip_tts=False)
         # await run_main_with_settings(ctx, f"робот протокол 24 {text}",
         #                              False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
         # перестаём использовать видеокарту
