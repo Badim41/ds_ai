@@ -1303,8 +1303,9 @@ async def speed_up_audio(input_file, speed_factor):
         return
     if speed_factor < 1:
         y, sr = librosa.load(input_file)
-        y_slowed = librosa.effects.time_stretch(y, rate=speed_factor)
-        sf.write(input_file, y_slowed, sr)
+        sr_new = 22050
+        y_resampled = librosa.resample(y, sr, sr_new)
+        y_slowed = librosa.effects.time_stretch(y_resampled, rate=speed_factor)
     else:
         sped_up_audio = audio.speedup(playback_speed=speed_factor)
         sped_up_audio.export(input_file, format="mp3")
