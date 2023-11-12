@@ -511,10 +511,12 @@ async def voice_commands(sentence, ctx):
     if "код красный" in sentence:
         seconds_delay = await extract_number_after_keyword(sentence, "код красный")
         if not seconds_delay == -1:
+            if seconds_delay != 0:
+                await set_get_config_all("Default", "reload", "False")
             await result_command_change(f"Завершение кода через {seconds_delay}", Color.RED)
             await asyncio.sleep(seconds_delay + 0.01)
             # await exit_from_voice(ctx)
-            await write_in_discord(ctx, "*выключение*")
+            await write_in_discord(ctx, "*перезагрузка*")
             # from discord_bot import disconnect
             # await disconnect(ctx)
             sys.exit(0)
@@ -543,7 +545,9 @@ async def voice_commands(sentence, ctx):
             await text_to_speech("нужны права администратора", False, ctx)
             return True
         try:
-            result = await chatgpt_get_result(sentence[sentence.index("gpt") + 3:], ctx)
+            result = ""
+            while not result.strip():
+                result = await chatgpt_get_result(sentence[sentence.index("gpt") + 3:], ctx)
             await write_in_discord(ctx, result)
             await text_to_speech(result, False, ctx)
         except Exception as e:
