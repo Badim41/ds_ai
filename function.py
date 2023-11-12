@@ -513,10 +513,14 @@ async def voice_commands(sentence, ctx):
         if not seconds_delay == -1:
             if seconds_delay != 0:
                 await set_get_config_all("Default", "reload", "False")
+                await write_in_discord(ctx, "*выключение*")
+            else:
+                await set_get_config_all("Default", "reload", ctx.author.id)
+                await write_in_discord(ctx, "*перезагрузка*")
             await result_command_change(f"Завершение кода через {seconds_delay}", Color.RED)
             await asyncio.sleep(seconds_delay + 0.01)
             # await exit_from_voice(ctx)
-            await write_in_discord(ctx, "*перезагрузка*")
+
             # from discord_bot import disconnect
             # await disconnect(ctx)
             sys.exit(0)

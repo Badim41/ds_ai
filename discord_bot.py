@@ -41,6 +41,11 @@ async def on_ready():
     print('Status: online')
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
+    id = await set_get_config_all("Default", "reload")
+    if not id == "True":
+        user = await bot.fetch_user(id)
+        await user.send("Перезагружен!")
+
 
 
 @bot.event
@@ -322,10 +327,10 @@ async def __image(ctx,
                 x, y = await get_image_dimensions(input_image)
                 x = int(x)
                 y = int(y)
-            # скэйлинг во избежания ошибок из-за нехватки памяти
-            scale_factor = (1000000 / (x * y)) ** 0.5
-            x = int(x * scale_factor)
-            y = int(y * scale_factor)
+                # скэйлинг во избежания ошибок из-за нехватки памяти
+                scale_factor = (1000000 / (x * y)) ** 0.5
+                x = int(x * scale_factor)
+                y = int(y * scale_factor)
             if not x % 64 == 0:
                 x = ((x // 64) + 1) * 64
             if not y % 64 == 0:
