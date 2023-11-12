@@ -18,7 +18,7 @@ def dl_model(link, model_name, dir_name):
 
 
 if __name__ == '__main__':
-    mdx_model_names = ['UVR-MDX-NET-Voc_FT.onnx', 'UVR_MDXNET_KARA_2.onnx', 'Reverb_HQ_By_FoxJoy.onnx']
+    mdx_model_names = ['UVR-MDX-NET-Voc_FT.onnx', 'Reverb_HQ_By_FoxJoy.onnx'] #'UVR_MDXNET_KARA_2.onnx',
     for model in mdx_model_names:
         print(f'Downloading {model}...')
         dl_model(MDX_DOWNLOAD_LINK, model, mdxnet_models_dir)
@@ -27,5 +27,9 @@ if __name__ == '__main__':
     for model in rvc_model_names:
         print(f'Downloading {model}...')
         dl_model(RVC_DOWNLOAD_LINK, model, rvc_models_dir)
+
+    kim_model = "Kim_Vocal_2.onnx"
+    print(f'Downloading {kim_model}...')
+    dl_model("https://huggingface.co/seanghay/uvr_models/resolve/main/", kim_model, rvc_models_dir)
 
     print('All models downloaded!')
