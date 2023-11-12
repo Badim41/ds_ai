@@ -134,11 +134,11 @@ async def __change_video(
                           max_value=1),
         loudness: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.2, min_value=0,
                          max_value=1),
-        main_vocal: Option(int, description='Громкость основного вокала (от -20 до 0)', required=False, default=0,
-                           min_value=-20, max_value=0),
-        back_vocal: Option(int, description='Громкость бэквокала (от -20 до 0)', required=False, default=0,
-                           min_value=-20, max_value=0),
-        music: Option(int, description='Громкость музыки (от -20 до 0)', required=False, default=0, min_value=-20,
+        main_vocal: Option(int, description='Громкость основного вокала (от -50 до 0)', required=False, default=0,
+                           min_value=-50, max_value=0),
+        back_vocal: Option(int, description='Громкость бэквокала (от -50 до 0)', required=False, default=0,
+                           min_value=-50, max_value=0),
+        music: Option(int, description='Громкость музыки (от -50 до 0)', required=False, default=0, min_value=-50,
                       max_value=0),
         roomsize: Option(float, description='Размер помещения (от 0 до 1)', required=False, default=0.2, min_value=0,
                          max_value=1),
@@ -332,12 +332,14 @@ async def __image(ctx,
                 y = ((y // 64) + 1) * 64
             print("X:", x, "Y:", y)
             # loading params
-            if seed is None:
-                seed = random.randint(1, 9007199254740991)
+            if seed is None or repeats > 1:
+                seed_current = random.randint(1, 9007199254740991)
+            else:
+                seed_current = seed
             await set_get_config_all(f"Image{cuda_number}", "strength_negative_prompt", strength_negative_prompt)
             await set_get_config_all(f"Image{cuda_number}", "strength_prompt", strength_prompt)
             await set_get_config_all(f"Image{cuda_number}", "strength", strength)
-            await set_get_config_all(f"Image{cuda_number}", "seed", seed)
+            await set_get_config_all(f"Image{cuda_number}", "seed", seed_current)
             await set_get_config_all(f"Image{cuda_number}", "steps", steps)
             await set_get_config_all(f"Image{cuda_number}", "negative_prompt", negative_prompt)
             await set_get_config_all(f"Image{cuda_number}", "prompt", prompt)
@@ -745,11 +747,11 @@ async def __cover(
                               description='Насколько далеко от каждой точки в данных будут учитываться значения... (от 1 до 7)',
                               required=False, default=3, min_value=0,
                               max_value=7),
-        main_vocal: Option(int, description='Громкость основного вокала (от -20 до 0)', required=False, default=0,
-                           min_value=-20, max_value=0),
-        back_vocal: Option(int, description='Громкость бэквокала (от -20 до 0)', required=False, default=0,
-                           min_value=-20, max_value=0),
-        music: Option(int, description='Громкость музыки (от -20 до 0)', required=False, default=0, min_value=-20,
+        main_vocal: Option(int, description='Громкость основного вокала (от -50 до 0)', required=False, default=0,
+                           min_value=-50, max_value=0),
+        back_vocal: Option(int, description='Громкость бэквокала (от -50 до 0)', required=False, default=0,
+                           min_value=-50, max_value=0),
+        music: Option(int, description='Громкость музыки (от -50 до 0)', required=False, default=0, min_value=-50,
                       max_value=0),
         roomsize: Option(float, description='Размер помещения (от 0 до 1)', required=False, default=0.2, min_value=0,
                          max_value=1),

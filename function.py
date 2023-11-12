@@ -687,9 +687,9 @@ async def voice_commands(sentence, ctx):
         return True
 
     # Фразы ...
-    if currentAIname == "Фарадей":
+    if currentAIname == "Фарадэй":
         if "когда " in sentence:
-            if "майн шилд" in sentence:
+            if "майншилд" in sentence:
                 await text_to_speech("Послезавтра", False, ctx)
                 return True
             if "видео" in sentence:
@@ -955,21 +955,21 @@ async def run_ai_cover_gen(line, ctx, wait=False, cuda=None):
     mainVocal = 0
     if "-vocal" in line:
         mainVocal = await extract_number_after_keyword(line, "-vocal")
-        if mainVocal < -20 or mainVocal > 0:
+        if mainVocal < -50 or mainVocal > 0:
             mainVocal = 0
 
     # BACKUP_VOCALS_VOLUME_CHANGE
     backVocal = 0
     if "-bvocal" in line:
         backVocal = await extract_number_after_keyword(line, "-bvocal")
-        if backVocal < -20 or backVocal > 0:
+        if backVocal < -50 or backVocal > 0:
             backVocal = 0
 
     # INSTRUMENTAL_VOLUME_CHANGE
     music = 0
     if "-music" in line:
         music = await extract_number_after_keyword(line, "-music")
-        if music < -20 or music > 0:
+        if music < -50 or music > 0:
             music = 0
 
     # REVERB_SIZE
