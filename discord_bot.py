@@ -42,8 +42,9 @@ async def on_ready():
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
     id = await set_get_config_all("Default", "reload")
+    print("ID:", id)
     if not id == "True":
-        user = await bot.fetch_user(id)
+        user = await bot.fetch_user(int(id))
         await user.send("Перезагружен!")
 
 
