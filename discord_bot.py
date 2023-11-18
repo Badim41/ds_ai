@@ -136,7 +136,7 @@ async def help_command(
         await ctx.respond("# /add_voice\n(Добавить голосовую модель)\n**url - ссылка на модель **\n**name - имя модели "
                        "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
                        "speed - ускорение/замедление при /tts\nvoice_model - модель elevenlab\nchange_voice - True = "
-                       "заменить на текущий голос\ntxt_file - быстрое добавление множества голосовых моделей, для использования:\n"
+                       "заменить на текущий голос\ntxt_file - быстрое добавление множества голосовых моделей *(остальные аргументы как 'url', 'gender', 'name'  будут игнорироваться)*, для использования:\n"
                           "- напишите в txt файле аргументы для add_voice (1 модель - 1 строка), пример:")
         await send_file(ctx, "add_voice_args.txt")
     elif command == "create_dialog":
@@ -1042,8 +1042,9 @@ async def agrs_with_txt(txt_file):
         speed = []
         voice_model = []
         for line in lines:
+            line = line.replace(": ", ":")
             # /add_voice url:url_to_model name:some_name gender:мужчина info:some_info speed:some_speed voice_model:some_model
-            pattern = r'(\w+):([^ ]+)'
+            pattern = r'(\w+):(.+)'
 
             matches = re.findall(pattern, line)
             arguments = dict(matches)
@@ -1126,7 +1127,7 @@ async def __add_voice(
         print("info:", infos)
         print("speed:", speeds)
         print("voice_model:", voice_models)
-        for i in range(urls):
+        for i in range(len(urls)):
             await download_voice(ctx, urls[i], names[i], genders[i], infos[i], speeds[i], voice_models[i], False)
         return
 
