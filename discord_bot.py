@@ -1044,7 +1044,7 @@ async def agrs_with_txt(txt_file):
         for line in lines:
             line = line.replace(": ", ":")
             # /add_voice url:url_to_model name:some_name gender:мужчина info:some_info speed:some_speed voice_model:some_model
-            pattern = r'(\w+):(.+)'
+            pattern = r'(\w+):(.+?)\s(?=\w+:|$)'
 
             matches = re.findall(pattern, line)
             arguments = dict(matches)
