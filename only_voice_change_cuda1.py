@@ -114,7 +114,6 @@ if __name__ == '__main__':
     if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
         raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
     if not args.slow:
-        print("fast-mode RVC")
         set_get_config_all_not_async(f"rvc{cuda_number}", "protect", protect)
         set_get_config_all_not_async(f"rvc{cuda_number}", "rms_mix_rate", rms_mix_rate)
         set_get_config_all_not_async(f"rvc{cuda_number}", "filter_radius", filter_radius)
@@ -134,14 +133,13 @@ if __name__ == '__main__':
             config2 = Config(device, True)
             hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
             cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
-
-            rvc_infer(rvc_index_path, index_rate, input, output, pitch_change, "mangio-crepe", cpt,
+            # "rmvpe" "mangio-crepe"
+            rvc_infer(rvc_index_path, index_rate, input, output, pitch_change, "rmvpe", cpt,
                       version,
                       net_g,
                       filter_radius, tgt_sr, rms_mix_rate, protect, 256, vc, hubert_model)
             del hubert_model, cpt
             gc.collect()
-            print("Done RVC.2.")
         except Exception as e:
             traceback_str = traceback.format_exc()
             print(str(traceback_str))

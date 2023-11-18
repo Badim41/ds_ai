@@ -1359,7 +1359,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=No
                 writer2.write(f"GPT: {tts_no_n}\n")
         except IOError as e:
             await result_command_change("Произошла ошибка (ID:f14):" + str(e), Color.RED)
-        lines_number = 0
+
         with open(f"texts/memories/{ai_dictionary}.txt", 'r') as reader:
             lines = reader.readlines()
             lines_number = len(lines)

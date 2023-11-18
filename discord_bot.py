@@ -1024,26 +1024,39 @@ async def __dialog(
         await ctx.respond(f"Ошибка при диалоге: {e}")
 
 
-@bot.slash_command(name="add_voice", description='Добавить RVC голос')
-async def __add_voice(
-        ctx,
-        url: Option(str, description='Ссылка на .zip файл с моделью RVC', required=True),
-        name: Option(str, description=f'Имя модели', required=True),
-        gender: Option(str, description=f'Пол (для настройки тональности)', required=True,
-                       choices=['мужчина', 'женщина']),
-        info: Option(str, description=f'Какие-то сведения о данном человеке', required=False,
-                     default="Отсутствует"),
-        speed: Option(float, description=f'Ускорение/замедление голоса', required=False,
-                      default=1, min_value=1, max_value=3),
-        voice_model: Option(str, description=f'Какая модель elevenlab будет использована', required=False,
-                            choices=['Harry', 'Arnold', 'Clyde', 'Thomas', 'Adam', 'Antoni', 'Daniel', 'Harry', 'James',
-                                     'Patrick'],
-                            default="Adam"),
-        change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
-                             default=False)
-):
-    await ctx.defer()
-    await ctx.respond('Выполнение...')
+async def agrs_with_txt(txt_file):
+    try:
+        filename = "temp_args.txt"
+        await txt_file.save(filename)
+        with open(filename, "r", encoding="utf-8") as file:
+            lines = file.readlines()
+        url = []
+        name = []
+        gender = []
+        info = []
+        speed = []
+        voice_model = []
+        for line in lines:
+            # /add_voice url:url_to_model name:some_name gender:мужчина info:some_info speed:some_speed voice_model:some_model
+            pattern = r'(\w+):([^ ]+)'
+
+            matches = re.findall(pattern, line)
+            arguments = dict(matches)
+
+            url.append(arguments.get('url', None))
+            name.append(arguments.get('name', None))
+            gender.append(arguments.get('gender', None))
+            info.append(arguments.get('info', None))
+            speed.append(arguments.get('speed', None))
+            voice_model.append(arguments.get('voice_model', None))
+        return url, name, gender, info, speed, voice_model
+    except Exception:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
+        return "None", "None", "None", "None", "None", "None"
+
+
+async def download_voice(ctx, url, name, gender, info, speed, voice_model, change_voice):
     if name == "None" or ";" in name or "/" in name or "\\" in name:
         await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
     # !python download_voice_model.py {url} {dir_name} {gender} {info}
@@ -1076,6 +1089,43 @@ async def __add_voice(
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
         await ctx.respond("Ошибка при скачивании голоса.")
+
+
+@bot.slash_command(name="add_voice", description='Добавить RVC голос')
+async def __add_voice(
+        ctx,
+        url: Option(str, description='Ссылка на .zip файл с моделью RVC', required=True),
+        name: Option(str, description=f'Имя модели', required=True),
+        gender: Option(str, description=f'Пол (для настройки тональности)', required=True,
+                       choices=['мужчина', 'женщина']),
+        info: Option(str, description=f'Какие-то сведения о данном человеке', required=False,
+                     default="Отсутствует"),
+        speed: Option(float, description=f'Ускорение/замедление голоса', required=False,
+                      default=1, min_value=1, max_value=3),
+        voice_model: Option(str, description=f'Какая модель elevenlab будет использована', required=False,
+                            choices=['Harry', 'Arnold', 'Clyde', 'Thomas', 'Adam', 'Antoni', 'Daniel', 'Harry', 'James',
+                                     'Patrick'],
+                            default="Adam"),
+        change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
+                             default=False),
+        txt_file: Option(discord.SlashCommandOptionType.attachment, description='Файл txt для добавления нескольких моделей сразу',
+                           required=False, default=None)
+):
+    await ctx.defer()
+    await ctx.respond('Выполнение...')
+    if txt_file:
+        urls, names, genders, infos, speeds, voice_models = await agrs_with_txt(txt_file)
+        print("url:", urls)
+        print("name:", names)
+        print("gender:", genders)
+        print("info:", infos)
+        print("speed:", speeds)
+        print("voice_model:", voice_models)
+        for i in range(urls):
+            await download_voice(ctx, urls[i], names[i], genders[i], infos[i], speeds[i], voice_models[i], False)
+        return
+
+    await download_voice(ctx, url, name, gender, info, speed, voice_model, change_voice)
 
 
 @bot.command(aliases=['cmd'], help="командная строка")

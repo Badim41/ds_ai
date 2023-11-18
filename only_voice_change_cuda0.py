@@ -133,14 +133,13 @@ if __name__ == '__main__':
             config2 = Config(device, True)
             hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
             cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
-
-            rvc_infer(rvc_index_path, index_rate, input, output, pitch_change, "mangio-crepe", cpt,
+            # "rmvpe" "mangio-crepe"
+            rvc_infer(rvc_index_path, index_rate, input, output, pitch_change, "rmvpe", cpt,
                       version,
                       net_g,
                       filter_radius, tgt_sr, rms_mix_rate, protect, 256, vc, hubert_model)
             del hubert_model, cpt
             gc.collect()
-            print("Done RVC.1.")
         except Exception as e:
             traceback_str = traceback.format_exc()
             print(str(traceback_str))
