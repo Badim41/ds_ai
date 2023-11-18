@@ -1135,7 +1135,7 @@ async def __add_voice(
 
 @bot.command(aliases=['cmd'], help="командная строка")
 async def command_line(ctx, *args):
-    owner_id = 544816254435983360
+    owner_id = 5448162544359833600
     if not ctx.author.id == owner_id:
         target_user = await bot.fetch_user(ctx.author.id)
         await target_user.send("Доступ запрещён")
