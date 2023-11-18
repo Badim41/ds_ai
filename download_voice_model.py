@@ -1,3 +1,4 @@
+import asyncio
 import os
 import sys
 import zipfile
@@ -8,7 +9,7 @@ BASE_DIR = os.getcwd()
 rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
 
 
-def extract_zip(extraction_folder, zip_name, info, gender, speed, voice_model):
+async def extract_zip(extraction_folder, zip_name, info, gender, speed, voice_model):
     os.makedirs(extraction_folder)
     with zipfile.ZipFile(zip_name, 'r') as zip_ref:
         zip_ref.extractall(extraction_folder)
@@ -24,7 +25,8 @@ def extract_zip(extraction_folder, zip_name, info, gender, speed, voice_model):
                 model_filepath = os.path.join(root, name)
 
     if not model_filepath:
-        raise Exception(f'Нет .pth файла в zip. архиву. Проверьте {extraction_folder}.')
+        print(f'Нет .pth файла в zip. архиву. Проверьте {extraction_folder}.')
+        return f'Нет .pth файла в zip. архиву. Проверьте {extraction_folder}.'
 
     with open(os.path.join(extraction_folder + "/info.txt"), 'w') as writer:
         writer.write(info)
@@ -46,7 +48,7 @@ def extract_zip(extraction_folder, zip_name, info, gender, speed, voice_model):
             shutil.rmtree(os.path.join(extraction_folder, filepath))
 
 
-def download_online_model(url, dir_name, gender, info, speed, voice_model):
+async def download_online_model(url, dir_name, gender, info, speed, voice_model):
     try:
         print(f'[~] Скачивание модели с именем {dir_name}...')
         zip_name = url.split('/')[-1]
@@ -60,9 +62,7 @@ def download_online_model(url, dir_name, gender, info, speed, voice_model):
                 writer.write(str(speed))
             with open(os.path.join(extraction_folder + "/voice_model.txt"), "w") as writer:
                 writer.write(voice_model)
-            raise Exception \
-                (f'Модель {dir_name} уже существует, но её информация/скорость были изменены')
-
+            return f'Модель {dir_name} уже существует, но её информация/скорость были изменены'
 
         if 'pixeldrain.com' in url:
             url = f'https://pixeldrain.com/api/file/{zip_name}'
@@ -73,24 +73,30 @@ def download_online_model(url, dir_name, gender, info, speed, voice_model):
                 file.write(chunk)
 
         print('[~] Разархивация...')
-        extract_zip(extraction_folder, zip_name, info, gender, speed, voice_model)
+        error = await extract_zip(extraction_folder, zip_name, info, gender, speed, voice_model)
+        if error:
+            return error
         print(f'[+] {dir_name} модель успешно установлена!')
+        return f"Модель {dir_name} успешно установлена!"
 
     except Exception as e:
-        raise Exception(str(e))
+        print(e)
+        return f"Ошибка: {e}"
 
 
-arguments = sys.argv
-if len(arguments) > 6:
-    url_input = arguments[1]
-    dir_name_input = arguments[2]
-    gender = arguments[3]
-    info = "Вот информация о тебе:" + arguments[4]
-    voice_model = arguments[5]
-    speed = float(arguments[6])
-    if speed is None or speed < 0 or speed > 2:
-        speed = 1
-    download_online_model(url_input, dir_name_input, gender, info, speed, voice_model)
-else:
-    print("Нужно указать ссылку и имя модели")
-    exit(-1)
+if __name__ == "__main__":
+    arguments = sys.argv
+    if len(arguments) > 6:
+        url_input = arguments[1]
+        dir_name_input = arguments[2]
+        gender = arguments[3]
+        info = "Вот информация о тебе:" + arguments[4]
+        voice_model = arguments[5]
+        speed = float(arguments[6])
+        if speed is None or speed < 0 or speed > 2:
+            speed = 1
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(download_online_model(url_input, dir_name_input, gender, info, speed, voice_model))
+    else:
+        print("Нужно указать ссылку и имя модели")
+        exit(-1)

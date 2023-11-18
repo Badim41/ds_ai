@@ -1075,7 +1075,7 @@ async def __add_voice(
     except subprocess.CalledProcessError as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        await ctx.respond(f"Голос уже существует, но параметры были изменены")
+        await ctx.respond("Ошибка при скачивании голоса.")
 
 
 @bot.command(aliases=['cmd'], help="командная строка")
