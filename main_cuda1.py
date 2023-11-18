@@ -2,8 +2,8 @@ import os
 import argparse
 
 from set_get_config import set_get_config_all_not_async
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+cuda_number = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
 import torch
 import gc
 import hashlib
@@ -173,15 +173,15 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
             orig_song_path = None
         song_output_dir = os.path.join(output_dir, song_id)
         orig_song_path = convert_to_stereo(orig_song_path)
-        display_progress('[~] Separating Vocals from Instrumental...')
+        display_progress(f'[~] Separating Vocals from Instrumental... GPU:{cuda_number}')
         vocals_path, instrumentals_path = run_mdx(mdx_model_params, song_output_dir,
-                                                  os.path.join(mdxnet_models_dir, 'UVR-MDX-NET-Voc_FT.onnx'),
+                                                  os.path.join(mdxnet_models_dir, 'Kim_Vocal_2.onnx'),
                                                   orig_song_path, denoise=True, keep_orig=keep_orig)
-        display_progress('[~] Separating Main Vocals from Backup Vocals...')
+        display_progress(f'[~] Separating Main Vocals from Backup Vocals... GPU:{cuda_number}')
         backup_vocals_path, main_vocals_path = run_mdx(mdx_model_params, song_output_dir,
-                                                       os.path.join(mdxnet_models_dir, 'UVR_MDXNET_KARA_2.onnx'),
+                                                       os.path.join(mdxnet_models_dir, 'UVR_MDXNET_KARA_2.onnx'), # UVR_MDXNET_KARA_2.onnx
                                                        vocals_path, suffix='Backup', invert_suffix='Main', denoise=True)
-        display_progress('[~] Applying DeReverb to Vocals...')
+        display_progress(f'[~] Applying DeReverb to Vocals... GPU:{cuda_number}')
         _, main_vocals_dereverb_path = run_mdx(mdx_model_params, song_output_dir,
                                                os.path.join(mdxnet_models_dir, 'Reverb_HQ_By_FoxJoy.onnx'),
                                                main_vocals_path, invert_suffix='DeReverb', exclude_main=True,
@@ -194,7 +194,7 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
 def download_video_or_use_file(song_input, input_type):
     keep_orig = False
     if input_type == 'yt':
-        display_progress('[~] Downloading song...')
+        display_progress(f'[~] Downloading song... GPU:{cuda_number}')
         song_link = song_input.split('&')[0]
         print(song_link)
         orig_song_path = yt_download(song_link)
@@ -210,7 +210,6 @@ def voice_change(cuda_number, voice_model, vocals_path, output_path, pitch_chang
                  rms_mix_rate, protect, crepe_hop_length, is_webui):
     rvc_model_path, rvc_index_path = get_rvc_model(voice_model, is_webui)
     # os.environ["CUDA_VISIBLE_DEVICES"] = str(cuda_number)
-    print("voice_change")
     device = 'cuda:0'
     config2 = Config(device, True)
     hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
@@ -221,7 +220,6 @@ def voice_change(cuda_number, voice_model, vocals_path, output_path, pitch_chang
               filter_radius, tgt_sr, rms_mix_rate, protect, crepe_hop_length, vc, hubert_model)
     del hubert_model, cpt
     gc.collect()
-    print("gc.collect done")
 
 
 def add_audio_effects(audio_path, reverb_rm_size, reverb_wet, reverb_dry, reverb_damping):

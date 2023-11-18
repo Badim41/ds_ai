@@ -48,7 +48,6 @@ async def on_ready():
         await user.send("Перезагружен!")
 
 
-
 @bot.event
 async def on_message(message):
     # minecraft chat bot
@@ -100,6 +99,81 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
+@bot.slash_command(name="help", description='помощь по командам')
+async def help_command(
+        ctx,
+        command: Option(str, description='Нужная вам команда', required=True,
+                        choices=['say', 'read_messages', 'ai_cover', 'tts', 'add_voice', 'create_dialog',
+                                 'change_image', 'change_video', 'join', 'disconnect', 'record', 'stop_recording',
+                                 'pause', 'skip']
+                        ),
+):
+    if command == "say":
+        await ctx.respond("# /say\n(Сделать запрос к GPT)\n**text - запрос для GPT**\ngpt_mode:\n-All - много ответов\n"
+                       "-Fast - быстрый ответ\n-None - экономный режим (не используйте)\n\nТакже в /say используются "
+                       "*протоколы* и *голосовые команды*\n/say gpt <вопрос> - сырой запрос для GPT\n/say протокол 998 - "
+                       "очистить контекст\n/say протокол 32 - последний озвученный текст (с RVC)\n/say протокол 31 - "
+                       "последний озвученный текст (без RVC)\n/say протокол 12 <запрос> - нарисовать картинку (не рекомендую!)"
+                       "\n/say код красный 0 - перезагрузка бота\n")
+    elif command == "read_messages":
+        await ctx.respond("# /read_messages\n(Прочитать последние сообщения и что-то с ними сделать)\n**number - "
+                       "количество читаемых сообщений**\n**prompt - запрос (например, перескажи эти сообщения)**\n")
+    elif command == "ai_cover":
+        await ctx.respond("# /ai_cover:\n(Перепеть/озвучить видео или аудио)\n**url - ссылка на видео**\n**audio_path - "
+                       "аудио файл**\nvoice - голосовая модель\ngender - пол (для тональности)\npitch - тональность (12 "
+                       "из мужского в женский, -12 из женского в мужской)\nindexrate - индекс голоса (чем больше, тем больше "
+                       "черт черт голоса говорящего)\nloudness - количество шума (чем больше, тем больше шума)\nfilter_radius - "
+                       "размер фильтра (чем больше, тем больше шума)\nmain_vocal, back_vocal, music - громкость каждой "
+                       "аудиодорожки\nroomsize, wetness, dryness - параметры реверберации\npalgo - rmvpe - лучший, mangio-crepe "
+                       "- более плавный\nhop - длина для учитывания тональности (mangio-crepe)\ntime - продолжительность (для "
+                       "войс-чата)\nstart - время начала (для войс-чата)\noutput - link - сслыка на архив, all_files - все "
+                       "файлы, file - только финальный файл\nonly_voice_change - просто заменить голос, без разделения вокала "
+                       "и музыки\n")
+    elif command == "tts":
+        await ctx.respond("# /tts\n(Озвучить текст)\n**text - произносимый текст**\nai_voice - голосовая модель\nspeed - "
+                       "Ускорение/замедление\nvoice_model - Модель голоса elevenlab\noutput - Отправляет файл в чат\n")
+    elif command == "add_voice":
+        await ctx.respond("# /add_voice\n(Добавить голосовую модель)\n**url - ссылка на модель **\n**name - имя модели "
+                       "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
+                       "speed - ускорение/замедление при /tts\nvoice_model - модель elevenlab\nchange_voice - True = "
+                       "заменить на текущий голос\n")
+    elif command == "create_dialog":
+        await ctx.respond("# /create_dialog\n(Создать диалог в войс-чате, используйте join)\n**names - участники диалога "
+                       "через ';' - список голосовых моделей Например,Участник1;Участник2**\ntheme - Тема разговора "
+                       "(может измениться)\nprompt - Постоянный запрос (например, что они находятся в определённом месте)\n")
+    elif command == "change_image":
+        await ctx.respond("# /change_image \n(Изменить изображение)\n**image - картинка, которую нужно изменить**\n"
+                       "**prompt - Запрос **\nnegative_prompt - Негативный запрос\nsteps - Количество шагов (больше - "
+                       "лучше, но медленнее)\nseed - сид (если одинаковый сид и файл, то получится то же самое изображение)"
+                       "\nx - расширение по X\ny - расширение по Y\nstrength - сила изменения\nstrength_prompt - сила для "
+                       "запроса\nstrength_negative_prompt - сила для негативного запроса\nrepeats - количество зображений "
+                       "(сид случайный!)\n")
+    elif command == "change_video":
+        await ctx.respond(
+            "# /change_video \n(Изменить видео **ПОКАДРОВО**)\n**video_path - видеофайл**\n**fps - Количество "
+            "кадров в секунду**\n**extension - Качество видео **\n**prompt - Запрос**\nnegative_prompt - "
+            "Негативный запрос\nsteps - Количество шагов (больше - лучше, но медленнее)\nseed - сид (если "
+            "одинаковый сид и файл, то получится то же самое изображение)\nstrength - сила изменения\n"
+            "strength_prompt - сила для запроса\nstrength_negative_prompt - сила для негативного запроса\n"
+            "voice - голосовая модель\npitch - тональность (12 из мужского в женский, -12 из женского в "
+            "мужской)\nindexrate - индекс голоса (чем больше, тем больше черт черт голоса говорящего)\n"
+            "loudness - количество шума (чем больше, тем больше шума)\nfilter_radius - размер фильтра (чем "
+            "больше, тем больше шума)\nmain_vocal, back_vocal, music - громкость каждой аудиодорожки\n"
+            "roomsize, wetness, dryness - параметры реверберации\n")
+    elif command == "join":
+        await ctx.respond("# /join\n - присоединиться к вам в войс-чате")
+    elif command == "disconnect":
+        await ctx.respond("# /disconnect\n - выйти из войс-чата")
+    elif command == "record":
+        await ctx.respond("# /record\n - включить распознавание речи через микрофон")
+    elif command == "stop_recording":
+        await ctx.respond("# /stop_recording\n  - выключить распознавание речи через микрофон")
+    elif command == "pause":
+        await ctx.respond("# /pause\n - пауза")
+    elif command == "skip":
+        await ctx.respond("# /skip\n - пропуск аудио")
+
+
 @bot.slash_command(name="change_video",
                    description='перерисовать и переозвучить видео. Бот также предложит вам название')
 async def __change_video(
@@ -126,12 +200,12 @@ async def __change_video(
         strength_prompt: Option(float,
                                 description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется положительный промпт',
                                 required=False,
-                                default=0.85, min_value=0,
+                                default=0.85, min_value=0.1,
                                 max_value=1),
         strength_negative_prompt: Option(float,
                                          description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется отрицательный промпт',
                                          required=False,
-                                         default=1, min_value=0,
+                                         default=1, min_value=0.1,
                                          max_value=1),
         voice: Option(str, description='Голос для видео', required=False, default="None"),
         pitch: Option(str, description='Кто говорит/поёт в видео?', required=False,
@@ -160,7 +234,7 @@ async def __change_video(
 
         voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
         if voice not in voices:
-            await ctx.respond("Выберите голос из списка: " + ','.join(voices))
+            await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
             return
         if await set_get_config_all(f"Image0", "model_loaded", None) == "False":
             await ctx.respond("модель для картинок не загружена")
@@ -292,12 +366,12 @@ async def __image(ctx,
                   strength_prompt: Option(float,
                                           description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется положительный промпт',
                                           required=False,
-                                          default=0.85, min_value=0,
+                                          default=0.85, min_value=0.1,
                                           max_value=1),
                   strength_negative_prompt: Option(float,
                                                    description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется отрицательный промпт',
                                                    required=False,
-                                                   default=1, min_value=0,
+                                                   default=1, min_value=0.1,
                                                    max_value=1),
                   repeats: Option(int,
                                   description='Количество повторов',
@@ -657,10 +731,11 @@ async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
         ai_voice: Option(str, description='Голос для озвучки', required=False, default=None),
-        speed: Option(float, description='Ускорение голоса', required=False, default=None),
+        speed: Option(float, description='Ускорение голоса', required=False, default=None, min_value=1, max_value=3),
         voice_model: Option(str, description=f'Какая модель elevenlab будет использована', required=False,
-                            choices=['Harry', 'Arnold', 'Clyde', 'Thomas', 'Adam', 'Antoni', 'Daniel', 'Harry', 'James', 'Patrick'],
-                     default=None),
+                            choices=['Harry', 'Arnold', 'Clyde', 'Thomas', 'Adam', 'Antoni', 'Daniel', 'Harry', 'James',
+                                     'Patrick'],
+                            default=None),
         output: Option(bool, description='Отправить результат', required=False, default=False)
 ):
     ai_voice_temp = None
@@ -669,10 +744,10 @@ async def __tts(
         await ctx.respond('Выполнение...')
         # count time
         start_time = datetime.datetime.now()
-        await use_cuda_async(0)
+        cuda = await use_cuda_async()
         voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
         if str(ai_voice) not in voices:
-            return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
+            return await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
         from function import replace_mat_in_sentence, mat_found
         text = await replace_mat_in_sentence(text)
         if mat_found:
@@ -686,15 +761,16 @@ async def __tts(
             ai_voice = await set_get_config_all("Default", "currentainame")
             print(await set_get_config_all("Default", "currentainame"))
         elif ai_voice not in voices:
-            return await ctx.respond("Выберите голос из списка: " + ','.join(voices))
+            return await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
         await set_get_config_all("Default", "currentainame", ai_voice)
         # запускаем TTS
         from function import text_to_speech
-        await text_to_speech(text, False, ctx, ai_dictionary=ai_voice, speed=speed, voice_model=voice_model, skip_tts=False)
+        await text_to_speech(text, False, ctx, ai_dictionary=ai_voice, speed=speed, voice_model=voice_model,
+                             skip_tts=False)
         # await run_main_with_settings(ctx, f"робот протокол 24 {text}",
         #                              False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
         # перестаём использовать видеокарту
-        await stop_use_cuda_async(0)
+        await stop_use_cuda_async(cuda)
 
         # count time
         end_time = datetime.datetime.now()
@@ -713,7 +789,7 @@ async def __tts(
         if not ai_voice_temp is None:
             await set_get_config_all("Default", "currentainame", ai_voice_temp)
         # перестаём использовать видеокарту
-        await stop_use_cuda_async(0)
+        await stop_use_cuda_async(cuda)
 
 
 async def get_links_from_playlist(playlist_url):
@@ -907,7 +983,8 @@ async def __dialog(
 ):
     try:
         await ctx.defer()
-        await ctx.respond('Выполнение...')
+        await ctx.respond('Бот выводит диалог только в голосовом чате. Используйте /join')
+
         if await set_get_config_all("dialog", "dialog", None) == "True":
             await ctx.respond("Уже идёт диалог!")
             return
@@ -925,7 +1002,7 @@ async def __dialog(
         infos = []
         for name in names:
             if name not in voices:
-                await ctx.respond("Выберите голоса из списка: " + ','.join(voices))
+                await ctx.respond("Выберите голоса из списка: " + ';'.join(voices))
                 return
             with open(f"rvc_models/{name}/info.txt") as reader:
                 file_content = reader.read().replace("Вот информация о тебе:", "")
@@ -936,9 +1013,11 @@ async def __dialog(
         # запустим сразу 8 процессов для обработки голоса
         await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx),
                              create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"),
-                             create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"),
+                             create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"))
+        """
                              create_audio_dialog(ctx, 4, "dialog"), create_audio_dialog(ctx, 5, "dialog"),
-                             create_audio_dialog(ctx, 6, "dialog"), create_audio_dialog(ctx, 7, "dialog"))
+                             create_audio_dialog(ctx, 6, "dialog"), create_audio_dialog(ctx, 7, "dialog")
+                            """
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
@@ -955,10 +1034,11 @@ async def __add_voice(
         info: Option(str, description=f'Какие-то сведения о данном человеке', required=False,
                      default="Отсутствует"),
         speed: Option(float, description=f'Ускорение/замедление голоса', required=False,
-                      default=1, min_value=0.5, max_value=2),
+                      default=1, min_value=1, max_value=3),
         voice_model: Option(str, description=f'Какая модель elevenlab будет использована', required=False,
-                            choices=['Harry', 'Arnold', 'Clyde', 'Thomas', 'Adam', 'Antoni', 'Daniel', 'Harry', 'James', 'Patrick'],
-                     default="Adam"),
+                            choices=['Harry', 'Arnold', 'Clyde', 'Thomas', 'Adam', 'Antoni', 'Daniel', 'Harry', 'James',
+                                     'Patrick'],
+                            default="Adam"),
         change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
                              default=False)
 ):
@@ -1101,6 +1181,9 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
     cuda = cuda % 2
 
     while True:
+        # if int(await set_get_config_all("dialog", "files_number")) >= int(await set_get_config_all("dialog", "play_number")) + 10:
+        #     await asyncio.sleep(0.5)
+        #     continue
         text_path = "caversAI/dialog_create.txt"
         play_path = "caversAI/dialog_play.txt"
         with open(text_path, "r") as reader:
@@ -1468,7 +1551,11 @@ async def get_image_dimensions(file_path):
 
 
 if __name__ == "__main__":
-    print("update 2")
+    import warnings
+
+    warnings.filterwarnings("ignore")
+
+    print("update 1")
     try:
 
         # === args ===
