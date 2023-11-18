@@ -510,6 +510,9 @@ async def voice_commands(sentence, ctx):
         seconds_delay = await extract_number_after_keyword(sentence, "код красный")
         if not seconds_delay == -1:
             if seconds_delay != 0:
+                if not ctx.author.id == int(await set_get_config_all("Default", "owner_id")):
+                    await ctx.author.send("Доступ запрещён")
+                    return True
                 await set_get_config_all("Default", "reload", "False")
                 await write_in_discord(ctx, "*выключение*")
             else:

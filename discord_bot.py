@@ -1136,7 +1136,7 @@ async def __add_voice(
 @bot.command(aliases=['cmd'], help="командная строка")
 async def command_line(ctx, *args):
     owner_id = await set_get_config_all("Default", "owner_id")
-    if not ctx.author.id == owner_id:
+    if not ctx.author.id == int(owner_id):
         await ctx.author.send("Доступ запрещён")
         return
 
