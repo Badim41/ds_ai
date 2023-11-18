@@ -137,7 +137,7 @@ async def help_command(
                        "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
                        "speed - ускорение/замедление при /tts\nvoice_model - модель elevenlab\nchange_voice - True = "
                        "заменить на текущий голос\ntxt_file - быстрое добавление множества голосовых моделей, для использования:\n"
-                          "- напишите в txt файле аргументы для add_voice (каждая модель - 1 строка), пример:")
+                          "- напишите в txt файле аргументы для add_voice (1 модель - 1 строка), пример:")
         await send_file(ctx, "add_voice_args.txt")
     elif command == "create_dialog":
         await ctx.respond("# /create_dialog\n(Создать диалог в войс-чате, используйте join)\n**names - участники диалога "
