@@ -1555,7 +1555,7 @@ if __name__ == "__main__":
 
     warnings.filterwarnings("ignore")
 
-    print("update 1")
+    print("update 2")
     try:
 
         # === args ===
