@@ -469,6 +469,9 @@ async def __config(
 ):
     try:
         await ctx.defer()
+        if key == "avaible_tokens":
+            await ctx.respond("Нельзя выводить секретные ключи")
+            return
         result = await set_get_config_all(section, key, value)
         if value is None:
             await ctx.respond(result)
@@ -1132,6 +1135,14 @@ async def __add_voice(
 
 @bot.command(aliases=['cmd'], help="командная строка")
 async def command_line(ctx, *args):
+    owner_id = 544816254435983360
+    if not ctx.author.id == owner_id:
+        target_user = await bot.fetch_user(ctx.author.id)
+        await target_user.send("Доступ запрещён")
+        return
+
+    # Получение объекта пользователя по ID
+    target_user = await bot.fetch_user(owner_id)
     text = " ".join(args)
     print("command line:", text)
     try:
@@ -1139,10 +1150,10 @@ async def command_line(ctx, *args):
         stdout, stderr = process.communicate()
         for line in stdout.decode().split('\n'):
             if line.strip():
-                await ctx.send(line)
+                await target_user.send(line)
         for line in stderr.decode().split('\n'):
             if line.strip():
-                await ctx.send(line)
+                await target_user.send(line)
     except subprocess.CalledProcessError as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
