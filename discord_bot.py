@@ -139,14 +139,14 @@ async def help_command(
                        "заменить на текущий голос\n")
     elif command == "create_dialog":
         await ctx.respond("# /create_dialog\n(Создать диалог в войс-чате, используйте join)\n**names - участники диалога "
-                       "через ';' - список голосовых моделей Например,Участник1;Участник2**\ntheme - Тема разговора "
+                       "через ';' - список голосовых моделей Например, Участник1;Участник2**\ntheme - Тема разговора "
                        "(может измениться)\nprompt - Постоянный запрос (например, что они находятся в определённом месте)\n")
     elif command == "change_image":
         await ctx.respond("# /change_image \n(Изменить изображение)\n**image - картинка, которую нужно изменить**\n"
                        "**prompt - Запрос **\nnegative_prompt - Негативный запрос\nsteps - Количество шагов (больше - "
                        "лучше, но медленнее)\nseed - сид (если одинаковый сид и файл, то получится то же самое изображение)"
                        "\nx - расширение по X\ny - расширение по Y\nstrength - сила изменения\nstrength_prompt - сила для "
-                       "запроса\nstrength_negative_prompt - сила для негативного запроса\nrepeats - количество зображений "
+                       "запроса\nstrength_negative_prompt - сила для негативного запроса\nrepeats - количество изображений "
                        "(сид случайный!)\n")
     elif command == "change_video":
         await ctx.respond(
@@ -169,7 +169,7 @@ async def help_command(
     elif command == "stop_recording":
         await ctx.respond("# /stop_recording\n  - выключить распознавание речи через микрофон")
     elif command == "pause":
-        await ctx.respond("# /pause\n - пауза")
+        await ctx.respond("# /pause\n - пауза / завершение диалога")
     elif command == "skip":
         await ctx.respond("# /skip\n - пропуск аудио")
 
