@@ -1,0 +1,5 @@
+/add_voice url:url_to_model1 name:some_name1 gender:мужчина
+/add_voice url:url_to_model2 name:some_name2 gender:женщина info:some_info1
+/add_voice url:url_to_model3 name:some_name3 gender:мужчина speed:1.1
+/add_voice url:url_to_model4 name:some_name4 gender:женщина voice_model:Adam
+/add_voice url:url_to_model5 name:some_name5 gender:мужчина info:some_info5 speed:1.2 voice_model:James

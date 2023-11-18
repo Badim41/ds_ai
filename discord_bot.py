@@ -136,7 +136,9 @@ async def help_command(
         await ctx.respond("# /add_voice\n(Добавить голосовую модель)\n**url - ссылка на модель **\n**name - имя модели "
                        "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
                        "speed - ускорение/замедление при /tts\nvoice_model - модель elevenlab\nchange_voice - True = "
-                       "заменить на текущий голос\n")
+                       "заменить на текущий голос\ntxt_file - быстрое добавление множества голосовых моделей, для использования:\n"
+                          "- напишите в txt файле аргументы для add_voice (каждая модель - 1 строка), пример:")
+        await send_file(ctx, "add_voice_args.txt")
     elif command == "create_dialog":
         await ctx.respond("# /create_dialog\n(Создать диалог в войс-чате, используйте join)\n**names - участники диалога "
                        "через ';' - список голосовых моделей Например, Участник1;Участник2**\ntheme - Тема разговора "
@@ -1402,7 +1404,7 @@ async def send_file(ctx, file_path, delete_file=False):
     try:
         await ctx.send(file=discord.File(file_path))
         if delete_file:
-            await asyncio.sleep(3)
+            await asyncio.sleep(1.5)
             os.remove(file_path)
     except FileNotFoundError:
         await ctx.send('Файл не найден.')
