@@ -1138,6 +1138,7 @@ async def __add_voice(
                 await ctx.send(f"Не указан пол в {i + 1} моделе ({name})")
                 continue
             await download_voice(ctx, urls[i], names[i], genders[i], infos[i], speeds[i], voice_models[i], False)
+        await ctx.send("Все модели успешно установлены!")
         return
 
     await download_voice(ctx, url, name, gender, info, speed, voice_model, change_voice)
