@@ -1135,14 +1135,12 @@ async def __add_voice(
 
 @bot.command(aliases=['cmd'], help="командная строка")
 async def command_line(ctx, *args):
-    owner_id = 5448162544359833600
+    owner_id = await set_get_config_all("Default", "owner_id")
     if not ctx.author.id == owner_id:
-        target_user = await bot.fetch_user(ctx.author.id)
-        await target_user.send("Доступ запрещён")
+        await ctx.author.send("Доступ запрещён")
         return
 
     # Получение объекта пользователя по ID
-    target_user = await bot.fetch_user(owner_id)
     text = " ".join(args)
     print("command line:", text)
     try:
@@ -1150,18 +1148,18 @@ async def command_line(ctx, *args):
         stdout, stderr = process.communicate()
         for line in stdout.decode().split('\n'):
             if line.strip():
-                await target_user.send(line)
+                await ctx.author.send(line)
         for line in stderr.decode().split('\n'):
             if line.strip():
-                await target_user.send(line)
+                await ctx.author.send(line)
     except subprocess.CalledProcessError as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        await ctx.send(f"Ошибка выполнения команды: {e}")
+        await ctx.author.send(f"Ошибка выполнения команды: {e}")
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        await ctx.send(f"Произошла неизвестная ошибка: {e}")
+        await ctx.author.send(f"Произошла неизвестная ошибка: {e}")
 
 
 async def play_dialog(ctx):

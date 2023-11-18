@@ -8,20 +8,18 @@ import subprocess
 import sys
 import traceback
 import zipfile
-from PIL import Image
-import numpy as np
-import librosa
-import soundfile as sf
 
 import g4f
-from pydub import AudioSegment
-from translate import Translator
+import numpy as np
+from PIL import Image
 from gtts import gTTS
+from pydub import AudioSegment
+
 from discord_bot import send_file
 from discord_bot import write_in_discord
+from set_get_config import set_get_config_all
 from use_free_cuda import stop_use_cuda_async, use_cuda_async, stop_use_cuda_images, use_cuda_images, \
     check_cuda_async
-from set_get_config import set_get_config_all
 
 _providers = [
     # AUTH
@@ -305,9 +303,9 @@ async def replace_mat_in_sentence(sentence):
 #     await result_command_change("выход из войса", Color.RED)
 
 
-async def translate(text):
-    translator = Translator(from_lang="ru", to_lang=language[:2].lower())
-    return translator.translate(text)
+# async def translate(text):
+#     translator = Translator(from_lang="ru", to_lang=language[:2].lower())
+#     return translator.translate(text)
 
 
 # gpt_errors = 0
