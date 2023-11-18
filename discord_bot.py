@@ -1052,14 +1052,14 @@ async def agrs_with_txt(txt_file):
             url.append(arguments.get('url', None))
             name.append(arguments.get('name', None))
             gender.append(arguments.get('gender', None))
-            info.append(arguments.get('info', None))
-            speed.append(arguments.get('speed', None))
-            voice_model.append(arguments.get('voice_model', None))
+            info.append(arguments.get('info', "Отсутствует"))
+            speed.append(arguments.get('speed', "1"))
+            voice_model.append(arguments.get('voice_model', "James"))
         return url, name, gender, info, speed, voice_model
     except Exception:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        return "None", "None", "None", "None", "None", "None"
+        return None, None, None, None, None, None
 
 
 async def download_voice(ctx, url, name, gender, info, speed, voice_model, change_voice):
@@ -1128,6 +1128,15 @@ async def __add_voice(
         print("speed:", speeds)
         print("voice_model:", voice_models)
         for i in range(len(urls)):
+            if name is None:
+                await ctx.send(f"Не указано имя в {i + 1} моделе")
+                continue
+            if url is None:
+                await ctx.send(f"Не указана ссылка в {i + 1} моделе ({name})")
+                continue
+            if gender is None:
+                await ctx.send(f"Не указан пол в {i + 1} моделе ({name})")
+                continue
             await download_voice(ctx, urls[i], names[i], genders[i], infos[i], speeds[i], voice_models[i], False)
         return
 
