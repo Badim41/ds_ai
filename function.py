@@ -1442,7 +1442,7 @@ async def gtts(tts, language, output_file):
 
 async def remove_unavaible_voice_token():
     tokens = (await set_get_config_all("voice", "avaible_tokens")).split(";")
-    avaible_tokens = ""
+    avaible_tokens = []
     if len(tokens) == 1:
         await set_get_config_all("voice", "avaible_tokens", "None")
         await result_command_change("==БОЛЬШЕ НЕТ ТОКЕНОВ ДЛЯ СИНТЕЗА ГОЛОСА==", Color.YELLOW)
@@ -1452,8 +1452,8 @@ async def remove_unavaible_voice_token():
         if skip_first:
             skip_first = False
             continue
-        avaible_tokens += token
-    await set_get_config_all("voice", "avaible_tokens", avaible_tokens)
+        avaible_tokens.append(token)
+    await set_get_config_all("voice", "avaible_tokens", ';'.join(avaible_tokens))
 
 
 async def setModelWithLanguage(language, model_type):
