@@ -879,8 +879,9 @@ async def createAICaver(ctx):
                                  *[prepare_audio_pipeline(cuda_number, ctx) for cuda_number in cuda_used])  #
             await result_command_change(f"ready audios", Color.GRAY)
             # освобождаем видеокарты
-            await stop_use_cuda_async(0)
-            await stop_use_cuda_async(1)
+            for cuda in cuda_used:
+                await stop_use_cuda_async(cuda)
+            
         else:
             # добавляем те, которые сейчас обрабатываются
             # queue_position = check_cuda()
@@ -1103,12 +1104,14 @@ async def prepare_audio_pipeline(cuda_number, ctx):
                     await asyncio.sleep(0.05)
                 else:
                     await set_get_config_all("Values", f"cuda{cuda_number}_is_busy", "False")
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(0.1)
                     if await set_get_config_all("Values", f"cuda{1 - cuda_number}_is_busy") == "False":
-                        print("Больше нет ссылок")
+                        print("Больше нет ссылок", cuda_number)
                         await set_get_config_all("Values", "queue", "False")
-                        await set_get_config_all('Values', "play_audio_process", "False")
-                        break
+                        if await set_get_config_all('Values', "play_audio_process") == "False":
+                            return
+                        else:
+                           await asyncio.sleep(1)
 
         except (IOError, KeyboardInterrupt) as e:
             await result_command_change(f"Произошла ошибка (ID:f7-cuda{cuda_number}):" + str(e), Color.RED)
@@ -1241,12 +1244,12 @@ async def play_audio_process(ctx):
                     await playSoundFile(audio_path, time, stop_milliseconds, ctx)
                     await remove_line_from_txt("caversAI/queue.txt", 1)
                 else:
-                    continue_process = bool(await set_get_config_all('Values', 'queue'))
-                    await asyncio.sleep(0.5)
+                    continue_process = await set_get_config_all('Values', 'queue') == "True"
+                    await asyncio.sleep(0.1)
                     if not continue_process:
                         await result_command_change(f"play_audio_process - False", Color.CYAN)
                         await set_get_config_all('Values', "play_audio_process", "False")
-                        break
+                        return
     except (IOError, KeyboardInterrupt) as e:
         await result_command_change("Произошла ошибка (ID:f12):" + str(e), Color.RED)
         await write_in_discord(ctx, "Произошла ошибка (ID:f12):" + str(e))
