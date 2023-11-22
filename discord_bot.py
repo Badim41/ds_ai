@@ -734,7 +734,7 @@ async def __say(
         await ctx.respond(f"Ошибка при команде say (с параметрами{text}): {e}")
 
 
-@bot.slash_command(name="tts2", description='Заставить бота говорить всё, что захочешь')
+@bot.slash_command(name="tts_ai", description='Заставить бота говорить всё, что захочешь')
 async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
