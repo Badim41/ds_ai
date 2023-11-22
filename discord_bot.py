@@ -519,6 +519,12 @@ async def __read_messages(
 async def join(ctx):
     try:
         await ctx.defer()
+
+        # уже в войс-чате
+        if ctx.voice_client is not None and ctx.voice_client.is_connected():
+            await ctx.respond("Бот уже находится в голосовом канале.")
+            return
+
         voice = ctx.author.voice
         if not voice:
             await ctx.respond(voiceChannelErrorText)
@@ -530,7 +536,7 @@ async def join(ctx):
             return await ctx.voice_client.move_to(voice_channel)
 
         await voice_channel.connect()
-        await ctx.respond("присоединяюсь")
+        await ctx.respond("Присоединяюсь")
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
