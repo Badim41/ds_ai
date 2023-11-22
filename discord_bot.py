@@ -740,15 +740,12 @@ async def __say(
         await ctx.respond(f"Ошибка при команде say (с параметрами{text}): {e}")
 
 
-@bot.slash_command(name="tts_ai", description='Заставить бота говорить всё, что захочешь')
+@bot.slash_command(name="tts", description='Заставить бота говорить всё, что захочешь')
 async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
         ai_voice: Option(str, description='Голос для озвучки', required=False, default=None),
         speed: Option(float, description='Ускорение голоса', required=False, default=None, min_value=1, max_value=3),
-        voice_model: Option(str, description=f'Какая модель elevenlab будет использована', required=False,
-                            choices=ALL_VOICES,
-                            default=None),
         stability: Option(float, description='Стабильность голоса', required=False, default=None, min_value=0, max_value=1),
         similarity_boost: Option(float, description='Повышение сходства', required=False, default=None, min_value=0, max_value=1),
         style: Option(float, description='Выражение', required=False, default=None, min_value=0, max_value=1),
