@@ -111,12 +111,13 @@ async def help_command(
                         ),
 ):
     if command == "say":
-        await ctx.respond("# /say\n(Сделать запрос к GPT)\n**text - запрос для GPT**\ngpt_mode:\n-All - много ответов\n"
-                       "-Fast - быстрый ответ\n-None - экономный режим (не используйте)\n\nТакже в /say используются "
+        await ctx.respond("# /say\n(Сделать запрос к GPT)\n**text - запрос для GPT**\*\ngpt_mode:\n- много ответов\n"
+                       "- быстрый ответ\n- экономный режим (не используйте)\n\n*Модификация сохраняется при следующих запросах!*\nТакже в /say используются "
                        "*протоколы* и *голосовые команды*\n/say gpt <вопрос> - сырой запрос для GPT\n/say протокол 998 - "
                        "очистить контекст\n/say протокол 32 - последний озвученный текст (с RVC)\n/say протокол 31 - "
                        "последний озвученный текст (без RVC)\n/say протокол 12 <запрос> - нарисовать картинку (не рекомендую!)"
                        "\n/say код красный 0 - перезагрузка бота\n")
+        await ctx.send("\* - параметр сохраняется")
     elif command == "read_messages":
         await ctx.respond("# /read_messages\n(Прочитать последние сообщения и что-то с ними сделать)\n**number - "
                        "количество читаемых сообщений**\n**prompt - запрос (например, перескажи эти сообщения)**\n")
@@ -133,7 +134,11 @@ async def help_command(
                        "и музыки\n")
     elif command == "tts":
         await ctx.respond("# /tts\n(Озвучить текст)\n**text - произносимый текст**\nai_voice - голосовая модель\nspeed - "
-                       "Ускорение/замедление\nvoice_model - Модель голоса elevenlab\noutput - Отправляет файл в чат\n")
+                       "Ускорение/замедление\nvoice_model - Модель голоса elevenlab\noutput - Отправляет файл в чат\n"
+                          "stability - Стабильность голоса (0 - нестабильный, 1 - стабильный)\*\n"
+                          "similarity_boost - Повышение сходства (0 - отсутствует)\*\n"
+                          "style - Выражение (0 - мало пауз и выражения, 1 - большое количество пауз и выражения)\*\n")
+        await ctx.send("\* - параметр сохраняется")
     elif command == "add_voice":
         await ctx.respond("# /add_voice\n(Добавить голосовую модель)\n**url - ссылка на модель **\n**name - имя модели "
                        "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
@@ -718,9 +723,11 @@ async def __lenght(
 async def __say(
         ctx,
         text: Option(str, description='Сам текст/команда. Список команд: \\help-say', required=True),
-        gpt_mode: Option(str, description="модификация GPT. 'all' - все ответы, 'fast' - быстрый, 'None' - точный",
-                         choices=["fast", "all", "None"], required=False, default=None)
+        gpt_mode: Option(str, description="модификация GPT. Модификация сохраняется при следующих запросах!",
+                         choices=["быстрый режим", "много ответов (медленный)", "экономный режим"], required=False, default=None)
 ):
+    # ["fast", "all", "None"], ["быстрый режим", "много ответов (медленный)", "Экономный режим"]
+    gpt_mode = gpt_mode.replace("быстрый режим", "fast").replace("много ответов (медленный)", "all").replace("экономный режим", "None")
     try:
         await ctx.respond('Выполнение...')
 
@@ -753,7 +760,7 @@ async def __tts(
         stability: Option(float, description='Стабильность голоса', required=False, default=None, min_value=0, max_value=1),
         similarity_boost: Option(float, description='Повышение сходства', required=False, default=None, min_value=0, max_value=1),
         style: Option(float, description='Выражение', required=False, default=None, min_value=0, max_value=1),
-        output: Option(str, description='Отправить результат', required=False, choices=["1 file (RVC)", "2 files (RVC & elevenlabs/GTTS)", "None"],default=None)
+        output: Option(str, description='Отправить результат', required=False, choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"],default=None)
 ):
     # заменяем 3 значения
     for key in [stability, similarity_boost, style]:
@@ -875,13 +882,15 @@ async def __cover(
                     max_value=1280),
         start: Option(int, description='Начать воспроизводить с (в секундах). -1 для продолжения', required=False,
                       default=0, min_value=-2),
-        output: Option(str, description='Отправить результат', choices=["link", "file", "all_files", "None"],
-                       required=False, default="file"),
+        output: Option(str, description='Отправить результат', choices=["ссылка на все файлы", "только результат (1 файл)", "все файлы", "не отправлять"],
+                       required=False, default="только результат (1 файл)"),
         only_voice_change: Option(bool,
                                   description='Не извлекать инструментал и бэквокал, изменить голос. Не поддерживаются ссылки',
                                   required=False, default=False)
 ):
     param_string = None
+    # ["link", "file", "all_files", "None"], ["ссылка на все файлы", "только результат (1 файл)", "все файлы", "не отправлять"]
+    output = output.replace("ссылка на все файлы", "link").replace("только результат (1 файл)", "file").replace("все файлы", "all_files").replace("не отправлять", "None")
     try:
         await ctx.defer()
         await ctx.respond('Выполнение...')
