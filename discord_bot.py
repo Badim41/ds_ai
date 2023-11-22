@@ -449,7 +449,7 @@ async def __image(ctx,
             if repeats == 1:
                 await ctx.respond("Вот как я изменил ваше изображение🖌. Потрачено " + spent_time)
             else:
-                await ctx.send("Вот как я изменил ваше изображение🖌. Потрачено " + spent_time)
+                await ctx.send("Вот как я изменил ваше изображение🖌. Потрачено " + spent_time + f"сид:{seed_current}")
             await send_file(ctx, output_image, delete_file=True)
             # перестаём использовать видеокарту
             await stop_use_cuda_images(cuda_number)
