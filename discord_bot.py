@@ -765,7 +765,7 @@ async def __tts(
             return await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
         from function import replace_mat_in_sentence
         text_out = await replace_mat_in_sentence(text)
-        if not text_out == text:
+        if not text_out == text.lower():
             await ctx.respond("Такое точно нельзя произносить!")
             return
         print(f'{text} ({type(text).__name__})\n')
