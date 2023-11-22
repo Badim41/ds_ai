@@ -124,10 +124,8 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
 
         # === обработка изображений ===
         if len(cuda_numbers) == 1:
-            print("temp1", cuda_numbers)
             await set_get_config_all(f"Video", f"result_video0", False)
             await image_change(output_folder, prompt, 1, cuda_numbers[0])
-            print("temp2")
         else:
             await set_get_config_all(f"Video", f"result_video0", False)
             await set_get_config_all(f"Video", f"result_video1", False)
@@ -140,7 +138,6 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
         #         if await set_get_config_all(f"Video", f"result_video{i}", None) == "True":
         #             break
         #         await asyncio.sleep(5)
-        print("temp4")
         # === обработка звука ===
         if not voice == "None":
             await set_get_config_all("voice", "generated", "None")
