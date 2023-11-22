@@ -124,22 +124,23 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
 
         # === обработка изображений ===
         if len(cuda_numbers) == 1:
+            print("temp1", cuda_numbers)
             await set_get_config_all(f"Video", f"result_video0", False)
-            pool = multiprocessing.Pool(processes=1)
-            pool.apply_async(image_change(output_folder, prompt, 1, cuda_numbers[0]))
-            pool.close()
+            await image_change(output_folder, prompt, 1, cuda_numbers[0])
+            print("temp2")
         else:
             await set_get_config_all(f"Video", f"result_video0", False)
             await set_get_config_all(f"Video", f"result_video1", False)
             await asyncio.gather(image_change(output_folder, prompt, len(cuda_numbers), 0), image_change(output_folder, prompt, len(cuda_numbers), 1))  # результаты всех функций
 
         # wait for results
-        for i in cuda_numbers:
-            while True:
-                if await set_get_config_all(f"Video", f"result_video{i}", None) == "True":
-                    break
-                await asyncio.sleep(5)
-
+        # for i in cuda_numbers:
+        #     print("temp3")
+        #     while True:
+        #         if await set_get_config_all(f"Video", f"result_video{i}", None) == "True":
+        #             break
+        #         await asyncio.sleep(5)
+        print("temp4")
         # === обработка звука ===
         if not voice == "None":
             await set_get_config_all("voice", "generated", "None")
