@@ -211,7 +211,7 @@ async def is_robot_name(text, ctx):
     if text.startswith("Михаил"):
         return True
 
-    if text.startswith(currentAIname[:-1]):
+    if text.lower().startswith(currentAIname.lower()[:-1]):
         if text == currentAIname:
             await text_to_speech("да?", False, ctx)
             return False
