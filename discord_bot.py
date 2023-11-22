@@ -753,7 +753,7 @@ async def __tts(
         stability: Option(float, description='Стабильность голоса', required=False, default=None, min_value=0, max_value=1),
         similarity_boost: Option(float, description='Повышение сходства', required=False, default=None, min_value=0, max_value=1),
         style: Option(float, description='Выражение', required=False, default=None, min_value=0, max_value=1),
-        output: Option(bool, description='Отправить результат', required=False, default=False)
+        output: Option(str, description='Отправить результат', required=False, choices=["1 file (RVC)", "2 files (RVC & elevenlabs/GTTS)", "None"],default=None)
 ):
     # заменяем 3 значения
     for key in [stability, similarity_boost, style]:
@@ -802,7 +802,11 @@ async def __tts(
         if "0:00:00" not in str(spent_time):
             await ctx.respond("Потрачено на обработку:" + spent_time)
         if output:
-            await send_file(ctx, "2.mp3")
+            if output.startswith("1"):
+                await send_file(ctx, "2.mp3")
+            elif output.startswith("2"):
+                await send_file(ctx, "1.mp3")
+                await send_file(ctx, "2.mp3")
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
