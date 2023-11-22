@@ -1234,7 +1234,7 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Daniel"
         keys = (await set_get_config_all("voice", "avaible_tokens", None)).split(";")
         key = keys[0]
         if not key == "Free":
-            set_api_key(key)
+            await set_api_key(key)
 
         stability = float(await set_get_config_all("voice", "stability"))
         similarity_boost = float(await set_get_config_all("voice", "similarity_boost"))
