@@ -1097,9 +1097,21 @@ async def prepare_audio_pipeline(cuda_number, ctx):
                     #     print("Условия не выполнены")
                     #     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     #     break
+
+                    # time start
+                    start_time = datetime.datetime.now()
+
                     await result_command_change(f"запуск AICoverGen", Color.CYAN)
                     await remove_line_from_txt("caversAI/audio_links.txt", 1)
                     await run_ai_cover_gen(line, ctx, cuda=cuda_number)
+
+                    end_time = datetime.datetime.now()
+                    spent_time = str(end_time - start_time)
+                    # убираем миллисекунды
+                    spent_time = spent_time[:spent_time.find(".")]
+                    if not "0:00:00" in str(spent_time):
+                        await ctx.respond("Потрачено на обработку:" + spent_time)
+
                     # await execute_command(params, ctx)
                     await asyncio.sleep(0.05)
                 else:

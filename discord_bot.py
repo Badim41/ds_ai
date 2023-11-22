@@ -932,8 +932,7 @@ async def __cover(
 
         param_string = ' '.join(params)
         print("suc params")
-        # time start
-        start_time = datetime.datetime.now()
+
         if audio_path:
             filename = str(random.randint(1, 1000000)) + ".mp3"
             await audio_path.save(filename)
@@ -982,12 +981,7 @@ async def __cover(
         else:
             await ctx.respond('Не указана ссылка или аудиофайл')
             return
-        end_time = datetime.datetime.now()
-        spent_time = str(end_time - start_time)
-        # убираем миллисекунды
-        spent_time = spent_time[:spent_time.find(".")]
-        if not "0:00:00" in str(spent_time):
-            await ctx.respond("Потрачено на обработку:" + spent_time)
+
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
