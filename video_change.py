@@ -18,9 +18,9 @@ async def image_change(output_folder, prompt, cuda_number, cuda_index):
         for filename in sorted(os.listdir(output_folder)):
             if filename.endswith('.png'):
                 print("changing...", filename)
-                await set_get_config_all(f"Image", "result", "None")
-                await set_get_config_all(f"Image", "input", "frames/" + filename)
-                await set_get_config_all(f"Image", "prompt", prompt)
+                await set_get_config_all(f"Image{cuda_index}", "result", "None")
+                await set_get_config_all(f"Image{cuda_index}", "input", "frames/" + filename)
+                await set_get_config_all(f"Image{cuda_index}", "prompt", prompt)
                 # wait for answer
                 while True:
                     if not await set_get_config_all(f"Image", "result", None) == "None":
@@ -126,7 +126,7 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
         if len(cuda_numbers) == 1:
             await set_get_config_all(f"Video", f"result_video0", False)
             pool = multiprocessing.Pool(processes=1)
-            pool.apply_async(image_change(output_folder, prompt, 1, 0))
+            pool.apply_async(image_change(output_folder, prompt, 1, cuda_numbers[0]))
             pool.close()
         else:
             await set_get_config_all(f"Video", f"result_video0", False)
