@@ -23,7 +23,7 @@ async def image_change(output_folder, prompt, cuda_number, cuda_index):
                 await set_get_config_all(f"Image{cuda_index}", "prompt", prompt)
                 # wait for answer
                 while True:
-                    if not await set_get_config_all(f"Image", "result", None) == "None":
+                    if not await set_get_config_all(f"Image{cuda_index}", "result", None) == "None":
                         break
                     await asyncio.sleep(0.25)
         await set_get_config_all(f"Video", f"result_video{cuda_index}", True)
