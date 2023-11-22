@@ -472,7 +472,7 @@ async def __config(
 ):
     try:
         await ctx.defer()
-        if key == "avaible_tokens":
+        if key == "avaible_tokens" and value is None:
             await ctx.respond("Нельзя выводить секретные ключи")
             return
         result = await set_get_config_all(section, key, value)
