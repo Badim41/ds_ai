@@ -1,4 +1,5 @@
 import datetime
+import json
 import multiprocessing
 import os
 import random
@@ -27,6 +28,7 @@ from set_get_config import set_get_config_all, set_get_config_all_not_async
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
+ALL_VOICES = ['Rachel [Ж]', 'Clyde [М]', 'Domi [Ж]', 'Dave [М]', 'Fin [М]', 'Bella [Ж]', 'Antoni [М]', 'Thomas [М]', 'Charlie [М]', 'Emily [Ж]', 'Elli [Ж]', 'Callum [М]', 'Patrick [М]', 'Harry [М]', 'Liam [М]', 'Dorothy [Ж]', 'Josh [М]', 'Arnold [М]', 'Charlotte [Ж]', 'Matilda [Ж]', 'Matthew [М]', 'James [М]', 'Joseph [М]', 'Jeremy [М]', 'Michael [М]', 'Ethan [М]', 'Gigi [Ж]', 'Freya [Ж]', 'Grace [Ж]', 'Daniel [М]', 'Serena [Ж]', 'Adam [М]', 'Nicole [Ж]', 'Jessie [М]', 'Ryan [М]', 'Sam [М]', 'Glinda [Ж]', 'Giovanni [М]', 'Mimi [Ж]']
 
 connections = {}
 
@@ -238,7 +240,7 @@ async def __change_video(
         if voice not in voices:
             await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
             return
-        if await set_get_config_all(f"Image0", "model_loaded", None) == "False":
+        if await set_get_config_all(f"Image0", "model_loaded") == "False":
             await ctx.respond("модель для картинок не загружена")
             return
         if not video_path:
@@ -382,6 +384,9 @@ async def __image(ctx,
                                   max_value=16)
                   ):
     await ctx.defer()
+    if await set_get_config_all(f"Image0", "model_loaded") == "False":
+        await ctx.respond("модель для картинок не загружена")
+        return
     for i in range(repeats):
         cuda_number = None
         try:
@@ -393,8 +398,6 @@ async def __image(ctx,
 
             await set_get_config_all(f"Image{cuda_number}", "result", "None")
             # throw extensions
-            if await set_get_config_all(f"Image{cuda_number}", "model_loaded", None) == "False":
-                return await ctx.respond("модель для картинок не загружена")
             # run timer
             start_time = datetime.datetime.now()
             input_image = "images/image" + str(random.randint(1, 1000000)) + ".png"
@@ -731,18 +734,25 @@ async def __say(
         await ctx.respond(f"Ошибка при команде say (с параметрами{text}): {e}")
 
 
-@bot.slash_command(name="tts", description='_Заставить_ бота говорить всё, что захочешь')
+@bot.slash_command(name="tts", description='Заставить бота говорить всё, что захочешь')
 async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
         ai_voice: Option(str, description='Голос для озвучки', required=False, default=None),
         speed: Option(float, description='Ускорение голоса', required=False, default=None, min_value=1, max_value=3),
         voice_model: Option(str, description=f'Какая модель elevenlab будет использована', required=False,
-                            choices=['Harry', 'Arnold', 'Clyde', 'Thomas', 'Adam', 'Antoni', 'Daniel', 'Harry', 'James',
-                                     'Patrick'],
+                            choices=ALL_VOICES,
                             default=None),
+        stability: Option(float, description='Стабильность голоса', required=False, default=None, min_value=0, max_value=1),
+        similarity_boost: Option(float, description='Повышение сходства', required=False, default=None, min_value=0, max_value=1),
+        style: Option(float, description='Выражение', required=False, default=None, min_value=0, max_value=1),
         output: Option(bool, description='Отправить результат', required=False, default=False)
 ):
+    # заменяем 3 значения
+    for key in [stability, similarity_boost, style]:
+        if key:
+            await set_get_config_all("voice", str(key), key)
+
     ai_voice_temp = None
     try:
         await ctx.defer()
@@ -753,10 +763,10 @@ async def __tts(
         voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
         if str(ai_voice) not in voices:
             return await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
-        from function import replace_mat_in_sentence, mat_found
-        text = await replace_mat_in_sentence(text)
-        if mat_found:
-            await ctx.respond("Такое нельзя произносить!")
+        from function import replace_mat_in_sentence
+        text_out = await replace_mat_in_sentence(text)
+        if not text_out == text:
+            await ctx.respond("Такое точно нельзя произносить!")
             return
         print(f'{text} ({type(text).__name__})\n')
         # меняем голос
@@ -1109,8 +1119,7 @@ async def __add_voice(
         speed: Option(float, description=f'Ускорение/замедление голоса', required=False,
                       default=1, min_value=1, max_value=3),
         voice_model: Option(str, description=f'Какая модель elevenlab будет использована', required=False,
-                            choices=['Harry', 'Arnold', 'Clyde', 'Thomas', 'Adam', 'Antoni', 'Daniel', 'Harry', 'James',
-                                     'Patrick'],
+                            choices=ALL_VOICES,
                             default="Adam"),
         change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
                              default=False),
@@ -1202,9 +1211,14 @@ async def play_dialog(ctx):
             print(str(traceback_str))
             await ctx.send(f"Ошибка при изменении голоса(ID:d2): {e}")
 
+async def get_voice_id_by_name(voice_name):
+    with open('voices.json', 'r', encoding='utf-8') as file:
+        data = json.load(file)
+    voice = next((v for v in data["voices"] if v["name"] == voice_name), None)
+    return voice["voice_id"] if voice else None
 
 async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Daniel"):
-    from elevenlabs import generate, save, set_api_key
+    from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
     language = await set_get_config_all("Default", "language", None)
     max_simbols = await set_get_config_all("voice", "max_simbols", None)
 
@@ -1221,18 +1235,21 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Daniel"
         key = keys[0]
         if not key == "Free":
             set_api_key(key)
+
+        stability = int(await set_get_config_all("voice", "stability"))
+        similarity_boost = int(await set_get_config_all("voice", "similarity_boost"))
+        style = int(await set_get_config_all("voice", "style"))
         try:
             # голос TTS в зависимости от пола
-            if currentpitch == 0:
-                # Arnold(быстрый) Thomas Adam Antoni !Antoni(мяг) !Clyde(тяж) !Daniel(нейтр) !Harry !James Patrick
-                voice = voice_model
-            else:
-                # Mimi Matilda
-                voice = "Bella"
+            # Arnold(быстрый) Thomas Adam Antoni !Antoni(мяг) !Clyde(тяж) !Daniel(нейтр) !Harry !James Patrick
+            voice_id = get_voice_id_by_name(voice_model)
             audio = generate(
                 text=tts,
                 model='eleven_multilingual_v2',
-                voice=voice
+                voice=Voice(
+                    voice_id=voice_id,
+                    settings=VoiceSettings(stability=stability, similarity_boost=similarity_boost, style=style, use_speaker_boost=True)
+                ),
             )
 
             save(audio, file_name)
