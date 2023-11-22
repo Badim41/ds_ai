@@ -476,9 +476,6 @@ async def __config(
         if not ctx.author.id == int(owner_id):
             await ctx.author.send("Доступ запрещён")
             return
-        if key == "avaible_tokens" and value is None:
-            await ctx.respond("Нельзя выводить секретные ключи")
-            return
         result = await set_get_config_all(section, key, value)
         if value is None:
             await ctx.respond(result)
