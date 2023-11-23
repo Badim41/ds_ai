@@ -1255,7 +1255,7 @@ async def get_voice_id_by_name(voice_name):
     voice = next((v for v in data["voices"] if v["name"] == voice_name), None)
     return voice["voice_id"] if voice else None
 
-async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Daniel"):
+async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
     from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
     language = await set_get_config_all("Default", "language", None)
     max_simbols = await set_get_config_all("voice", "max_simbols", None)
@@ -1281,6 +1281,7 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Daniel"
             # голос TTS в зависимости от пола
             # Arnold(быстрый) Thomas Adam Antoni !Antoni(мяг) !Clyde(тяж) !Daniel(нейтр) !Harry !James Patrick
             voice_id = await get_voice_id_by_name(voice_model)
+            print("VOICE_ID_ELEVENLABS:", voice_id)
             audio = generate(
                 text=tts,
                 model='eleven_multilingual_v2',
