@@ -28,7 +28,6 @@ from set_get_config import set_get_config_all, set_get_config_all_not_async
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
-ALL_VOICES = ['Rachel [Ж]', 'Clyde [М]', 'Domi [Ж]', 'Dave [М]', 'Fin [М]', 'Bella [Ж]', 'Antoni [М]', 'Thomas [М]', 'Charlie [М]', 'Emily [Ж]', 'Elli [Ж]', 'Callum [М]', 'Patrick [М]', 'Harry [М]', 'Liam [М]', 'Dorothy [Ж]', 'Josh [М]', 'Arnold [М]', 'Charlotte [Ж]', 'Matilda [Ж]', 'Matthew [М]', 'James [М]', 'Joseph [М]', 'Jeremy [М]', 'Michael [М]', 'Ethan [М]', 'Gigi [Ж]', 'Freya [Ж]', 'Grace [Ж]', 'Daniel [М]', 'Serena [Ж]', 'Adam [М]', 'Nicole [Ж]', 'Jessie [М]', 'Ryan [М]', 'Sam [М]', 'Glinda [Ж]', 'Giovanni [М]', 'Mimi [Ж]']
 
 connections = {}
 
@@ -754,14 +753,16 @@ async def __tts(
         text: Option(str, description='Текст для озвучки', required=True),
         ai_voice: Option(str, description='Голос для озвучки', required=False, default=None),
         speed: Option(float, description='Ускорение голоса', required=False, default=None, min_value=1, max_value=3),
-        voice_model: Option(str, description=f'Какая модель elevenlab будет использована', required=False,
-                            choices=ALL_VOICES,
+        voice_model: Option(str, description=f'Какая модель elevenlabs будет использована', required=False,
+                            choices=['Rachel [Ж]', 'Clyde [М]', 'Domi [Ж]', 'Dave [М]', 'Fin [М]', 'Bella [Ж]', 'Antoni [М]', 'Thomas [М]', 'Charlie [М]', 'Emily [Ж]', 'Elli [Ж]', 'Callum [М]', 'Patrick [М]', 'Harry [М]', 'Liam [М]', 'Dorothy [Ж]', 'Josh [М]', 'Arnold [М]', 'Charlotte [Ж]', 'Matilda [Ж]', 'Matthew [М]', 'James [М]', 'Joseph [М]', 'Jeremy [М]', 'Michael [М]', 'Ethan [М]', 'Gigi [Ж]', 'Freya [Ж]', 'Grace [Ж]', 'Daniel [М]', 'Serena [Ж]', 'Adam [М]', 'Nicole [Ж]', 'Jessie [М]', 'Ryan [М]', 'Sam [М]', 'Glinda [Ж]', 'Giovanni [М]', 'Mimi [Ж]'],
                             default=None),
         stability: Option(float, description='Стабильность голоса', required=False, default=None, min_value=0, max_value=1),
         similarity_boost: Option(float, description='Повышение сходства', required=False, default=None, min_value=0, max_value=1),
         style: Option(float, description='Выражение', required=False, default=None, min_value=0, max_value=1),
         output: Option(str, description='Отправить результат', required=False, choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"],default=None)
 ):
+    if voice_model:
+        voice_model = voice_model[:voice_model.find(" ")]
     # заменяем 3 значения
     for key in [stability, similarity_boost, style]:
         if key:
@@ -1135,14 +1136,16 @@ async def __add_voice(
                      default="Отсутствует"),
         speed: Option(float, description=f'Ускорение/замедление голоса', required=False,
                       default=1, min_value=1, max_value=3),
-        voice_model: Option(str, description=f'Какая модель elevenlab будет использована', required=False,
-                            choices=ALL_VOICES,
+        voice_model: Option(str, description=f'Какая модель elevenlabs будет использована', required=False,
+                            choices=['Rachel [Ж]', 'Clyde [М]', 'Domi [Ж]', 'Dave [М]', 'Fin [М]', 'Bella [Ж]', 'Antoni [М]', 'Thomas [М]', 'Charlie [М]', 'Emily [Ж]', 'Elli [Ж]', 'Callum [М]', 'Patrick [М]', 'Harry [М]', 'Liam [М]', 'Dorothy [Ж]', 'Josh [М]', 'Arnold [М]', 'Charlotte [Ж]', 'Matilda [Ж]', 'Matthew [М]', 'James [М]', 'Joseph [М]', 'Jeremy [М]', 'Michael [М]', 'Ethan [М]', 'Gigi [Ж]', 'Freya [Ж]', 'Grace [Ж]', 'Daniel [М]', 'Serena [Ж]', 'Adam [М]', 'Nicole [Ж]', 'Jessie [М]', 'Ryan [М]', 'Sam [М]', 'Glinda [Ж]', 'Giovanni [М]', 'Mimi [Ж]'],
                             default="Adam"),
         change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
                              default=False),
         txt_file: Option(discord.SlashCommandOptionType.attachment, description='Файл txt для добавления нескольких моделей сразу',
                            required=False, default=None)
 ):
+    if voice_model:
+        voice_model = voice_model[:voice_model.find(" ")]
     await ctx.defer()
     await ctx.respond('Выполнение...')
     if txt_file:
