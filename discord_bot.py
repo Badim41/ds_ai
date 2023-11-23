@@ -726,7 +726,8 @@ async def __say(
                          choices=["быстрый режим", "много ответов (медленный)", "экономный режим"], required=False, default=None)
 ):
     # ["fast", "all", "None"], ["быстрый режим", "много ответов (медленный)", "Экономный режим"]
-    gpt_mode = gpt_mode.replace("быстрый режим", "fast").replace("много ответов (медленный)", "all").replace("экономный режим", "None")
+    if gpt_mode:
+        gpt_mode = gpt_mode.replace("быстрый режим", "fast").replace("много ответов (медленный)", "all").replace("экономный режим", "None")
     try:
         await ctx.respond('Выполнение...')
 
