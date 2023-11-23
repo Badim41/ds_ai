@@ -1066,19 +1066,20 @@ async def agrs_with_txt(txt_file):
         speed = []
         voice_model = []
         for line in lines:
-            line = line.replace(": ", ":")
-            # /add_voice url:url_to_model name:some_name gender:мужчина info:some_info speed:some_speed voice_model:some_model
-            pattern = r'(\w+):(.+?)\s(?=\w+:|$)'
+            if line.strip():
+                line = line.replace(": ", ":")
+                # /add_voice url:url_to_model name:some_name gender:мужчина info:some_info speed:some_speed voice_model:some_model
+                pattern = r'(\w+):(.+?)\s(?=\w+:|$)'
 
-            matches = re.findall(pattern, line)
-            arguments = dict(matches)
+                matches = re.findall(pattern, line)
+                arguments = dict(matches)
 
-            url.append(arguments.get('url', None))
-            name.append(arguments.get('name', None))
-            gender.append(arguments.get('gender', None))
-            info.append(arguments.get('info', "Отсутствует"))
-            speed.append(arguments.get('speed', "1"))
-            voice_model.append(arguments.get('voice_model', "James"))
+                url.append(arguments.get('url', None))
+                name.append(arguments.get('name', None))
+                gender.append(arguments.get('gender', None))
+                info.append(arguments.get('info', "Отсутствует"))
+                speed.append(arguments.get('speed', "1"))
+                voice_model.append(arguments.get('voice_model', "James"))
         return url, name, gender, info, speed, voice_model
     except Exception:
         traceback_str = traceback.format_exc()
