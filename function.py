@@ -1110,7 +1110,7 @@ async def prepare_audio_pipeline(cuda_number, ctx):
                     # убираем миллисекунды
                     spent_time = spent_time[:spent_time.find(".")]
                     if not "0:00:00" in str(spent_time):
-                        await ctx.respond("Потрачено на обработку:" + spent_time)
+                        await ctx.send("Потрачено на обработку:" + spent_time)
 
                     # await execute_command(params, ctx)
                     await asyncio.sleep(0.05)
