@@ -762,13 +762,18 @@ async def __tts(
         output: Option(str, description='Отправить результат', required=False, choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"],default=None)
 ):
     if voice_model:
-        voice_model = voice_model[:voice_model.find(" ")]
-        if not voice_model in ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie',
-                               'Emily', 'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold',
-                               'Charlotte', 'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan',
-                               'Gigi', 'Freya', 'Grace', 'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam',
-                               'Glinda', 'Giovanni', 'Mimi']:
-            print("Список голосов (М - мужские, Ж - женские): \n", ALL_VOICES)
+        found_voice = False
+        for voice_1 in ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie', 'Emily',
+                        'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte',
+                        'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya', 'Grace',
+                        'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni', 'Mimi']:
+            if voice_1 in voice_model:
+                voice_model = voice_1
+                found_voice = True
+                break
+        if not found_voice:
+            await ctx.respond("Список голосов (М - мужские, Ж - женские): \n", ALL_VOICES)
+            return
     # заменяем 3 значения
     for key in [stability, similarity_boost, style]:
         if key:
@@ -1150,9 +1155,15 @@ async def __add_voice(
                            required=False, default=None)
 ):
     if voice_model:
-        voice_model = voice_model[:voice_model.find(" ")]
-        if not voice_model in ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie', 'Emily', 'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte', 'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya', 'Grace', 'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni', 'Mimi']:
-            print("Список голосов (М - мужские, Ж - женские): \n", ALL_VOICES)
+        found_voice = False
+        for voice_1 in ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie', 'Emily', 'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte', 'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya', 'Grace', 'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni', 'Mimi']:
+            if voice_1 in voice_model:
+                voice_model = voice_1
+                found_voice = True
+                break
+        if not found_voice:
+            await ctx.respond("Список голосов (М - мужские, Ж - женские): \n", ALL_VOICES)
+            return
     await ctx.defer()
     await ctx.respond('Выполнение...')
     if txt_file:
