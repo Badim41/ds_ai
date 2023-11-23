@@ -1278,7 +1278,6 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
         similarity_boost = float(await set_get_config_all("voice", "similarity_boost"))
         style = float(await set_get_config_all("voice", "style"))
         try:
-            # голос TTS в зависимости от пола
             # Arnold(быстрый) Thomas Adam Antoni !Antoni(мяг) !Clyde(тяж) !Daniel(нейтр) !Harry !James Patrick
             voice_id = await get_voice_id_by_name(voice_model)
             print("VOICE_ID_ELEVENLABS:", voice_id)
