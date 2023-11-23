@@ -772,7 +772,7 @@ async def __tts(
                 found_voice = True
                 break
         if not found_voice:
-            await ctx.respond("Список голосов (М - мужские, Ж - женские): \n", ALL_VOICES)
+            await ctx.respond("Список голосов (М - мужские, Ж - женские): \n" + ';'.join(ALL_VOICES))
             return
     # заменяем 3 значения
     for key in [stability, similarity_boost, style]:
@@ -1162,7 +1162,7 @@ async def __add_voice(
                 found_voice = True
                 break
         if not found_voice:
-            await ctx.respond("Список голосов (М - мужские, Ж - женские): \n", ALL_VOICES)
+            await ctx.respond("Список голосов (М - мужские, Ж - женские): \n" + ';'.join(ALL_VOICES))
             return
     await ctx.defer()
     await ctx.respond('Выполнение...')
@@ -1175,15 +1175,31 @@ async def __add_voice(
         print("speed:", speeds)
         print("voice_model:", voice_models)
         for i in range(len(urls)):
-            if name is None:
+            if names[i] is None:
                 await ctx.send(f"Не указано имя в {i + 1} моделе")
                 continue
-            if url is None:
+            if urls[i] is None:
                 await ctx.send(f"Не указана ссылка в {i + 1} моделе ({name})")
                 continue
-            if gender is None:
+            if genders[i] is None:
                 await ctx.send(f"Не указан пол в {i + 1} моделе ({name})")
                 continue
+            if voice_models[i]:
+                found_voice = False
+                for voice_1 in ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie',
+                                'Emily',
+                                'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte',
+                                'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya',
+                                'Grace',
+                                'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni',
+                                'Mimi']:
+                    if voice_1 in voice_model:
+                        voice_model = voice_1
+                        found_voice = True
+                        break
+                if not found_voice:
+                    await ctx.respond("Не найдена модель " + voice_models[i])
+                    continue
             await download_voice(ctx, urls[i], names[i], genders[i], infos[i], speeds[i], voice_models[i], False)
         await ctx.send("Все модели успешно установлены!")
         return
