@@ -27,7 +27,7 @@ def voice_change0():
                 continue
 
             if not voice_model == new_voice_model:
-                print("reload voice")
+                print("reload voice", new_voice_model)
                 if hubert_model and cpt:
                     del hubert_model, cpt
                 voice_model = new_voice_model
