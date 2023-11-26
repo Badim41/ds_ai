@@ -15,6 +15,7 @@ from PIL import Image
 from pydub import AudioSegment
 from moviepy.editor import VideoFileClip
 from langdetect import detect
+from bark import preload_models
 
 from discord import Option
 from modifed_sinks import StreamSink
@@ -1887,6 +1888,9 @@ if __name__ == "__main__":
         pool.apply_async(voice_change0)
         # pool.apply_async(voice_change1)
         pool.close()
+
+        # === load bark ===
+        preload_models()
 
         # ==== load bot ====
         print("====load bot====")

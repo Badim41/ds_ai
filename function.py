@@ -20,7 +20,7 @@ from discord_bot import write_in_discord
 from set_get_config import set_get_config_all
 from use_free_cuda import stop_use_cuda_async, use_cuda_async, stop_use_cuda_images, use_cuda_images, \
     check_cuda_async
-from bark import SAMPLE_RATE, generate_audio, preload_models
+from bark import SAMPLE_RATE, generate_audio
 from scipy.io.wavfile import write as write_wav
 
 _providers = [
