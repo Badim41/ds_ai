@@ -20,6 +20,8 @@ from discord_bot import write_in_discord
 from set_get_config import set_get_config_all
 from use_free_cuda import stop_use_cuda_async, use_cuda_async, stop_use_cuda_images, use_cuda_images, \
     check_cuda_async
+from bark import SAMPLE_RATE, generate_audio, preload_models
+from scipy.io.wavfile import write as write_wav
 
 _providers = [
     # AUTH
@@ -79,12 +81,8 @@ async def result_command_change(message, color):
 
 
 spokenText = ""
-language = ""
 user_name = ""
 prompt_length = 1
-admin = True
-all_admin = False
-video_length = 5
 currentAIname = ""
 currentAIinfo = ""
 currentAIpitch = 0
@@ -95,16 +93,8 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
     # Добавление глобальных переменных
     global spokenText
     spokenText = spokenTextArg
-    global language
-    language = await set_get_config_all('Default', 'language')
     global prompt_length
     prompt_length = int(await set_get_config_all('gpt', 'prompt_length'))
-    global admin
-    admin = bool(await set_get_config_all('Default', 'admin'))
-    global all_admin
-    all_admin = bool(await set_get_config_all('Default', 'all_admin'))
-    global video_length
-    video_length = int(await set_get_config_all('Default', 'video_length'))
     global user_name
     user_name = await set_get_config_all('Default', 'user_name')
     global currentAIname
@@ -484,7 +474,7 @@ async def correct_number(number_input, operation_number):
 
 
 async def voice_commands(sentence, ctx):
-    global admin, all_admin, video_length, prompt_length, files_found, language, mat_found, spokenText
+    global prompt_length, files_found, mat_found, spokenText
     # убрать ключевое слово
     sentence = sentence.split(' ', 1)[-1]
 
@@ -521,29 +511,8 @@ async def voice_commands(sentence, ctx):
             # await disconnect(ctx)
             sys.exit(0)
 
-    # админка
-    # if any(keyword in sentence for keyword in ["+админ", "+admin"]):
-    #     if not admin:
-    #         await text_to_speech("нужны права администратора", False, ctx)
-    #         return True
-    #     all_admin = True
-    #     await text_to_speech("права администратора выданы", False, ctx)
-    #     return True
-    #
-    # if any(keyword in sentence for keyword in ["-админ", "-admin"]):
-    #     if not admin:
-    #         await text_to_speech("нужны права администратора", False, ctx)
-    #         return True
-    #     all_admin = False
-    #     await result_command_change("права администратора отобраны", Color.GREEN)
-    #     await text_to_speech("права администратора отобраны", False, ctx)
-    #     return True
-
     # админка (gpt)
     if "gpt" in sentence:
-        if not admin:
-            await text_to_speech("нужны права администратора", False, ctx)
-            return True
         try:
             result = ""
             while not result.strip():
@@ -608,9 +577,6 @@ async def voice_commands(sentence, ctx):
             return True
         # произнести текст
         elif protocol_number == 24:
-            if not admin:
-                await text_to_speech("нужны права администратора", False, ctx)
-                return True
             if not spoken_text_temp is None:
                 await text_to_speech(spoken_text_temp, False, ctx)
                 return True
@@ -619,18 +585,12 @@ async def voice_commands(sentence, ctx):
                 return True
         # написать текст
         elif protocol_number == 23:
-            if not admin:
-                await text_to_speech("нужны права администратора", False, ctx)
-                return True
             if spoken_text_temp is None:
                 return True
             await textInDiscord(spoken_text_temp, ctx)
             return True
         # AICoverGen
         elif protocol_number == 13:
-            if not admin:
-                await text_to_speech("нужны права администратора", False, ctx)
-                return True
             await createAICaver(ctx)
             return True
         elif protocol_number == 12:
@@ -719,44 +679,10 @@ async def voice_commands(sentence, ctx):
         await text_to_speech("Длина запроса: " + str(number), False, ctx)
         return True
 
-    # if "длина видео" in sentence:
-    #     if not admin:
-    #         await text_to_speech("нужны права администратора", False, ctx)
-    #         return True
-    #     if sentence != "длина видео":
-    #         number = await extract_number_after_keyword(sentence, "длина видео")
-    #         if number > 30:
-    #             await set_get_config_all("Default", video_length, "30")
-    #             await text_to_speech(f"Слишком большое число. Длина видео: {30}", False, ctx)
-    #         if number != -1:
-    #             await set_get_config_all("Default", video_length, number)
-    #             return True
-    #     config.read('config.ini')
-    #     await text_to_speech("Длина видео: " + str(config.get('Default', 'video_length')), False, ctx)
-    #     return True
 
     if "измени" in sentence and "голос на" in sentence:
         sentence = sentence[sentence.index("голос на") + 9:]
         await setAIvoice(sentence, ctx)
-        return True
-
-    if ("измени" in sentence or "смени" in sentence) and "язык на" in sentence:
-        # выбираем слово после "язык"
-        language_input = sentence[sentence.index("язык на") + 8:]
-        if " " in language:
-            language_input = language_input[:language_input.index(" ")]
-        if language_input in ["русский", "английский", "украинский", "татарский"]:
-            await text_to_speech(f"язык изменён на {language_input}", False, ctx)
-            if language == "русский":
-                await set_get_config_all("Default", "language", "russian")
-            elif language == "английский":
-                await set_get_config_all("Default", "language", "english")
-            elif language == "украинский":
-                await set_get_config_all("Default", "language", "ukrainian")
-            elif language == "татарский":
-                await set_get_config_all("Default", "language", "tatar")
-        else:
-            await text_to_speech("Не подходящий язык!", False, ctx)
         return True
 
     return False
@@ -1075,23 +1001,6 @@ async def prepare_audio_pipeline(cuda_number, ctx):
             with open("caversAI/audio_links.txt") as reader:
                 line = reader.readline()
                 if not line == "" and not line is None:
-                    # if "https://youtu.be/" not in line and "https://www.youtube.com/" not in line:
-                    #     asyncio.run(text_to_speech("Видео должно быть с ютуба", False, ctx))
-                    #     asyncio.run(result_command_change("Ссылка не с YT", Color.RED))
-                    #     asyncio.run(remove_line_from_txt("caversAI/audio_links.txt", 1))
-                    #     continue
-
-                    # url = line[line.index("https://"):].split()[0]
-                    # if " " in url:
-                    #     url = url[:url.index(" ")]
-
-                    # command = f"{youtube_dl_path} {url} --max-filesize {video_length * 2 + 2}m --min-views 50000 --no-playlist --buffer-size 8K"
-                    # if console_command_runner(command, ctx):
-                    #     print("Условия выполнены")
-                    # else:
-                    #     print("Условия не выполнены")
-                    #     await remove_line_from_txt("caversAI/audio_links.txt", 1)
-                    #     break
 
                     # time start
                     start_time = datetime.datetime.now()
@@ -1441,14 +1350,25 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=No
     await result_command_change(f"tts: {tts}", Color.GRAY)
 
 
-async def gtts(tts, language, output_file):
-    print("GTTS_fun", language, output_file)
-    try:
-        voiceFile = gTTS(tts, lang=language)
-        # Сохранение в файл
-        voiceFile.save(output_file)
-    except Exception as e:
-        await result_command_change(f"Ошибка при синтезе речи: {e}", Color.YELLOW)
+async def gtts(tts, output_file, speaker=6, bark=False, language="ru"):
+
+    if bark or await set_get_config_all("voice", "use_bark") == "True":
+        print("Bark_fun")
+        try:
+            speaker = language + "_speaker_" + str(speaker)
+            audio_array = generate_audio(tts, history_prompt=speaker)
+            write_wav("audio.wav", SAMPLE_RATE, audio_array)
+
+        except Exception as e:
+            await result_command_change(f"Ошибка при синтезе речи: {e}", Color.YELLOW)
+    else:
+        print("GTTS_fun", language, output_file)
+        try:
+            voiceFile = gTTS(tts, lang=language)
+            # Сохранение в файл
+            voiceFile.save(output_file)
+        except Exception as e:
+            await result_command_change(f"Ошибка при синтезе речи: {e}", Color.YELLOW)
 
 
 async def remove_unavaible_voice_token():
@@ -1466,25 +1386,6 @@ async def remove_unavaible_voice_token():
         avaible_tokens.append(token)
     await set_get_config_all("voice", "avaible_tokens", ';'.join(avaible_tokens))
 
-
-async def setModelWithLanguage(language, model_type):
-    if model_type == "tts":
-        if language == "russian":
-            return "Irina"
-        elif language == "english":
-            return "Alan"
-        elif language == "ukrainian":
-            return "Anatol"
-        elif language == "tatar":
-            return "Talgat"
-    elif model_type == "stt":
-        if language in ["russian", "tatar"]:
-            return "modelRU"
-        elif language == "english":
-            return "modelEN"
-        elif language == "ukrainian":
-            return "modelUK"
-    return None
 
 
 async def playSoundFile(audio_file_path, duration, start_seconds, ctx):

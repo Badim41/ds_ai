@@ -14,6 +14,7 @@ from pytube import Playlist
 from PIL import Image
 from pydub import AudioSegment
 from moviepy.editor import VideoFileClip
+from langdetect import detect
 
 from discord import Option
 from modifed_sinks import StreamSink
@@ -26,9 +27,16 @@ from use_free_cuda import use_cuda_async, stop_use_cuda_async, use_cuda_images, 
     stop_use_cuda_images
 from set_get_config import set_get_config_all, set_get_config_all_not_async
 
+from bark import SAMPLE_RATE, generate_audio, preload_models
+
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
-ALL_VOICES = ['Rachel [Ж]', 'Clyde [М]', 'Domi [Ж]', 'Dave [М]', 'Fin [М]', 'Bella [Ж]', 'Antoni [М]', 'Thomas [М]', 'Charlie [М]', 'Emily [Ж]', 'Elli [Ж]', 'Callum [М]', 'Patrick [М]', 'Harry [М]', 'Liam [М]', 'Dorothy [Ж]', 'Josh [М]', 'Arnold [М]', 'Charlotte [Ж]', 'Matilda [Ж]', 'Matthew [М]', 'James [М]', 'Joseph [М]', 'Jeremy [М]', 'Michael [М]', 'Ethan [М]', 'Gigi [Ж]', 'Freya [Ж]', 'Grace [Ж]', 'Daniel [М]', 'Serena [Ж]', 'Adam [М]', 'Nicole [Ж]', 'Jessie [М]', 'Ryan [М]', 'Sam [М]', 'Glinda [Ж]', 'Giovanni [М]', 'Mimi [Ж]']
+ALL_VOICES = ['Rachel [Ж]', 'Clyde [М]', 'Domi [Ж]', 'Dave [М]', 'Fin [М]', 'Bella [Ж]', 'Antoni [М]', 'Thomas [М]',
+              'Charlie [М]', 'Emily [Ж]', 'Elli [Ж]', 'Callum [М]', 'Patrick [М]', 'Harry [М]', 'Liam [М]',
+              'Dorothy [Ж]', 'Josh [М]', 'Arnold [М]', 'Charlotte [Ж]', 'Matilda [Ж]', 'Matthew [М]', 'James [М]',
+              'Joseph [М]', 'Jeremy [М]', 'Michael [М]', 'Ethan [М]', 'Gigi [Ж]', 'Freya [Ж]', 'Grace [Ж]',
+              'Daniel [М]', 'Serena [Ж]', 'Adam [М]', 'Nicole [Ж]', 'Jessie [М]', 'Ryan [М]', 'Sam [М]', 'Glinda [Ж]',
+              'Giovanni [М]', 'Mimi [Ж]']
 connections = {}
 
 stream_sink = StreamSink()
@@ -111,51 +119,54 @@ async def help_command(
 ):
     if command == "say":
         await ctx.respond("# /say\n(Сделать запрос к GPT)\n**text - запрос для GPT**\ngpt_mode\*:\n- много ответов\n"
-                       "- быстрый ответ\n- экономный режим (не используйте)\n\nТакже в /say используются "
-                       "*протоколы* и *голосовые команды*\n/say gpt <вопрос> - сырой запрос для GPT\n/say протокол 998 - "
-                       "очистить контекст\n/say протокол 32 - последний озвученный текст (с RVC)\n/say протокол 31 - "
-                       "последний озвученный текст (без RVC)\n/say протокол 12 <запрос> - нарисовать картинку (не рекомендую!)"
-                       "\n/say код красный 0 - перезагрузка бота\n")
+                          "- быстрый ответ\n- экономный режим (не используйте)\n\nТакже в /say используются "
+                          "*протоколы* и *голосовые команды*\n/say gpt <вопрос> - сырой запрос для GPT\n/say протокол 998 - "
+                          "очистить контекст\n/say протокол 32 - последний озвученный текст (с RVC)\n/say протокол 31 - "
+                          "последний озвученный текст (без RVC)\n/say протокол 12 <запрос> - нарисовать картинку (не рекомендую!)"
+                          "\n/say код красный 0 - перезагрузка бота\n")
         await ctx.send("\* - параметр сохраняется")
     elif command == "read_messages":
         await ctx.respond("# /read_messages\n(Прочитать последние сообщения и что-то с ними сделать)\n**number - "
-                       "количество читаемых сообщений**\n**prompt - запрос (например, перескажи эти сообщения)**\n")
+                          "количество читаемых сообщений**\n**prompt - запрос (например, перескажи эти сообщения)**\n")
     elif command == "ai_cover":
-        await ctx.respond("# /ai_cover:\n(Перепеть/озвучить видео или аудио)\n**url - ссылка на видео**\n**audio_path - "
-                       "аудио файл**\nvoice - голосовая модель\ngender - пол (для тональности)\npitch - тональность (12 "
-                       "из мужского в женский, -12 из женского в мужской)\nindexrate - индекс голоса (чем больше, тем больше "
-                       "черт черт голоса говорящего)\nloudness - количество шума (чем больше, тем больше шума)\nfilter_radius - "
-                       "размер фильтра (чем больше, тем больше шума)\nmain_vocal, back_vocal, music - громкость каждой "
-                       "аудиодорожки\nroomsize, wetness, dryness - параметры реверберации\npalgo - rmvpe - лучший, mangio-crepe "
-                       "- более плавный\nhop - длина для учитывания тональности (mangio-crepe)\ntime - продолжительность (для "
-                       "войс-чата)\nstart - время начала (для войс-чата)\noutput - link - сслыка на архив, all_files - все "
-                       "файлы, file - только финальный файл\nonly_voice_change - просто заменить голос, без разделения вокала "
-                       "и музыки\n")
+        await ctx.respond(
+            "# /ai_cover:\n(Перепеть/озвучить видео или аудио)\n**url - ссылка на видео**\n**audio_path - "
+            "аудио файл**\nvoice - голосовая модель\ngender - пол (для тональности)\npitch - тональность (12 "
+            "из мужского в женский, -12 из женского в мужской)\nindexrate - индекс голоса (чем больше, тем больше "
+            "черт черт голоса говорящего)\nloudness - количество шума (чем больше, тем больше шума)\nfilter_radius - "
+            "размер фильтра (чем больше, тем больше шума)\nmain_vocal, back_vocal, music - громкость каждой "
+            "аудиодорожки\nroomsize, wetness, dryness - параметры реверберации\npalgo - rmvpe - лучший, mangio-crepe "
+            "- более плавный\nhop - длина для учитывания тональности (mangio-crepe)\ntime - продолжительность (для "
+            "войс-чата)\nstart - время начала (для войс-чата)\noutput - link - сслыка на архив, all_files - все "
+            "файлы, file - только финальный файл\nonly_voice_change - просто заменить голос, без разделения вокала "
+            "и музыки\n")
     elif command == "tts":
-        await ctx.respond("# /tts\n(Озвучить текст)\n**text - произносимый текст**\nai_voice - голосовая модель\nspeed - "
-                       "Ускорение/замедление\nvoice_model - Модель голоса elevenlab\noutput - Отправляет файл в чат\n"
-                          "stability - Стабильность голоса (0 - нестабильный, 1 - стабильный)\*\n"
-                          "similarity_boost - Повышение сходства (0 - отсутствует)\*\n"
-                          "style - Выражение (0 - мало пауз и выражения, 1 - большое количество пауз и выражения)\*\n")
+        await ctx.respond(
+            "# /tts\n(Озвучить текст)\n**text - произносимый текст**\nai_voice - голосовая модель\nspeed - "
+            "Ускорение/замедление\nvoice_model - Модель голоса elevenlab\noutput - Отправляет файл в чат\n"
+            "stability - Стабильность голоса (0 - нестабильный, 1 - стабильный)\*\n"
+            "similarity_boost - Повышение сходства (0 - отсутствует)\*\n"
+            "style - Выражение (0 - мало пауз и выражения, 1 - большое количество пауз и выражения)\*\n")
         await ctx.send("\* - параметр сохраняется")
     elif command == "add_voice":
         await ctx.respond("# /add_voice\n(Добавить голосовую модель)\n**url - ссылка на модель **\n**name - имя модели "
-                       "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
-                       "speed - ускорение/замедление при /tts\nvoice_model - модель elevenlab\nchange_voice - True = "
-                       "заменить на текущий голос\ntxt_file - быстрое добавление множества голосовых моделей *(остальные аргументы как 'url', 'gender', 'name'  будут игнорироваться)*, для использования:\n"
+                          "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
+                          "speed - ускорение/замедление при /tts\nvoice_model - модель elevenlab\nchange_voice - True = "
+                          "заменить на текущий голос\ntxt_file - быстрое добавление множества голосовых моделей *(остальные аргументы как 'url', 'gender', 'name'  будут игнорироваться)*, для использования:\n"
                           "- напишите в txt файле аргументы для add_voice (1 модель - 1 строка), пример:")
         await send_file(ctx, "add_voice_args.txt")
     elif command == "create_dialog":
-        await ctx.respond("# /create_dialog\n(Создать диалог в войс-чате, используйте join)\n**names - участники диалога "
-                       "через ';' - список голосовых моделей Например, Участник1;Участник2**\ntheme - Тема разговора "
-                       "(может измениться)\nprompt - Постоянный запрос (например, что они находятся в определённом месте)\n")
+        await ctx.respond(
+            "# /create_dialog\n(Создать диалог в войс-чате, используйте join)\n**names - участники диалога "
+            "через ';' - список голосовых моделей Например, Участник1;Участник2**\ntheme - Тема разговора "
+            "(может измениться)\nprompt - Постоянный запрос (например, что они находятся в определённом месте)\n")
     elif command == "change_image":
         await ctx.respond("# /change_image \n(Изменить изображение)\n**image - картинка, которую нужно изменить**\n"
-                       "**prompt - Запрос **\nnegative_prompt - Негативный запрос\nsteps - Количество шагов (больше - "
-                       "лучше, но медленнее)\nseed - сид (если одинаковый сид и файл, то получится то же самое изображение)"
-                       "\nx - расширение по X\ny - расширение по Y\nstrength - сила изменения\nstrength_prompt - сила для "
-                       "запроса\nstrength_negative_prompt - сила для негативного запроса\nrepeats - количество изображений "
-                       "(сид случайный!)\n")
+                          "**prompt - Запрос **\nnegative_prompt - Негативный запрос\nsteps - Количество шагов (больше - "
+                          "лучше, но медленнее)\nseed - сид (если одинаковый сид и файл, то получится то же самое изображение)"
+                          "\nx - расширение по X\ny - расширение по Y\nstrength - сила изменения\nstrength_prompt - сила для "
+                          "запроса\nstrength_negative_prompt - сила для негативного запроса\nrepeats - количество изображений "
+                          "(сид случайный!)\n")
     elif command == "change_video":
         await ctx.respond(
             "# /change_video \n(Изменить видео **ПОКАДРОВО**)\n**video_path - видеофайл**\n**fps - Количество "
@@ -723,11 +734,13 @@ async def __say(
         ctx,
         text: Option(str, description='Сам текст/команда. Список команд: \\help-say', required=True),
         gpt_mode: Option(str, description="модификация GPT. Модификация сохраняется при следующих запросах!",
-                         choices=["быстрый режим", "много ответов (медленный)", "экономный режим"], required=False, default=None)
+                         choices=["быстрый режим", "много ответов (медленный)", "экономный режим"], required=False,
+                         default=None)
 ):
     # ["fast", "all", "None"], ["быстрый режим", "много ответов (медленный)", "Экономный режим"]
     if gpt_mode:
-        gpt_mode = gpt_mode.replace("быстрый режим", "fast").replace("много ответов (медленный)", "all").replace("экономный режим", "None")
+        gpt_mode = gpt_mode.replace("быстрый режим", "fast").replace("много ответов (медленный)", "all").replace(
+            "экономный режим", "None")
     try:
         await ctx.respond('Выполнение...')
 
@@ -756,10 +769,13 @@ async def __tts(
         speed: Option(float, description='Ускорение голоса', required=False, default=None, min_value=1, max_value=3),
         voice_model: Option(str, description=f'Какая модель elevenlabs будет использована', required=False,
                             default=None),
-        stability: Option(float, description='Стабильность голоса', required=False, default=None, min_value=0, max_value=1),
-        similarity_boost: Option(float, description='Повышение сходства', required=False, default=None, min_value=0, max_value=1),
+        stability: Option(float, description='Стабильность голоса', required=False, default=None, min_value=0,
+                          max_value=1),
+        similarity_boost: Option(float, description='Повышение сходства', required=False, default=None, min_value=0,
+                                 max_value=1),
         style: Option(float, description='Выражение', required=False, default=None, min_value=0, max_value=1),
-        output: Option(str, description='Отправить результат', required=False, choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"],default=None)
+        output: Option(str, description='Отправить результат', required=False,
+                       choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"], default=None)
 ):
     if voice_model:
         found_voice = False
@@ -801,8 +817,6 @@ async def __tts(
         if ai_voice is None:
             ai_voice = await set_get_config_all("Default", "currentainame")
             print(await set_get_config_all("Default", "currentainame"))
-        elif ai_voice not in voices:
-            return await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
         await set_get_config_all("Default", "currentainame", ai_voice)
         # запускаем TTS
         from function import text_to_speech
@@ -826,6 +840,95 @@ async def __tts(
             elif output.startswith("2"):
                 await send_file(ctx, "1.mp3")
                 await send_file(ctx, "2.mp3")
+    except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
+        await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
+        # возращаем голос
+        if not ai_voice_temp is None:
+            await set_get_config_all("Default", "currentainame", ai_voice_temp)
+        # перестаём использовать видеокарту
+        await stop_use_cuda_async(cuda)
+
+
+@bot.slash_command(name="bark", description='Тоже, что и tts, но менее стабильный')
+async def __bark(
+        ctx,
+        text: Option(str, description='Текст для озвучки', required=True),
+        ai_voice: Option(str, description='Голос для озвучки', required=False, default=None),
+        speaker: Option(int, description='Говорящий (0-6 - мужские, 7-9 - женские)', required=False,
+                        max_value=9, min_value=0, default=1),
+        output: Option(str, description='Отправить результат', required=False,
+                       choices=["1 файл (RVC)", "2 файла (RVC & Bark)", "None"], default=None)
+):
+    ai_voice_temp = None
+    try:
+        await ctx.defer()
+        await ctx.respond('Выполнение...')
+        # count time
+        start_time = datetime.datetime.now()
+        cuda = await use_cuda_async()
+        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
+        if str(ai_voice) not in voices:
+            return await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
+        from function import replace_mat_in_sentence
+        text_out = await replace_mat_in_sentence(text)
+        if not text_out == text.lower():
+            await ctx.respond("Такое точно нельзя произносить!")
+            return
+        print(f'{text} ({type(text).__name__})\n')
+        # меняем голос
+        if ai_voice is None:
+            ai_voice = await set_get_config_all("Default", "currentainame")
+            print(await set_get_config_all("Default", "currentainame"))
+        # запускаем TTS
+        from function import gtts
+
+        try:
+            language = detect(text)
+        except Exception:
+            language = "en"
+
+        if language != "ru":
+            language = "en"
+
+        await gtts(text, "bark1.mp3", speaker=speaker, bark=True, language=language)
+
+        try:
+            command = [
+                "python",
+                "only_voice_change_cuda0.py",
+                "-i", "bark1.mp3",
+                "-o", "bark2.mp3",
+                "-dir", ai_voice,
+                "-p", "0",
+                "-ir", "0.5",
+                "-fr", "3",
+                "-rms", "0.3",
+                "-pro", "0.15"
+            ]
+            print("run RVC, AIName:", ai_voice)
+            subprocess.run(command, check=True)
+        except subprocess.CalledProcessError as e:
+            traceback_str = traceback.format_exc()
+            print(str(traceback_str))
+            await ctx.respond(f"Ошибка при изменении голоса(ID:d1): {e}")
+
+        await stop_use_cuda_async(cuda)
+
+        # count time
+        end_time = datetime.datetime.now()
+        spent_time = str(end_time - start_time)
+        # убираем миллисекунды
+        spent_time = spent_time[:spent_time.find(".")]
+        if "0:00:00" not in str(spent_time):
+            await ctx.respond("Потрачено на обработку:" + spent_time)
+        if output:
+            if output.startswith("1"):
+                await send_file(ctx, "bark2.mp3")
+            elif output.startswith("2"):
+                await send_file(ctx, "bark1.mp3")
+                await send_file(ctx, "bark2.mp3")
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
@@ -894,7 +997,8 @@ async def __cover(
                     max_value=1280),
         start: Option(int, description='Начать воспроизводить с (в секундах). -1 для продолжения', required=False,
                       default=0, min_value=-2),
-        output: Option(str, description='Отправить результат', choices=["ссылка на все файлы", "только результат (1 файл)", "все файлы", "не отправлять"],
+        output: Option(str, description='Отправить результат',
+                       choices=["ссылка на все файлы", "только результат (1 файл)", "все файлы", "не отправлять"],
                        required=False, default="только результат (1 файл)"),
         only_voice_change: Option(bool,
                                   description='Не извлекать инструментал и бэквокал, изменить голос. Не поддерживаются ссылки',
@@ -902,7 +1006,8 @@ async def __cover(
 ):
     param_string = None
     # ["link", "file", "all_files", "None"], ["ссылка на все файлы", "только результат (1 файл)", "все файлы", "не отправлять"]
-    output = output.replace("ссылка на все файлы", "link").replace("только результат (1 файл)", "file").replace("все файлы", "all_files").replace("не отправлять", "None")
+    output = output.replace("ссылка на все файлы", "link").replace("только результат (1 файл)", "file").replace(
+        "все файлы", "all_files").replace("не отправлять", "None")
     try:
         await ctx.defer()
         await ctx.respond('Выполнение...')
@@ -1151,12 +1256,16 @@ async def __add_voice(
                             default="Adam"),
         change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
                              default=False),
-        txt_file: Option(discord.SlashCommandOptionType.attachment, description='Файл txt для добавления нескольких моделей сразу',
-                           required=False, default=None)
+        txt_file: Option(discord.SlashCommandOptionType.attachment,
+                         description='Файл txt для добавления нескольких моделей сразу',
+                         required=False, default=None)
 ):
     if voice_model:
         found_voice = False
-        for voice_1 in ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie', 'Emily', 'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte', 'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya', 'Grace', 'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni', 'Mimi']:
+        for voice_1 in ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie', 'Emily',
+                        'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte',
+                        'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya', 'Grace',
+                        'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni', 'Mimi']:
             if voice_1 in voice_model:
                 voice_model = voice_1
                 found_voice = True
@@ -1265,11 +1374,13 @@ async def play_dialog(ctx):
             print(str(traceback_str))
             await ctx.send(f"Ошибка при изменении голоса(ID:d2): {e}")
 
+
 async def get_voice_id_by_name(voice_name):
     with open('voices.json', 'r', encoding='utf-8') as file:
         data = json.load(file)
     voice = next((v for v in data["voices"] if v["name"] == voice_name), None)
     return voice["voice_id"] if voice else None
+
 
 async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
     from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
@@ -1302,7 +1413,8 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
                 model='eleven_multilingual_v2',
                 voice=Voice(
                     voice_id=voice_id,
-                    settings=VoiceSettings(stability=stability, similarity_boost=similarity_boost, style=style, use_speaker_boost=True)
+                    settings=VoiceSettings(stability=stability, similarity_boost=similarity_boost, style=style,
+                                           use_speaker_boost=True)
                 ),
             )
 
@@ -1777,6 +1889,9 @@ if __name__ == "__main__":
         pool.apply_async(voice_change0)
         # pool.apply_async(voice_change1)
         pool.close()
+
+        # === load bark ===
+        preload_models()
 
         # ==== load bot ====
         print("====load bot====")
