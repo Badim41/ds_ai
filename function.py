@@ -1357,7 +1357,7 @@ async def gtts(tts, output_file, speaker=6, bark=False, language="ru"):
         try:
             speaker = language + "_speaker_" + str(speaker)
             audio_array = generate_audio(tts, history_prompt=speaker)
-            write_wav("audio.wav", SAMPLE_RATE, audio_array)
+            write_wav(output_file, SAMPLE_RATE, audio_array)
 
         except Exception as e:
             await result_command_change(f"Ошибка при синтезе речи: {e}", Color.YELLOW)
