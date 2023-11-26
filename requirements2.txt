@@ -42,3 +42,7 @@ pytube
 pyrubberband
 bark
 langdetect
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==2.1.0+cu118
+torchcrepe==0.0.20
+torchaudio==2.1.0+cu118
