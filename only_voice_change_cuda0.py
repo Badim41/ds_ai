@@ -31,12 +31,18 @@ def voice_change0():
                 print("reload voice(0)", new_voice_model)
                 if hubert_model and cpt:
                     del hubert_model, cpt
+                print("temp1")
                 voice_model = new_voice_model
+                print("temp2")
                 rvc_model_path, rvc_index_path = get_rvc_model(voice_model)
+                print("temp3")
                 device = 'cuda:0'
                 config2 = Config(device, True)
+                print("temp4")
                 hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
+                print("temp5")
                 cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
+                print("temp6")
             input_path = set_get_config_all_not_async(f"rvc{cuda_number}", "input")
             if not input_path == "None":
                 print("run RVC GPU:0")
