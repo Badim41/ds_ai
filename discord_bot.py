@@ -1383,14 +1383,13 @@ async def get_voice_id_by_name(voice_name):
 
 async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
     from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
-    language = await set_get_config_all("Default", "language", None)
     max_simbols = await set_get_config_all("voice", "max_simbols", None)
 
     pitch = 0
     if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_tokens", None) == "None":
         print("gtts1")
         from function import gtts
-        await gtts(tts, language[:2], file_name)
+        await gtts(tts, "ru", file_name)
         if currentpitch == 0:
             pitch = -12
     else:
