@@ -41,4 +41,5 @@ duckduckgo-search
 pytube
 pyrubberband
 bark
+torchaudio
 langdetect
