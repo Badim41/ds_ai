@@ -38,7 +38,6 @@ def voice_change0():
                 cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
             input_path = set_get_config_all_not_async(f"rvc{cuda_number}", "input")
             if not input_path == "None":
-                print("run RVC temp2")
                 set_get_config_all_not_async(f"rvc{cuda_number}", "input", "None")
                 # получем значения
                 index_rate = float(set_get_config_all_not_async(f"rvc{cuda_number}", "index_rate"))

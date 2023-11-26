@@ -895,7 +895,7 @@ async def __bark(
         try:
             command = [
                 "python",
-                "only_voice_change_cuda0.py",
+                f"only_voice_change_cuda{cuda}.py",
                 "-i", "bark1.mp3",
                 "-o", "bark2.mp3",
                 "-dir", ai_voice,
