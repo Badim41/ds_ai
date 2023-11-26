@@ -1886,7 +1886,7 @@ if __name__ == "__main__":
 
         pool = multiprocessing.Pool(processes=2)
         pool.apply_async(voice_change0)
-        # pool.apply_async(voice_change1)
+        pool.apply_async(voice_change1)
         pool.close()
 
         # === load bark ===

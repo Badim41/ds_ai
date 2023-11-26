@@ -16,6 +16,7 @@ from set_get_config import set_get_config_all_not_async
 
 
 def voice_change0():
+    print("start voice_change0")
     rvc_index_path, hubert_model, cpt, version, net_g, tgt_sr, vc, voice_model = None, None, None, None, None, None, None, ""
     while True:
         try:
@@ -38,6 +39,7 @@ def voice_change0():
                 cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
             input_path = set_get_config_all_not_async(f"rvc{cuda_number}", "input")
             if not input_path == "None":
+                print("run RVC GPU:0")
                 set_get_config_all_not_async(f"rvc{cuda_number}", "input", "None")
                 # получем значения
                 index_rate = float(set_get_config_all_not_async(f"rvc{cuda_number}", "index_rate"))
