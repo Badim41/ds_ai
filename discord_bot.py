@@ -27,8 +27,6 @@ from use_free_cuda import use_cuda_async, stop_use_cuda_async, use_cuda_images, 
     stop_use_cuda_images
 from set_get_config import set_get_config_all, set_get_config_all_not_async
 
-from bark import SAMPLE_RATE, generate_audio, preload_models
-
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
 ALL_VOICES = ['Rachel [Ж]', 'Clyde [М]', 'Domi [Ж]', 'Dave [М]', 'Fin [М]', 'Bella [Ж]', 'Antoni [М]', 'Thomas [М]',
@@ -1889,9 +1887,6 @@ if __name__ == "__main__":
         pool.apply_async(voice_change0)
         # pool.apply_async(voice_change1)
         pool.close()
-
-        # === load bark ===
-        preload_models()
 
         # ==== load bot ====
         print("====load bot====")
