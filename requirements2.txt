@@ -40,3 +40,4 @@ PyExecJS
 duckduckgo-search
 pytube
 pyrubberband
+bark
