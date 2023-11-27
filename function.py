@@ -20,8 +20,8 @@ from discord_bot import write_in_discord
 from set_get_config import set_get_config_all
 from use_free_cuda import stop_use_cuda_async, use_cuda_async, stop_use_cuda_images, use_cuda_images, \
     check_cuda_async
-from bark import SAMPLE_RATE, generate_audio
-from scipy.io.wavfile import write as write_wav
+# from bark import SAMPLE_RATE, generate_audio
+# from scipy.io.wavfile import write as write_wav
 
 _providers = [
     # AUTH
@@ -1354,14 +1354,14 @@ async def gtts(tts, output_file, speaker=6, bark=False, language="ru"):
 
     if bark or await set_get_config_all("voice", "use_bark") == "True":
         print("Bark_fun")
-        try:
-            speaker = language + "_speaker_" + str(speaker)
-            audio_array = generate_audio(tts, history_prompt=speaker)
-            write_wav("temp.wav", SAMPLE_RATE, audio_array)
-            audio = AudioSegment.from_wav("temp.wav")
-            audio.export(output_file, format="mp3")
-        except Exception as e:
-            await result_command_change(f"Ошибка при синтезе речи: {e}", Color.YELLOW)
+        # try:
+        #     speaker = language + "_speaker_" + str(speaker)
+        #     audio_array = generate_audio(tts, history_prompt=speaker)
+        #     write_wav("temp.wav", SAMPLE_RATE, audio_array)
+        #     audio = AudioSegment.from_wav("temp.wav")
+        #     audio.export(output_file, format="mp3")
+        # except Exception as e:
+        #     await result_command_change(f"Ошибка при синтезе речи: {e}", Color.YELLOW)
     else:
         print("GTTS_fun", language, output_file)
         try:

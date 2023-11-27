@@ -1,12 +1,10 @@
-import os
+import numpy as np
 
-# Получаем текущую директорию
-current_directory = os.getcwd()
+# Пример векторов
+vector_a = np.array([-2, -5, -1])
+vector_b = np.array([4, 5, 6])
 
-# Получаем список файлов в текущей директории
-files = os.listdir(current_directory)
+# Вычисление косинусного сходства
+cosine_similarity = np.dot(vector_a, vector_b) / (np.linalg.norm(vector_a) * np.linalg.norm(vector_b))
 
-# Фильтруем файлы по расширению .py и выводим их имена
-python_files = [file for file in files if file.endswith('.py')]
-for file in python_files:
-    print(file)
+print(f"Косинусное сходство: {cosine_similarity}")
