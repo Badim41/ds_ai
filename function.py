@@ -797,7 +797,7 @@ async def createAICaver(ctx):
                 return
             await write_in_discord(ctx, "Начинаю обработку аудио")
             await asyncio.gather(play_audio_process(ctx),
-                                 *[prepare_audio_pipeline(cuda_number, ctx) for cuda_number in cuda_used])  #
+                                 *[prepare_audio_pipeline(cuda_number, ctx, len(cuda_used)) for cuda_number in cuda_used])  #
             await result_command_change(f"ready audios", Color.GRAY)
             # освобождаем видеокарты
             for cuda in cuda_used:
@@ -993,7 +993,7 @@ async def run_ai_cover_gen(line, ctx, wait=False, cuda=None):
 # async def defaultRVCParams(filePath, pitch):
 #     return f"python ../AICoverGen/src/main_cuda0.py -i {filePath} -dir {currentAIname} -p 0 -ir {pitch} -rms 0.3 -mv 0 -bv -20 -iv -20 -rsize 0.2 -rwet 0.1 -rdry 0.95 -start 0 -time -1 -oformat wav"
 
-async def prepare_audio_pipeline(cuda_number, ctx):
+async def prepare_audio_pipeline(cuda_number, ctx, all_cuda_used):
     print(f"prepare_audio. GPU:{cuda_number}")
     await asyncio.sleep(cuda_number + 1)
     while True:
@@ -1021,7 +1021,7 @@ async def prepare_audio_pipeline(cuda_number, ctx):
                 else:
                     await set_get_config_all("Values", f"cuda{cuda_number}_is_busy", "False")
                     await asyncio.sleep(0.1)
-                    if await set_get_config_all("Values", f"cuda{1 - cuda_number}_is_busy") == "False":
+                    if await set_get_config_all("Values", f"cuda{1 - cuda_number}_is_busy") == "False" or all_cuda_used == 1:
                         print("Больше нет ссылок", cuda_number)
                         await set_get_config_all("Values", "queue", "False")
                         if await set_get_config_all('Values', "play_audio_process") == "False":
