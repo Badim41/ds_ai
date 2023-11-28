@@ -1354,14 +1354,16 @@ async def gtts(tts, output_file, speaker=6, bark=False, language="ru"):
 
     if bark or await set_get_config_all("voice", "use_bark") == "True":
         print("Bark_fun")
-        # try:
-        #     speaker = language + "_speaker_" + str(speaker)
-        #     audio_array = generate_audio(tts, history_prompt=speaker)
-        #     write_wav("temp.wav", SAMPLE_RATE, audio_array)
-        #     audio = AudioSegment.from_wav("temp.wav")
-        #     audio.export(output_file, format="mp3")
-        # except Exception as e:
-        #     await result_command_change(f"Ошибка при синтезе речи: {e}", Color.YELLOW)
+        try:
+            from bark import SAMPLE_RATE, generate_audio, preload_models
+            from scipy.io.wavfile import write as write_wav
+            speaker = language + "_speaker_" + str(speaker)
+            audio_array = generate_audio(tts, history_prompt=speaker)
+            write_wav("temp.wav", SAMPLE_RATE, audio_array)
+            audio = AudioSegment.from_wav("temp.wav")
+            audio.export(output_file, format="mp3")
+        except Exception as e:
+            await result_command_change(f"Ошибка при синтезе речи: {e}", Color.YELLOW)
     else:
         print("GTTS_fun", language, output_file)
         try:

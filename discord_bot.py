@@ -851,93 +851,94 @@ async def __tts(
         await stop_use_cuda_async(cuda)
 
 
-# @bot.slash_command(name="bark", description='Тоже, что и tts, но менее стабильный')
-# async def __bark(
-#         ctx,
-#         text: Option(str, description='Текст для озвучки', required=True),
-#         ai_voice: Option(str, description='Голос для озвучки', required=False, default=None),
-#         speaker: Option(int, description='Говорящий (0-6 - мужские, 7-9 - женские)', required=False,
-#                         max_value=9, min_value=0, default=1),
-#         output: Option(str, description='Отправить результат', required=False,
-#                        choices=["1 файл (RVC)", "2 файла (RVC & Bark)", "None"], default=None)
-# ):
-#     ai_voice_temp = None
-#     try:
-#         await ctx.defer()
-#         await ctx.respond('Выполнение...')
-#         # count time
-#         start_time = datetime.datetime.now()
-#         cuda = await use_cuda_async()
-#         voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
-#         if str(ai_voice) not in voices:
-#             return await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
-#         from function import replace_mat_in_sentence
-#         text_out = await replace_mat_in_sentence(text)
-#         if not text_out == text.lower():
-#             await ctx.respond("Такое точно нельзя произносить!")
-#             return
-#         print(f'{text} ({type(text).__name__})\n')
-#         # меняем голос
-#         if ai_voice is None:
-#             ai_voice = await set_get_config_all("Default", "currentainame")
-#             print(await set_get_config_all("Default", "currentainame"))
-#         # запускаем TTS
-#         from function import gtts
-#
-#         try:
-#             language = detect(text)
-#         except Exception:
-#             language = "en"
-#
-#         if language != "ru":
-#             language = "en"
-#
-#         await gtts(text, "bark1.mp3", speaker=speaker, bark=True, language=language)
-#
-#         try:
-#             command = [
-#                 "python",
-#                 f"only_voice_change_cuda{cuda}.py",
-#                 "-i", "bark1.mp3",
-#                 "-o", "bark2.mp3",
-#                 "-dir", ai_voice,
-#                 "-p", "0",
-#                 "-ir", "0.5",
-#                 "-fr", "3",
-#                 "-rms", "0.3",
-#                 "-pro", "0.15"
-#             ]
-#             print("run RVC, AIName:", ai_voice)
-#             subprocess.run(command, check=True)
-#         except subprocess.CalledProcessError as e:
-#             traceback_str = traceback.format_exc()
-#             print(str(traceback_str))
-#             await ctx.respond(f"Ошибка при изменении голоса(ID:d1): {e}")
-#
-#         await stop_use_cuda_async(cuda)
-#
-#         # count time
-#         end_time = datetime.datetime.now()
-#         spent_time = str(end_time - start_time)
-#         # убираем миллисекунды
-#         spent_time = spent_time[:spent_time.find(".")]
-#         if "0:00:00" not in str(spent_time):
-#             await ctx.respond("Потрачено на обработку:" + spent_time)
-#         if output:
-#             if output.startswith("1"):
-#                 await send_file(ctx, "bark2.mp3")
-#             elif output.startswith("2"):
-#                 await send_file(ctx, "bark1.mp3")
-#                 await send_file(ctx, "bark2.mp3")
-#     except Exception as e:
-#         traceback_str = traceback.format_exc()
-#         print(str(traceback_str))
-#         await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
-#         # возращаем голос
-#         if not ai_voice_temp is None:
-#             await set_get_config_all("Default", "currentainame", ai_voice_temp)
-#         # перестаём использовать видеокарту
-#         await stop_use_cuda_async(cuda)
+@bot.slash_command(name="bark", description='Тоже, что и tts, но менее стабильный')
+async def __bark(
+        ctx,
+        text: Option(str, description='Текст для озвучки', required=True),
+        ai_voice: Option(str, description='Голос для озвучки', required=False, default=None),
+        speaker: Option(int, description='Говорящий (0-6 - мужские, 7-9 - женские)', required=False,
+                        max_value=9, min_value=0, default=1),
+        output: Option(str, description='Отправить результат', required=False,
+                       choices=["1 файл (RVC)", "2 файла (RVC & Bark)", "None"], default=None)
+):
+    ai_voice_temp = None
+    try:
+        await ctx.defer()
+        await ctx.respond('Выполнение...')
+        # count time
+        start_time = datetime.datetime.now()
+        cuda = await use_cuda_async()
+        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
+        if str(ai_voice) not in voices:
+            return await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
+        from function import replace_mat_in_sentence
+        text_out = await replace_mat_in_sentence(text)
+        if not text_out == text.lower():
+            await ctx.respond("Такое точно нельзя произносить!")
+            return
+        print(f'{text} ({type(text).__name__})\n')
+        # меняем голос
+        if ai_voice is None:
+            ai_voice = await set_get_config_all("Default", "currentainame")
+            print(await set_get_config_all("Default", "currentainame"))
+        # запускаем TTS
+        from function import gtts
+
+        language = "ru"
+        # try:
+        #     language = detect(text)
+        # except Exception:
+        #     language = "en"
+        #
+        # if language != "ru":
+        #     language = "en"
+
+        await gtts(text, "bark1.mp3", speaker=speaker, bark=True, language=language)
+
+        try:
+            command = [
+                "python",
+                f"only_voice_change_cuda{cuda}.py",
+                "-i", "bark1.mp3",
+                "-o", "bark2.mp3",
+                "-dir", ai_voice,
+                "-p", "0",
+                "-ir", "0.5",
+                "-fr", "3",
+                "-rms", "0.3",
+                "-pro", "0.15"
+            ]
+            print("run RVC, AIName:", ai_voice)
+            subprocess.run(command, check=True)
+        except subprocess.CalledProcessError as e:
+            traceback_str = traceback.format_exc()
+            print(str(traceback_str))
+            await ctx.respond(f"Ошибка при изменении голоса(ID:d1): {e}")
+
+        await stop_use_cuda_async(cuda)
+
+        # count time
+        end_time = datetime.datetime.now()
+        spent_time = str(end_time - start_time)
+        # убираем миллисекунды
+        spent_time = spent_time[:spent_time.find(".")]
+        if "0:00:00" not in str(spent_time):
+            await ctx.respond("Потрачено на обработку:" + spent_time)
+        if output:
+            if output.startswith("1"):
+                await send_file(ctx, "bark2.mp3")
+            elif output.startswith("2"):
+                await send_file(ctx, "bark1.mp3")
+                await send_file(ctx, "bark2.mp3")
+    except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
+        await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
+        # возращаем голос
+        if not ai_voice_temp is None:
+            await set_get_config_all("Default", "currentainame", ai_voice_temp)
+        # перестаём использовать видеокарту
+        await stop_use_cuda_async(cuda)
 
 
 async def get_links_from_playlist(playlist_url):
