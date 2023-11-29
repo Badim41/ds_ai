@@ -192,6 +192,54 @@ async def help_command(
     elif command == "skip":
         await ctx.respond("# /skip\n - пропуск аудио")
 
+@bot.slash_command(name="GPT4", description='Отправить запрос к gpt-4')
+async def __gpt4_image(ctx,
+                  image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
+                                required=True), 
+                  prompt: Option(str, description='запрос', required=True)):
+    from openai import OpenAI
+    import base64
+
+    # Установка вашего API ключа OpenAI
+    api_key = await set_get_config("Default", "avaible_tokens")
+
+    # Функция для кодирования изображения в формат base64
+    def encode_image(image_path):
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
+
+    # Получение base64 закодированного изображения
+    image_path = await image.save()
+    base64_image = encode_image(image_path)
+
+    # Формирование запроса к GPT-4 с изображением
+
+    # Создание экземпляра клиента
+    client = OpenAI(api_key=api_key)
+
+    # Создание запроса к API ChatGPT
+    response = client.chat.completions.create(
+        model="gpt-4-vision-preview",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": f"{prompt}"},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/png;base64,{base64_image}"
+                        }
+                    }
+                ]
+            }
+        ],
+        max_tokens=3000
+    )
+
+    # Вывод ответа
+    await ctx.send(response.choices[0].message.content)
+                                    
 
 @bot.slash_command(name="change_video",
                    description='перерисовать и переозвучить видео. Бот также предложит вам название')
