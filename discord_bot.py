@@ -192,7 +192,7 @@ async def help_command(
     elif command == "skip":
         await ctx.respond("# /skip\n - пропуск аудио")
 
-@bot.slash_command(name="GPT4", description='Отправить запрос к gpt-4')
+@bot.slash_command(name="gpt_img", description='Отправить запрос к gpt-4')
 async def __gpt4_image(ctx,
                   image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
                                 required=True), 
