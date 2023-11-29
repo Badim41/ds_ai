@@ -201,7 +201,7 @@ async def __gpt4_image(ctx,
     import base64
 
     # Установка вашего API ключа OpenAI
-    api_key = await set_get_config("Default", "avaible_tokens")
+    api_key = await set_get_config_all("Default", "avaible_tokens")
 
     # Функция для кодирования изображения в формат base64
     def encode_image(image_path):
