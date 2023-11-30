@@ -209,7 +209,8 @@ async def __gpt4_image(ctx,
             return base64.b64encode(image_file.read()).decode('utf-8')
 
     # Получение base64 закодированного изображения
-    image_path = await image.save()
+    image_path = "image" + str(random.randint(1, 1000000)) + ".png"
+    await image.save(image_path)
     base64_image = encode_image(image_path)
 
     # Формирование запроса к GPT-4 с изображением
