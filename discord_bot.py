@@ -197,7 +197,7 @@ async def __gpt4_image(ctx,
                   image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
                                 required=True), 
                   prompt: Option(str, description='запрос', required=True)):
-    from openai import OpenAI
+    from openai import AsyncOpenAI
     import base64
 
     # Установка вашего API ключа OpenAI
@@ -215,10 +215,10 @@ async def __gpt4_image(ctx,
     # Формирование запроса к GPT-4 с изображением
 
     # Создание экземпляра клиента
-    client = OpenAI(api_key=api_key)
+    client = AsyncOpenAI(api_key=api_key)
 
     # Создание запроса к API ChatGPT
-    response = client.chat.completions.create(
+    response = await client.chat.completions.create(
         model="gpt-4-vision-preview",
         messages=[
             {
