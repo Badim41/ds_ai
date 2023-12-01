@@ -234,8 +234,7 @@ async def __gpt4_image(ctx,
                     }
                 ]
             }
-        ],
-        max_tokens=3000
+        ]
     )
 
     # Вывод ответа

@@ -1353,17 +1353,24 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=No
 async def gtts(tts, output_file, speaker=6, bark=False, language="ru"):
 
     if bark or await set_get_config_all("voice", "use_bark") == "True":
-        print("Bark_fun")
+        # используем Bark
         try:
-            from bark import SAMPLE_RATE, generate_audio, preload_models
-            from scipy.io.wavfile import write as write_wav
-            speaker = language + "_speaker_" + str(speaker)
-            audio_array = generate_audio(tts, history_prompt=speaker)
-            write_wav("temp.wav", SAMPLE_RATE, audio_array)
-            audio = AudioSegment.from_wav("temp.wav")
-            audio.export(output_file, format="mp3")
-        except Exception as e:
-            await result_command_change(f"Ошибка при синтезе речи: {e}", Color.YELLOW)
+            command = [
+                "python",
+                "only_voice_change_cuda0.py",
+                "-i", f"\"{file_name}\"",
+                "-o", output_name,
+                "-dir", str(ai_dictionary),
+                "-p", f"{pitch}",
+                "-ir", "0.5",
+                "-fr", "3",
+                "-rms", "0.3",
+                "-pro", "0.15"
+            ]
+            subprocess.run(command, check=True)
+        except subprocess.CalledProcessError as e:
+            await result_command_change(f"Ошибка при выполнении команды (ID:tts-bark1): {e}", Color.RED)
+            return
     else:
         print("GTTS_fun", language, output_file)
         try:
