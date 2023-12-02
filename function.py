@@ -369,13 +369,8 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
         if os.path.exists('cookies.json'):
             with open('cookies.json', 'r') as file:
                 cookie_data = json.load(file)
-            auth = True
-            # print(os.path.abspath('cookies.json') + "found!")
-        else:
-            auth = False
-            # print(os.path.abspath('cookies.json') + "not found!")
         # в зависимости от аутефикации получаем ответ
-        if auth and not cookie_data == "" and not cookie_data is None:
+        if not cookie_data == "" and not cookie_data is None:
             result = await g4f.ChatCompletion.create_async(
                 model=gpt_model,
                 provider=provider,
@@ -388,8 +383,6 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
                 model=gpt_model,
                 provider=provider,
                 messages=[{"role": "user", "content": prompt}],
-                # фальшивый cookie поможет для некоторых провайдеров
-                cookies={"Fake": ""},
                 auth=True
             )
         if "!DOCTYPE" in str(result):

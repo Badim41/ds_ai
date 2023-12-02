@@ -201,36 +201,38 @@ async def __gpt4_image(ctx,
     import base64
 
     api_key = await set_get_config_all("gpt", "avaible_keys")
+    if not api_key == "None""":
+        def encode_image(image_path):
+            with open(image_path, "rb") as image_file:
+                return base64.b64encode(image_file.read()).decode('utf-8')
 
-    def encode_image(image_path):
-        with open(image_path, "rb") as image_file:
-            return base64.b64encode(image_file.read()).decode('utf-8')
+        image_path = "image" + str(random.randint(1, 1000000)) + ".png"
+        await image.save(image_path)
+        base64_image = encode_image(image_path)
 
-    image_path = "image" + str(random.randint(1, 1000000)) + ".png"
-    await image.save(image_path)
-    base64_image = encode_image(image_path)
+        client = AsyncOpenAI(api_key=api_key)
 
-    client = AsyncOpenAI(api_key=api_key)
-
-    response = await client.chat.completions.create(
-        model="gpt-4-vision-preview",
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": f"{prompt}"},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/png;base64,{base64_image}"
+        response = await client.chat.completions.create(
+            model="gpt-4-vision-preview",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": f"{prompt}"},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{base64_image}"
+                            }
                         }
-                    }
-                ]
-            }
-        ]
-    )
+                    ]
+                }
+            ]
+        )
 
-    await ctx.send(response.choices[0].message.content)
+        await ctx.respond(response.choices[0].message.content)
+    else:
+        await ctx.respond("Не указан API ключ для GPT-4")
                                     
 
 @bot.slash_command(name="change_video",
