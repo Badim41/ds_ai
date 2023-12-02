@@ -26,39 +26,39 @@ from use_free_cuda import stop_use_cuda_async, use_cuda_async, stop_use_cuda_ima
 
 _providers = [
     # AUTH
-    # g4f.Provider.Raycast,
-    # g4f.Provider.Phind,
+    g4f.Provider.Raycast,
+    g4f.Provider.Phind,
     g4f.Provider.Liaobots,  # - Doker output
     g4f.Provider.Bing,
-    # g4f.Provider.Bard,
-    # g4f.Provider.OpenaiChat,
-    # g4f.Provider.Theb,
+    g4f.Provider.Bard,
+    g4f.Provider.OpenaiChat,
+    g4f.Provider.Theb,
 
     # good providers
-    # g4f.Provider.GPTalk,
-    # g4f.Provider.AiAsk,  # - rate limit
+    g4f.Provider.GPTalk,
+    g4f.Provider.AiAsk,  # - rate limit
     g4f.Provider.GeekGpt,  # short answer
-    # g4f.Provider.Vercel,  # cut answer
-    # g4f.Provider.ChatgptDemo,  # error 403
-    # g4f.Provider.ChatgptLogin,  # error 403
-    # g4f.Provider.ChatgptX,  # error
-    # g4f.Provider.Theb,
-    # g4f.Provider.ChatgptFree,
-    # g4f.Provider.AItianhuSpace,
-    # g4f.Provider.AItianhu,
-    # g4f.Provider.ChatForAi,
+    g4f.Provider.Vercel,  # cut answer
+    g4f.Provider.ChatgptDemo,  # error 403
+    g4f.Provider.ChatgptLogin,  # error 403
+    g4f.Provider.ChatgptX,  # error
+    g4f.Provider.Theb,
+    g4f.Provider.ChatgptFree,
+    g4f.Provider.AItianhuSpace,
+    g4f.Provider.AItianhu,
+    g4f.Provider.ChatForAi,
 
     # bad providers
     g4f.Provider.You,  # dont work
-    # g4f.Provider.NoowAi,  # normal, but not so good
-    # g4f.Provider.GptGod,  # error list
-    # g4f.Provider.FreeGpt,# wrong language
+    g4f.Provider.NoowAi,  # normal, but not so good
+    g4f.Provider.GptGod,  # error list
+    g4f.Provider.FreeGpt,# wrong language
     g4f.Provider.ChatgptAi,  # - error ID
-    # g4f.Provider.GptGo,  # error 403
-    # g4f.Provider.GptForLove,  # error no module
-    # g4f.Provider.Opchatgpts,  # bad
-    # g4f.Provider.Chatgpt4Online,  # - bad
-    # g4f.Provider.ChatBase,  # - bad, but you can use it
+    g4f.Provider.GptGo,  # error 403
+    g4f.Provider.GptForLove,  # error no module
+    g4f.Provider.Opchatgpts,  # bad
+    g4f.Provider.Chatgpt4Online,  # - bad
+    g4f.Provider.ChatBase,  # - bad, but you can use it
     # g4f.Provider.Llama2, # no model
 ]
 
