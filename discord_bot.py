@@ -63,11 +63,13 @@ async def on_message(message):
     if message.author.id == 1165023027847757836:
         text = message.content
         ctx = await bot.get_context(message)
-        from function import replace_mat_in_sentence
 
         if await set_get_config_all("Default", "robot_name_need") == "False":
             text = await set_get_config_all("Default", "currentainame") + ", " + text
-        text = await replace_mat_in_sentence(text)
+        from function import replace_mat_in_sentence
+        text_out = await replace_mat_in_sentence(text)
+        if not text_out == text.lower():
+            text = text_out
         user = text[:text.find(":")]
         if "[" in text and "]" in text:
             text = re.sub(r'[.*?]', '', text)
@@ -95,10 +97,12 @@ async def on_message(message):
                 if "||" in reply_on_message:
                     reply_on_message = re.sub(r'\|\|.*?\|\|', '', reply_on_message)
                 text += f" (Пользователь отвечает на ваше сообщение \"{reply_on_message}\")"
-            from function import replace_mat_in_sentence
             if await set_get_config_all("Default", "robot_name_need") == "False":
                 text = await set_get_config_all("Default", "currentainame") + ", " + text
-            text = await replace_mat_in_sentence(text)
+            from function import replace_mat_in_sentence
+            text_out = await replace_mat_in_sentence(text)
+            if not text_out == text.lower():
+                text = text_out
             await set_get_config_all("Default", "user_name", value=message.author)
             await run_main_with_settings(ctx, text, True)
         except Exception as e:
@@ -674,32 +678,6 @@ async def disconnect(ctx):
         await ctx.respond(f"Ошибка при выходе из войс-чата: {e}")
 
 
-# @bot.command(help="сказать роботу текст")
-# async def say(ctx, *args):
-#     message = " ".join(args)
-#     from function import replace_mat_in_sentence
-#     if not default_settings.get("robot_name_need"):
-#         message = default_settings.get("currentAIname") + ", " + message
-#         print(message)
-#     else:
-#         print(message)
-#     message = await replace_mat_in_sentence(message)
-#     # Проверяем, находится ли автор команды в войс-чате
-#     # if ctx.author.voice:
-#     if True:
-#         # Получаем войс-канал автора команды
-#         # voice_channel = ctx.author.voice.channel
-#         # # Проверяем, находится ли бот уже в каком-либо войс-чате
-#         # if ctx.voice_client is None:
-#         #     # Если бот не находится в войс-чате, подключаем его
-#         #     await voice_channel.connect()
-#         # else:
-#         #     # Если бот уже находится в войс-чате, перемещаем его в новый войс-канал
-#         #     await ctx.voice_client.move_to(voice_channel)
-#         await run_main_with_settings(ctx, message, True)
-#     else:
-#         await ctx.send("Вы должны находиться в войс-чате, чтобы использовать эту команду.")
-
 
 @bot.slash_command(name="pause", description='пауза/воспроизведение (остановка диалога)')
 async def pause(ctx):
@@ -788,11 +766,12 @@ async def __say(
 
         if gpt_mode:
             await set_get_config_all("gpt", "gpt_mode", gpt_mode)
-
-        from function import replace_mat_in_sentence
         if await set_get_config_all("Default", "robot_name_need") == "False":
             text = await set_get_config_all("Default", "currentainame") + ", " + text
-        text = await replace_mat_in_sentence(text)
+        from function import replace_mat_in_sentence
+        text_out = await replace_mat_in_sentence(text)
+        if not text_out == text.lower():
+            text = text_out
         print(f'{text} ({type(text).__name__})\n')
         await set_get_config_all("Default", "user_name", value=ctx.author.name)
 
@@ -1768,10 +1747,10 @@ async def recognize(ctx):
                     print(f"Ошибка при создании пустого аудиофайла: {e}")
                 # вызов function
                 if not text is None:
-                    from function import replace_mat_in_sentence, replace_numbers_in_sentence
-                    text = await replace_numbers_in_sentence(
-                        text)
-                    text = await replace_mat_in_sentence(text)
+                    from function import replace_mat_in_sentence
+                    text_out = await replace_mat_in_sentence(text)
+                    if not text_out == text.lower():
+                        text = text_out
                     print(text)
 
                     if await set_get_config_all("dialog", "dialog", None) == "True":

@@ -163,7 +163,7 @@ async def start_bot(ctx, spokenTextArg, writeAnswer):
                         prompt = prompt.replace("  ", " ")
             elif custom_prompt == "True":
                 prompt = f"ОПИРАЙСЯ НА ПРЕДЫДУЩИЕ ЗАПРОСЫ. Они даны в формате Человек:[запрос], GPT:[ответ на запрос]:\"{file_content}\"" \
-                         f"Напиши ответ пользователю с именем {user_name} от лица обычного ChatGPT, он говорит:\"{temp_spokenText}\""
+                         f"Напиши ответ пользователю с именем {user_name} от лица обычного ChatGPT, он говорит:\"{temp_spokenText[temp_spokenText.find(',') + 2:]}\""
             else:
                 if os.path.exists(f"texts/prompts/{custom_prompt}.txt"):
                     # /content/ds_ai/texts/prompts/roleplay.txt
@@ -328,6 +328,7 @@ async def run_official_gpt(prompt, delay_for_gpt, key_gpt):
             if "Error code: 429" in str(e) or "Incorrect API key provided" in str(e):
                 return
     else:
+        # не поддерживается в python 3.9
         await asyncio.sleep(delay_for_gpt)
         return None
 
