@@ -35,7 +35,7 @@ _providers = [
 
     # good providers
     g4f.Provider.GPTalk,
-    # g4f.Provider.AiAsk,  # - rate limit
+    g4f.Provider.AiAsk,  # - rate limit
     g4f.Provider.GeekGpt,  # short answer
     # g4f.Provider.Vercel,  # cut answer
     # g4f.Provider.ChatgptDemo,  # error 403
@@ -52,7 +52,7 @@ _providers = [
     # g4f.Provider.NoowAi,  # normal, but not so good
     # g4f.Provider.GptGod,  # error list
     # g4f.Provider.FreeGpt,# wrong language
-    # g4f.Provider.ChatgptAi,  # - error ID
+    g4f.Provider.ChatgptAi,  # - error ID
     # g4f.Provider.GptGo,  # error 403
     # g4f.Provider.GptForLove,  # error no module
     # g4f.Provider.Opchatgpts,  # bad
