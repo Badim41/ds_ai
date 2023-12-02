@@ -478,8 +478,12 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0):
         # запуск сразу всех GPT
         if not gpt_mode == "None":
             result = await run_all_gpt(prompt, gpt_mode)
-        # Запуск в начале более качественных (не рекомендовано)
         else:
+            # запускаем официальный GPT без ключа
+            if provider_number == 0:
+                result = await run_official_gpt(prompt, 1, False)
+                if result:
+                    return result
             try:
                 # Использовать все модели
                 for gpt_model in ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003", "gpt-3.5-turbo", "gpt-4", "gpt-3.5"]:
