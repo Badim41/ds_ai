@@ -420,7 +420,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
 
 
 async def run_all_gpt(prompt, mode):
-    if "Fast" in mode:
+    if "fast" in mode:
         # print("temp2.1")
         functions = [one_gpt_run(provider, prompt, 100) for provider in _providers]  # список функций
         functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 100, gpt_model=gpt_model) for gpt_model in
@@ -437,7 +437,7 @@ async def run_all_gpt(prompt, mode):
         for task in done:
             result = await task
             return result
-    if "All" in mode:
+    if "all" in mode:
         # print("temp2.2")
         functions = [one_gpt_run(provider, prompt, 1) for provider in _providers]  # список функций
         functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 1, gpt_model=gpt_model) for gpt_model in
