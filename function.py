@@ -20,6 +20,7 @@ from discord_bot import write_in_discord
 from set_get_config import set_get_config_all
 from use_free_cuda import stop_use_cuda_async, use_cuda_async, stop_use_cuda_images, use_cuda_images, \
     check_cuda_async
+
 # from bark import SAMPLE_RATE, generate_audio
 # from scipy.io.wavfile import write as write_wav
 
@@ -34,8 +35,8 @@ _providers = [
     # g4f.Provider.Theb,
 
     # good providers
-    g4f.Provider.GPTalk,
-    g4f.Provider.AiAsk,  # - rate limit
+    # g4f.Provider.GPTalk,
+    # g4f.Provider.AiAsk,  # - rate limit
     g4f.Provider.GeekGpt,  # short answer
     # g4f.Provider.Vercel,  # cut answer
     # g4f.Provider.ChatgptDemo,  # error 403
@@ -245,9 +246,7 @@ async def replace_numbers_in_sentence(sentence):
 mat_found = False
 
 
-
 async def replace_mat_in_sentence(sentence):
-
     with open("filter_profanity_russian_cached.txt", "r", encoding="utf-8") as reader:
         lines = reader.readlines()
     mat_massive = []
@@ -325,26 +324,12 @@ async def run_official_gpt(prompt, delay_for_gpt, key_gpt):
                 await asyncio.sleep(delay_for_gpt)
                 return ""
         except Exception as e:
-                print("error", e)
-                if "Error code: 429" in str(e) or "Incorrect API key provided" in str(e):
-                    return
+            print("error", e)
+            if "Error code: 429" in str(e) or "Incorrect API key provided" in str(e):
+                return
     else:
-        auth_key = await set_get_config_all("gpt", "auth_key")
-        if not auth_key == "None":
-            response = await g4f.ChatCompletion.create_async(
-                model=g4f.models.gpt_35_turbo,
-                messages=[
-                    {"role": "user", "content": f"{prompt}"},
-                ],
-                provider=g4f.Provider.OpenaiChat,
-                access_token=auth_key,
-                timeout=30,
-                auth=auth_key
-            )
-            if not response:
-                await asyncio.sleep(delay_for_gpt)
-            print("ChatGPT_OFFICIAL_2:", response)
-            return response
+        await asyncio.sleep(delay_for_gpt)
+        return None
 
 
 async def remove_unavaible_gpt_token():
@@ -356,6 +341,7 @@ async def remove_unavaible_gpt_token():
                 keys.remove(key)
     with open("keys2.txt", "w", encoding="utf-8") as writer:
         writer.writelines(keys[1:])
+
 
 async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_model="gpt-3.5-turbo"):
     if provider_name not in str(provider):
@@ -486,7 +472,8 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0):
                     return result
             try:
                 # Использовать все модели
-                for gpt_model in ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003", "gpt-3.5-turbo", "gpt-4", "gpt-3.5"]:
+                for gpt_model in ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003", "gpt-3.5-turbo",
+                                  "gpt-4", "gpt-3.5"]:
                     result = await g4f.ChatCompletion.create_async(
                         model=gpt_model,
                         provider=_providers[provider_number],
@@ -497,7 +484,8 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0):
                         continue
                     else:
                         break
-                if result.replace("\n", "").replace(" ", "") == "" or str(result) == "None" or "!DOCTYPE" in str(result):
+                if result.replace("\n", "").replace(" ", "") == "" or str(result) == "None" or "!DOCTYPE" in str(
+                        result):
                     raise Exception("Пустой текст")
                 print("RESULT:", result)
             except Exception as e:
@@ -732,7 +720,6 @@ async def voice_commands(sentence, ctx):
         await text_to_speech("Длина запроса: " + str(number), False, ctx)
         return True
 
-
     if "измени" in sentence and "голос на" in sentence:
         sentence = sentence[sentence.index("голос на") + 9:]
         await setAIvoice(sentence, ctx)
@@ -850,7 +837,8 @@ async def createAICaver(ctx):
                 return
             await write_in_discord(ctx, "Начинаю обработку аудио")
             await asyncio.gather(play_audio_process(ctx),
-                                 *[prepare_audio_pipeline(cuda_number, ctx, len(cuda_used)) for cuda_number in cuda_used])  #
+                                 *[prepare_audio_pipeline(cuda_number, ctx, len(cuda_used)) for cuda_number in
+                                   cuda_used])  #
             await result_command_change(f"ready audios", Color.GRAY)
             # освобождаем видеокарты
             for cuda in cuda_used:
@@ -1074,13 +1062,14 @@ async def prepare_audio_pipeline(cuda_number, ctx, all_cuda_used):
                 else:
                     await set_get_config_all("Values", f"cuda{cuda_number}_is_busy", "False")
                     await asyncio.sleep(0.1)
-                    if await set_get_config_all("Values", f"cuda{1 - cuda_number}_is_busy") == "False" or all_cuda_used == 1:
+                    if await set_get_config_all("Values",
+                                                f"cuda{1 - cuda_number}_is_busy") == "False" or all_cuda_used == 1:
                         print("Больше нет ссылок", cuda_number)
                         await set_get_config_all("Values", "queue", "False")
                         if await set_get_config_all('Values', "play_audio_process") == "False":
                             return
                         else:
-                           await asyncio.sleep(1)
+                            await asyncio.sleep(1)
 
         except (IOError, KeyboardInterrupt) as e:
             await result_command_change(f"Произошла ошибка (ID:f7-cuda{cuda_number}):" + str(e), Color.RED)
@@ -1119,7 +1108,7 @@ async def remove_line_from_txt(file_path, delete_line):
             for line in reader:
                 if not i == delete_line:
                     # await result_command_change(f"Line removed: {line}", Color.GRAY)
-                # else:
+                    # else:
                     lines.append(line)
                 i += 1
 
@@ -1404,7 +1393,6 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=No
 
 
 async def gtts(tts, output_file, speaker=6, bark=False, language="ru"):
-
     if bark or await set_get_config_all("voice", "use_bark") == "True":
         raise "not supported"
         # используем Bark
@@ -1446,7 +1434,6 @@ async def remove_unavaible_voice_api_key():
             continue
         avaible_keys.append(token)
     await set_get_config_all("voice", "avaible_keys", ';'.join(avaible_keys))
-
 
 
 async def playSoundFile(audio_file_path, duration, start_seconds, ctx):
