@@ -1353,24 +1353,22 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=No
 async def gtts(tts, output_file, speaker=6, bark=False, language="ru"):
 
     if bark or await set_get_config_all("voice", "use_bark") == "True":
+        raise "not supported"
         # используем Bark
-        try:
-            command = [
-                "python",
-                "only_voice_change_cuda0.py",
-                "-i", f"\"{file_name}\"",
-                "-o", output_name,
-                "-dir", str(ai_dictionary),
-                "-p", f"{pitch}",
-                "-ir", "0.5",
-                "-fr", "3",
-                "-rms", "0.3",
-                "-pro", "0.15"
-            ]
-            subprocess.run(command, check=True)
-        except subprocess.CalledProcessError as e:
-            await result_command_change(f"Ошибка при выполнении команды (ID:tts-bark1): {e}", Color.RED)
-            return
+        # try:
+        #     command = [
+        #         "PYTHONPATH=/kaggle/working/ds_ai/venv",
+        #         "python",
+        #         "run_bark.py",
+        #         "-tts", f"\"{tts}\"",
+        #         "-language", f"\"{tts}\"",
+        #         "-output_file", f"\"{tts}\"",
+        #         "-speaker", f"\"{tts}\"""
+        #     ]
+        #     subprocess.run(command, check=True)
+        # except subprocess.CalledProcessError as e:
+        #     await result_command_change(f"Ошибка при выполнении команды (ID:tts-bark1): {e}", Color.RED)
+        #     return
     else:
         print("GTTS_fun", language, output_file)
         try:
