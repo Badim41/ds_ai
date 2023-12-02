@@ -419,7 +419,7 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
         return ""
 
 
-async def run_all_gpt(prompt, mode, message):
+async def run_all_gpt(prompt, mode):
     if "Fast" in mode:
         # print("temp2.1")
         functions = [one_gpt_run(provider, prompt, 100) for provider in _providers]  # список функций
