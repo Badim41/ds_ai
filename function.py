@@ -254,7 +254,7 @@ async def replace_mat_in_sentence(sentence):
     for line in lines:
         line = line.replace("\ufeff", "").replace("\n", "")
         mat_massive.append(line)
-    
+
     words = sentence.lower().split(" ")
     return_sentence = []
 
@@ -302,6 +302,60 @@ async def remove_last_format_simbols(text, format="```"):
         return corrected_text
     return text
 
+
+async def run_official_gpt(prompt, delay_for_gpt, key_gpt):
+    if key_gpt:
+        api_key = await set_get_config_all("gpt", "avaible_keys")
+        try:
+            if not api_key == "None":
+                from openai import AsyncOpenAI
+                client = AsyncOpenAI(api_key=api_key)
+                completion = await client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system",
+                         "content": "you are helpful assistant"},
+                        {"role": "user", "content": f"{prompt}"}
+                    ]
+                )
+                print("ChatGPT_OFFICIAL_1", completion.choices[0].message.content)
+                return completion.choices[0].message.content
+            else:
+                print("no GPT keys(2)")
+                await asyncio.sleep(delay_for_gpt)
+                return ""
+        except Exception as e:
+                print("error", e)
+                if "Error code: 429" in str(e) or "Incorrect API key provided" in str(e):
+                    return
+    else:
+        auth_key = await set_get_config_all("gpt", "auth_key")
+        if not auth_key == "None":
+            response = await g4f.ChatCompletion.create_async(
+                model=g4f.models.gpt_35_turbo,
+                messages=[
+                    {"role": "user", "content": f"{prompt}"},
+                ],
+                provider=g4f.Provider.OpenaiChat,
+                access_token=auth_key,
+                timeout=30,
+                auth=auth_key
+            )
+            if not response:
+                await asyncio.sleep(delay_for_gpt)
+            print("ChatGPT_OFFICIAL_2:", response)
+            return response
+
+
+async def remove_unavaible_gpt_token():
+    with open("keys2.txt", "r", encoding="utf-8") as reader:
+        keys = reader.readlines()
+        print(keys, len(keys))
+        for key in keys:
+            if key.startswith("$"):
+                keys.remove(key)
+    with open("keys2.txt", "w", encoding="utf-8") as writer:
+        writer.writelines(keys[1:])
 
 async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_model="gpt-3.5-turbo"):
     if provider_name not in str(provider):
@@ -372,37 +426,39 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
         return ""
 
 
-async def run_all_gpt(prompt, mode):
-    if mode == "fast":
-        functions = [one_gpt_run(provider, prompt, 120) for provider in _providers]  # список функций
-        functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 120, gpt_model=gpt_model) for gpt_model in
+async def run_all_gpt(prompt, mode, message):
+    if "Fast" in mode:
+        # print("temp2.1")
+        functions = [one_gpt_run(provider, prompt, 100) for provider in _providers]  # список функций
+        functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 100, gpt_model=gpt_model) for gpt_model in
                       ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003"]]
-        functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 120, gpt_model=gpt_model) for gpt_model in
+        functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 100, gpt_model=gpt_model) for gpt_model in
                       ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003"]]
-        done, _ = await asyncio.wait(functions, return_when=asyncio.FIRST_COMPLETED)
+        functions += [run_official_gpt(prompt, 100, value) for value in [True, False]]
+        done, pending = await asyncio.wait(functions, return_when=asyncio.FIRST_COMPLETED)
+        # Принудительное завершение оставшихся функций
+        for task in pending:
+            task.cancel()
+
+        # Получение результата выполненной функции
         for task in done:
             result = await task
             return result
-    if mode == "all":
+    if "All" in mode:
+        # print("temp2.2")
         functions = [one_gpt_run(provider, prompt, 1) for provider in _providers]  # список функций
         functions += [one_gpt_run(g4f.Provider.Vercel, prompt, 1, gpt_model=gpt_model) for gpt_model in
                       ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003"]]
         functions += [one_gpt_run(providers, prompt, 1, gpt_model="gpt-4") for providers in
                       [g4f.Provider.GeekGpt, g4f.Provider.Liaobots, g4f.Provider.Raycast]]
+        functions += [run_official_gpt(prompt, 1, value) for value in [True, False]]
         results = await asyncio.gather(*functions)  # результаты всех функций
         new_results = []
         for i, result in enumerate(results):
             if not result is None and not result.replace("\n", "").replace(" ", "") == "" or result == "None":
                 new_results.append(result)
-        return '\n\n\n'.join(new_results)
-    else:
-        functions = [one_gpt_run(provider, prompt, 1, provider_name=mode) for provider in _providers]  # список функций
-        results = await asyncio.gather(*functions)  # результаты всех функций
-        new_results = []
-        for i, result in enumerate(results):
-            if not result is None and not result.replace("\n", "").replace(" ", "") == "":
-                new_results.append(result)
-        return '\n\n\n'.join(new_results)
+        return '\n\n==Другой ответ==\n\n'.join(new_results)
+    return "Не выбран режим GPT (это какая-то ошибка, лучше свяжитесь с разработчиком, если эта ошибка продолжит появляться)"
 
 
 async def chatgpt_get_result(prompt, ctx, provider_number=0):
@@ -433,7 +489,7 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0):
         else:
             try:
                 # Использовать все модели
-                for gpt_model in ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003", "gpt-3.5-turbo", "gpt-4"]:
+                for gpt_model in ["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613", "text-davinci-003", "gpt-3.5-turbo", "gpt-4", "gpt-3.5"]:
                     result = await g4f.ChatCompletion.create_async(
                         model=gpt_model,
                         provider=_providers[provider_number],
@@ -802,7 +858,7 @@ async def createAICaver(ctx):
             # освобождаем видеокарты
             for cuda in cuda_used:
                 await stop_use_cuda_async(cuda)
-            
+
         else:
             # добавляем те, которые сейчас обрабатываются
             # queue_position = check_cuda()
@@ -1379,11 +1435,11 @@ async def gtts(tts, output_file, speaker=6, bark=False, language="ru"):
             await result_command_change(f"Ошибка при синтезе речи: {e}", Color.YELLOW)
 
 
-async def remove_unavaible_voice_token():
-    tokens = (await set_get_config_all("voice", "avaible_tokens")).split(";")
-    avaible_tokens = []
+async def remove_unavaible_voice_api_key():
+    tokens = (await set_get_config_all("voice", "avaible_keys")).split(";")
+    avaible_keys = []
     if len(tokens) == 1:
-        await set_get_config_all("voice", "avaible_tokens", "None")
+        await set_get_config_all("voice", "avaible_keys", "None")
         await result_command_change("==БОЛЬШЕ НЕТ ТОКЕНОВ ДЛЯ СИНТЕЗА ГОЛОСА==", Color.YELLOW)
         return
     skip_first = True
@@ -1391,8 +1447,8 @@ async def remove_unavaible_voice_token():
         if skip_first:
             skip_first = False
             continue
-        avaible_tokens.append(token)
-    await set_get_config_all("voice", "avaible_tokens", ';'.join(avaible_tokens))
+        avaible_keys.append(token)
+    await set_get_config_all("voice", "avaible_keys", ';'.join(avaible_keys))
 
 
 

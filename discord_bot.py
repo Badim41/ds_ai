@@ -200,25 +200,18 @@ async def __gpt4_image(ctx,
     from openai import AsyncOpenAI
     import base64
 
-    # Установка вашего API ключа OpenAI
-    api_key = await set_get_config_all("Default", "avaible_tokens")
+    api_key = await set_get_config_all("gpt", "avaible_keys")
 
-    # Функция для кодирования изображения в формат base64
     def encode_image(image_path):
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
 
-    # Получение base64 закодированного изображения
     image_path = "image" + str(random.randint(1, 1000000)) + ".png"
     await image.save(image_path)
     base64_image = encode_image(image_path)
 
-    # Формирование запроса к GPT-4 с изображением
-
-    # Создание экземпляра клиента
     client = AsyncOpenAI(api_key=api_key)
 
-    # Создание запроса к API ChatGPT
     response = await client.chat.completions.create(
         model="gpt-4-vision-preview",
         messages=[
@@ -237,7 +230,6 @@ async def __gpt4_image(ctx,
         ]
     )
 
-    # Вывод ответа
     await ctx.send(response.choices[0].message.content)
                                     
 
@@ -1436,7 +1428,7 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
     max_simbols = await set_get_config_all("voice", "max_simbols", None)
 
     pitch = 0
-    if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_tokens", None) == "None":
+    if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_keys", None) == "None":
         print("gtts1")
         from function import gtts
         await gtts(tts, "ru", file_name)
@@ -1444,7 +1436,7 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
             pitch = -12
     else:
         # получаем ключ для elevenlab
-        keys = (await set_get_config_all("voice", "avaible_tokens", None)).split(";")
+        keys = (await set_get_config_all("voice", "avaible_keys", None)).split(";")
         key = keys[0]
         if not key == "Free":
             set_api_key(key)
@@ -1468,11 +1460,11 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
 
             save(audio, file_name)
         except Exception as e:
-            from function import remove_unavaible_voice_token
+            from function import remove_unavaible_voice_api_key
             print(f"Ошибка при выполнении команды (ID:f16): {e}")
             traceback_str = traceback.format_exc()
             print(str(traceback_str))
-            await remove_unavaible_voice_token()
+            await remove_unavaible_voice_api_key()
             pitch = await text_to_speech_file(tts, currentpitch, file_name)
             return pitch
             # gtts(tts, language[:2], file_name)
