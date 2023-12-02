@@ -318,7 +318,8 @@ async def run_official_gpt(prompt, delay_for_gpt, key_gpt):
                     ]
                 )
                 print("ChatGPT_OFFICIAL_1", completion.choices[0].message.content)
-                return completion.choices[0].message.content
+                answer = completion.choices[0].message.content
+                return answer[answer.find("GPT: ") + 5:]
             else:
                 print("no GPT keys(2)")
                 await asyncio.sleep(delay_for_gpt)
