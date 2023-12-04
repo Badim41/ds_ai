@@ -238,6 +238,10 @@ async def __gpt4_image(ctx,
     else:
         await ctx.respond("Не указан API ключ для GPT-4")
                                     
+@bot.slash_command(name="gpt4", description='Отправить запрос к gpt-4')
+async def __gpt4(ctx, prompt: Option(str, description='запрос', required=True)):
+    text = await run_official_gpt(prompt, 1, True, "gpt-4 turbo")
+    await ctx.respond(text)
 
 @bot.slash_command(name="change_video",
                    description='перерисовать и переозвучить видео. Бот также предложит вам название')
