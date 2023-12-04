@@ -242,7 +242,7 @@ async def __gpt4_image(ctx,
 async def __gpt4(ctx, prompt: Option(str, description='запрос', required=True)):
     from function import run_official_gpt
     text = await run_official_gpt(prompt, 1, True, "gpt-4-1106-preview")
-    await ctx.respond(text)
+    await ctx.send(text)
 
 @bot.slash_command(name="change_video",
                    description='перерисовать и переозвучить видео. Бот также предложит вам название')
