@@ -240,6 +240,7 @@ async def __gpt4_image(ctx,
                                     
 @bot.slash_command(name="gpt4", description='Отправить запрос к gpt-4')
 async def __gpt4(ctx, prompt: Option(str, description='запрос', required=True)):
+    await ctx.respond("Выполнение...")
     from function import run_official_gpt
     text = await run_official_gpt(prompt, 1, True, "gpt-4-1106-preview")
     await ctx.send(text)
