@@ -302,7 +302,7 @@ async def remove_last_format_simbols(text, format="```"):
     return text
 
 
-async def run_official_gpt(prompt, delay_for_gpt, key_gpt):
+async def run_official_gpt(prompt, delay_for_gpt, key_gpt, model="gpt-3.5-turbo"):
     if key_gpt:
         api_key = await set_get_config_all("gpt", "avaible_keys")
         try:
@@ -310,7 +310,7 @@ async def run_official_gpt(prompt, delay_for_gpt, key_gpt):
                 from openai import AsyncOpenAI
                 client = AsyncOpenAI(api_key=api_key)
                 completion = await client.chat.completions.create(
-                    model="gpt-3.5-turbo",
+                    model=model,
                     messages=[
                         {"role": "system",
                          "content": "you are helpful assistant"},
