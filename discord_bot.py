@@ -240,6 +240,7 @@ async def __gpt4_image(ctx,
                                     
 @bot.slash_command(name="gpt4", description='Отправить запрос к gpt-4')
 async def __gpt4(ctx, prompt: Option(str, description='запрос', required=True)):
+    from function import run_official_gpt
     text = await run_official_gpt(prompt, 1, True, "gpt-4 turbo")
     await ctx.respond(text)
 
