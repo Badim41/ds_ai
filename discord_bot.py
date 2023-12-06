@@ -234,7 +234,7 @@ async def __gpt4_image(ctx,
             ]
         )
 
-        await ctx.respond(response.choices[0].message.content)
+        await write_in_discord(ctx, response.choices[0].message.content)
     else:
         await ctx.respond("Не указан API ключ для GPT-4")
                                     
@@ -243,7 +243,7 @@ async def __gpt4(ctx, prompt: Option(str, description='запрос', required=T
     await ctx.respond("Выполнение...")
     from function import run_official_gpt
     text = await run_official_gpt(prompt, 1, True, "gpt-4-1106-preview")
-    await ctx.send(text)
+    await write_in_discord(ctx, text)
 
 @bot.slash_command(name="change_video",
                    description='перерисовать и переозвучить видео. Бот также предложит вам название')
