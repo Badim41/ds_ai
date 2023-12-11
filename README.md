@@ -5,7 +5,7 @@
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/) <sup><strong>Неполный функционал (GPT + Kondinski)</strong></sup>
 
 > [!Note]
-[![Kaggle](https://img.shields.io/badge/-Kaggle-20BEFF?logo=kaggle&logoColor=white)](https://www.kaggle.com/) <sup><strong>Полный функционал (RVC + GPT + Kondinski)</strong></sup> 
+[![Kaggle](https://img.shields.io/badge/-Kaggle-20BEFF?logo=kaggle&logoColor=white)]([https://www.kaggle.com/](https://www.kaggle.com/vadim45344/ds-ai)) <sup><strong>Полный функционал (RVC + GPT + Kondinski)</strong></sup> 
 
 Discord-бот для использования ИИ
 1. [📖 Описание](#section-1)
