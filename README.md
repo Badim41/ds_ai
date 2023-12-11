@@ -44,15 +44,25 @@ https://github.com/xtekky/gpt4free
 
 ### Установка и настройка <a name="section-4"></a>
 ## Linux
+
+Клонирование репозитория
+
 ```
-!git clone https://github.com/Badim41/ds_ai.git
-%cd ds_ai
-!sudo apt update -y
-!sudo apt install -y portaudio19-dev
-!pip install -r requirements.txt
-!pip install -r requirements2.txt
-!sudo apt install sox -y
-!sudo apt-get install rubberband-cli
+git clone https://github.com/Badim41/ds_ai.git
+```
+```
+cd ds_ai
+```
+
+Установка зависимостей
+
+```
+sudo apt update -y
+sudo apt install -y portaudio19-dev
+pip install -r requirements.txt
+pip install -r requirements2.txt
+sudo apt install sox -y
+sudo apt-get install rubberband-cli
 ```
 ### Вопросы и обратная связь <a name="section-5"></a>
 
