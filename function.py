@@ -329,11 +329,30 @@ async def run_official_gpt(prompt, delay_for_gpt, key_gpt, model="gpt-3.5-turbo"
         except Exception as e:
             print("error", e)
             if "Error code: 429" in str(e) or "Incorrect API key provided" in str(e):
-                return
+                return ""
     else:
         # не поддерживается в python 3.9
-        await asyncio.sleep(delay_for_gpt)
-        return None
+        try:
+            auth_key = await set_get_config_all("gpt", "auth_key")
+            if not auth_key == "None":
+                response = await g4f.ChatCompletion.create_async(
+                    model=g4f.models.gpt_35_turbo,
+                    messages=[
+                        {"role": "user", "content": f"{prompt}"},
+                    ],
+                    provider=g4f.Provider.OpenaiChat,
+                    access_token=auth_key,
+                    timeout=30,
+                    auth=auth_key
+                )
+                if not response:
+                    await asyncio.sleep(delay_for_gpt)
+                print("ChatGPT_OFFICIAL_2:", response)
+                return response
+        except Exception as e:
+            await result_command_change(str(e), Color.RED)
+            await asyncio.sleep(delay_for_gpt)
+            return ""
 
 
 async def remove_unavaible_gpt_token():
