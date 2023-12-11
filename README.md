@@ -12,6 +12,7 @@ Discord-бот для использования ИИ
 5. [Помощь](#section-5)
 
 Репозитории, из которых взята часть кода:
+
 https://github.com/ai-forever/Kandinsky-2                                
 https://github.com/SociallyIneptWeeb/AICoverGen                                
 https://github.com/xtekky/gpt4free
