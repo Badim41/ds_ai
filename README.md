@@ -1,3 +1,8 @@
+Мои боты: 
+
+[![Discord](https://img.shields.io/badge/-Discord-5865F2?logo=discord&logoColor=white)]([https://discord.com/](https://discord.gg/nuUWVR2WzR)) <sup><strong>Сервер в Discord</strong></sup>
+[![Telegram](https://img.shields.io/badge/-Telegram-26A5E4?logo=telegram&logoColor=white)]([https://telegram.org/](https://t.me/GPT4_Unlimit_bot?start=2)) <sup><strong><Бот в Telegram</strong></sup>
+
 > [!Note]
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/) <sup><strong>Неполный функционал (GPT + Kondinski)</strong></sup>
 
@@ -33,10 +38,11 @@ https://github.com/xtekky/gpt4free
 
 Основные функции бота включают в себя:
 
-- Генерация текста с использованием GPT.
-- Изменение голоса в аудиофайлах (RVC).
-- Создание диалогов.
-- Озвучивание текстовых сообщений.
+- Генерация текста (GPT-3.5, GPT-4).
+- Генерация и изменение картинок (Kondinski)
+- Изменение голоса в аудиофайлах (RVC, UVR5).
+- Создание диалогов (GPT-3.5, RVC).
+- Озвучивание текстовых сообщений (Elevenlabs, RVC).
 
 ## Установка и настройка <a name="section-4"></a>
 
