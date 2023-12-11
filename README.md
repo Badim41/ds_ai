@@ -90,17 +90,17 @@ pip install -r requirements2.txt
 
 ## Установка Git и Python 3.9
 
-Установка Git [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) 
+Установка Git [тут](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) 
 
-Установка **Python 3.9**[guide](https://realpython.com/installing-python/)
+Установка **Python 3.9** [тут](https://realpython.com/installing-python/)
 
 ### Установка ffmpeg
 
-Инструкция [here](https://www.hostinger.com/tutorials/how-to-install-ffmpeg) для установки ffmpeg
+Инструкция [тут](https://www.hostinger.com/tutorials/how-to-install-ffmpeg) для установки ffmpeg
 
 ### Установка sox
 
-Инструкция [here](https://www.tutorialexample.com/a-step-guide-to-install-sox-sound-exchange-on-windows-10-python-tutorial/) для установки sox
+Инструкция [тут](https://www.tutorialexample.com/a-step-guide-to-install-sox-sound-exchange-on-windows-10-python-tutorial/) для установки sox
 
 **Также установите и добавьте в PATH Sox и ffmpeg**
 
