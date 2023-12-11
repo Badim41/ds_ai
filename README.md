@@ -12,7 +12,11 @@ Discord-бот для использования ИИ
 2. [Основные библиотеки](#section-2)
 3. [Возможности](#section-3)
 4. [Установка](#section-4)
-5. [Помощь](#section-5)
+   4.1 [Linusx](#section-4.1)
+   4.2 [Windows](#section-4.2)
+   4.3 [Обязательные аргументы](#section-4.3)
+   4.4 [Необязательные аргументы](#section-4.4)
+6. [Помощь](#section-5)
 
 Репозитории, из которых взята часть кода:
 
@@ -43,7 +47,8 @@ https://github.com/xtekky/gpt4free
 - Озвучивание текстовых сообщений (Elevenlabs, RVC).
 
 ### Установка и настройка <a name="section-4"></a>
-## Linux
+**Необходима версия Python - 3.9**
+## Linux <a name="section-4.1"></a>
 
 Клонирование репозитория
 
@@ -65,7 +70,41 @@ sudo apt install sox -y
 sudo apt-get install rubberband-cli
 ```
 
-Обязательные настройки
+## Windows <a name="section-4.2"></a>
+
+Клонирование репозитория
+
+```sh
+git clone https://github.com/Badim41/ds_ai.git
+```
+```sh
+cd ds_ai
+```
+
+Установка зависимостей
+
+```sh
+pip install -r requirements.txt
+pip install -r requirements2.txt
+```
+
+## Установка Git и Python 3.9
+
+Установка Git [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) 
+
+Установка **Python 3.9**[guide](https://realpython.com/installing-python/)
+
+### Установка ffmpeg
+
+Инструкция [here](https://www.hostinger.com/tutorials/how-to-install-ffmpeg) для установки ffmpeg
+
+### Установка sox
+
+Инструкция [here](https://www.tutorialexample.com/a-step-guide-to-install-sox-sound-exchange-on-windows-10-python-tutorial/) для установки sox
+
+**Также установите и добавьте в PATH Sox и ffmpeg**
+
+### Обязательные настройки <a name="section-4.3"></a>
 
 ```python
 # API ключ дискорд бота (брать тут https://discord.com/developers/applications)
@@ -78,7 +117,7 @@ discord_api = "MTE..."
 mode_running = "img1"
 ```
 
-Необязательные настройки
+## Необязательные настройки <a name="section-4.4"></a>
 
 ```python
 # Предустановленная голосовая модель
