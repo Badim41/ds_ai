@@ -47,16 +47,16 @@ https://github.com/xtekky/gpt4free
 
 Клонирование репозитория
 
-```
+```sh
 git clone https://github.com/Badim41/ds_ai.git
 ```
-```
+```sh
 cd ds_ai
 ```
 
 Установка зависимостей
 
-```
+```sh
 sudo apt update -y
 sudo apt install -y portaudio19-dev
 pip install -r requirements.txt
@@ -67,7 +67,7 @@ sudo apt-get install rubberband-cli
 
 Обязательные настройки
 
-```
+```python
 # API ключ дискорд бота (брать тут https://discord.com/developers/applications)
 discord_api = "MTE..."
 агрументы для запуска.
@@ -80,7 +80,7 @@ mode_running = "img1"
 
 Необязательные настройки
 
-```
+```python
 # Предустановленная голосовая модель
 url = "https://huggingface.co/TJKAI/TomHolland/resolve/main/TomHolland.zip" # введите ссылку на RVC модель (https://voice-models.com/)
 dir_name = "Холланд" #  введите имя модели (без пробелов!)
