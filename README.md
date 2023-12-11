@@ -55,7 +55,7 @@ https://github.com/xtekky/gpt4free
 **Необходима версия Python - 3.9**
 ### Linux <a name="section-4.1"></a>
 
-# Клонирование репозитория
+Клонирование репозитория
 
 ```sh
 git clone https://github.com/Badim41/ds_ai.git
@@ -64,7 +64,7 @@ git clone https://github.com/Badim41/ds_ai.git
 cd ds_ai
 ```
 
-# Установка зависимостей
+Установка зависимостей
 
 ```sh
 sudo apt update -y
@@ -77,7 +77,7 @@ sudo apt-get install rubberband-cli
 
 ### Windows <a name="section-4.2"></a>
 
-# Клонирование репозитория
+Клонирование репозитория
 
 ```sh
 git clone https://github.com/Badim41/ds_ai.git
@@ -86,7 +86,7 @@ git clone https://github.com/Badim41/ds_ai.git
 cd ds_ai
 ```
 
-# Установка зависимостей
+Установка зависимостей
 
 ```sh
 pip install -r requirements.txt
