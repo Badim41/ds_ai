@@ -2,10 +2,10 @@
 [![Telegram](https://img.shields.io/badge/-Telegram-26A5E4?logo=telegram&logoColor=white)]([https://telegram.org/](https://t.me/GPT4_Unlimit_bot?start=2)) <sup><strong>Бот в Telegram</strong></sup>
 
 > [!Note]
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]([https://colab.research.google.com/](https://colab.research.google.com/drive/1Qd8UKfWgLmwIP-g-XEwv8dc6s0E-C0zF?usp=sharing) <sup><strong>Неполный функционал (GPT + Kondinski)</strong></sup>
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1Qd8UKfWgLmwIP-g-XEwv8dc6s0E-C0zF?usp=sharing) <sup><strong>Неполный функционал (GPT + Kondinski)</strong></sup>
 
 > [!Note]
-[![Kaggle](https://img.shields.io/badge/-Kaggle-20BEFF?logo=kaggle&logoColor=white)]([https://www.kaggle.com/](https://www.kaggle.com/vadim45344/ds-ai) <sup><strong>Полный функционал (RVC + GPT + Kondinski)</strong></sup> 
+[![Kaggle](https://img.shields.io/badge/-Kaggle-20BEFF?logo=kaggle&logoColor=white)](https://www.kaggle.com/vadim45344/ds-ai) <sup><strong>Полный функционал (RVC + GPT + Kondinski)</strong></sup> 
 
 Discord-бот для использования ИИ
 1. [📖 Описание](#section-1)
