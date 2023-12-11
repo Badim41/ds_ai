@@ -20,8 +20,10 @@ Discord-бот для использования ИИ
    4.3 [Обязательные аргументы](#section-4.3)
    
    4.4 [Необязательные аргументы](#section-4.4)
+
+5. [Помощь](#section-5)
    
-6. [Помощь](#section-5)
+6. [Помощь](#section-6)
 
 Репозитории, из которых взята часть кода:
 
@@ -110,7 +112,7 @@ pip install -r requirements2.txt
 **Также установите и добавьте в PATH Sox и ffmpeg**
 
 ## Обязательные настройки <a name="section-4.3"></a>
-
+**(измените их в файле run_local.py)**
 ```python
 # API ключ дискорд бота (брать тут https://discord.com/developers/applications)
 discord_api = "MTE..."
@@ -123,7 +125,7 @@ mode_running = "img1"
 ```
 
 ### Необязательные настройки <a name="section-4.4"></a>
-
+**(измените их в файле run_local.py)**
 ```python
 # Предустановленная голосовая модель
 url = "https://huggingface.co/TJKAI/TomHolland/resolve/main/TomHolland.zip" # введите ссылку на RVC модель (https://voice-models.com/)
@@ -143,8 +145,13 @@ gpt4_api = "None" # sk-xxxxxxxxxxxxxxxx
 # accessToken. БЕСПЛАТНО получить можно тут: https://chat.openai.com/api/auth/session
 accessToken = "eyJh...."
 ```
+### Запуск <a name="section-5"></a>
+**После настройки, перейдите в папку ds_ai и запустите run_local.py**
+```sh
+python run_local.py
+```
 
-### Вопросы и обратная связь <a name="section-5"></a>
+### Вопросы и обратная связь <a name="section-6"></a>
 
 Если у вас есть ошибки, вопросы, предложения, создайте вопрос в issue
 
