@@ -1,5 +1,5 @@
 > [!Note]
-<sup><strong>Неполная версия (только с картинками и GPT):</strong></sup> [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/) <sup><strong>Неполная версия (только с картинками и GPT)\n:</strong></sup> 
 <sup><strong>Полная версия (RVC + GPT + картинки):</strong></sup> [![Kaggle](https://img.shields.io/badge/-Kaggle-20BEFF?logo=kaggle&logoColor=white)](https://www.kaggle.com/)
 
 Discord-бот для использования ИИ
