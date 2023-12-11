@@ -411,7 +411,8 @@ async def one_gpt_run(provider, prompt, delay_for_gpt, provider_name=".", gpt_mo
         # убираем имя из результата
         if currentAIname + ":" in result[:75]:
             result = result[result.find(currentAIname + ":") + len(currentAIname) + 1:]
-        result = result[result.find("GPT: ") + 5:]
+        if "GPT:" in result[:75]:
+            result = result[result.find("GPT: ") + 5:]
 
         # добавляем имя провайдера
         provider = str(provider)
