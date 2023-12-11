@@ -51,11 +51,11 @@ https://github.com/xtekky/gpt4free
 - Создание диалогов (GPT-3.5, RVC).
 - Озвучивание текстовых сообщений (Elevenlabs, RVC).
 
-### Установка и настройка <a name="section-4"></a>
+## Установка и настройка <a name="section-4"></a>
 **Необходима версия Python - 3.9**
-## Linux <a name="section-4.1"></a>
+### Linux <a name="section-4.1"></a>
 
-Клонирование репозитория
+# Клонирование репозитория
 
 ```sh
 git clone https://github.com/Badim41/ds_ai.git
@@ -64,7 +64,7 @@ git clone https://github.com/Badim41/ds_ai.git
 cd ds_ai
 ```
 
-Установка зависимостей
+# Установка зависимостей
 
 ```sh
 sudo apt update -y
@@ -75,9 +75,9 @@ sudo apt install sox -y
 sudo apt-get install rubberband-cli
 ```
 
-## Windows <a name="section-4.2"></a>
+### Windows <a name="section-4.2"></a>
 
-Клонирование репозитория
+# Клонирование репозитория
 
 ```sh
 git clone https://github.com/Badim41/ds_ai.git
@@ -86,7 +86,7 @@ git clone https://github.com/Badim41/ds_ai.git
 cd ds_ai
 ```
 
-Установка зависимостей
+# Установка зависимостей
 
 ```sh
 pip install -r requirements.txt
@@ -109,7 +109,7 @@ pip install -r requirements2.txt
 
 **Также установите и добавьте в PATH Sox и ffmpeg**
 
-### Обязательные настройки <a name="section-4.3"></a>
+## Обязательные настройки <a name="section-4.3"></a>
 
 ```python
 # API ключ дискорд бота (брать тут https://discord.com/developers/applications)
@@ -122,7 +122,7 @@ discord_api = "MTE..."
 mode_running = "img1"
 ```
 
-## Необязательные настройки <a name="section-4.4"></a>
+### Необязательные настройки <a name="section-4.4"></a>
 
 ```python
 # Предустановленная голосовая модель
