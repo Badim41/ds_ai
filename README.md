@@ -1,6 +1,7 @@
-> [!Note]
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/) <sup><strong>Неполная версия (только с картинками и GPT)\n:</strong></sup> 
-<sup><strong>Полная версия (RVC + GPT + картинки):</strong></sup> [![Kaggle](https://img.shields.io/badge/-Kaggle-20BEFF?logo=kaggle&logoColor=white)](https://www.kaggle.com/)
+> [!Colab]
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/) <sup><strong>Неполная версия (только с картинками и GPT):</strong></sup>
+> [!Kaggle]
+[![Kaggle](https://img.shields.io/badge/-Kaggle-20BEFF?logo=kaggle&logoColor=white)](https://www.kaggle.com/) <sup><strong>Полная версия (RVC + GPT + картинки):</strong></sup> 
 
 Discord-бот для использования ИИ
 1. [Описание](#section-1)
