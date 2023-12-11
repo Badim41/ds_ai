@@ -1,5 +1,6 @@
 > [!Note]
-<sup><strong>Инструкция для Google Colab:</strong></sup> [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/) [![Kaggle](https://img.shields.io/badge/-Kaggle-20BEFF?logo=kaggle&logoColor=white)](https://www.kaggle.com/)
+<sup><strong>Неполная версия (только с картинками и GPT):</strong></sup> [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/)
+<sup><strong>Полная версия (RVC + GPT + картинки):</strong></sup> [![Kaggle](https://img.shields.io/badge/-Kaggle-20BEFF?logo=kaggle&logoColor=white)](https://www.kaggle.com/)
 
 Discord-бот для использования ИИ
 1. [Описание](#section-1)
