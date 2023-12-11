@@ -1,3 +1,15 @@
+# включить после выключения
+import configparser
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DELETE_LAST_DIR = True
+
+config = configparser.ConfigParser()
+config.read('configs/Default.ini')
+config.set("Default", "reload", "True")
+with open('configs/Default.ini', 'w') as configfile:
+        config.write(configfile)
+
 # === Обязательные настройки ===
 # API ключ дискорд бота (брать тут https://discord.com/developers/applications)
 discord_api = "MTE..."
@@ -6,7 +18,7 @@ discord_api = "MTE..."
 # img1 - использовать 1 видеокарту для изображений
 # img2 - использовать 2 видеокарты для изображений
 # None - не использовать видеокарты для изображений
-mode_running = None
+mode_running = "img1"
 
 # ===Дополнительные настройки===
 # голосовая модель
@@ -29,15 +41,13 @@ accessToken = "eyJh...."
 
 
 import shutil
-import configparser
 import json
-import os
 
 config = configparser.ConfigParser()
 
 while True:
     user_id = "True"
-    if os.path.exists('ds_ai'):
+    if os.path.exists('ds_ai') and DELETE_LAST_DIR:
         os.chdir('ds_ai')
         config.read('configs\\Default.ini')
         user_id = config.get("Default", "reload")
@@ -45,10 +55,10 @@ while True:
         if user_id == "False":
             break
 
-        os.chdir('C:\\Users\\as280\\Pictures')
+        os.chdir(BASE_DIR)
         shutil.rmtree('ds_ai')
 
-    os.chdir('C:\\Users\\as280\\Pictures')
+    os.chdir(BASE_DIR)
 
     # Клонирование репозитория
     os.system('git clone https://github.com/Badim41/ds_ai.git')
