@@ -68,20 +68,36 @@ sudo apt-get install rubberband-cli
 Обязательные настройки
 
 ```
-\# API ключ дискорд бота (брать тут https://discord.com/developers/applications)
+# API ключ дискорд бота (брать тут https://discord.com/developers/applications)
 discord_api = "MTE..."
 агрументы для запуска.
-\# gpt_local - локальный GPT (плохой)
-\# img1 - использовать 1 видеокарту для изображений
-\# img2 - использовать 2 видеокарты для изображений
-\# None - не использовать видеокарты для изображений
+# gpt_local - локальный GPT (плохой)
+# img1 - использовать 1 видеокарту для изображений
+# img2 - использовать 2 видеокарты для изображений
+# None - не использовать видеокарты для изображений
 mode_running = "img1"
 ```
 
 Необязательные настройки
 
 ```
-
+# Предустановленная голосовая модель
+url = "https://huggingface.co/TJKAI/TomHolland/resolve/main/TomHolland.zip" # введите ссылку на RVC модель (https://voice-models.com/)
+dir_name = "Холланд" #  введите имя модели (без пробелов!)
+gender = "male" # введите пол (male, female)
+info = "Том Холланд (родился 1 июня 1996 года) — английский актёр. Широкую известность получил после исполнения роли Человека-паука в кинематографической вселенной Marvel." # информация о человеке (для ChatGPT)
+voice_model = "Adam" # модель elevenlab (список: https://elevenlabs.io/speech-synthesis). Рекомендую: 'Harry', 'Arnold', 'Clyde', 'Thomas', 'Adam', 'Antoni', 'Daniel', 'Harry', 'James', 'Patrick'
+speed = "1.1" # насколько будет ускоряться голос (1.5 - на 50% быстрее, 1 - обычная скорость)
+# выставляем ключи для TTS (брать тут - elevenlabs.io)
+elevenlabs_api_keys = ';'.join(["Free", "Ваш ключ1", "Ваш ключ2"])
+# добавляем cookie с сайта-провайдера (впишите выход команды JSON.stringify(document.cookie.split('; ').map(c => c.split('=')).reduce((c, [k, v]) => ({ ...c, [k]: v }), {})))
+cookies = '{"ключ":"значение"}'
+# ваш UserID в дискорде
+user_id_owner = "Ваш USER ID" 
+# API ключ от ПЛАТНОГО аккуанта OpenAI (для GPT-4)
+gpt4_api = "None" # sk-xxxxxxxxxxxxxxxx
+# accessToken. БЕСПЛАТНО получить можно тут: https://chat.openai.com/api/auth/session
+accessToken = "eyJh...."
 ```
 
 ### Вопросы и обратная связь <a name="section-5"></a>
