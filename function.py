@@ -50,7 +50,7 @@ _providers = [
 
     # bad providers
     g4f.Provider.You,  # dont work
-    g4f.Provider.NoowAi,  # normal, but not so good
+    # g4f.Provider.NoowAi,  # normal, but not so good
     g4f.Provider.GptGod,  # error list
     g4f.Provider.FreeGpt,# wrong language
     g4f.Provider.ChatgptAi,  # - error ID
