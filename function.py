@@ -32,7 +32,7 @@ _providers = [
     g4f.Provider.Bing,
     g4f.Provider.Bard,
     g4f.Provider.OpenaiChat,
-    g4f.Provider.Theb,
+    #g4f.Provider.Theb,
 
     # good providers
     g4f.Provider.GPTalk,
