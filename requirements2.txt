@@ -25,7 +25,7 @@ imageio[ffmpeg]
 moviepy
 elevenlabs
 gTTS
-g4f
+g4f==0.1.9
 pycryptodome
 curl_cffi
 aiohttp
