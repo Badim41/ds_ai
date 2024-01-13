@@ -1362,10 +1362,12 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=No
                     writer.writelines(lines)
             except IOError as e:
                 await result_command_change(f"Ошибка при выполнении команды (ID:f51): {e}", Color.RED)
-
-    if not ctx.voice_client and skip_tts is None:
-        await result_command_change("skip tts", Color.CYAN)
-        return
+    try:
+        if not ctx.voice_client and skip_tts is None:
+            await result_command_change("skip tts", Color.CYAN)
+            return
+    except Exception:
+        pass
     file_name = "1.mp3"
     output_name = "2.mp3"
 
