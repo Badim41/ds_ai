@@ -7,8 +7,8 @@ import numpy as np
 def load_audio(file, sr):
     try:
         # Print file path and ffmpeg command for debugging
-        print(f"File path: {file}")
-        print(f"FFmpeg command: {['ffmpeg', '-nostdin']}")
+        # print(f"File path: {file}")
+        # print(f"FFmpeg command: {['ffmpeg', '-nostdin']}")
 
         # This launches a subprocess to decode audio while down-mixing and resampling as necessary.
         # Requires the ffmpeg CLI and `ffmpeg-python` package to be installed.

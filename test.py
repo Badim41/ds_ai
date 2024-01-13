@@ -70,7 +70,6 @@ async def config_command(
             f"Ошибка при изменении конфига (с параметрами{section},{key},{value}): {e}")
 
 
-
 async def get_links_from_playlist(playlist_url):
     try:
         playlist = Playlist(playlist_url)
@@ -468,7 +467,6 @@ async def add_voice(
             default=None
         )
 ):
-
     await ctx.response.send_message('Выполнение...')
     if txt_file:
         urls, names, genders, infos, speeds, voice_models = await agrs_with_txt(txt_file)
@@ -563,11 +561,13 @@ async def send_file(ctx, file_path, delete_file=False):
         print(str(traceback_str))
         await ctx.send(f'Произошла ошибка при отправке файла: {e}.')
 
+
 async def get_voice_id_by_name(voice_name):
     with open('voices.json', 'r', encoding='utf-8') as file:
         data = json.load(file)
     voice = next((v for v in data["voices"] if v["name"] == voice_name), None)
     return voice["voice_id"] if voice else None
+
 
 async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
     from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
@@ -761,7 +761,6 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 await ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
 
 
-
 async def play_dialog(ctx: Interaction):
     number = int(await set_get_config_all("dialog", "play_number", None))
     while await set_get_config_all("dialog", "dialog", None) == "True":
@@ -775,11 +774,10 @@ async def play_dialog(ctx: Interaction):
                         if file not in lines:
                             await asyncio.sleep(0.1)
                             continue
-                    from function import playSoundFile
-                    number += 1
-                    await set_get_config_all("dialog", "play_number", number)
+                    await set_get_config_all("dialog", "play_number", number + 1)
                     speaker = file[:file.find(".")]
                     speaker = re.sub(r'\d', '', speaker)
+                    print("говорит " + speaker)
                     await ctx.send("говорит " + speaker)
                     await play_audio_file(ctx, "song_output/" + file)
                     os.remove("song_output/" + file)
@@ -791,26 +789,27 @@ async def play_dialog(ctx: Interaction):
             print(str(traceback_str))
             await ctx.send(f"Ошибка при изменении голоса(ID:d2): {e}")
 
+
 @bot.slash_command(name="create_dialog", description='Имитировать диалог людей')
 async def create_dialog(
-    ctx : Interaction,
-    names: str = SlashOption(
-        name="names",
-        description="Участники диалога через ';' (у каждого должен быть добавлен голос!)",
-        required=True
-    ),
-    theme: str = SlashOption(
-        name="theme",
-        description="Начальная тема разговора",
-        required=False,
-        default="случайная тема"
-    ),
-    prompt: str = SlashOption(
-        name="prompt",
-        description="Общий запрос для всех диалогов",
-        required=False,
-        default=""
-    )
+        ctx: Interaction,
+        names: str = SlashOption(
+            name="names",
+            description="Участники диалога через ';' (у каждого должен быть добавлен голос!)",
+            required=True
+        ),
+        theme: str = SlashOption(
+            name="theme",
+            description="Начальная тема разговора",
+            required=False,
+            default="случайная тема"
+        ),
+        prompt: str = SlashOption(
+            name="prompt",
+            description="Общий запрос для всех диалогов",
+            required=False,
+            default=""
+        )
 ):
     try:
 
@@ -842,6 +841,7 @@ async def create_dialog(
         await set_get_config_all("gpt", "gpt_mode", "None")
         # names, theme, infos, prompt, ctx
         # запустим сразу 8 процессов для обработки голоса
+        await ctx.response.send_message("Чтобы слышать диалог, пропишите /join")
         await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx),
                              create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"),
                              create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"))
@@ -891,7 +891,6 @@ async def play_audio_file(interaction: Interaction, filename):
     await interaction.send(f"Now playing: {filename}")
 
 
-
 @bot.slash_command(name="pause", description="Pauses music playback")
 async def pause(interaction: nextcord.Interaction):
     """Pauses music playback"""
@@ -909,6 +908,7 @@ async def pause(interaction: nextcord.Interaction):
         await interaction.send("Paused.")
     else:
         await interaction.send("There isn't any music to pause.")
+
 
 @bot.slash_command(name="disconnect", description="Stops and disconnects the bot from voice")
 async def stop(interaction: nextcord.Interaction):
