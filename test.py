@@ -508,7 +508,7 @@ async def add_voice(
 
 @bot.slash_command(name="tts", description='Заставить бота говорить всё, что захочешь')
 async def tts(
-    ctx,
+    ctx : Interaction,
     text: str = SlashOption(
         name="text",
         description="Текст для озвучки",
@@ -617,7 +617,7 @@ async def tts(
             # запускаем TTS
             from function import text_to_speech
             await text_to_speech(text, False, ctx, ai_dictionary=ai_voice, speed=speed, voice_model=voice_model,
-                                 skip_tts=False)
+                                 skip_tts=True)
             # await run_main_with_settings(ctx, f"робот протокол 24 {text}",
             #                              False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
             # перестаём использовать видеокарту
