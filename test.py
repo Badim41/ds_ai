@@ -659,7 +659,7 @@ async def create_audio_dialog(ctx: Interaction, cuda, wait_untill):
                     await execute_command(' '.join(command), ctx)
 
                     # диалог завершён.
-                    print("DIALOG_TEMP:", await set_get_config_all("dialog", wait_untill, None))
+                    # print("DIALOG_TEMP:", await set_get_config_all("dialog", wait_untill, None))
                     if await set_get_config_all("dialog", wait_untill, None) == "False":
                         return
 
@@ -783,7 +783,7 @@ async def play_dialog(ctx: Interaction):
                     speaker = file[:file.find(".")]
                     speaker = re.sub(r'\d', '', speaker)
                     await ctx.send("говорит " + speaker)
-                    await ("song_output/" + file, -1, 0, ctx)
+                    await play(ctx, "song_output/" + file)
                     os.remove("song_output/" + file)
                     await ctx.send("end")
                 else:
