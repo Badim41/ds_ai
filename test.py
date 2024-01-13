@@ -577,7 +577,7 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
     if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_keys", None) == "None":
         print("gtts1")
         from function import gtts
-        await gtts(tts, "ru", file_name)
+        await gtts(tts, file_name, language="ru")
         if currentpitch == 0:
             pitch = -12
     else:
