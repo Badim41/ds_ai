@@ -816,7 +816,7 @@ async def create_dialog(
 ):
     try:
 
-        await ctx.send('Бот выводит диалог только в голосовом чате. Используйте /join')
+        # await ctx.send('Бот выводит диалог только в голосовом чате. Используйте /join')
 
         if await set_get_config_all("dialog", "dialog", None) == "True":
             await ctx.response.send_message("Уже идёт диалог!")
