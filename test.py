@@ -913,19 +913,7 @@ async def pause(interaction: nextcord.Interaction):
     else:
         await interaction.send("There isn't any music to pause.")
 
-
-@bot.slash_command(name="pause", description="Resumes playing on voice")
-async def resume(interaction: nextcord.Interaction):
-    """Resumes music playback"""
-
-    global voiceClient
-    global paused
-
-    async with interaction.channel.typing():
-        pass
-
-
-@bot.slash_command(description="Stops and disconnects the bot from voice")
+@bot.slash_command(name="disconnect", description="Stops and disconnects the bot from voice")
 async def stop(interaction: nextcord.Interaction):
     """Stops and disconnects the bot from voice"""
 
