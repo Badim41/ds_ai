@@ -413,7 +413,7 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model, chang
             "download_voice_model.py",
             url,
             name,
-            gender,
+            str(gender),
             f"{info}",
             voice_model,
             str(speed)
