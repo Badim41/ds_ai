@@ -774,7 +774,8 @@ async def play_dialog(ctx: Interaction):
                         if file not in lines:
                             await asyncio.sleep(0.1)
                             continue
-                    await set_get_config_all("dialog", "play_number", number + 1)
+                    number += 1
+                    await set_get_config_all("dialog", "play_number", number)
                     speaker = file[:file.find(".")]
                     speaker = re.sub(r'\d', '', speaker)
                     print("говорит " + speaker)
