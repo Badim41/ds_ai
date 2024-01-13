@@ -24,7 +24,7 @@ from modifed_sinks import StreamSink
 import speech_recognition as sr
 from pathlib import Path
 import sys
-import pycord.discord
+from pycord import discord
 from pycord.discord.ext import commands
 from use_free_cuda import use_cuda_async, stop_use_cuda_async, use_cuda_images, check_cuda_images, \
     stop_use_cuda_images
