@@ -6,10 +6,11 @@ import re
 import subprocess
 import sys
 import traceback
-from nextcord import Interaction, SlashOption
+from nextcord import Interaction, SlashOption, Attachment
 from nextcord.ext import commands
 from pytube import Playlist
 
+from discord import SlashCommandOptionType
 from set_get_config import set_get_config_all
 
 intents = nextcord.Intents.all()
@@ -28,26 +29,25 @@ async def on_ready():
         await user.send("Перезагружен!")
 
 
-
 @bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
 async def config_command(
-    interaction: Interaction,
-    section: str = SlashOption(
-        name="section",
-        description="секция",
-        required=True
-    ),
-    key: str = SlashOption(
-        name="key",
-        description="ключ",
-        required=True
-    ),
-    value: str = SlashOption(
-        name="value",
-        description="значение",
-        required=False,
-        default=None
-    )
+        interaction: Interaction,
+        section: str = SlashOption(
+            name="section",
+            description="секция",
+            required=True
+        ),
+        key: str = SlashOption(
+            name="key",
+            description="ключ",
+            required=True
+        ),
+        value: str = SlashOption(
+            name="value",
+            description="значение",
+            required=False,
+            default=None
+        )
 ):
     try:
 
@@ -63,7 +63,9 @@ async def config_command(
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        await interaction.response.send_message(f"Ошибка при изменении конфига (с параметрами{section},{key},{value}): {e}")
+        await interaction.response.send_message(
+            f"Ошибка при изменении конфига (с параметрами{section},{key},{value}): {e}")
+
 
 @bot.slash_command(name="join", description='присоединиться к голосовому каналу')
 async def join(interaction: Interaction):
@@ -89,6 +91,7 @@ async def join(interaction: Interaction):
         print(str(traceback_str))
         await interaction.response.send_message(f"Ошибка при присоединении: {e}")
 
+
 @bot.slash_command(name="disconnect", description='выйти из войс-чата')
 async def disconnect(interaction: Interaction):
     try:
@@ -104,6 +107,7 @@ async def disconnect(interaction: Interaction):
         print(str(traceback_str))
         await interaction.response.send_message(f"Ошибка при выходе из войс-чата: {e}")
 
+
 async def get_links_from_playlist(playlist_url):
     try:
         playlist = Playlist(playlist_url)
@@ -118,152 +122,158 @@ async def get_links_from_playlist(playlist_url):
         print(f"Произошла ошибка при извлечении плейлиста: {e}")
         return []
 
+
 @bot.slash_command(name="ai_cover", description='Заставить бота озвучить видео/спеть песню')
 async def ai_cover(
-    ctx : Interaction,
-    url: str = SlashOption(
-        name="url",
-        description="Ссылка на видео",
-        required=False,
-        default=None
-    ),
-    voice: str = SlashOption(
-        name="voice",
-        description="Голос для видео",
-        required=False,
-        default=None
-    ),
-    gender: str = SlashOption(
-        name="gender",
-        description="Кто говорит/поёт в видео? (или указать pitch)",
-        required=False,
-        choices=['мужчина', 'женщина'],
-        default=None
-    ),
-    pitch: int = SlashOption(
-        name="pitch",
-        description="Какую использовать тональность (от -24 до 24) (или указать gender)",
-        required=False,
-        default=0,
-        min_value=-24,
-        max_value=24
-    ),
-    time: int = SlashOption(
-        name="time",
-        description="Ограничить длительность воспроизведения (в секундах)",
-        required=False,
-        default=-1,
-        min_value=-1
-    ),
-    indexrate: float = SlashOption(
-        name="indexrate",
-        description="Индекс голоса (от 0 до 1)",
-        required=False,
-        default=0.5,
-        min_value=0,
-        max_value=1
-    ),
-    loudness: float = SlashOption(
-        name="loudness",
-        description="Громкость шума (от 0 до 1)",
-        required=False,
-        default=0.4,
-        min_value=0,
-        max_value=1
-    ),
-    filter_radius: int = SlashOption(
-        name="filter_radius",
-        description="Насколько далеко от каждой точки в данных будут учитываться значения... (от 1 до 7)",
-        required=False,
-        default=3,
-        min_value=0,
-        max_value=7
-    ),
-    main_vocal: int = SlashOption(
-        name="main_vocal",
-        description="Громкость основного вокала (от -50 до 0)",
-        required=False,
-        default=0,
-        min_value=-50,
-        max_value=0
-    ),
-    back_vocal: int = SlashOption(
-        name="back_vocal",
-        description="Громкость бэквокала (от -50 до 0)",
-        required=False,
-        default=0,
-        min_value=-50,
-        max_value=0
-    ),
-    music: int = SlashOption(
-        name="music",
-        description="Громкость музыки (от -50 до 0)",
-        required=False,
-        default=0,
-        min_value=-50,
-        max_value=0
-    ),
-    roomsize: float = SlashOption(
-        name="roomsize",
-        description="Размер помещения (от 0 до 1)",
-        required=False,
-        default=0.2,
-        min_value=0,
-        max_value=1
-    ),
-    wetness: float = SlashOption(
-        name="wetness",
-        description="Влажность (от 0 до 1)",
-        required=False,
-        default=0.2,
-        min_value=0,
-        max_value=1
-    ),
-    dryness: float = SlashOption(
-        name="dryness",
-        description="Сухость (от 0 до 1)",
-        required=False,
-        default=0.8,
-        min_value=0,
-        max_value=1
-    ),
-    palgo: str = SlashOption(
-        name="palgo",
-        description="Алгоритм. Rmvpe - лучший вариант, mangio-crepe - более мягкий вокал",
-        required=False,
-        choices=['rmvpe', 'mangio-crepe'],
-        default="rmvpe"
-    ),
-    hop: int = SlashOption(
-        name="hop",
-        description="Как часто проверяет изменения тона в mango-crepe",
-        required=False,
-        default=128,
-        min_value=64,
-        max_value=1280
-    ),
-    start: int = SlashOption(
-        name="start",
-        description="Начать воспроизводить с (в секундах). -1 для продолжения",
-        required=False,
-        default=0,
-        min_value=-2
-    ),
-    output: str = SlashOption(
-        name="output",
-        description="Отправить результат",
-        choices=["ссылка на все файлы", "только результат (1 файл)", "все файлы", "не отправлять"],
-        required=False,
-        default="только результат (1 файл)"
-    ),
-    only_voice_change: bool = SlashOption(
-        name="only_voice_change",
-        description="Не извлекать инструментал и бэквокал, изменить голос. Не поддерживаются ссылки",
-        required=False,
-        default=False
-    )
+        ctx: Interaction,
+        url: str = SlashOption(
+            name="url",
+            description="Ссылка на видео",
+            required=False,
+            default=None
+        ),
+        voice: str = SlashOption(
+            name="voice",
+            description="Голос для видео",
+            required=False,
+            default=None
+        ),
+        gender: str = SlashOption(
+            name="gender",
+            description="Кто говорит/поёт в видео? (или указать pitch)",
+            required=False,
+            choices=['мужчина', 'женщина'],
+            default=None
+        ),
+        pitch: int = SlashOption(
+            name="pitch",
+            description="Какую использовать тональность (от -24 до 24) (или указать gender)",
+            required=False,
+            default=0,
+            min_value=-24,
+            max_value=24
+        ),
+        time: int = SlashOption(
+            name="time",
+            description="Ограничить длительность воспроизведения (в секундах)",
+            required=False,
+            default=-1,
+            min_value=-1
+        ),
+        indexrate: float = SlashOption(
+            name="indexrate",
+            description="Индекс голоса (от 0 до 1)",
+            required=False,
+            default=0.5,
+            min_value=0,
+            max_value=1
+        ),
+        loudness: float = SlashOption(
+            name="loudness",
+            description="Громкость шума (от 0 до 1)",
+            required=False,
+            default=0.4,
+            min_value=0,
+            max_value=1
+        ),
+        filter_radius: int = SlashOption(
+            name="filter_radius",
+            description="Насколько далеко от каждой точки в данных будут учитываться значения... (от 1 до 7)",
+            required=False,
+            default=3,
+            min_value=0,
+            max_value=7
+        ),
+        main_vocal: int = SlashOption(
+            name="main_vocal",
+            description="Громкость основного вокала (от -50 до 0)",
+            required=False,
+            default=0,
+            min_value=-50,
+            max_value=0
+        ),
+        back_vocal: int = SlashOption(
+            name="back_vocal",
+            description="Громкость бэквокала (от -50 до 0)",
+            required=False,
+            default=0,
+            min_value=-50,
+            max_value=0
+        ),
+        music: int = SlashOption(
+            name="music",
+            description="Громкость музыки (от -50 до 0)",
+            required=False,
+            default=0,
+            min_value=-50,
+            max_value=0
+        ),
+        roomsize: float = SlashOption(
+            name="roomsize",
+            description="Размер помещения (от 0 до 1)",
+            required=False,
+            default=0.2,
+            min_value=0,
+            max_value=1
+        ),
+        wetness: float = SlashOption(
+            name="wetness",
+            description="Влажность (от 0 до 1)",
+            required=False,
+            default=0.2,
+            min_value=0,
+            max_value=1
+        ),
+        dryness: float = SlashOption(
+            name="dryness",
+            description="Сухость (от 0 до 1)",
+            required=False,
+            default=0.8,
+            min_value=0,
+            max_value=1
+        ),
+        palgo: str = SlashOption(
+            name="palgo",
+            description="Алгоритм. Rmvpe - лучший вариант, mangio-crepe - более мягкий вокал",
+            required=False,
+            choices=['rmvpe', 'mangio-crepe'],
+            default="rmvpe"
+        ),
+        hop: int = SlashOption(
+            name="hop",
+            description="Как часто проверяет изменения тона в mango-crepe",
+            required=False,
+            default=128,
+            min_value=64,
+            max_value=1280
+        ),
+        start: int = SlashOption(
+            name="start",
+            description="Начать воспроизводить с (в секундах). -1 для продолжения",
+            required=False,
+            default=0,
+            min_value=-2
+        ),
+        output: str = SlashOption(
+            name="output",
+            description="Отправить результат",
+            choices=["ссылка на все файлы", "только результат (1 файл)", "все файлы", "не отправлять"],
+            required=False,
+            default="только результат (1 файл)"
+        ),
+        only_voice_change: bool = SlashOption(
+            name="only_voice_change",
+            description="Не извлекать инструментал и бэквокал, изменить голос. Не поддерживаются ссылки",
+            required=False,
+            default=False
+        ),
+        audio_path: Attachment = SlashOption(
+            name="audio_path",
+            description="Аудиофайл",
+            required=False,
+            default=None
+        )
 ):
-    audio_path = ctx.message.attachments[0]
     param_string = None
     # ["link", "file", "all_files", "None"], ["ссылка на все файлы", "только результат (1 файл)", "все файлы", "не отправлять"]
     output = output.replace("ссылка на все файлы", "link").replace("только результат (1 файл)", "file").replace(
@@ -378,6 +388,7 @@ async def ai_cover(
         print(str(traceback_str))
         await ctx.response.send_message(f"Ошибка при изменении голоса(ID:d5) (с параметрами {param_string}): {e}")
 
+
 async def agrs_with_txt(txt_file):
     try:
         filename = "temp_args.txt"
@@ -451,45 +462,50 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model, chang
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
 async def add_voice(
-    ctx : Interaction,
-    url: str = SlashOption(
-        name="url",
-        description="Ссылка на .zip файл с моделью RVC",
-        required=True
-    ),
-    name: str = SlashOption(
-        name="name",
-        description="Имя модели",
-        required=True
-    ),
-    gender: str = SlashOption(
-        name="gender",
-        description="Пол (для настройки тональности)",
-        required=True,
-        choices=['мужчина', 'женщина']
-    ),
-    info: str = SlashOption(
-        name="info",
-        description="Какие-то сведения о данном человеке",
-        required=False,
-        default="Отсутствует"
-    ),
-    speed: float = SlashOption(
-        name="speed",
-        description="Ускорение/замедление голоса",
-        required=False,
-        default=1,
-        min_value=1,
-        max_value=3
-    ),
-    change_voice: bool = SlashOption(
-        name="change_voice",
-        description="(необязательно) Изменить голос на этот",
-        required=False,
-        default=False
-    )
+        ctx: Interaction,
+        url: str = SlashOption(
+            name="url",
+            description="Ссылка на .zip файл с моделью RVC",
+            required=True
+        ),
+        name: str = SlashOption(
+            name="name",
+            description="Имя модели",
+            required=True
+        ),
+        gender: str = SlashOption(
+            name="gender",
+            description="Пол (для настройки тональности)",
+            required=True,
+            choices=['мужчина', 'женщина']
+        ),
+        info: str = SlashOption(
+            name="info",
+            description="Какие-то сведения о данном человеке",
+            required=False,
+            default="Отсутствует"
+        ),
+        speed: float = SlashOption(
+            name="speed",
+            description="Ускорение/замедление голоса",
+            required=False,
+            default=1,
+            min_value=1,
+            max_value=3
+        ),
+        change_voice: bool = SlashOption(
+            name="change_voice",
+            description="(необязательно) Изменить голос на этот",
+            required=False,
+            default=False
+        ),
+        txt_file: Attachment = SlashOption(
+            name="txt_file",
+            description="Аудиофайл",
+            required=False,
+            default=None
+        )
 ):
-    txt_file = ctx.message.attachments[0]
 
     await ctx.response.send_message('Выполнение...')
     if txt_file:
@@ -544,6 +560,7 @@ async def command_line(ctx, *args):
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
         await ctx.author.send(f"Произошла неизвестная ошибка: {e}")
+
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
     from function import start_bot
