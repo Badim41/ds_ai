@@ -723,7 +723,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 spoken_text = ""
                 spoken_text_config = await set_get_config_all("dialog", "user_spoken_text", None)
                 if not spoken_text_config == "None":
-                    spoken_text = "Отвечайт зрителям! Зрители за прошлый диалог написали:\"" + spoken_text_config + "\""
+                    spoken_text = "Зрители за прошлый диалог написали:\"" + spoken_text_config + "\""
                     await set_get_config_all("dialog", "user_spoken_text", "None")
                 random_int = random.randint(1, 33)
                 if not random_int == 0:
@@ -755,6 +755,10 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                                 line = line[line.find(":") + 1:]
                                 writer.write(line + f"-voice {name}\n")
                                 break
+                # слишком большой разрыв
+                while int(await set_get_config_all("dialog", "files_number", None)) - int(await set_get_config_all("dialog", "play_number", None)) > 10:
+                    await asyncio.sleep(5)
+                    print("wait, difference:", int(await set_get_config_all("dialog", "files_number", None)), int(await set_get_config_all("dialog", "play_number", None)))
             except Exception as e:
                 traceback_str = traceback.format_exc()
                 print(str(traceback_str))
