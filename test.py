@@ -1025,12 +1025,21 @@ async def join(interaction: nextcord.Interaction, *, channel: nextcord.VoiceChan
     """Joins a voice channel"""
 
     global voiceClient
-    try:
-        voiceClient = await channel.connect()
-    except nextcord.errors.ApplicationInvokeError:
-        await voiceClient.disconnect()
-        voiceClient = await channel.connect()
-    await interaction.send(f"Joined {channel.name}")
+    join_alert = True
+    while True:
+        try:
+            if voiceClient == "Disconnected":
+                break
+            try:
+                voiceClient = await channel.connect()
+            except nextcord.errors.ApplicationInvokeError:
+                await voiceClient.disconnect()
+                voiceClient = await channel.connect()
+            if join_alert:
+                await interaction.send(f"Joined {channel.name}")
+                join_alert = False
+        except Exception:
+            pass
 
 
 async def play_audio_file(interaction: Interaction, filename):
@@ -1078,6 +1087,7 @@ async def stop(interaction: nextcord.Interaction):
 
     global voiceClient
     await voiceClient.disconnect()
+    voiceClient = "Disconnected"
     await interaction.send("Disconnected.")
     await set_get_config_all("dialog", "dialog", "False")
 
