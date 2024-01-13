@@ -1478,8 +1478,11 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                 name = line[line.find("-voice") + 7:].replace("\n", "")
                 with open(os.path.join(f"rvc_models/{name}/gender.txt"), "r") as file:
                     pitch = 0
-                    if file.read().lower() == "female":
+                    text = file.read().lower()
+                    if text == "female":
                         pitch = 12
+                    elif text.isdigit():
+                        pitch = int(text)
                 filename = int(await set_get_config_all("dialog", "files_number", None))
                 await set_get_config_all("dialog", "files_number", filename + 1)
                 filename = "song_output/" + str(filename) + name + ".mp3"

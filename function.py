@@ -769,8 +769,11 @@ async def setAIvoice(name, ctx):
 
         # Pitch
         with open(os.path.join(f"rvc_models/{name}/gender.txt")) as file:
-            if file.read().lower() == "female":
+            text = file.read().lower()
+            if text == "female":
                 await set_get_config_all("Default", "currentaipitch", 12)
+            elif text.isdigit():
+                await set_get_config_all("Default", "currentaipitch", int(text))
             else:
                 await set_get_config_all("Default", "currentaipitch", 0)
 
