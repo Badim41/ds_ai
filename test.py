@@ -513,8 +513,9 @@ async def add_voice(
             await download_voice(ctx, urls[i], names[i], genders[i], infos[i], speeds[i], voice_models[i], False)
         await ctx.send("Все модели успешно установлены!")
         return
-
-    await download_voice(ctx, url, name, gender, info, speed, voice_model, change_voice)
+    if pitch is None:
+        pitch = gender
+    await download_voice(ctx, url, name, pitch, info, speed, voice_model, change_voice)
 
 @bot.slash_command(name="tts", description='Заставить бота говорить всё, что захочешь')
 async def tts(
