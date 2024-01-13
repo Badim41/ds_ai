@@ -14,7 +14,7 @@ transformers
 pydub==0.25.1
 py-cord[speed]
 py-cord[voice]
-py-cord
+py-cord==2.3.3
 opencv-python
 SpeechRecognition
 requests
