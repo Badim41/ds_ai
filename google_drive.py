@@ -121,4 +121,4 @@ def download_folder(service, folder_id, download_path):
 
 # download_destination = 'path_to_download_folder'
 # download_folder(SERVICE, FOLDER_ID, download_destination)
-upload_files_and_folders(SERVICE, "1AYzqrKE-slEQMfxt0rSCkxH1uLbmuZny", "caversAI")
+upload_files_and_folders(SERVICE, "1AYzqrKE-slEQMfxt0rSCkxH1uLbmuZny", "song_output")
