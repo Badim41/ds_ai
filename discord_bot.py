@@ -19,13 +19,13 @@ from moviepy.editor import VideoFileClip
 # from bark import preload_models
 
 from typing import Union
-from discord import option, Option
+from pycord.discord import option, Option
 from modifed_sinks import StreamSink
 import speech_recognition as sr
 from pathlib import Path
 import sys
-import discord
-from discord.ext import commands
+import pycord.discord
+from pycord.discord.ext import commands
 from use_free_cuda import use_cuda_async, stop_use_cuda_async, use_cuda_images, check_cuda_images, \
     stop_use_cuda_images
 from set_get_config import set_get_config_all, set_get_config_all_not_async
