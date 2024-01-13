@@ -127,89 +127,89 @@ async def select_channel(
 ):
     await ctx.respond(f"Hi! You selected {channel.mention} channel.")
 
-@bot.slash_command(name="help", description='помощь по командам')
-async def help_command(
-        ctx,
-        command: Option(str, description='Нужная вам команда', required=True,
-                        choices=['say', 'read_messages', 'ai_cover', 'tts', 'add_voice', 'create_dialog',
-                                 'change_image', 'change_video', 'join', 'disconnect', 'record', 'stop_recording',
-                                 'pause', 'skip']
-                        ),
-):
-    if command == "say":
-        await ctx.respond("# /say\n(Сделать запрос к GPT)\n**text - запрос для GPT**\ngpt_mode\*:\n- много ответов\n"
-                          "- быстрый ответ\n- экономный режим (не используйте)\n\nТакже в /say используются "
-                          "*протоколы* и *голосовые команды*\n/say gpt <вопрос> - сырой запрос для GPT\n/say протокол 998 - "
-                          "очистить контекст\n/say протокол 32 - последний озвученный текст (с RVC)\n/say протокол 31 - "
-                          "последний озвученный текст (без RVC)\n/say протокол 12 <запрос> - нарисовать картинку (не рекомендую!)"
-                          "\n/say код красный 0 - перезагрузка бота\n")
-        await ctx.send("\* - параметр сохраняется")
-    elif command == "read_messages":
-        await ctx.respond("# /read_messages\n(Прочитать последние сообщения и что-то с ними сделать)\n**number - "
-                          "количество читаемых сообщений**\n**prompt - запрос (например, перескажи эти сообщения)**\n")
-    elif command == "ai_cover":
-        await ctx.respond(
-            "# /ai_cover:\n(Перепеть/озвучить видео или аудио)\n**url - ссылка на видео**\n**audio_path - "
-            "аудио файл**\nvoice - голосовая модель\ngender - пол (для тональности)\npitch - тональность (12 "
-            "из мужского в женский, -12 из женского в мужской)\nindexrate - индекс голоса (чем больше, тем больше "
-            "черт черт голоса говорящего)\nloudness - количество шума (чем больше, тем больше шума)\nfilter_radius - "
-            "размер фильтра (чем больше, тем больше шума)\nmain_vocal, back_vocal, music - громкость каждой "
-            "аудиодорожки\nroomsize, wetness, dryness - параметры реверберации\npalgo - rmvpe - лучший, mangio-crepe "
-            "- более плавный\nhop - длина для учитывания тональности (mangio-crepe)\ntime - продолжительность (для "
-            "войс-чата)\nstart - время начала (для войс-чата)\noutput - link - сслыка на архив, all_files - все "
-            "файлы, file - только финальный файл\nonly_voice_change - просто заменить голос, без разделения вокала "
-            "и музыки\n")
-    elif command == "tts":
-        await ctx.respond(
-            "# /tts\n(Озвучить текст)\n**text - произносимый текст**\nai_voice - голосовая модель\nspeed - "
-            "Ускорение/замедление\nvoice_model - Модель голоса elevenlab\noutput - Отправляет файл в чат\n"
-            "stability - Стабильность голоса (0 - нестабильный, 1 - стабильный)\*\n"
-            "similarity_boost - Повышение сходства (0 - отсутствует)\*\n"
-            "style - Выражение (0 - мало пауз и выражения, 1 - большое количество пауз и выражения)\*\n")
-        await ctx.send("\* - параметр сохраняется")
-    elif command == "add_voice":
-        await ctx.respond("# /add_voice\n(Добавить голосовую модель)\n**url - ссылка на модель **\n**name - имя модели "
-                          "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
-                          "speed - ускорение/замедление при /tts\nvoice_model - модель elevenlab\nchange_voice - True = "
-                          "заменить на текущий голос\ntxt_file - быстрое добавление множества голосовых моделей *(остальные аргументы как 'url', 'gender', 'name'  будут игнорироваться)*, для использования:\n"
-                          "- напишите в txt файле аргументы для add_voice (1 модель - 1 строка), пример:")
-        await send_file(ctx, "add_voice_args.txt")
-    elif command == "create_dialog":
-        await ctx.respond(
-            "# /create_dialog\n(Создать диалог в войс-чате, используйте join)\n**names - участники диалога "
-            "через ';' - список голосовых моделей Например, Участник1;Участник2**\ntheme - Тема разговора "
-            "(может измениться)\nprompt - Постоянный запрос (например, что они находятся в определённом месте)\n")
-    elif command == "change_image":
-        await ctx.respond("# /change_image \n(Изменить изображение)\n**image - картинка, которую нужно изменить**\n"
-                          "**prompt - Запрос **\nnegative_prompt - Негативный запрос\nsteps - Количество шагов (больше - "
-                          "лучше, но медленнее)\nseed - сид (если одинаковый сид и файл, то получится то же самое изображение)"
-                          "\nx - расширение по X\ny - расширение по Y\nstrength - сила изменения\nstrength_prompt - сила для "
-                          "запроса\nstrength_negative_prompt - сила для негативного запроса\nrepeats - количество изображений "
-                          "(сид случайный!)\n")
-    elif command == "change_video":
-        await ctx.respond(
-            "# /change_video \n(Изменить видео **ПОКАДРОВО**)\n**video_path - видеофайл**\n**fps - Количество "
-            "кадров в секунду**\n**extension - Качество видео **\n**prompt - Запрос**\nnegative_prompt - "
-            "Негативный запрос\nsteps - Количество шагов (больше - лучше, но медленнее)\nseed - сид (если "
-            "одинаковый сид и файл, то получится то же самое изображение)\nstrength - сила изменения\n"
-            "strength_prompt - сила для запроса\nstrength_negative_prompt - сила для негативного запроса\n"
-            "voice - голосовая модель\npitch - тональность (12 из мужского в женский, -12 из женского в "
-            "мужской)\nindexrate - индекс голоса (чем больше, тем больше черт черт голоса говорящего)\n"
-            "loudness - количество шума (чем больше, тем больше шума)\nfilter_radius - размер фильтра (чем "
-            "больше, тем больше шума)\nmain_vocal, back_vocal, music - громкость каждой аудиодорожки\n"
-            "roomsize, wetness, dryness - параметры реверберации\n")
-    elif command == "join":
-        await ctx.respond("# /join\n - присоединиться к вам в войс-чате")
-    elif command == "disconnect":
-        await ctx.respond("# /disconnect\n - выйти из войс-чата")
-    elif command == "record":
-        await ctx.respond("# /record\n - включить распознавание речи через микрофон")
-    elif command == "stop_recording":
-        await ctx.respond("# /stop_recording\n  - выключить распознавание речи через микрофон")
-    elif command == "pause":
-        await ctx.respond("# /pause\n - пауза / завершение диалога")
-    elif command == "skip":
-        await ctx.respond("# /skip\n - пропуск аудио")
+# @bot.slash_command(name="help", description='помощь по командам')
+# async def help_command(
+#         ctx,
+#         command: Option(str, description='Нужная вам команда', required=True,
+#                         choices=['say', 'read_messages', 'ai_cover', 'tts', 'add_voice', 'create_dialog',
+#                                  'change_image', 'change_video', 'join', 'disconnect', 'record', 'stop_recording',
+#                                  'pause', 'skip']
+#                         ),
+# ):
+#     if command == "say":
+#         await ctx.respond("# /say\n(Сделать запрос к GPT)\n**text - запрос для GPT**\ngpt_mode\*:\n- много ответов\n"
+#                           "- быстрый ответ\n- экономный режим (не используйте)\n\nТакже в /say используются "
+#                           "*протоколы* и *голосовые команды*\n/say gpt <вопрос> - сырой запрос для GPT\n/say протокол 998 - "
+#                           "очистить контекст\n/say протокол 32 - последний озвученный текст (с RVC)\n/say протокол 31 - "
+#                           "последний озвученный текст (без RVC)\n/say протокол 12 <запрос> - нарисовать картинку (не рекомендую!)"
+#                           "\n/say код красный 0 - перезагрузка бота\n")
+#         await ctx.send("\* - параметр сохраняется")
+#     elif command == "read_messages":
+#         await ctx.respond("# /read_messages\n(Прочитать последние сообщения и что-то с ними сделать)\n**number - "
+#                           "количество читаемых сообщений**\n**prompt - запрос (например, перескажи эти сообщения)**\n")
+#     elif command == "ai_cover":
+#         await ctx.respond(
+#             "# /ai_cover:\n(Перепеть/озвучить видео или аудио)\n**url - ссылка на видео**\n**audio_path - "
+#             "аудио файл**\nvoice - голосовая модель\ngender - пол (для тональности)\npitch - тональность (12 "
+#             "из мужского в женский, -12 из женского в мужской)\nindexrate - индекс голоса (чем больше, тем больше "
+#             "черт черт голоса говорящего)\nloudness - количество шума (чем больше, тем больше шума)\nfilter_radius - "
+#             "размер фильтра (чем больше, тем больше шума)\nmain_vocal, back_vocal, music - громкость каждой "
+#             "аудиодорожки\nroomsize, wetness, dryness - параметры реверберации\npalgo - rmvpe - лучший, mangio-crepe "
+#             "- более плавный\nhop - длина для учитывания тональности (mangio-crepe)\ntime - продолжительность (для "
+#             "войс-чата)\nstart - время начала (для войс-чата)\noutput - link - сслыка на архив, all_files - все "
+#             "файлы, file - только финальный файл\nonly_voice_change - просто заменить голос, без разделения вокала "
+#             "и музыки\n")
+#     elif command == "tts":
+#         await ctx.respond(
+#             "# /tts\n(Озвучить текст)\n**text - произносимый текст**\nai_voice - голосовая модель\nspeed - "
+#             "Ускорение/замедление\nvoice_model - Модель голоса elevenlab\noutput - Отправляет файл в чат\n"
+#             "stability - Стабильность голоса (0 - нестабильный, 1 - стабильный)\*\n"
+#             "similarity_boost - Повышение сходства (0 - отсутствует)\*\n"
+#             "style - Выражение (0 - мало пауз и выражения, 1 - большое количество пауз и выражения)\*\n")
+#         await ctx.send("\* - параметр сохраняется")
+#     elif command == "add_voice":
+#         await ctx.respond("# /add_voice\n(Добавить голосовую модель)\n**url - ссылка на модель **\n**name - имя модели "
+#                           "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
+#                           "speed - ускорение/замедление при /tts\nvoice_model - модель elevenlab\nchange_voice - True = "
+#                           "заменить на текущий голос\ntxt_file - быстрое добавление множества голосовых моделей *(остальные аргументы как 'url', 'gender', 'name'  будут игнорироваться)*, для использования:\n"
+#                           "- напишите в txt файле аргументы для add_voice (1 модель - 1 строка), пример:")
+#         await send_file(ctx, "add_voice_args.txt")
+#     elif command == "create_dialog":
+#         await ctx.respond(
+#             "# /create_dialog\n(Создать диалог в войс-чате, используйте join)\n**names - участники диалога "
+#             "через ';' - список голосовых моделей Например, Участник1;Участник2**\ntheme - Тема разговора "
+#             "(может измениться)\nprompt - Постоянный запрос (например, что они находятся в определённом месте)\n")
+#     elif command == "change_image":
+#         await ctx.respond("# /change_image \n(Изменить изображение)\n**image - картинка, которую нужно изменить**\n"
+#                           "**prompt - Запрос **\nnegative_prompt - Негативный запрос\nsteps - Количество шагов (больше - "
+#                           "лучше, но медленнее)\nseed - сид (если одинаковый сид и файл, то получится то же самое изображение)"
+#                           "\nx - расширение по X\ny - расширение по Y\nstrength - сила изменения\nstrength_prompt - сила для "
+#                           "запроса\nstrength_negative_prompt - сила для негативного запроса\nrepeats - количество изображений "
+#                           "(сид случайный!)\n")
+#     elif command == "change_video":
+#         await ctx.respond(
+#             "# /change_video \n(Изменить видео **ПОКАДРОВО**)\n**video_path - видеофайл**\n**fps - Количество "
+#             "кадров в секунду**\n**extension - Качество видео **\n**prompt - Запрос**\nnegative_prompt - "
+#             "Негативный запрос\nsteps - Количество шагов (больше - лучше, но медленнее)\nseed - сид (если "
+#             "одинаковый сид и файл, то получится то же самое изображение)\nstrength - сила изменения\n"
+#             "strength_prompt - сила для запроса\nstrength_negative_prompt - сила для негативного запроса\n"
+#             "voice - голосовая модель\npitch - тональность (12 из мужского в женский, -12 из женского в "
+#             "мужской)\nindexrate - индекс голоса (чем больше, тем больше черт черт голоса говорящего)\n"
+#             "loudness - количество шума (чем больше, тем больше шума)\nfilter_radius - размер фильтра (чем "
+#             "больше, тем больше шума)\nmain_vocal, back_vocal, music - громкость каждой аудиодорожки\n"
+#             "roomsize, wetness, dryness - параметры реверберации\n")
+#     elif command == "join":
+#         await ctx.respond("# /join\n - присоединиться к вам в войс-чате")
+#     elif command == "disconnect":
+#         await ctx.respond("# /disconnect\n - выйти из войс-чата")
+#     elif command == "record":
+#         await ctx.respond("# /record\n - включить распознавание речи через микрофон")
+#     elif command == "stop_recording":
+#         await ctx.respond("# /stop_recording\n  - выключить распознавание речи через микрофон")
+#     elif command == "pause":
+#         await ctx.respond("# /pause\n - пауза / завершение диалога")
+#     elif command == "skip":
+#         await ctx.respond("# /skip\n - пропуск аудио")
 
 @bot.slash_command(name="gpt_img", description='Отправить запрос к gpt-4')
 async def __gpt4_image(ctx,
