@@ -1369,7 +1369,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=No
     except Exception:
         pass
     file_name = "1.mp3"
-    output_name = "2.mp3"
+    output_name = f"{voice_model}.mp3"
 
     if os.path.exists(file_name):
         os.remove(file_name)
