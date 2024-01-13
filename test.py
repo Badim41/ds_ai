@@ -393,8 +393,9 @@ async def agrs_with_txt(txt_file):
     try:
         filename = "temp_args.txt"
         await txt_file.save(filename)
-        with open(filename, "r", encoding="utf-8") as file:
+        with open(r"C:\Users\as280\Pictures\ds_ai\voice_download\all_voices.txt", "r", encoding="utf-8") as file:
             lines = file.readlines()
+            lines[-1] = lines[-1] + " "
         url = []
         name = []
         gender = []
@@ -403,8 +404,6 @@ async def agrs_with_txt(txt_file):
         voice_model = []
         for line in lines:
             if line.strip():
-                # забейте, просто нужен пробел и всё
-                line += " "
                 line = line.replace(": ", ":")
                 # /add_voice url:url_to_model name:some_name gender:мужчина info:some_info speed:some_speed voice_model:some_model
                 pattern = r'(\w+):(.+?)\s(?=\w+:|$)'
