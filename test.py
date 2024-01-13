@@ -888,6 +888,7 @@ async def play_audio_file(interaction: Interaction, filename):
 
     source = nextcord.PCMVolumeTransformer(nextcord.FFmpegPCMAudio(filename))
     voiceClient.play(source, after=lambda e: print(f"Player error: {e}") if e else None)
+    await asyncio.sleep(len(AudioSegment.from_file(filename)) / 1000)
 
     # await interaction.send(f"Now playing: {filename}")
 
