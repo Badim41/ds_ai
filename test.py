@@ -631,7 +631,7 @@ async def tts(
             # убираем миллисекунды
             spent_time = spent_time[:spent_time.find(".")]
             if "0:00:00" not in str(spent_time):
-                await ctx.response.send_message("Потрачено на обработку:" + spent_time)
+                await ctx.send("Потрачено на обработку:" + spent_time)
             if output:
                 if output.startswith("1"):
                     await send_file(ctx, "2.mp3")
@@ -641,7 +641,7 @@ async def tts(
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        await ctx.response.send_message(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
+        await ctx.send(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
         # возращаем голос
         if not ai_voice_temp is None:
             await set_get_config_all("Default", "currentainame", ai_voice_temp)
