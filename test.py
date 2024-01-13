@@ -1,63 +1,31 @@
 import asyncio
 import sys
 
-from nextcord import Interaction
+import nextcord
+from nextcord import Interaction, SlashOption
 from nextcord.ext import commands
 
 bot = commands.Bot()
 
 
-@bot.slash_command(description="main command")
-async def main(interaction: Interaction):
-    """
-    This is the main slash command that will be the prefix of all commands below.
-    This will never get called since it has subcommands.
-    """
+@bot.slash_command()
+async def choose_a_number(
+    interaction: Interaction,
+    number: int = SlashOption(
+        name="picker",
+        description="The number you want",
+        choices={"one": 1, "two": 2, "three": 3},
+    ),
+):
+    await interaction.response.send_message(f"You chose {number}!")
 
 
-@main.subcommand(description="Subcommand 1")
-async def sub1(interaction: Interaction):
-    """
-    This is a subcommand of the '/main' slash command.
-    It will appear in the menu as '/main sub1'.
-    """
-    await interaction.response.send_message("This is subcommand 1!")
-
-
-@main.subcommand(description="Subcommand 2")
-async def sub2(interaction: Interaction):
-    """
-    This is another subcommand of the '/main' slash command.
-    It will appear in the menu as '/main sub2'.
-    """
-    await interaction.response.send_message("This is subcommand 2!")
-
-
-@main.subcommand(description="main_group subcommand group")
-async def main_group(interaction: Interaction):
-    """
-    This is a subcommand group of the '/main' slash command.
-    All subcommands of this group will be prefixed with '/main main_group'.
-    This will never get called since it has subcommands.
-    """
-
-
-@main_group.subcommand(description="Subcommand group subcommand 1")
-async def subsub1(interaction: Interaction):
-    """
-    This is a subcommand of the '/main main_group' subcommand group.
-    It will appear in the menu as '/main main_group subsub1'.
-    """
-    await interaction.response.send_message("This is a subcommand group's subcommand!")
-
-
-@main_group.subcommand(description="Subcommand group subcommand 2")
-async def subsub2(interaction: Interaction):
-    """
-    This is another subcommand of the '/main main_group' subcommand group.
-    It will appear in the menu as '/main main_group subsub2'.
-    """
-    await interaction.response.send_message("This is subcommand group subcommand 2!")
+@bot.slash_command()
+async def hi(
+    interaction: Interaction,
+    member: nextcord.Member = SlashOption(name="user", description="User to say hi to"),
+):
+    await interaction.response.send_message(f"{interaction.user} just said hi to {member.mention}")
 
 if __name__ == "__main__":
     arguments = sys.argv
