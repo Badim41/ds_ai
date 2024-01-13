@@ -634,10 +634,10 @@ async def tts(
                 await ctx.send("Потрачено на обработку:" + spent_time)
             if output:
                 if output.startswith("1"):
-                    await send_file(ctx, "2.mp3")
+                    await send_file(ctx, f"{voice_model}.mp3")
                 elif output.startswith("2"):
                     await send_file(ctx, "1.mp3")
-                    await send_file(ctx, "2.mp3")
+                    await send_file(ctx, f"{voice_model}.mp3")
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
