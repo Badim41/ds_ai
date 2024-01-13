@@ -2,14 +2,17 @@ import ffmpeg
 import numpy as np
 
 
+
+
 def load_audio(file, sr):
     try:
-        # https://github.com/openai/whisper/blob/main/whisper/audio.py#L26
+        # Print file path and ffmpeg command for debugging
+        print(f"File path: {file}")
+        print(f"FFmpeg command: {['ffmpeg', '-nostdin']}")
+
         # This launches a subprocess to decode audio while down-mixing and resampling as necessary.
         # Requires the ffmpeg CLI and `ffmpeg-python` package to be installed.
-        file = (
-            file.strip(" ").strip('"').strip("\n").strip('"').strip(" ")
-        )  # 防止小白拷路径头尾带了空格和"和回车
+        file = file.strip(" ").strip('"').strip("\n").strip('"').strip(" ")
         out, _ = (
             ffmpeg.input(file, threads=0)
             .output("-", format="f32le", acodec="pcm_f32le", ac=1, ar=sr)
