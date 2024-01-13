@@ -1038,8 +1038,8 @@ async def join(interaction: nextcord.Interaction, *, channel: nextcord.VoiceChan
             if join_alert:
                 await interaction.send(f"Joined {channel.name}")
                 join_alert = False
-            await asyncio.sleep(3)
         except Exception:
+            await asyncio.sleep(5)
             pass
 
 
