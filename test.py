@@ -70,46 +70,6 @@ async def config_command(
             f"Ошибка при изменении конфига (с параметрами{section},{key},{value}): {e}")
 
 
-@bot.slash_command(name="join", description='присоединиться к голосовому каналу')
-async def join(interaction: Interaction):
-    try:
-        await interaction.response.defer()
-
-        # уже в войс-чате
-        if interaction.guild.voice_client is not None:
-            await interaction.response.send_message("Бот уже находится в голосовом канале.")
-            return
-
-        voice = interaction.user.voice
-        if not voice:
-            await interaction.response.send_message("error: not in voice")
-            return
-
-        voice_channel = voice.channel
-
-        await voice_channel.connect()
-        await interaction.response.send_message("Присоединяюсь")
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        print(str(traceback_str))
-        await interaction.response.send_message(f"Ошибка при присоединении: {e}")
-
-
-@bot.slash_command(name="disconnect", description='выйти из войс-чата')
-async def disconnect(interaction: Interaction):
-    try:
-
-        voice = interaction.guild.voice_client
-        if voice:
-            await voice.disconnect(force=True)
-            await interaction.response.send_message("выхожу")
-        else:
-            await interaction.response.send_message("Я не в войсе")
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        print(str(traceback_str))
-        await interaction.response.send_message(f"Ошибка при выходе из войс-чата: {e}")
-
 
 async def get_links_from_playlist(playlist_url):
     try:
@@ -901,7 +861,7 @@ voiceClient = None
 paused = False
 
 
-@bot.slash_command(description="Joins a voice channel")
+@bot.slash_command(name="join", description="Joins a voice channel")
 async def join(interaction: nextcord.Interaction, *, channel: nextcord.VoiceChannel):
     """Joins a voice channel"""
 
@@ -915,7 +875,7 @@ async def join(interaction: nextcord.Interaction, *, channel: nextcord.VoiceChan
 
 
 @bot.slash_command(description="Plays a file from the local filesystem")
-async def play(interaction: nextcord.Interaction, *, query):
+async def play(interaction: nextcord.Interaction, query):
     """Plays a file from the local filesystem"""
 
     global voiceClient
@@ -934,27 +894,19 @@ async def play(interaction: nextcord.Interaction, *, query):
     await interaction.send(f"Now playing: {query}")
 
 
-@bot.slash_command(description="Changes the player's volume")
-async def volume(interaction: nextcord.Interaction, volume: int):
-    """Changes the player's volume"""
 
-    global voiceClient
-
-    if voiceClient is None:
-        return await interaction.send("Not connected to a voice channel.")
-
-    voiceClient.source.volume = volume / 100
-    await interaction.send(f"Changed volume to {volume}%")
-
-
-@bot.slash_command(description="Pauses music playback")
+@bot.slash_command(name="pause", description="Pauses music playback")
 async def pause(interaction: nextcord.Interaction):
     """Pauses music playback"""
 
     global voiceClient
     global paused
 
-    if voiceClient.is_playing():
+    if paused:
+        voiceClient.resume()
+        await interaction.send("Resumed.")
+        paused = False
+    elif voiceClient.is_playing():
         paused = True
         voiceClient.pause()
         await interaction.send("Paused.")
@@ -962,7 +914,7 @@ async def pause(interaction: nextcord.Interaction):
         await interaction.send("There isn't any music to pause.")
 
 
-@bot.slash_command(description="Resumes playing on voice")
+@bot.slash_command(name="pause", description="Resumes playing on voice")
 async def resume(interaction: nextcord.Interaction):
     """Resumes music playback"""
 
@@ -971,12 +923,6 @@ async def resume(interaction: nextcord.Interaction):
 
     async with interaction.channel.typing():
         pass
-    if paused:
-        voiceClient.resume()
-        await interaction.send("Resumed.")
-        paused = False
-    else:
-        await interaction.send("There isn't any music to resume.")
 
 
 @bot.slash_command(description="Stops and disconnects the bot from voice")
