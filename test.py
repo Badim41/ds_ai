@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import nextcord
 import os
 import random
@@ -15,10 +16,17 @@ import json
 
 from discord import SlashCommandOptionType
 from set_get_config import set_get_config_all
+from use_free_cuda import stop_use_cuda_async, use_cuda_async
 
 intents = nextcord.Intents.all()
 bot = commands.Bot(command_prefix='\\', intents=intents)
 
+ALL_VOICES = ['Rachel [Ж]', 'Clyde [М]', 'Domi [Ж]', 'Dave [М]', 'Fin [М]', 'Bella [Ж]', 'Antoni [М]', 'Thomas [М]',
+              'Charlie [М]', 'Emily [Ж]', 'Elli [Ж]', 'Callum [М]', 'Patrick [М]', 'Harry [М]', 'Liam [М]',
+              'Dorothy [Ж]', 'Josh [М]', 'Arnold [М]', 'Charlotte [Ж]', 'Matilda [Ж]', 'Matthew [М]', 'James [М]',
+              'Joseph [М]', 'Jeremy [М]', 'Michael [М]', 'Ethan [М]', 'Gigi [Ж]', 'Freya [Ж]', 'Grace [Ж]',
+              'Daniel [М]', 'Serena [Ж]', 'Adam [М]', 'Nicole [Ж]', 'Jessie [М]', 'Ryan [М]', 'Sam [М]', 'Glinda [Ж]',
+              'Giovanni [М]', 'Mimi [Ж]']
 
 @bot.event
 async def on_ready():
@@ -460,6 +468,12 @@ async def add_voice(
             required=False,
             default=False
         ),
+        voice_model: str = SlashOption(
+            name="voice_model",
+            description="Какая модель elevenlabs будет использована",
+            required=False,
+            default=None
+        ),
         txt_file: Attachment = SlashOption(
             name="txt_file",
             description="Аудиофайл",
@@ -490,8 +504,139 @@ async def add_voice(
         await ctx.send("Все модели успешно установлены!")
         return
 
-    await download_voice(ctx, url, name, gender, info, speed, "None", change_voice)
+    await download_voice(ctx, url, name, gender, info, speed, voice_model, change_voice)
 
+@bot.slash_command(name="tts", description='Заставить бота говорить всё, что захочешь')
+async def tts(
+    ctx,
+    text: str = SlashOption(
+        name="text",
+        description="Текст для озвучки",
+        required=True
+    ),
+    ai_voice: str = SlashOption(
+        name="ai_voice",
+        description="Голос для озвучки",
+        required=False,
+        default=None
+    ),
+    speed: float = SlashOption(
+        name="speed",
+        description="Ускорение голоса",
+        required=False,
+        default=None,
+        min_value=1,
+        max_value=3
+    ),
+    voice_model: str = SlashOption(
+        name="voice_model",
+        description="Какая модель elevenlabs будет использована",
+        required=False,
+        default=None
+    ),
+    stability: float = SlashOption(
+        name="stability",
+        description="Стабильность голоса",
+        required=False,
+        default=None,
+        min_value=0,
+        max_value=1
+    ),
+    similarity_boost: float = SlashOption(
+        name="similarity_boost",
+        description="Повышение сходства",
+        required=False,
+        default=None,
+        min_value=0,
+        max_value=1
+    ),
+    style: float = SlashOption(
+        name="style",
+        description="Выражение",
+        required=False,
+        default=None,
+        min_value=0,
+        max_value=1
+    ),
+    output: str = SlashOption(
+        name="output",
+        description="Отправить результат",
+        required=False,
+        choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"],
+        default=None
+    )
+):
+    if voice_model:
+        found_voice = False
+        for voice_1 in ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie', 'Emily',
+                        'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte',
+                        'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya', 'Grace',
+                        'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni', 'Mimi']:
+            if voice_1 in voice_model:
+                voice_model = voice_1
+                found_voice = True
+                break
+        if not found_voice:
+            await ctx.response.send_message("Список голосов (М - мужские, Ж - женские): \n" + ';'.join(ALL_VOICES))
+            return
+    # заменяем 3 значения
+    for key in [stability, similarity_boost, style]:
+        if key:
+            await set_get_config_all("voice", str(key), key)
+
+    ai_voice_temp = None
+    try:
+
+        await ctx.response.send_message('Выполнение...')
+        # count time
+        start_time = datetime.datetime.now()
+        cuda = await use_cuda_async()
+        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
+        if str(ai_voice) not in voices:
+            return await ctx.response.send_message("Выберите голос из списка: " + ';'.join(voices))
+        from function import replace_mat_in_sentence
+        text_out = await replace_mat_in_sentence(text)
+        if not text_out == text.lower():
+            await ctx.response.send_message("Такое точно нельзя произносить!")
+            return
+        print(f'{text} ({type(text).__name__})\n')
+        # меняем голос
+        ai_voice_temp = await set_get_config_all("Default", "currentainame")
+        if ai_voice is None:
+            ai_voice = await set_get_config_all("Default", "currentainame")
+            print(await set_get_config_all("Default", "currentainame"))
+        await set_get_config_all("Default", "currentainame", ai_voice)
+        # запускаем TTS
+        from function import text_to_speech
+        await text_to_speech(text, False, ctx, ai_dictionary=ai_voice, speed=speed, voice_model=voice_model,
+                             skip_tts=False)
+        # await run_main_with_settings(ctx, f"робот протокол 24 {text}",
+        #                              False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
+        # перестаём использовать видеокарту
+        await stop_use_cuda_async(cuda)
+
+        # count time
+        end_time = datetime.datetime.now()
+        spent_time = str(end_time - start_time)
+        # убираем миллисекунды
+        spent_time = spent_time[:spent_time.find(".")]
+        if "0:00:00" not in str(spent_time):
+            await ctx.response.send_message("Потрачено на обработку:" + spent_time)
+        if output:
+            if output.startswith("1"):
+                await send_file(ctx, "2.mp3")
+            elif output.startswith("2"):
+                await send_file(ctx, "1.mp3")
+                await send_file(ctx, "2.mp3")
+    except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
+        await ctx.response.send_message(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
+        # возращаем голос
+        if not ai_voice_temp is None:
+            await set_get_config_all("Default", "currentainame", ai_voice_temp)
+        # перестаём использовать видеокарту
+        await stop_use_cuda_async(cuda)
 
 @bot.command(aliases=['cmd'], help="командная строка")
 async def command_line(ctx, *args):
@@ -593,7 +738,7 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
         try:
             # Arnold(быстрый) Thomas Adam Antoni !Antoni(мяг) !Clyde(тяж) !Daniel(нейтр) !Harry !James Patrick
             voice_id = await get_voice_id_by_name(voice_model)
-            print("VOICE_ID_ELEVENLABS:", voice_id)
+            # print("VOICE_ID_ELEVENLABS:", voice_id)
             audio = generate(
                 text=tts,
                 model='eleven_multilingual_v2',
@@ -726,7 +871,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                     spoken_text = "Зрители за прошлый диалог написали:\"" + spoken_text_config + "\""
                     await set_get_config_all("dialog", "user_spoken_text", "None")
                 random_int = random.randint(1, 33)
-                if not random_int == 0:
+                if not random_int == 0 and spoken_text == "":
                     prompt = (f"Привет chatGPT, продолжи диалог между {', '.join(names)}. "
                               f"{'.'.join(infos)}. {prompt_global} "
                               f"персонажи должны соответствовать своему образу насколько это возможно. "
@@ -735,14 +880,25 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                               f"\nОбязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
                               f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
                 else:
-                    prompt = (
-                        f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)} на случайную тему,"
-                        f" которая должна относиться к событиям сервера. "
-                        f"Персонажи должны соответствовать своему образу насколько это возможно. "
-                        f"Никогда не пиши приветствие в начале этого диалога. "
-                        f"{'.'.join(infos)}. {prompt_global}. {spoken_text}"
-                        f"Обязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
-                        f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
+                    if spoken_text:
+                        prompt = (
+                            f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)} на случайную тему,"
+                            f" которая должна относиться к событиям сервера. "
+                            f"Персонажи должны соответствовать своему образу насколько это возможно. "
+                            f"Никогда не пиши приветствие в начале этого диалога. "
+                            f"{'.'.join(infos)}. {prompt_global}."
+                            f"Обязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
+                            f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
+                    else:
+                        prompt = (
+                            f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)} на случайную тему,"
+                            f" которая должна относиться к событиям сервера. "
+                            f"Персонажи должны соответствовать своему образу насколько это возможно. "
+                            f"Никогда не пиши приветствие в начале этого диалога. "
+                            f"{'.'.join(infos)}. {prompt_global}."
+                            f"Обязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
+                            f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
+
                 # print("PROMPT:", prompt)
                 result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
                 # await write_in_discord(ctx, result)
@@ -792,7 +948,7 @@ async def play_dialog(ctx: Interaction):
         except Exception as e:
             traceback_str = traceback.format_exc()
             print(str(traceback_str))
-            await ctx.send(f"Ошибка при изменении голоса(ID:d2): {e}")
+            # await ctx.send(f"Ошибка при изменении голоса(ID:d2): {e}")
 
 
 @bot.slash_command(name="create_dialog", description='Имитировать диалог людей')
@@ -845,12 +1001,12 @@ async def create_dialog(
         await set_get_config_all("dialog", "dialog", "True")
         await set_get_config_all("gpt", "gpt_mode", "None")
         # names, theme, infos, prompt, ctx
-        # запустим сразу 8 процессов для обработки голоса
+        # запустим сразу 3 процессов для обработки голоса
         await ctx.response.send_message("Чтобы слышать диалог, пропишите /join")
         await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx),
                              create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"),
-                             create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"))
-        """
+                             create_audio_dialog(ctx, 2, "dialog"))
+        """, create_audio_dialog(ctx, 3, "dialog")
                              create_audio_dialog(ctx, 4, "dialog"), create_audio_dialog(ctx, 5, "dialog"),
                              create_audio_dialog(ctx, 6, "dialog"), create_audio_dialog(ctx, 7, "dialog")
                             """
