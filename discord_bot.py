@@ -43,8 +43,8 @@ connections = {}
 
 stream_sink = StreamSink()
 
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix='\\', intents=intents)
+# intents = discord.Intents.all()
+bot = commands.Bot()
 
 
 @bot.event
