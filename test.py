@@ -566,6 +566,14 @@ async def tts(
         required=False,
         choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"],
         default=None
+    ),
+    style: int = SlashOption(
+        name="change_pitch",
+        description="Изменить тональность",
+        required=False,
+        default=0,
+        min_value=-24,
+        max_value=24
     )
 ):
     if voice_model == "All":
@@ -619,7 +627,7 @@ async def tts(
             # запускаем TTS
             from function import text_to_speech
             await text_to_speech(text, False, ctx, ai_dictionary=ai_voice, speed=speed, voice_model=voice_model,
-                                 skip_tts=False)
+                                 skip_tts=False, pitch_change=pitch_change)
             # await run_main_with_settings(ctx, f"робот протокол 24 {text}",
             #                              False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
             # перестаём использовать видеокарту

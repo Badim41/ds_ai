@@ -1320,7 +1320,7 @@ async def speed_up_audio(input_file, speed_factor):
         sped_up_audio.export(input_file, format="mp3")
 
 
-async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=None, voice_model=None, skip_tts=None):
+async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=None, voice_model=None, skip_tts=None, pitch_change=0):
     currentpitch = int(await set_get_config_all("Default", "currentaipitch", None))
     if tts is None or tts.replace("\n", "").replace(" ", "") == "":
         await result_command_change(f"Пустой текст \"{tts}\"", Color.RED)
@@ -1382,6 +1382,7 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=No
 
     from discord_bot import text_to_speech_file
     pitch = await text_to_speech_file(tts, currentpitch, file_name, voice_model=voice_model)
+    pitch += pitch_change
     # если голос не выставлен
     if ai_dictionary == "None" or await set_get_config_all("Default", "currentainame") == "None":
         await playSoundFile(file_name, -1, 0, ctx)
