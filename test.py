@@ -10,15 +10,9 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='\\', intents=intents)
 
 @bot.slash_command(name="channel")
-@option(
-    "channel",
-    Union[discord.TextChannel, discord.VoiceChannel],
-    # You can specify allowed channel types by passing a union of them like this.
-    description="Select a channel",
-)
 async def select_channel(
     ctx: discord.ApplicationContext,
-    channel: Union[discord.TextChannel, discord.VoiceChannel],
+    channel: Option(str, description='Нужная вам команда', required=True)
 ):
     await ctx.respond(f"Hi! You selected {channel.mention} channel.")
 
