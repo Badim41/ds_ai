@@ -943,8 +943,7 @@ async def play_dialog(ctx: Interaction):
                     await play_audio_file(ctx, "song_output/" + file)
                     os.remove("song_output/" + file)
                     await ctx.send("end")
-                else:
-                    await asyncio.sleep(0.2)
+            await asyncio.sleep(0.2)
         except Exception as e:
             traceback_str = traceback.format_exc()
             print(str(traceback_str))
