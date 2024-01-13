@@ -406,7 +406,7 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model, chang
     elif gender == "мужчина":
         gender = "male"
     else:
-        gender = "male"
+        gender = int(gender)
     try:
         command = [
             "python",
@@ -449,6 +449,14 @@ async def add_voice(
             description="Пол (для настройки тональности)",
             required=True,
             choices=['мужчина', 'женщина']
+        ),
+        pitch: int = SlashOption(
+            name="pitch",
+            description="Какую использовать тональность (от -24 до 24) (или указать gender)",
+            required=False,
+            default=0,
+            min_value=-24,
+            max_value=24
         ),
         info: str = SlashOption(
             name="info",
