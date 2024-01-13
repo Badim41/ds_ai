@@ -108,7 +108,7 @@ async def on_message(message):
 
 @bot.slash_command()
 async def help_command(
-        ctx,
+    interaction: Interaction,
         command: str = SlashOption(
             name="command",
             description="Нужная вам команда",
@@ -119,20 +119,18 @@ async def help_command(
         ),
 ):
     if command == "say":
-        await ctx.response.send_message(
-            "# /say\n(Сделать запрос к GPT)\n**text - запрос для GPT**\ngpt_mode\*:\n- много ответов\n"
-            "- быстрый ответ\n- экономный режим (не используйте)\n\nТакже в /say используются "
-            "*протоколы* и *голосовые команды*\n/say gpt <вопрос> - сырой запрос для GPT\n/say протокол 998 - "
-            "очистить контекст\n/say протокол 32 - последний озвученный текст (с RVC)\n/say протокол 31 - "
-            "последний озвученный текст (без RVC)\n/say протокол 12 <запрос> - нарисовать картинку (не рекомендую!)"
-            "\n/say код красный 0 - перезагрузка бота\n")
-        await ctx.send("\* - параметр сохраняется")
+        await interaction.response.send_message("# /say\n(Сделать запрос к GPT)\n**text - запрос для GPT**\ngpt_mode\*:\n- много ответов\n"
+                          "- быстрый ответ\n- экономный режим (не используйте)\n\nТакже в /say используются "
+                          "*протоколы* и *голосовые команды*\n/say gpt <вопрос> - сырой запрос для GPT\n/say протокол 998 - "
+                          "очистить контекст\n/say протокол 32 - последний озвученный текст (с RVC)\n/say протокол 31 - "
+                          "последний озвученный текст (без RVC)\n/say протокол 12 <запрос> - нарисовать картинку (не рекомендую!)"
+                          "\n/say код красный 0 - перезагрузка бота\n")
+        await interaction.send("\* - параметр сохраняется")
     elif command == "read_messages":
-        await ctx.response.send_message(
-            "# /read_messages\n(Прочитать последние сообщения и что-то с ними сделать)\n**number - "
-            "количество читаемых сообщений**\n**prompt - запрос (например, перескажи эти сообщения)**\n")
+        await interaction.response.send_message("# /read_messages\n(Прочитать последние сообщения и что-то с ними сделать)\n**number - "
+                          "количество читаемых сообщений**\n**prompt - запрос (например, перескажи эти сообщения)**\n")
     elif command == "ai_cover":
-        await ctx.response.send_message(
+        await interaction.response.send_message(
             "# /ai_cover:\n(Перепеть/озвучить видео или аудио)\n**url - ссылка на видео**\n**audio_path - "
             "аудио файл**\nvoice - голосовая модель\ngender - пол (для тональности)\npitch - тональность (12 "
             "из мужского в женский, -12 из женского в мужской)\nindexrate - индекс голоса (чем больше, тем больше "
@@ -144,36 +142,34 @@ async def help_command(
             "файлы, file - только финальный файл\nonly_voice_change - просто заменить голос, без разделения вокала "
             "и музыки\n")
     elif command == "tts":
-        await ctx.response.send_message(
+        await interaction.response.send_message(
             "# /tts\n(Озвучить текст)\n**text - произносимый текст**\nai_voice - голосовая модель\nspeed - "
             "Ускорение/замедление\nvoice_model - Модель голоса elevenlab\noutput - Отправляет файл в чат\n"
             "stability - Стабильность голоса (0 - нестабильный, 1 - стабильный)\*\n"
             "similarity_boost - Повышение сходства (0 - отсутствует)\*\n"
             "style - Выражение (0 - мало пауз и выражения, 1 - большое количество пауз и выражения)\*\n")
-        await ctx.send("\* - параметр сохраняется")
+        await interaction.send("\* - параметр сохраняется")
     elif command == "add_voice":
-        await ctx.response.send_message(
-            "# /add_voice\n(Добавить голосовую модель)\n**url - ссылка на модель **\n**name - имя модели "
-            "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
-            "speed - ускорение/замедление при /tts\nvoice_model - модель elevenlab\nchange_voice - True = "
-            "заменить на текущий голос\ntxt_file - быстрое добавление множества голосовых моделей *(остальные аргументы как 'url', 'gender', 'name'  будут игнорироваться)*, для использования:\n"
-            "- напишите в txt файле аргументы для add_voice (1 модель - 1 строка), пример:")
-        await send_file(ctx, "add_voice_args.txt")
+        await interaction.response.send_message("# /add_voice\n(Добавить голосовую модель)\n**url - ссылка на модель **\n**name - имя модели "
+                          "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
+                          "speed - ускорение/замедление при /tts\nvoice_model - модель elevenlab\nchange_voice - True = "
+                          "заменить на текущий голос\ntxt_file - быстрое добавление множества голосовых моделей *(остальные аргументы как 'url', 'gender', 'name'  будут игнорироваться)*, для использования:\n"
+                          "- напишите в txt файле аргументы для add_voice (1 модель - 1 строка), пример:")
+        await send_file(interaction, "add_voice_args.txt")
     elif command == "create_dialog":
-        await ctx.response.send_message(
+        await interaction.response.send_message(
             "# /create_dialog\n(Создать диалог в войс-чате, используйте join)\n**names - участники диалога "
             "через ';' - список голосовых моделей Например, Участник1;Участник2**\ntheme - Тема разговора "
             "(может измениться)\nprompt - Постоянный запрос (например, что они находятся в определённом месте)\n")
     elif command == "change_image":
-        await ctx.response.send_message(
-            "# /change_image \n(Изменить изображение)\n**image - картинка, которую нужно изменить**\n"
-            "**prompt - Запрос **\nnegative_prompt - Негативный запрос\nsteps - Количество шагов (больше - "
-            "лучше, но медленнее)\nseed - сид (если одинаковый сид и файл, то получится то же самое изображение)"
-            "\nx - расширение по X\ny - расширение по Y\nstrength - сила изменения\nstrength_prompt - сила для "
-            "запроса\nstrength_negative_prompt - сила для негативного запроса\nrepeats - количество изображений "
-            "(сид случайный!)\n")
+        await interaction.response.send_message("# /change_image \n(Изменить изображение)\n**image - картинка, которую нужно изменить**\n"
+                          "**prompt - Запрос **\nnegative_prompt - Негативный запрос\nsteps - Количество шагов (больше - "
+                          "лучше, но медленнее)\nseed - сид (если одинаковый сид и файл, то получится то же самое изображение)"
+                          "\nx - расширение по X\ny - расширение по Y\nstrength - сила изменения\nstrength_prompt - сила для "
+                          "запроса\nstrength_negative_prompt - сила для негативного запроса\nrepeats - количество изображений "
+                          "(сид случайный!)\n")
     elif command == "change_video":
-        await ctx.response.send_message(
+        await interaction.response.send_message(
             "# /change_video \n(Изменить видео **ПОКАДРОВО**)\n**video_path - видеофайл**\n**fps - Количество "
             "кадров в секунду**\n**extension - Качество видео **\n**prompt - Запрос**\nnegative_prompt - "
             "Негативный запрос\nsteps - Количество шагов (больше - лучше, но медленнее)\nseed - сид (если "
@@ -185,135 +181,131 @@ async def help_command(
             "больше, тем больше шума)\nmain_vocal, back_vocal, music - громкость каждой аудиодорожки\n"
             "roomsize, wetness, dryness - параметры реверберации\n")
     elif command == "join":
-        await ctx.response.send_message("# /join\n - присоединиться к вам в войс-чате")
+        await interaction.response.send_message("# /join\n - присоединиться к вам в войс-чате")
     elif command == "disconnect":
-        await ctx.response.send_message("# /disconnect\n - выйти из войс-чата")
+        await interaction.response.send_message("# /disconnect\n - выйти из войс-чата")
     elif command == "record":
-        await ctx.response.send_message("# /record\n - включить распознавание речи через микрофон")
+        await interaction.response.send_message("# /record\n - включить распознавание речи через микрофон")
     elif command == "stop_recording":
-        await ctx.response.send_message("# /stop_recording\n  - выключить распознавание речи через микрофон")
+        await interaction.response.send_message("# /stop_recording\n  - выключить распознавание речи через микрофон")
     elif command == "pause":
-        await ctx.response.send_message("# /pause\n - пауза / завершение диалога")
+        await interaction.response.send_message("# /pause\n - пауза / завершение диалога")
     elif command == "skip":
-        await ctx.response.send_message("# /skip\n - пропуск аудио")
+        await interaction.response.send_message("# /skip\n - пропуск аудио")
 
 
 @bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
 async def config_command(
-        ctx,
-        section: str = SlashOption(
-            name="section",
-            description="секция",
-            required=True
-        ),
-        key: str = SlashOption(
-            name="key",
-            description="ключ",
-            required=True
-        ),
-        value: str = SlashOption(
-            name="value",
-            description="значение",
-            required=False,
-            default=None
-        )
+    interaction: Interaction,
+    section: str = SlashOption(
+        name="section",
+        description="секция",
+        required=True
+    ),
+    key: str = SlashOption(
+        name="key",
+        description="ключ",
+        required=True
+    ),
+    value: str = SlashOption(
+        name="value",
+        description="значение",
+        required=False,
+        default=None
+    )
 ):
     try:
 
         owner_id = await set_get_config_all("Default", "owner_id")
-        if not ctx.author.id == int(owner_id):
-            await ctx.author.send("Доступ запрещён")
+        if not interaction.user.id == int(owner_id):
+            await interaction.user.send("Доступ запрещён")
             return
         result = await set_get_config_all(section, key, value)
         if value is None:
-            await ctx.response.send_message(result)
+            await interaction.response.send_message(result)
         else:
-            await ctx.response.send_message(section + " " + key + " " + value)
+            await interaction.response.send_message(section + " " + key + " " + value)
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        await ctx.response.send_message(f"Ошибка при изменении конфига (с параметрами{section},{key},{value}): {e}")
+        await interaction.response.send_message(f"Ошибка при изменении конфига (с параметрами{section},{key},{value}): {e}")
 
 
 @bot.slash_command(name="read_messages", description='Читает последние x сообщений из чата и делает по ним вывод')
 async def read_messages(
-        ctx,
-        number: int = SlashOption(
-            name="number",
-            description="количество сообщений (от 1 до 100)",
-            required=True,
-            min_value=1,
-            max_value=100
-        ),
-        prompt: str = SlashOption(
-            name="prompt",
-            description="Промпт для GPT. Какой вывод сделать по сообщениям (перевести, пересказать)",
-            required=True
-        )
+    interaction: Interaction,
+    number: int = SlashOption(
+        name="number",
+        description="количество сообщений (от 1 до 100)",
+        required=True,
+        min_value=1,
+        max_value=100
+    ),
+    prompt: str = SlashOption(
+        name="prompt",
+        description="Промпт для GPT. Какой вывод сделать по сообщениям (перевести, пересказать)",
+        required=True
+    )
 ):
+
     from function import chatgpt_get_result, text_to_speech
     try:
         messages = []
-        async for message in ctx.channel.history(limit=number):
+        async for message in interaction.channel.history(limit=number):
             messages.append(f"Сообщение от {message.author.name}: {message.content}")
         # От начала до конца
         messages = messages[::-1]
         # убираем последнее / последние сообщения
         messages = messages[:number - 1]
         print(messages)
-        result = await chatgpt_get_result(f"{prompt}. Вот история сообщений:{messages}", ctx)
+        result = await chatgpt_get_result(f"{prompt}. Вот история сообщений:{messages}", interaction)
         print(result)
-        await ctx.response.send_message(result)
-        await text_to_speech(result, False, ctx)
+        await interaction.response.send_message(result)
+        await text_to_speech(result, False, interaction.guild)
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        await ctx.response.send_message(f"Произошла ошибка: {e}")
+        await interaction.response.send_message(f"Произошла ошибка: {e}")
 
 
 @bot.slash_command(name="join", description='присоединиться к голосовому каналу')
-async def join(ctx):
+async def join(interaction: Interaction):
     try:
+        await interaction.response.defer()
 
         # уже в войс-чате
-        if ctx.voice_client is not None and ctx.voice_client.is_connected():
-            await ctx.response.send_message("Бот уже находится в голосовом канале.")
+        if interaction.guild.voice_client is not None:
+            await interaction.response.send_message("Бот уже находится в голосовом канале.")
             return
 
-        voice = ctx.author.voice
+        voice = interaction.user.voice
         if not voice:
-            await ctx.response.send_message(voiceChannelErrorText)
+            await interaction.response.send_message(voiceChannelErrorText)
             return
 
         voice_channel = voice.channel
 
-        if ctx.voice_client is not None:
-            return await ctx.voice_client.move_to(voice_channel)
-
         await voice_channel.connect()
-        await ctx.response.send_message("Присоединяюсь")
+        await interaction.response.send_message("Присоединяюсь")
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        await ctx.response.send_message(f"Ошибка при присоединении: {e}")
-
+        await interaction.response.send_message(f"Ошибка при присоединении: {e}")
 
 @bot.slash_command(name="disconnect", description='выйти из войс-чата')
-async def disconnect(ctx):
+async def disconnect(interaction: Interaction):
     try:
 
-        voice = ctx.voice_client
+        voice = interaction.guild.voice_client
         if voice:
             await voice.disconnect(force=True)
-            await ctx.response.send_message("выхожу")
+            await interaction.response.send_message("выхожу")
         else:
-            await ctx.response.send_message("Я не в войсе")
-        if ctx.guild.id in connections:
-            del connections[ctx.guild.id]  # remove the guild from the cache.
+            await interaction.response.send_message("Я не в войсе")
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        await ctx.response.send_message(f"Ошибка при выходе из войс-чата: {e}")
+        await interaction.response.send_message(f"Ошибка при выходе из войс-чата: {e}")
 
 
 @bot.slash_command(name="pause", description='пауза/воспроизведение (остановка диалога)')
@@ -367,21 +359,22 @@ async def skip(ctx):
         await ctx.response.send_message(f"Ошибка при пропуске: {e}")
 
 
+
 @bot.slash_command(name="say", description='Сказать роботу что-то')
 async def say(
-        ctx,
-        text: str = SlashOption(
-            name="text",
-            description="Сам текст/команда. Список команд: \\help-say",
-            required=True
-        ),
-        gpt_mode: str = SlashOption(
-            name="gpt_mode",
-            description="Модификация GPT. Модификация сохраняется при следующих запросах!",
-            choices=["быстрый режим", "много ответов (медленный)", "экономный режим"],
-            required=False,
-            default=None
-        )
+    ctx,
+    text: str = SlashOption(
+        name="text",
+        description="Сам текст/команда. Список команд: \\help-say",
+        required=True
+    ),
+    gpt_mode: str = SlashOption(
+        name="gpt_mode",
+        description="Модификация GPT. Модификация сохраняется при следующих запросах!",
+        choices=["быстрый режим", "много ответов (медленный)", "экономный режим"],
+        required=False,
+        default=None
+    )
 ):
     # ["fast", "all", "None"], ["быстрый режим", "много ответов (медленный)", "Экономный режим"]
     if gpt_mode:
@@ -399,7 +392,7 @@ async def say(
         if not text_out == text.lower():
             text = text_out
         print(f'{text} ({type(text).__name__})\n')
-        await set_get_config_all("Default", "user_name", value=ctx.author.name)
+        await set_get_config_all("Default", "user_name", value=interaction.user.name)
 
         await run_main_with_settings(ctx, text, True)
     except Exception as e:
@@ -410,63 +403,63 @@ async def say(
 
 @bot.slash_command(name="tts", description='Заставить бота говорить всё, что захочешь')
 async def tts(
-        ctx,
-        text: str = SlashOption(
-            name="text",
-            description="Текст для озвучки",
-            required=True
-        ),
-        ai_voice: str = SlashOption(
-            name="ai_voice",
-            description="Голос для озвучки",
-            required=False,
-            default=None
-        ),
-        speed: float = SlashOption(
-            name="speed",
-            description="Ускорение голоса",
-            required=False,
-            default=None,
-            min_value=1,
-            max_value=3
-        ),
-        voice_model: str = SlashOption(
-            name="voice_model",
-            description="Какая модель elevenlabs будет использована",
-            required=False,
-            default=None
-        ),
-        stability: float = SlashOption(
-            name="stability",
-            description="Стабильность голоса",
-            required=False,
-            default=None,
-            min_value=0,
-            max_value=1
-        ),
-        similarity_boost: float = SlashOption(
-            name="similarity_boost",
-            description="Повышение сходства",
-            required=False,
-            default=None,
-            min_value=0,
-            max_value=1
-        ),
-        style: float = SlashOption(
-            name="style",
-            description="Выражение",
-            required=False,
-            default=None,
-            min_value=0,
-            max_value=1
-        ),
-        output: str = SlashOption(
-            name="output",
-            description="Отправить результат",
-            required=False,
-            choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"],
-            default=None
-        )
+    ctx,
+    text: str = SlashOption(
+        name="text",
+        description="Текст для озвучки",
+        required=True
+    ),
+    ai_voice: str = SlashOption(
+        name="ai_voice",
+        description="Голос для озвучки",
+        required=False,
+        default=None
+    ),
+    speed: float = SlashOption(
+        name="speed",
+        description="Ускорение голоса",
+        required=False,
+        default=None,
+        min_value=1,
+        max_value=3
+    ),
+    voice_model: str = SlashOption(
+        name="voice_model",
+        description="Какая модель elevenlabs будет использована",
+        required=False,
+        default=None
+    ),
+    stability: float = SlashOption(
+        name="stability",
+        description="Стабильность голоса",
+        required=False,
+        default=None,
+        min_value=0,
+        max_value=1
+    ),
+    similarity_boost: float = SlashOption(
+        name="similarity_boost",
+        description="Повышение сходства",
+        required=False,
+        default=None,
+        min_value=0,
+        max_value=1
+    ),
+    style: float = SlashOption(
+        name="style",
+        description="Выражение",
+        required=False,
+        default=None,
+        min_value=0,
+        max_value=1
+    ),
+    output: str = SlashOption(
+        name="output",
+        description="Отправить результат",
+        required=False,
+        choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"],
+        default=None
+    )
 ):
     if voice_model:
         found_voice = False
@@ -559,148 +552,148 @@ async def get_links_from_playlist(playlist_url):
 
 @bot.slash_command(name="ai_cover", description='_Заставить_ бота озвучить видео/спеть песню')
 async def ai_cover(
-        ctx,
-        url: str = SlashOption(
-            name="url",
-            description="Ссылка на видео",
-            required=False,
-            default=None
-        ),
-        voice: str = SlashOption(
-            name="voice",
-            description="Голос для видео",
-            required=False,
-            default=None
-        ),
-        gender: str = SlashOption(
-            name="gender",
-            description="Кто говорит/поёт в видео? (или указать pitch)",
-            required=False,
-            choices=['мужчина', 'женщина'],
-            default=None
-        ),
-        pitch: int = SlashOption(
-            name="pitch",
-            description="Какую использовать тональность (от -24 до 24) (или указать gender)",
-            required=False,
-            default=0,
-            min_value=-24,
-            max_value=24
-        ),
-        time: int = SlashOption(
-            name="time",
-            description="Ограничить длительность воспроизведения (в секундах)",
-            required=False,
-            default=-1,
-            min_value=-1
-        ),
-        indexrate: float = SlashOption(
-            name="indexrate",
-            description="Индекс голоса (от 0 до 1)",
-            required=False,
-            default=0.5,
-            min_value=0,
-            max_value=1
-        ),
-        loudness: float = SlashOption(
-            name="loudness",
-            description="Громкость шума (от 0 до 1)",
-            required=False,
-            default=0.4,
-            min_value=0,
-            max_value=1
-        ),
-        filter_radius: int = SlashOption(
-            name="filter_radius",
-            description="Насколько далеко от каждой точки в данных будут учитываться значения... (от 1 до 7)",
-            required=False,
-            default=3,
-            min_value=0,
-            max_value=7
-        ),
-        main_vocal: int = SlashOption(
-            name="main_vocal",
-            description="Громкость основного вокала (от -50 до 0)",
-            required=False,
-            default=0,
-            min_value=-50,
-            max_value=0
-        ),
-        back_vocal: int = SlashOption(
-            name="back_vocal",
-            description="Громкость бэквокала (от -50 до 0)",
-            required=False,
-            default=0,
-            min_value=-50,
-            max_value=0
-        ),
-        music: int = SlashOption(
-            name="music",
-            description="Громкость музыки (от -50 до 0)",
-            required=False,
-            default=0,
-            min_value=-50,
-            max_value=0
-        ),
-        roomsize: float = SlashOption(
-            name="roomsize",
-            description="Размер помещения (от 0 до 1)",
-            required=False,
-            default=0.2,
-            min_value=0,
-            max_value=1
-        ),
-        wetness: float = SlashOption(
-            name="wetness",
-            description="Влажность (от 0 до 1)",
-            required=False,
-            default=0.2,
-            min_value=0,
-            max_value=1
-        ),
-        dryness: float = SlashOption(
-            name="dryness",
-            description="Сухость (от 0 до 1)",
-            required=False,
-            default=0.8,
-            min_value=0,
-            max_value=1
-        ),
-        palgo: str = SlashOption(
-            name="palgo",
-            description="Алгоритм. Rmvpe - лучший вариант, mangio-crepe - более мягкий вокал",
-            required=False,
-            choices=['rmvpe', 'mangio-crepe'],
-            default="rmvpe"
-        ),
-        hop: int = SlashOption(
-            name="hop",
-            description="Как часто проверяет изменения тона в mango-crepe",
-            required=False,
-            default=128,
-            min_value=64,
-            max_value=1280
-        ),
-        start: int = SlashOption(
-            name="start",
-            description="Начать воспроизводить с (в секундах). -1 для продолжения",
-            required=False,
-            default=0,
-            min_value=-2
-        ),
-        output: str = SlashOption(
-            name="output",
-            description="Отправить результат",
-            choices=["ссылка на все файлы", "только результат (1 файл)", "все файлы", "не отправлять"],
-            required=False,
-            default="только результат (1 файл)"
-        ),
-        only_voice_change: bool = SlashOption(
-            name="only_voice_change",
-            description="Не извлекать инструментал и бэквокал, изменить голос. Не поддерживаются ссылки",
-            required=False,
-            default=False
-        )
+    ctx,
+    url: str = SlashOption(
+        name="url",
+        description="Ссылка на видео",
+        required=False,
+        default=None
+    ),
+    voice: str = SlashOption(
+        name="voice",
+        description="Голос для видео",
+        required=False,
+        default=None
+    ),
+    gender: str = SlashOption(
+        name="gender",
+        description="Кто говорит/поёт в видео? (или указать pitch)",
+        required=False,
+        choices=['мужчина', 'женщина'],
+        default=None
+    ),
+    pitch: int = SlashOption(
+        name="pitch",
+        description="Какую использовать тональность (от -24 до 24) (или указать gender)",
+        required=False,
+        default=0,
+        min_value=-24,
+        max_value=24
+    ),
+    time: int = SlashOption(
+        name="time",
+        description="Ограничить длительность воспроизведения (в секундах)",
+        required=False,
+        default=-1,
+        min_value=-1
+    ),
+    indexrate: float = SlashOption(
+        name="indexrate",
+        description="Индекс голоса (от 0 до 1)",
+        required=False,
+        default=0.5,
+        min_value=0,
+        max_value=1
+    ),
+    loudness: float = SlashOption(
+        name="loudness",
+        description="Громкость шума (от 0 до 1)",
+        required=False,
+        default=0.4,
+        min_value=0,
+        max_value=1
+    ),
+    filter_radius: int = SlashOption(
+        name="filter_radius",
+        description="Насколько далеко от каждой точки в данных будут учитываться значения... (от 1 до 7)",
+        required=False,
+        default=3,
+        min_value=0,
+        max_value=7
+    ),
+    main_vocal: int = SlashOption(
+        name="main_vocal",
+        description="Громкость основного вокала (от -50 до 0)",
+        required=False,
+        default=0,
+        min_value=-50,
+        max_value=0
+    ),
+    back_vocal: int = SlashOption(
+        name="back_vocal",
+        description="Громкость бэквокала (от -50 до 0)",
+        required=False,
+        default=0,
+        min_value=-50,
+        max_value=0
+    ),
+    music: int = SlashOption(
+        name="music",
+        description="Громкость музыки (от -50 до 0)",
+        required=False,
+        default=0,
+        min_value=-50,
+        max_value=0
+    ),
+    roomsize: float = SlashOption(
+        name="roomsize",
+        description="Размер помещения (от 0 до 1)",
+        required=False,
+        default=0.2,
+        min_value=0,
+        max_value=1
+    ),
+    wetness: float = SlashOption(
+        name="wetness",
+        description="Влажность (от 0 до 1)",
+        required=False,
+        default=0.2,
+        min_value=0,
+        max_value=1
+    ),
+    dryness: float = SlashOption(
+        name="dryness",
+        description="Сухость (от 0 до 1)",
+        required=False,
+        default=0.8,
+        min_value=0,
+        max_value=1
+    ),
+    palgo: str = SlashOption(
+        name="palgo",
+        description="Алгоритм. Rmvpe - лучший вариант, mangio-crepe - более мягкий вокал",
+        required=False,
+        choices=['rmvpe', 'mangio-crepe'],
+        default="rmvpe"
+    ),
+    hop: int = SlashOption(
+        name="hop",
+        description="Как часто проверяет изменения тона в mango-crepe",
+        required=False,
+        default=128,
+        min_value=64,
+        max_value=1280
+    ),
+    start: int = SlashOption(
+        name="start",
+        description="Начать воспроизводить с (в секундах). -1 для продолжения",
+        required=False,
+        default=0,
+        min_value=-2
+    ),
+    output: str = SlashOption(
+        name="output",
+        description="Отправить результат",
+        choices=["ссылка на все файлы", "только результат (1 файл)", "все файлы", "не отправлять"],
+        required=False,
+        default="только результат (1 файл)"
+    ),
+    only_voice_change: bool = SlashOption(
+        name="only_voice_change",
+        description="Не извлекать инструментал и бэквокал, изменить голос. Не поддерживаются ссылки",
+        required=False,
+        default=False
+    )
 ):
     audio_path = ctx.message.attachments[0]
     param_string = None
@@ -820,24 +813,24 @@ async def ai_cover(
 
 @bot.slash_command(name="create_dialog", description='Имитировать диалог людей')
 async def create_dialog(
-        ctx,
-        names: str = SlashOption(
-            name="names",
-            description="Участники диалога через ';' (у каждого должен быть добавлен голос!)",
-            required=True
-        ),
-        theme: str = SlashOption(
-            name="theme",
-            description="Начальная тема разговора",
-            required=False,
-            default="случайная тема"
-        ),
-        prompt: str = SlashOption(
-            name="prompt",
-            description="Общий запрос для всех диалогов",
-            required=False,
-            default=""
-        )
+    ctx,
+    names: str = SlashOption(
+        name="names",
+        description="Участники диалога через ';' (у каждого должен быть добавлен голос!)",
+        required=True
+    ),
+    theme: str = SlashOption(
+        name="theme",
+        description="Начальная тема разговора",
+        required=False,
+        default="случайная тема"
+    ),
+    prompt: str = SlashOption(
+        name="prompt",
+        description="Общий запрос для всех диалогов",
+        required=False,
+        default=""
+    )
 ):
     try:
 
@@ -955,49 +948,49 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model, chang
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
 async def add_voice(
-        ctx,
-        url: str = SlashOption(
-            name="url",
-            description="Ссылка на .zip файл с моделью RVC",
-            required=True
-        ),
-        name: str = SlashOption(
-            name="name",
-            description="Имя модели",
-            required=True
-        ),
-        gender: str = SlashOption(
-            name="gender",
-            description="Пол (для настройки тональности)",
-            required=True,
-            choices=['мужчина', 'женщина']
-        ),
-        info: str = SlashOption(
-            name="info",
-            description="Какие-то сведения о данном человеке",
-            required=False,
-            default="Отсутствует"
-        ),
-        speed: float = SlashOption(
-            name="speed",
-            description="Ускорение/замедление голоса",
-            required=False,
-            default=1,
-            min_value=1,
-            max_value=3
-        ),
-        voice_model: str = SlashOption(
-            name="voice_model",
-            description="Какая модель elevenlabs будет использована",
-            required=False,
-            default="Adam"
-        ),
-        change_voice: bool = SlashOption(
-            name="change_voice",
-            description="(необязательно) Изменить голос на этот",
-            required=False,
-            default=False
-        )
+    ctx,
+    url: str = SlashOption(
+        name="url",
+        description="Ссылка на .zip файл с моделью RVC",
+        required=True
+    ),
+    name: str = SlashOption(
+        name="name",
+        description="Имя модели",
+        required=True
+    ),
+    gender: str = SlashOption(
+        name="gender",
+        description="Пол (для настройки тональности)",
+        required=True,
+        choices=['мужчина', 'женщина']
+    ),
+    info: str = SlashOption(
+        name="info",
+        description="Какие-то сведения о данном человеке",
+        required=False,
+        default="Отсутствует"
+    ),
+    speed: float = SlashOption(
+        name="speed",
+        description="Ускорение/замедление голоса",
+        required=False,
+        default=1,
+        min_value=1,
+        max_value=3
+    ),
+    voice_model: str = SlashOption(
+        name="voice_model",
+        description="Какая модель elevenlabs будет использована",
+        required=False,
+        default="Adam"
+    ),
+    change_voice: bool = SlashOption(
+        name="change_voice",
+        description="(необязательно) Изменить голос на этот",
+        required=False,
+        default=False
+    )
 ):
     txt_file = ctx.message.attachments[0]
     if voice_model:
@@ -1354,6 +1347,7 @@ async def send_file(ctx, file_path, delete_file=False):
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
         await ctx.send(f'Произошла ошибка при отправке файла: {e}.')
+
 
 
 async def get_image_dimensions(file_path):
