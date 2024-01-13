@@ -567,7 +567,7 @@ async def tts(
         choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"],
         default=None
     ),
-    style: int = SlashOption(
+    pithc_change: int = SlashOption(
         name="change_pitch",
         description="Изменить тональность",
         required=False,
