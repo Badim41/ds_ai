@@ -607,9 +607,7 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
             save(audio, file_name)
         except Exception as e:
             from function import remove_unavaible_voice_api_key
-            print(f"Ошибка при выполнении команды (ID:f16): {e}")
-            traceback_str = traceback.format_exc()
-            print(str(traceback_str))
+            print(f"Ошибка при выполнении команды (ID:f16): {str(e)[:50]}")
             await remove_unavaible_voice_api_key()
             pitch = await text_to_speech_file(tts, currentpitch, file_name)
             return pitch
@@ -920,6 +918,7 @@ async def stop(interaction: nextcord.Interaction):
     global voiceClient
     await voiceClient.disconnect()
     await interaction.send("Disconnected.")
+    await set_get_config_all("dialog", "dialog", "False")
 
 
 if __name__ == "__main__":
