@@ -743,7 +743,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                         f"{'.'.join(infos)}. {prompt_global}. {spoken_text}"
                         f"Обязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
                         f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
-                print("PROMPT:", prompt)
+                # print("PROMPT:", prompt)
                 result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
                 # await write_in_discord(ctx, result)
                 with open("caversAI/dialog_create.txt", "a") as writer:
@@ -762,7 +762,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
 
 
 async def play_dialog(ctx: Interaction):
-    number = int(await set_get_config_all("dialog", "play_number", None))
+    number = int(await set_get_config_all("dialog", "files_number", None))
     while await set_get_config_all("dialog", "dialog", None) == "True":
         try:
             files = os.listdir("song_output")
@@ -888,7 +888,7 @@ async def play_audio_file(interaction: Interaction, filename):
     source = nextcord.PCMVolumeTransformer(nextcord.FFmpegPCMAudio(filename))
     voiceClient.play(source, after=lambda e: print(f"Player error: {e}") if e else None)
 
-    await interaction.send(f"Now playing: {filename}")
+    # await interaction.send(f"Now playing: {filename}")
 
 
 @bot.slash_command(name="pause", description="Pauses music playback")

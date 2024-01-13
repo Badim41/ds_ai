@@ -514,7 +514,7 @@ async def chatgpt_get_result(prompt, ctx, provider_number=0):
                 if result.replace("\n", "").replace(" ", "") == "" or str(result) == "None" or "!DOCTYPE" in str(
                         result):
                     raise Exception("Пустой текст")
-                print("RESULT:", result)
+                # print("RESULT:", result)
             except Exception as e:
                 if not provider_number == len(_providers) - 1:
                     # Удаление ссылок
@@ -1103,7 +1103,7 @@ async def prepare_audio_pipeline(cuda_number, ctx, all_cuda_used):
 
 
 async def execute_command(command, ctx):
-    print(command)
+    # print(command)
     try:
         process = await asyncio.create_subprocess_shell(
             command,
