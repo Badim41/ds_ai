@@ -113,6 +113,13 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
+@bot.command()
+# pycord will figure out the types for you
+async def add(ctx, first: discord.Option(int), second: discord.Option(int)):
+  # you can use them as they were actual integers
+  sum = first + second
+  await ctx.respond(f"The sum of {first} and {second} is {sum}.")
+
 @bot.slash_command(name="help", description='помощь по командам')
 async def help_command(
         ctx,
