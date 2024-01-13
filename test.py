@@ -393,7 +393,7 @@ async def agrs_with_txt(txt_file):
     try:
         filename = "temp_args.txt"
         await txt_file.save(filename)
-        with open(r"C:\Users\as280\Pictures\ds_ai\voice_download\all_voices.txt", "r", encoding="utf-8") as file:
+        with open(filename, "r", encoding="utf-8") as file:
             lines = file.readlines()
             lines[-1] = lines[-1] + " "
         url = []
