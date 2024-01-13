@@ -781,7 +781,7 @@ async def play_dialog(ctx: Interaction):
                     speaker = file[:file.find(".")]
                     speaker = re.sub(r'\d', '', speaker)
                     await ctx.send("говорит " + speaker)
-                    await play(ctx, "song_output/" + file)
+                    await play_audio_file(ctx, "song_output/" + file)
                     os.remove("song_output/" + file)
                     await ctx.send("end")
                 else:
@@ -872,8 +872,7 @@ async def join(interaction: nextcord.Interaction, *, channel: nextcord.VoiceChan
     await interaction.send(f"Joined {channel.name}")
 
 
-@bot.slash_command(description="Plays a file from the local filesystem")
-async def play(interaction: nextcord.Interaction, query):
+async def play_audio_file(interaction: Interaction, filename):
     """Plays a file from the local filesystem"""
 
     global voiceClient
@@ -886,10 +885,10 @@ async def play(interaction: nextcord.Interaction, query):
             await interaction.send("You are not connected to a voice channel.")
             raise commands.CommandError("Author not connected to a voice channel.")
 
-    source = nextcord.PCMVolumeTransformer(nextcord.FFmpegPCMAudio(query))
+    source = nextcord.PCMVolumeTransformer(nextcord.FFmpegPCMAudio(filename))
     voiceClient.play(source, after=lambda e: print(f"Player error: {e}") if e else None)
 
-    await interaction.send(f"Now playing: {query}")
+    await interaction.send(f"Now playing: {filename}")
 
 
 
