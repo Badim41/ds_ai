@@ -114,18 +114,6 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
-@bot.slash_command(name="channel")
-@option(
-    "channel",
-    Union[discord.TextChannel, discord.VoiceChannel],
-    # You can specify allowed channel types by passing a union of them like this.
-    description="Select a channel",
-)
-async def select_channel(
-    ctx: discord.ApplicationContext,
-    channel: Union[discord.TextChannel, discord.VoiceChannel],
-):
-    await ctx.respond(f"Hi! You selected {channel.mention} channel.")
 
 # @bot.slash_command(name="help", description='помощь по командам')
 # async def help_command(
