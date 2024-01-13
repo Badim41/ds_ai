@@ -14,6 +14,8 @@ from pytube import Playlist
 
 import json
 
+import multiprocessing
+
 from discord import SlashCommandOptionType
 from set_get_config import set_get_config_all
 from use_free_cuda import stop_use_cuda_async, use_cuda_async
@@ -1111,6 +1113,15 @@ if __name__ == "__main__":
         arguments = sys.argv
 
         if len(arguments) > 1:
+            # === load voice models ===
+            from only_voice_change_cuda0 import voice_change0
+            from only_voice_change_cuda1 import voice_change1
+
+            pool = multiprocessing.Pool(processes=2)
+            pool.apply_async(voice_change0)
+            pool.apply_async(voice_change1)
+            pool.close()
+
             discord_token = arguments[1]
 
             print("====load bot====")
