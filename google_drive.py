@@ -5,6 +5,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 
+
 def authenticate():
     SCOPES = ["https://www.googleapis.com/auth/drive"]
     CREDS = None
@@ -42,9 +43,22 @@ def upload_files(service, folder_id, file_paths):
         service.files().create(body=file_metadata, media_body=media, fields='id').execute()
         print(f"Файл {file_name} успешно загружен в папку application")
 
+
 # Функция для загрузки файлов и папок в Google Диск
+# фильтры для файлов
+FILTERS = ["Vocals_Backup", "pro0", "Instrumental"]
+
+
 def upload_files_and_folders(service, parent_folder_id, local_path):
     for item in os.listdir(local_path):
+        skip_file = True
+        for filter_1 in FILTERS:
+            if filter_1 in item and "mixed" not in item:
+                skip_file = False
+
+        if skip_file:
+            continue
+
         item_path = os.path.join(local_path, item)
 
         if os.path.isfile(item_path):
@@ -87,8 +101,8 @@ def download_files(service, folder_id, download_path):
                 status, done = downloader.next_chunk()
             print(f"Файл {file_name} успешно скачан в папку google_disk")
 
-def download_folder(service, folder_id, download_path):
 
+def download_folder(service, folder_id, download_path):
     if not os.path.exists(download_path):
         os.mkdir(download_path)
 
@@ -116,7 +130,6 @@ def download_folder(service, folder_id, download_path):
             while not done:
                 status, done = downloader.next_chunk()
             print(f"Файл '{file_name}' успешно скачан в папку '{download_path}'")
-
 
 
 # download_destination = 'path_to_download_folder'
