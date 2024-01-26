@@ -1052,8 +1052,13 @@ async def __cover(
         await ctx.defer()
         await ctx.respond('Выполнение...')
         params = []
+        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
+
         if voice is None:
             voice = await set_get_config_all("Default", "currentAIname")
+        elif voice not in voices:
+            await ctx.respond("Голос не найден")
+            return
         if voice:
             params.append(f"-voice {voice}")
         # если мужчина-мужчина, женщина-женщина, pitch не меняем
