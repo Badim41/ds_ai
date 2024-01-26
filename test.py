@@ -30,6 +30,7 @@ ALL_VOICES = ['Rachel [Ж]', 'Clyde [М]', 'Domi [Ж]', 'Dave [М]', 'Fin [М]',
               'Daniel [М]', 'Serena [Ж]', 'Adam [М]', 'Nicole [Ж]', 'Jessie [М]', 'Ryan [М]', 'Sam [М]', 'Glinda [Ж]',
               'Giovanni [М]', 'Mimi [Ж]']
 
+
 @bot.event
 async def on_ready():
     print('Status: online')
@@ -386,9 +387,13 @@ async def agrs_with_txt(txt_file):
                 url.append(arguments.get('url', None))
                 name.append(arguments.get('name', None))
                 gender.append(arguments.get('gender', None))
+
+                if gender is None:
+                    gender = arguments.get('pitch', None)
+
                 info.append(arguments.get('info', "Отсутствует"))
                 speed.append(arguments.get('speed', "1"))
-                voice_model.append(arguments.get('voice_model', "James"))
+                voice_model.append(arguments.get('voice_model', "Adam"))
         return url, name, gender, info, speed, voice_model
     except Exception:
         traceback_str = traceback.format_exc()
@@ -517,79 +522,80 @@ async def add_voice(
         pitch = gender
     await download_voice(ctx, url, name, pitch, info, speed, voice_model, change_voice)
 
+
 @bot.slash_command(name="tts", description='Заставить бота говорить всё, что захочешь')
 async def tts(
-    ctx : Interaction,
-    text: str = SlashOption(
-        name="text",
-        description="Текст для озвучки",
-        required=True
-    ),
-    ai_voice: str = SlashOption(
-        name="ai_voice",
-        description="Голос для озвучки",
-        required=False,
-        default=None
-    ),
-    speed: float = SlashOption(
-        name="speed",
-        description="Ускорение голоса",
-        required=False,
-        default=None,
-        min_value=1,
-        max_value=3
-    ),
-    voice_model: str = SlashOption(
-        name="voice_model",
-        description="Какая модель elevenlabs будет использована",
-        required=False,
-        default=None
-    ),
-    stability: float = SlashOption(
-        name="stability",
-        description="Стабильность голоса",
-        required=False,
-        default=None,
-        min_value=0,
-        max_value=1
-    ),
-    similarity_boost: float = SlashOption(
-        name="similarity_boost",
-        description="Повышение сходства",
-        required=False,
-        default=None,
-        min_value=0,
-        max_value=1
-    ),
-    style: float = SlashOption(
-        name="style",
-        description="Выражение",
-        required=False,
-        default=None,
-        min_value=0,
-        max_value=1
-    ),
-    output: str = SlashOption(
-        name="output",
-        description="Отправить результат",
-        required=False,
-        choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"],
-        default=None
-    ),
-    pitch_change: int = SlashOption(
-        name="change_pitch",
-        description="Изменить тональность",
-        required=False,
-        default=0,
-        min_value=-24,
-        max_value=24
-    )
+        ctx: Interaction,
+        text: str = SlashOption(
+            name="text",
+            description="Текст для озвучки",
+            required=True
+        ),
+        ai_voice: str = SlashOption(
+            name="ai_voice",
+            description="Голос для озвучки",
+            required=False,
+            default=None
+        ),
+        speed: float = SlashOption(
+            name="speed",
+            description="Ускорение голоса",
+            required=False,
+            default=None,
+            min_value=1,
+            max_value=3
+        ),
+        voice_model: str = SlashOption(
+            name="voice_model",
+            description="Какая модель elevenlabs будет использована",
+            required=False,
+            default=None
+        ),
+        stability: float = SlashOption(
+            name="stability",
+            description="Стабильность голоса",
+            required=False,
+            default=None,
+            min_value=0,
+            max_value=1
+        ),
+        similarity_boost: float = SlashOption(
+            name="similarity_boost",
+            description="Повышение сходства",
+            required=False,
+            default=None,
+            min_value=0,
+            max_value=1
+        ),
+        style: float = SlashOption(
+            name="style",
+            description="Выражение",
+            required=False,
+            default=None,
+            min_value=0,
+            max_value=1
+        ),
+        output: str = SlashOption(
+            name="output",
+            description="Отправить результат",
+            required=False,
+            choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"],
+            default=None
+        ),
+        pitch_change: int = SlashOption(
+            name="change_pitch",
+            description="Изменить тональность",
+            required=False,
+            default=0,
+            min_value=-24,
+            max_value=24
+        )
 ):
     if voice_model == "All":
         voice_models = ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie', 'Emily',
-         'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte',
-         'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya', 'Grace',
-         'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni', 'Mimi']
+                        'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte',
+                        'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya', 'Grace',
+                        'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni', 'Mimi']
     elif voice_model:
         found_voice = False
         for voice_1 in ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie', 'Emily',
@@ -664,6 +670,7 @@ async def tts(
             await set_get_config_all("Default", "currentainame", ai_voice_temp)
         # перестаём использовать видеокарту
         await stop_use_cuda_async(cuda)
+
 
 @bot.command(aliases=['cmd'], help="командная строка")
 async def command_line(ctx, *args):
@@ -746,7 +753,8 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
     max_simbols = await set_get_config_all("voice", "max_simbols", None)
 
     pitch = 0
-    if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_keys", None) == "None" or voice_model == "None":
+    if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_keys",
+                                                               None) == "None" or voice_model == "None":
         print("gtts1")
         from function import gtts
         await gtts(tts, file_name, language="ru")
@@ -942,9 +950,11 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                                 writer.write(line + f"-voice {name}\n")
                                 break
                 # слишком большой разрыв
-                while int(await set_get_config_all("dialog", "files_number", None)) - int(await set_get_config_all("dialog", "play_number", None)) > 10:
+                while int(await set_get_config_all("dialog", "files_number", None)) - int(
+                        await set_get_config_all("dialog", "play_number", None)) > 10:
                     await asyncio.sleep(5)
-                    print("wait, difference:", int(await set_get_config_all("dialog", "files_number", None)), int(await set_get_config_all("dialog", "play_number", None)))
+                    print("wait, difference:", int(await set_get_config_all("dialog", "files_number", None)),
+                          int(await set_get_config_all("dialog", "play_number", None)))
             except Exception as e:
                 traceback_str = traceback.format_exc()
                 print(str(traceback_str))

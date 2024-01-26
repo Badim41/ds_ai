@@ -805,21 +805,30 @@ async def __tts(
                                  max_value=1),
         style: Option(float, description='Выражение', required=False, default=None, min_value=0, max_value=1),
         output: Option(str, description='Отправить результат', required=False,
-                       choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"], default=None)
+                       choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"], default=None),
+        pitch_change: Option(int, description="Изменить тональность", required=False, default=0, min_value=-24,
+                             max_value=24)
 ):
-    if voice_model:
+    if voice_model == "All":
+        voice_models = ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie', 'Emily',
+                        'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte',
+                        'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya', 'Grace',
+                        'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni', 'Mimi']
+    elif voice_model:
         found_voice = False
         for voice_1 in ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie', 'Emily',
                         'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte',
                         'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya', 'Grace',
                         'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni', 'Mimi']:
             if voice_1 in voice_model:
-                voice_model = voice_1
+                voice_models = [voice_1]
                 found_voice = True
                 break
         if not found_voice:
-            await ctx.respond("Список голосов (М - мужские, Ж - женские): \n" + ';'.join(ALL_VOICES))
+            await ctx.response.send_message("Список голосов (М - мужские, Ж - женские): \n" + ';'.join(ALL_VOICES))
             return
+    else:
+        voice_models = [None]
     # заменяем 3 значения
     for key in [stability, similarity_boost, style]:
         if key:
@@ -827,49 +836,49 @@ async def __tts(
 
     ai_voice_temp = None
     try:
-        await ctx.defer()
-        await ctx.respond('Выполнение...')
-        # count time
-        start_time = datetime.datetime.now()
-        cuda = await use_cuda_async()
-        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
-        if str(ai_voice) not in voices:
-            return await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
-        from function import replace_mat_in_sentence
-        text_out = await replace_mat_in_sentence(text)
-        if not text_out == text.lower():
-            await ctx.respond("Такое точно нельзя произносить!")
-            return
-        print(f'{text} ({type(text).__name__})\n')
-        # меняем голос
-        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
-        ai_voice_temp = await set_get_config_all("Default", "currentainame")
-        if ai_voice is None:
-            ai_voice = await set_get_config_all("Default", "currentainame")
-            print(await set_get_config_all("Default", "currentainame"))
-        await set_get_config_all("Default", "currentainame", ai_voice)
-        # запускаем TTS
-        from function import text_to_speech
-        await text_to_speech(text, False, ctx, ai_dictionary=ai_voice, speed=speed, voice_model=voice_model,
-                             skip_tts=False)
-        # await run_main_with_settings(ctx, f"робот протокол 24 {text}",
-        #                              False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
-        # перестаём использовать видеокарту
-        await stop_use_cuda_async(cuda)
 
+        await ctx.response.send_message('Выполнение...')
         # count time
-        end_time = datetime.datetime.now()
-        spent_time = str(end_time - start_time)
-        # убираем миллисекунды
-        spent_time = spent_time[:spent_time.find(".")]
-        if "0:00:00" not in str(spent_time):
-            await ctx.respond("Потрачено на обработку:" + spent_time)
-        if output:
-            if output.startswith("1"):
-                await send_file(ctx, "2.mp3")
-            elif output.startswith("2"):
-                await send_file(ctx, "1.mp3")
-                await send_file(ctx, "2.mp3")
+        for voice_model in voice_models:
+            start_time = datetime.datetime.now()
+            cuda = await use_cuda_async()
+            voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
+            if str(ai_voice) not in voices:
+                return await ctx.response.send_message("Выберите голос из списка: " + ';'.join(voices))
+            from function import replace_mat_in_sentence
+            text_out = await replace_mat_in_sentence(text)
+            if not text_out == text.lower():
+                await ctx.response.send_message("Такое точно нельзя произносить!")
+                return
+            print(f'{text} ({type(text).__name__})\n')
+            # меняем голос
+            ai_voice_temp = await set_get_config_all("Default", "currentainame")
+            if ai_voice is None:
+                ai_voice = await set_get_config_all("Default", "currentainame")
+                print(await set_get_config_all("Default", "currentainame"))
+            await set_get_config_all("Default", "currentainame", ai_voice)
+            # запускаем TTS
+            from function import text_to_speech
+            await text_to_speech(text, False, ctx, ai_dictionary=ai_voice, speed=speed, voice_model=voice_model,
+                                 skip_tts=False, pitch_change=pitch_change)
+            # await run_main_with_settings(ctx, f"робот протокол 24 {text}",
+            #                              False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
+            # перестаём использовать видеокарту
+            await stop_use_cuda_async(cuda)
+
+            # count time
+            end_time = datetime.datetime.now()
+            spent_time = str(end_time - start_time)
+            # убираем миллисекунды
+            spent_time = spent_time[:spent_time.find(".")]
+            if "0:00:00" not in str(spent_time):
+                await ctx.respond("Потрачено на обработку:" + spent_time)
+            if output:
+                if output.startswith("1"):
+                    await send_file(ctx, f"{voice_model}.mp3")
+                elif output.startswith("2"):
+                    await send_file(ctx, "1.mp3")
+                    await send_file(ctx, f"{voice_model}.mp3")
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
@@ -881,7 +890,7 @@ async def __tts(
         await stop_use_cuda_async(cuda)
 
 
-@bot.slash_command(name="bark", description='Тоже, что и tts, но менее стабильный')
+# @bot.slash_command(name="bark", description='Тоже, что и tts, но менее стабильный')
 async def __bark(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
@@ -986,7 +995,7 @@ async def get_links_from_playlist(playlist_url):
         return []
 
 
-@bot.slash_command(name="ai_cover", description='_Заставить_ бота озвучить видео/спеть песню')
+@bot.slash_command(name="ai_cover", description='Заставить бота озвучить видео/спеть песню')
 async def __cover(
         ctx,
         url: Option(str, description='Ссылка на видео', required=False, default=None),
@@ -1190,8 +1199,8 @@ async def __dialog(
         # запустим сразу 8 процессов для обработки голоса
         await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx),
                              create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"),
-                             create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"))
-        """
+                             create_audio_dialog(ctx, 2, "dialog"))
+        """ , create_audio_dialog(ctx, 3, "dialog")
                              create_audio_dialog(ctx, 4, "dialog"), create_audio_dialog(ctx, 5, "dialog"),
                              create_audio_dialog(ctx, 6, "dialog"), create_audio_dialog(ctx, 7, "dialog")
                             """
@@ -1207,6 +1216,7 @@ async def agrs_with_txt(txt_file):
         await txt_file.save(filename)
         with open(filename, "r", encoding="utf-8") as file:
             lines = file.readlines()
+            lines[-1] = lines[-1] + " "
         url = []
         name = []
         gender = []
@@ -1279,6 +1289,8 @@ async def __add_voice(
         name: Option(str, description=f'Имя модели', required=True),
         gender: Option(str, description=f'Пол (для настройки тональности)', required=True,
                        choices=['мужчина', 'женщина']),
+        pitch: Option(int, description="Какую использовать тональность (от -24 до 24) (или указать gender)",
+                      required=False, default=0, min_value=-24, max_value=24),
         info: Option(str, description=f'Какие-то сведения о данном человеке', required=False,
                      default="Отсутствует"),
         speed: Option(float, description=f'Ускорение/замедление голоса', required=False,
@@ -1324,27 +1336,12 @@ async def __add_voice(
             if genders[i] is None:
                 await ctx.send(f"Не указан пол в {i + 1} моделе ({name})")
                 continue
-            if voice_models[i]:
-                found_voice = False
-                for voice_1 in ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie',
-                                'Emily',
-                                'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte',
-                                'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya',
-                                'Grace',
-                                'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni',
-                                'Mimi']:
-                    if voice_1 in voice_model:
-                        voice_model = voice_1
-                        found_voice = True
-                        break
-                if not found_voice:
-                    await ctx.respond("Не найдена модель " + voice_models[i])
-                    continue
             await download_voice(ctx, urls[i], names[i], genders[i], infos[i], speeds[i], voice_models[i], False)
         await ctx.send("Все модели успешно установлены!")
         return
-
-    await download_voice(ctx, url, name, gender, info, speed, voice_model, change_voice)
+    if pitch is None:
+        pitch = gender
+    await download_voice(ctx, url, name, pitch, info, speed, voice_model, change_voice)
 
 
 @bot.command(aliases=['cmd'], help="командная строка")
@@ -1418,7 +1415,8 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
     max_simbols = await set_get_config_all("voice", "max_simbols", None)
 
     pitch = 0
-    if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_keys", None) == "None" or voice_model == "None":
+    if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_keys",
+                                                               None) == "None" or voice_model == "None":
         print("gtts1")
         from function import gtts
         await gtts(tts, file_name, language="ru")
@@ -1437,7 +1435,7 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
         try:
             # Arnold(быстрый) Thomas Adam Antoni !Antoni(мяг) !Clyde(тяж) !Daniel(нейтр) !Harry !James Patrick
             voice_id = await get_voice_id_by_name(voice_model)
-            print("VOICE_ID_ELEVENLABS:", voice_id)
+            # print("VOICE_ID_ELEVENLABS:", voice_id)
             audio = generate(
                 text=tts,
                 model='eleven_multilingual_v2',
@@ -1452,8 +1450,6 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
         except Exception as e:
             from function import remove_unavaible_voice_api_key
             print(f"Ошибка при выполнении команды (ID:f16): {e}")
-            traceback_str = traceback.format_exc()
-            print(str(traceback_str))
             await remove_unavaible_voice_api_key()
             pitch = await text_to_speech_file(tts, currentpitch, file_name)
             return pitch
@@ -1506,7 +1502,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                     await execute_command(' '.join(command), ctx)
 
                     # диалог завершён.
-                    print("DIALOG_TEMP:", await set_get_config_all("dialog", wait_untill, None))
+                    # print("DIALOG_TEMP:", await set_get_config_all("dialog", wait_untill, None))
                     if await set_get_config_all("dialog", wait_untill, None) == "False":
                         return
 
@@ -1572,10 +1568,10 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 spoken_text = ""
                 spoken_text_config = await set_get_config_all("dialog", "user_spoken_text", None)
                 if not spoken_text_config == "None":
-                    spoken_text = "Отвечайт зрителям! Зрители за прошлый диалог написали:\"" + spoken_text_config + "\""
+                    spoken_text = "Зрители за прошлый диалог написали:\"" + spoken_text_config + "\""
                     await set_get_config_all("dialog", "user_spoken_text", "None")
                 random_int = random.randint(1, 33)
-                if not random_int == 0:
+                if not random_int == 0 and spoken_text == "":
                     prompt = (f"Привет chatGPT, продолжи диалог между {', '.join(names)}. "
                               f"{'.'.join(infos)}. {prompt_global} "
                               f"персонажи должны соответствовать своему образу насколько это возможно. "
@@ -1592,7 +1588,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                         f"{'.'.join(infos)}. {prompt_global}. {spoken_text}"
                         f"Обязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
                         f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
-                print("PROMPT:", prompt)
+                # print("PROMPT:", prompt)
                 result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
                 # await write_in_discord(ctx, result)
                 with open("caversAI/dialog_create.txt", "a") as writer:
@@ -1604,6 +1600,13 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                                 line = line[line.find(":") + 1:]
                                 writer.write(line + f"-voice {name}\n")
                                 break
+                # слишком большой разрыв
+                while int(await set_get_config_all("dialog", "files_number", None)) - int(
+                        await set_get_config_all("dialog", "play_number", None)) > 10:
+                    await asyncio.sleep(5)
+                    print("wait, difference:", int(await set_get_config_all("dialog", "files_number", None)),
+                          int(await set_get_config_all("dialog", "play_number", None)))
+
             except Exception as e:
                 traceback_str = traceback.format_exc()
                 print(str(traceback_str))
