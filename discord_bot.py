@@ -1102,7 +1102,7 @@ async def __cover(
             params.append(f"-output {output}")
 
         param_string = ' '.join(params)
-        print("suc params")
+        # print("suc params")
 
         if audio_path:
             filename = str(random.randint(1, 1000000)) + ".mp3"

@@ -50,6 +50,7 @@ FILTERS = ["Vocals_Backup", "pro0", "Instrumental"]
 
 
 def upload_files_and_folders(service, parent_folder_id, local_path):
+    print("Upload to google disk")
     for item in os.listdir(local_path):
         skip_file = True
         for filter_1 in FILTERS:
