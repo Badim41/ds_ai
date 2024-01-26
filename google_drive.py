@@ -1,4 +1,5 @@
 import os
+import sys
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -137,4 +138,8 @@ def download_folder(service, folder_id, download_path):
 
 # download_destination = 'path_to_download_folder'
 # download_folder(SERVICE, FOLDER_ID, download_destination)
-upload_files_and_folders(SERVICE, "1AYzqrKE-slEQMfxt0rSCkxH1uLbmuZny", "song_output")
+if __name__ == "__main__":
+    folder_id = "1AYzqrKE-slEQMfxt0rSCkxH1uLbmuZny"
+    if len(sys.argv) > 1:
+        folder_id = sys.argv[1]
+    upload_files_and_folders(SERVICE, folder_id, "song_output")
