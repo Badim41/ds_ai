@@ -177,6 +177,27 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
         vocals_path, instrumentals_path = run_mdx(mdx_model_params, song_output_dir,
                                                   os.path.join(mdxnet_models_dir, 'Kim_Vocal_2.onnx'),
                                                   orig_song_path, denoise=True, keep_orig=keep_orig)
+
+        # вторая нейросеть
+        vocals_path_2, instrumentals_path_2 = run_mdx(mdx_model_params, song_output_dir,
+                                                      os.path.join(mdxnet_models_dir, "UVR-MDX-NET-Inst_HQ_1.onnx"),
+                                                      instrumentals_path, suffix='2', invert_suffix='2', denoise=True,
+                                                      keep_orig=keep_orig)
+
+        vocals_1 = AudioSegment.from_file(vocals_path)
+        vocals_2 = AudioSegment.from_file(vocals_path_2)
+        music_1 = AudioSegment.from_file(instrumentals_path)
+        music_2 = AudioSegment.from_file(instrumentals_path_2)
+
+        # Объединение
+        combined_music = music_1.overlay(music_2)
+        combined_vocals = vocals_1.overlay(vocals_2)
+
+        # Сохранение объединенных файлов
+        combined_music.export(instrumentals_path, format="wav")
+        combined_vocals.export(vocals_path, format="wav")
+
+
         display_progress(f'[~] Separating Main Vocals from Backup Vocals... GPU:{cuda_number}')
         backup_vocals_path, main_vocals_path = run_mdx(mdx_model_params, song_output_dir,
                                                        os.path.join(mdxnet_models_dir, 'UVR_MDXNET_KARA_2.onnx'), # UVR_MDXNET_KARA_2.onnx

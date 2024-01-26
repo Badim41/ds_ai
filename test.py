@@ -482,7 +482,7 @@ async def add_voice(
             name="voice_model",
             description="Какая модель elevenlabs будет использована",
             required=False,
-            default=None
+            default="James"
         ),
         txt_file: Attachment = SlashOption(
             name="txt_file",

@@ -2,6 +2,7 @@ import os
 import argparse
 
 from set_get_config import set_get_config_all_not_async
+
 cuda_number = "1"
 os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
 import torch
@@ -24,6 +25,7 @@ from pedalboard.io import AudioFile
 from pydub import AudioSegment
 
 from rvc import Config, load_hubert, get_vc, rvc_infer
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 mdxnet_models_dir = os.path.join(BASE_DIR, 'mdxnet_models')
@@ -177,9 +179,28 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
         vocals_path, instrumentals_path = run_mdx(mdx_model_params, song_output_dir,
                                                   os.path.join(mdxnet_models_dir, 'Kim_Vocal_2.onnx'),
                                                   orig_song_path, denoise=True, keep_orig=keep_orig)
+        # вторая нейросеть
+        vocals_path_2, instrumentals_path_2 = run_mdx(mdx_model_params, song_output_dir,
+                                 os.path.join(mdxnet_models_dir, "UVR-MDX-NET-Inst_HQ_1.onnx"),
+                                 instrumentals_path, suffix='2', invert_suffix='2',  denoise=True, keep_orig=keep_orig)
+
+        vocals_1 = AudioSegment.from_file(vocals_path)
+        vocals_2 = AudioSegment.from_file(vocals_path_2)
+        music_1 = AudioSegment.from_file(instrumentals_path)
+        music_2 = AudioSegment.from_file(instrumentals_path_2)
+
+        # Объединение
+        combined_music = music_1.overlay(music_2)
+        combined_vocals = vocals_1.overlay(vocals_2)
+
+        # Сохранение объединенных файлов
+        combined_music.export(instrumentals_path, format="wav")
+        combined_vocals.export(vocals_path, format="wav")
+
         display_progress(f'[~] Separating Main Vocals from Backup Vocals... GPU:{cuda_number}')
         backup_vocals_path, main_vocals_path = run_mdx(mdx_model_params, song_output_dir,
-                                                       os.path.join(mdxnet_models_dir, 'UVR_MDXNET_KARA_2.onnx'), # UVR_MDXNET_KARA_2.onnx
+                                                       os.path.join(mdxnet_models_dir, 'UVR_MDXNET_KARA_2.onnx'),
+                                                       # UVR_MDXNET_KARA_2.onnx
                                                        vocals_path, suffix='Backup', invert_suffix='Main', denoise=True)
         display_progress(f'[~] Applying DeReverb to Vocals... GPU:{cuda_number}')
         _, main_vocals_dereverb_path = run_mdx(mdx_model_params, song_output_dir,
@@ -361,10 +382,10 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
 #     return False
 
 def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radius=3, rms_mix_rate=0.25,
-        pitch_detection_algo='rmvpe', crepe_hop_length=128, protect=0.33, main_vol=0, backup_vol=0, inst_vol=0,
-        pitch_change_all=0, reverb_size=0.15, reverb_wetness=0.2, reverb_dryness=0.8, reverb_damping=0.7,
-        output_format='mp3', start='0', time='-1', write_in_queue=True, cuda_number=0, output='None'):
-
+                     pitch_detection_algo='rmvpe', crepe_hop_length=128, protect=0.33, main_vol=0, backup_vol=0,
+                     inst_vol=0,
+                     pitch_change_all=0, reverb_size=0.15, reverb_wetness=0.2, reverb_dryness=0.8, reverb_damping=0.7,
+                     output_format='mp3', start='0', time='-1', write_in_queue=True, cuda_number=0, output='None'):
     if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
         raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
     cover_path = song_cover_pipeline(song_input, rvc_dirname, pitch, False,

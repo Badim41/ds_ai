@@ -24,7 +24,7 @@ if __name__ == '__main__':
         print(f'Downloading {model}...')
         dl_model(MDX_DOWNLOAD_LINK, model, mdxnet_models_dir)
 
-    new_models = ["Kim_Vocal_2.onnx"] # , "UVR-MDX-NET-Inst_HQ_1.onnx"
+    new_models = ["Kim_Vocal_2.onnx", "UVR-MDX-NET-Inst_HQ_1.onnx"] # ,
     for model in new_models:
         print(f'Downloading {model}...')
         dl_model(MDX_DOWNLOAD_LINK, model, mdxnet_models_dir)
