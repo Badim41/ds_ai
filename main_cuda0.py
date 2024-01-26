@@ -179,7 +179,7 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
                                                   orig_song_path, denoise=True, keep_orig=keep_orig)
 
         # вторая нейросеть
-        vocals_path_2, instrumentals_path_2 = run_mdx(mdx_model_params, song_output_dir,
+        instrumentals_path_2, vocals_path_2 = run_mdx(mdx_model_params, song_output_dir,
                                                       os.path.join(mdxnet_models_dir, "UVR-MDX-NET-Inst_HQ_1.onnx"),
                                                       instrumentals_path, suffix='vocal_2', invert_suffix='music_2', denoise=True,
                                                       keep_orig=True)

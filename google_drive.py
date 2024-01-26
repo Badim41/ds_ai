@@ -51,13 +51,13 @@ FILTERS = ["Vocals_Backup", "pro0", "Instrumental."]
 
 
 def upload_files_and_folders(service, parent_folder_id, local_path):
-    print("Upload to google disk")
+    # print("Upload to google disk")
     for item in os.listdir(local_path):
 
         item_path = os.path.join(local_path, item)
 
         if os.path.isfile(item_path):
-            print(item_path)
+            # print(item_path)
             skip_file = True
             for filter_1 in FILTERS:
                 if filter_1 in item_path and "mixed" not in item_path:
