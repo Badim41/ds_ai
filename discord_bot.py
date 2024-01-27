@@ -805,7 +805,7 @@ async def __tts(
                                  max_value=1),
         style: Option(float, description='Выражение', required=False, default=None, min_value=0, max_value=1),
         output: Option(str, description='Отправить результат', required=False,
-                       choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"], default=None),
+                       choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"], default="1 файл (RVC)"),
         pitch_change: Option(int, description="Изменить тональность", required=False, default=0, min_value=-24,
                              max_value=24)
 ):
