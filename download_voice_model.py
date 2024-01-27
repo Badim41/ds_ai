@@ -48,7 +48,7 @@ async def extract_zip(extraction_folder, zip_name, info, gender, speed, voice_mo
             shutil.rmtree(os.path.join(extraction_folder, filepath))
 
 
-async def download_online_model(url, dir_name, gender, info, speed, voice_model):
+async def download_online_model(url, dir_name, gender, info, speed, voice_model, stability, similarity_boost, style):
     try:
         print(f'[~] Скачивание модели с именем {dir_name}...')
         zip_name = url.split('/')[-1]
@@ -61,6 +61,12 @@ async def download_online_model(url, dir_name, gender, info, speed, voice_model)
             with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
                 writer.write(str(speed))
             with open(os.path.join(extraction_folder + "/voice_model.txt"), "w") as writer:
+                writer.write(voice_model)
+            with open(os.path.join(extraction_folder + "/stability.txt"), "w") as writer:
+                writer.write(voice_model)
+            with open(os.path.join(extraction_folder + "/similarity_boost.txt"), "w") as writer:
+                writer.write(voice_model)
+            with open(os.path.join(extraction_folder + "/style.txt"), "w") as writer:
                 writer.write(voice_model)
             return f'Модель {dir_name} уже существует, но её информация/скорость были изменены'
 
@@ -95,8 +101,13 @@ if __name__ == "__main__":
         speed = float(arguments[6])
         if speed is None or speed < 0 or speed > 2:
             speed = 1
+        if len(arguments) > 9:
+            stability, similarity_boost, style = arguments[7], arguments[8], arguments[9]
+            print("stabilyty found")
+        else:
+            stability, similarity_boost, style = 0.4, 0.25, 0.4
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(download_online_model(url_input, dir_name_input, gender, info, speed, voice_model))
+        loop.run_until_complete(download_online_model(url_input, dir_name_input, gender, info, speed, voice_model, stability, similarity_boost, style))
     else:
         print("Нужно указать ссылку и имя модели")
         exit(-1)

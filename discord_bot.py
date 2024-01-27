@@ -834,10 +834,9 @@ async def __tts(
         if key:
             await set_get_config_all("voice", str(key), key)
 
-    ai_voice_temp = None
     try:
 
-        await ctx.response.send_message('Выполнение...')
+        await ctx.response.send_message('Выполнение...', ai_voice)
         # count time
         for voice_model in voice_models:
             start_time = datetime.datetime.now()
@@ -851,12 +850,6 @@ async def __tts(
                 await ctx.response.send_message("Такое точно нельзя произносить!")
                 return
             print(f'{text} ({type(text).__name__})\n')
-            # меняем голос
-            ai_voice_temp = await set_get_config_all("Default", "currentainame")
-            if ai_voice is None:
-                ai_voice = await set_get_config_all("Default", "currentainame")
-                print(await set_get_config_all("Default", "currentainame"))
-            await set_get_config_all("Default", "currentainame", ai_voice)
             # запускаем TTS
             from function import text_to_speech
             await text_to_speech(text, False, ctx, ai_dictionary=ai_voice, speed=speed, voice_model=voice_model,
@@ -883,9 +876,6 @@ async def __tts(
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
         await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
-        # возращаем голос
-        if not ai_voice_temp is None:
-            await set_get_config_all("Default", "currentainame", ai_voice_temp)
         # перестаём использовать видеокарту
         await stop_use_cuda_async(cuda)
 
@@ -1228,6 +1218,7 @@ async def agrs_with_txt(txt_file):
         info = []
         speed = []
         voice_model = []
+        stability, similarity_boost, style = [], [], []
         for line in lines:
             if line.strip():
                 # забейте, просто нужен пробел и всё
@@ -1245,14 +1236,17 @@ async def agrs_with_txt(txt_file):
                 info.append(arguments.get('info', "Отсутствует"))
                 speed.append(arguments.get('speed', "1"))
                 voice_model.append(arguments.get('voice_model', "James"))
-        return url, name, gender, info, speed, voice_model
+                stability.append(arguments.get('stability', "0.4"))
+                similarity_boost.append(arguments.get('similarity_boost', "0.25"))
+                style.append(arguments.get('style', "0.4"))
+        return url, name, gender, info, speed, voice_model, stability, similarity_boost, style
     except Exception:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
-        return None, None, None, None, None, None
+        return None, None, None, None, None, None, None, None, None
 
 
-async def download_voice(ctx, url, name, gender, info, speed, voice_model, change_voice):
+async def download_voice(ctx, url, name, gender, info, speed, voice_model, change_voice, stability="0.4", similarity_boost="0.25", style="0.4"):
     if name == "None" or ";" in name or "/" in name or "\\" in name:
         await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
     # !python download_voice_model.py {url} {dir_name} {gender} {info}
@@ -1272,7 +1266,10 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model, chang
             gender,
             f"{info}",
             voice_model,
-            str(speed)
+            str(speed),
+            stability,
+            similarity_boost,
+            style
         ]
         subprocess.run(command, check=True)
         voices = (await set_get_config_all("Sound", "voices")).split(";")
@@ -1324,13 +1321,16 @@ async def __add_voice(
     await ctx.defer()
     await ctx.respond('Выполнение...')
     if txt_file:
-        urls, names, genders, infos, speeds, voice_models = await agrs_with_txt(txt_file)
+        urls, names, genders, infos, speeds, voice_models, stabilities, similarity_boosts, styles = await agrs_with_txt(txt_file)
         print("url:", urls)
         print("name:", names)
         print("gender:", genders)
         print("info:", infos)
         print("speed:", speeds)
         print("voice_model:", voice_models)
+        print("stabilities:", stabilities)
+        print("similarity_boosts:", similarity_boosts)
+        print("styles:", styles)
         for i in range(len(urls)):
             if names[i] is None:
                 await ctx.send(f"Не указано имя в {i + 1} моделе")
@@ -1341,7 +1341,7 @@ async def __add_voice(
             if genders[i] is None:
                 await ctx.send(f"Не указан пол в {i + 1} моделе ({name})")
                 continue
-            await download_voice(ctx, urls[i], names[i], genders[i], infos[i], speeds[i], voice_models[i], False)
+            await download_voice(ctx, urls[i], names[i], genders[i], infos[i], speeds[i], voice_models[i], False, stability=stabilities[i], similarity_boost=similarity_boosts[i], style=styles[i])
         await ctx.send("Все модели успешно установлены!")
         return
     if pitch is None:
@@ -1415,18 +1415,16 @@ async def get_voice_id_by_name(voice_name):
     return voice["voice_id"] if voice else None
 
 
-async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
+async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam", stability=None, similarity_boost=None, style=None):
     from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
     max_simbols = await set_get_config_all("voice", "max_simbols", None)
 
-    pitch = 0
     if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_keys",
                                                                None) == "None" or voice_model == "None":
         print("gtts1")
         from function import gtts
         await gtts(tts, file_name, language="ru")
-        if currentpitch == 0:
-            pitch = -12
+        currentpitch -= 12
     else:
         # получаем ключ для elevenlab
         keys = (await set_get_config_all("voice", "avaible_keys", None)).split(";")
@@ -1434,9 +1432,12 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
         if not key == "Free":
             set_api_key(key)
 
-        stability = float(await set_get_config_all("voice", "stability"))
-        similarity_boost = float(await set_get_config_all("voice", "similarity_boost"))
-        style = float(await set_get_config_all("voice", "style"))
+        if stability is None:
+            stability = float(await set_get_config_all("voice", "stability"))
+        if similarity_boost is None:
+            similarity_boost = float(await set_get_config_all("voice", "similarity_boost"))
+        if style is None:
+            style = float(await set_get_config_all("voice", "style"))
         try:
             # Arnold(быстрый) Thomas Adam Antoni !Antoni(мяг) !Clyde(тяж) !Daniel(нейтр) !Harry !James Patrick
             voice_id = await get_voice_id_by_name(voice_model)
@@ -1456,10 +1457,10 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam"):
             from function import remove_unavaible_voice_api_key
             print(f"Ошибка при выполнении команды (ID:f16): {e}")
             await remove_unavaible_voice_api_key()
-            pitch = await text_to_speech_file(tts, currentpitch, file_name)
+            pitch = await text_to_speech_file(tts, currentpitch, file_name, voice_model=voice_model, stability=stability, similarity_boost=similarity_boost, style=style)
             return pitch
             # gtts(tts, language[:2], file_name)
-    return pitch
+    return currentpitch
 
 
 async def create_audio_dialog(ctx, cuda, wait_untill):
@@ -1477,17 +1478,30 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
             if not line is None and not line.replace(" ", "") == "":
                 await remove_line_from_txt(text_path, 1)
                 name = line[line.find("-voice") + 7:].replace("\n", "")
-                with open(os.path.join(f"rvc_models/{name}/gender.txt"), "r") as file:
+                with open(f"rvc_models/{name}/gender.txt", "r") as file:
                     pitch = 0
                     text = file.read().lower()
                     if text == "female":
                         pitch = 12
                     elif text.isdigit():
                         pitch = int(text)
+
+                # выставлены аргументы для elevenlabs
+                stability, similarity_boost, style = None, None, None
+                try:
+                    with open(f"rvc_models/{name}/stability.txt", "r") as file:
+                        stability = file.read()
+                    with open(f"rvc_models/{name}/similarity_boost.txt", "r") as file:
+                        similarity_boost = file.read()
+                    with open(f"rvc_models/{name}/style.txt", "r") as file:
+                        style = file.read()
+                except Exception:
+                    pass
+
                 filename = int(await set_get_config_all("dialog", "files_number", None))
                 await set_get_config_all("dialog", "files_number", filename + 1)
                 filename = "song_output/" + str(filename) + name + ".mp3"
-                pitch = await text_to_speech_file(line[:line.find("-voice")], pitch, filename)
+                pitch = await text_to_speech_file(line[:line.find("-voice")], pitch, filename, stability=stability, similarity_boost=similarity_boost, style=style)
                 try:
                     command = [
                         "python",
@@ -1496,7 +1510,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                         "-o", f"{filename}",
                         "-dir", name,
                         "-p", f"{pitch}",
-                        "-ir", "0.5",
+                        "-ir", "0.1",
                         "-fr", "3",
                         "-rms", "0.3",
                         "-pro", "0.15",
