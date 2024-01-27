@@ -1196,31 +1196,26 @@ async def __dialog(
                 infos.append(f"Вот информация о {name}: {file_content}")
         await set_get_config_all("dialog", "dialog", "True")
         await set_get_config_all("gpt", "gpt_mode", "None")
+
         # names, theme, infos, prompt, ctx
-        # запустим сразу 4 процессов для обработки голоса
-        async def run_gpt_dialog(names, theme, infos, prompt, ctx):
-            await gpt_dialog(names, theme, infos, prompt, ctx)
 
-        async def run_play_dialog(ctx):
-            await play_dialog(ctx)
-
-        async def run_create_audio_dialog(ctx, index, suffix):
-            await create_audio_dialog(ctx, index, suffix)
-
-        await asyncio.to_thread(run_gpt_dialog, names, theme, infos, prompt, ctx)
-        await asyncio.to_thread(run_play_dialog, ctx)
-        await asyncio.to_thread(run_create_audio_dialog, ctx, 0, "dialog")
-        await asyncio.to_thread(run_create_audio_dialog, ctx, 1, "dialog")
-        await asyncio.to_thread(run_create_audio_dialog, ctx, 2, "dialog")
-        await asyncio.to_thread(run_create_audio_dialog, ctx, 3, "dialog")
-        """ 
-                             create_audio_dialog(ctx, 4, "dialog"), create_audio_dialog(ctx, 5, "dialog"),
-                             create_audio_dialog(ctx, 6, "dialog"), create_audio_dialog(ctx, 7, "dialog")
-                            """
+        await asyncio.create_task(run_async_functions_in_threads(names, theme, infos, prompt, ctx))
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
         await ctx.respond(f"Ошибка при диалоге: {e}")
+
+
+async def run_async_functions_in_threads(names, theme, infos, prompt, ctx):
+    # Запуск асинхронных функций в отдельных потоках
+    await asyncio.to_thread(gpt_dialog, names, theme, infos, prompt, ctx)
+    await asyncio.to_thread(play_dialog, ctx)
+
+    # запустим сразу 4 процессов для обработки голоса
+    await asyncio.to_thread(create_audio_dialog, ctx, 0, "dialog")
+    await asyncio.to_thread(create_audio_dialog, ctx, 1, "dialog")
+    await asyncio.to_thread(create_audio_dialog, ctx, 2, "dialog")
+    await asyncio.to_thread(create_audio_dialog, ctx, 3, "dialog")
 
 
 async def agrs_with_txt(txt_file):
@@ -1649,7 +1644,8 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                         f"Обязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
                         f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
                 # print("PROMPT:", prompt)
-                result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "").replace("Привет, ребята", "").replace("Эй", "")
+                result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "").replace(
+                    "Привет, ребята", "").replace("Эй", "")
                 # await write_in_discord(ctx, result)
                 with open("caversAI/dialog_create.txt", "a") as writer:
                     for line in result.split("\n"):
@@ -1687,11 +1683,13 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 print(str(traceback_str))
                 await ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
 
+
 @bot.command(aliases=['theme_change'], help="тема для диалога")
 async def theme_changer(ctx, *args):
     text = " ".join(args)
     await set_get_config_all("dialog", "theme", text)
     await ctx.send("Обновлена тема на:", text)
+
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
     from function import start_bot
