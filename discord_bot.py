@@ -1681,7 +1681,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
 async def themer_set(ctx, *args):
     text = " ".join(args)
     await set_get_config_all("dialog", "theme", text)
-    await ctx.send("Обновлена тема на:", text)
+    await ctx.send("Обновлена тема на:" + text)
 
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
