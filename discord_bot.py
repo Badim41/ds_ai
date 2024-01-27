@@ -1200,9 +1200,9 @@ async def __dialog(
         # запустим сразу 8 процессов для обработки голоса
         asyncio.ensure_future(gpt_dialog(names, theme, infos, prompt, ctx))
         asyncio.ensure_future(create_audio_dialog(ctx, 0, "dialog"))
-        asyncio.ensure_future(create_audio_dialog(ctx, 0, "dialog"))
-        asyncio.ensure_future(create_audio_dialog(ctx, 0, "dialog"))
-        asyncio.ensure_future(create_audio_dialog(ctx, 0, "dialog"))
+        asyncio.ensure_future(create_audio_dialog(ctx, 1, "dialog"))
+        asyncio.ensure_future(create_audio_dialog(ctx, 2, "dialog"))
+        asyncio.ensure_future(create_audio_dialog(ctx, 3, "dialog"))
         await play_dialog(ctx)
         # await asyncio.gather(create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"),
         #                      create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"))
