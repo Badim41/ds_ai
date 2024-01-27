@@ -1394,6 +1394,7 @@ async def play_dialog(ctx):
             await asyncio.sleep(0.5)
             files = os.listdir("song_output")
             files = sorted(files)
+            not_found_file = True
             for file in files:
                 if file.startswith(str(number)):
                     with open("caversAI/dialog_play.txt", "r") as reader:
@@ -1410,6 +1411,10 @@ async def play_dialog(ctx):
                     await playSoundFile("song_output/" + file, -1, 0, ctx)
                     os.remove("song_output/" + file)
                     await ctx.send("end")
+                    not_found_file = False
+            if not_found_file:
+                from function import result_command_change, Color
+                await result_command_change("Нет аудио для диалога!", Color.RED)
         except Exception as e:
             traceback_str = traceback.format_exc()
             print(str(traceback_str))
