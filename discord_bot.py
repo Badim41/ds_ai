@@ -1200,8 +1200,8 @@ async def __dialog(
         # запустим сразу 8 процессов для обработки голоса
         await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx),
                              create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"),
-                             create_audio_dialog(ctx, 2, "dialog"))
-        """ , create_audio_dialog(ctx, 3, "dialog")
+                             create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"))
+        """ 
                              create_audio_dialog(ctx, 4, "dialog"), create_audio_dialog(ctx, 5, "dialog"),
                              create_audio_dialog(ctx, 6, "dialog"), create_audio_dialog(ctx, 7, "dialog")
                             """
@@ -1409,7 +1409,7 @@ async def play_dialog(ctx):
                     await playSoundFile("song_output/" + file, -1, 0, ctx)
                     os.remove("song_output/" + file)
                     await ctx.send("end")
-            await asyncio.sleep(0.2)
+                    await asyncio.sleep(0.5)
         except Exception as e:
             traceback_str = traceback.format_exc()
             print(str(traceback_str))
@@ -1607,11 +1607,12 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 random_int = 1  # random.randint(1, 33)
 
                 # Тема добавляется в запрос, если она изменилась
-                theme_temp = ""
                 new_theme = await set_get_config_all("dialog", "theme")
                 if not theme_last == new_theme:
                     theme_last = new_theme
                     theme_temp = new_theme
+                else:
+                    theme_temp = f"Изначальная тема диалога была {new_theme}, не сильно отходи от её"
 
                 if not random_int == 0 or not spoken_text == "":
                     prompt = (f"Привет chatGPT, продолжи диалог между {', '.join(names)}{theme_temp}. "
@@ -1644,9 +1645,9 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                                 break
                 # слишком большой разрыв
                 while int(await set_get_config_all("dialog", "files_number", None)) - int(
-                        await set_get_config_all("dialog", "play_number", None)) > 5:
+                        await set_get_config_all("dialog", "play_number", None)) > 4:
                     await asyncio.sleep(5)
-                    print("wait, difference > 5")
+                    print("wait, difference > 4")
 
                     if await set_get_config_all("dialog", "dialog") == "False":
                         return
@@ -1655,9 +1656,9 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 while True:
                     with open("caversAI/dialog_create.txt", "r") as reader:
                         num_lines = len(reader.readlines())
-                    if num_lines > 8:
+                    if num_lines > 6:
                         await asyncio.sleep(3)
-                        print("wait, too many text > 8")
+                        print("wait, too many text > 6")
 
                         if await set_get_config_all("dialog", "dialog") == "False":
                             return
