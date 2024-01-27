@@ -1409,8 +1409,7 @@ async def play_dialog(ctx):
                     await playSoundFile("song_output/" + file, -1, 0, ctx)
                     os.remove("song_output/" + file)
                     await ctx.send("end")
-                else:
-                    await asyncio.sleep(0.2)
+            await asyncio.sleep(0.2)
         except Exception as e:
             traceback_str = traceback.format_exc()
             print(str(traceback_str))
@@ -1498,8 +1497,10 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                         pitch = int(text)
 
                 # выставлены аргументы для elevenlabs
-                stability, similarity_boost, style = None, None, None
+                voice_model, stability, similarity_boost, style = None, None, None, None
                 try:
+                    with open(f"rvc_models/{name}/voice_model.txt", "r") as file:
+                        voice_model = file.read()
                     with open(f"rvc_models/{name}/stability.txt", "r") as file:
                         stability = file.read()
                     with open(f"rvc_models/{name}/similarity_boost.txt", "r") as file:
@@ -1512,7 +1513,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                 filename = int(await set_get_config_all("dialog", "files_number", None))
                 await set_get_config_all("dialog", "files_number", filename + 1)
                 filename = "song_output/" + str(filename) + name + ".mp3"
-                pitch = await text_to_speech_file(line[:line.find("-voice")], pitch, filename, stability=stability,
+                pitch = await text_to_speech_file(line[:line.find("-voice")], pitch, filename, voice_model=voice_model, stability=stability,
                                                   similarity_boost=similarity_boost, style=style)
                 try:
                     command = [
@@ -1592,6 +1593,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                         line = line[line.find(":") + 1:]
                         writer.write(line + f"-voice {name}\n")
 
+        theme_last = ""
         while await set_get_config_all("dialog", "dialog", None) == "True":
             try:
                 if "\n" in result:
@@ -1603,12 +1605,15 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                     await set_get_config_all("dialog", "user_spoken_text", "None")
                 random_int = 1  # random.randint(1, 33)
 
+                # Тема добавляется в запрос, если она изменилась
+                theme_temp = ""
                 new_theme = await set_get_config_all("dialog", "theme")
-                if not theme == "None" and not theme == new_theme:
-                    theme = new_theme
+                if not theme_last == new_theme:
+                    theme_last = new_theme
+                    theme_temp = new_theme
 
                 if not random_int == 0 or not spoken_text == "":
-                    prompt = (f"Привет chatGPT, продолжи диалог между {', '.join(names)} на тему \"{theme}\". "
+                    prompt = (f"Привет chatGPT, продолжи диалог между {', '.join(names)}{theme_temp}. "
                               f"{'.'.join(infos)}. {prompt_global} "
                               f"персонажи должны соответствовать своему образу насколько это возможно. "
                               f"Никогда не пиши приветствие в начале этого диалога. "
