@@ -1601,7 +1601,7 @@ async def write_dialog_in_txt(result, names):
     with open("caversAI/history.txt", "a") as writer:
         for line in result.split("\n"):
             for name in names:
-                if line.startswith(name):
+                if (line.startswith(name) or line.startswith(name.replace("э", "е"))) and ":" in line:
                     line = line[line.find(":") + 1:]
                     writer.write(f"{name}:{line}\n")
                     break
