@@ -1537,7 +1537,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                     ]
                     print("run RVC, AIName:", name)
                     from function import execute_command
-                    await execute_command(' '.join(command), ctx)
+                    await asyncio.to_thread(execute_command, ' '.join(command), ctx)
 
                     # диалог завершён.
                     # print("DIALOG_TEMP:", await set_get_config_all("dialog", wait_untill, None))
@@ -1675,6 +1675,11 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 print(str(traceback_str))
                 await ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
 
+@bot.command(aliases=['theme'], help="тема для диалога")
+async def command_line(ctx, *args):
+    text = " ".join(args)
+    await set_get_config_all("dialog", "theme", text)
+    await ctx.send("Обновлена тема на:", text)
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
     from function import start_bot
