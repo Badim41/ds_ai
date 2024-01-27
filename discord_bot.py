@@ -1197,10 +1197,22 @@ async def __dialog(
         await set_get_config_all("dialog", "dialog", "True")
         await set_get_config_all("gpt", "gpt_mode", "None")
         # names, theme, infos, prompt, ctx
-        # запустим сразу 8 процессов для обработки голоса
-        await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx),
-                             create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"),
-                             create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"))
+        # запустим сразу 4 процессов для обработки голоса
+        async def run_gpt_dialog(names, theme, infos, prompt, ctx):
+            await gpt_dialog(names, theme, infos, prompt, ctx)
+
+        async def run_play_dialog(ctx):
+            await play_dialog(ctx)
+
+        async def run_create_audio_dialog(ctx, index, suffix):
+            await create_audio_dialog(ctx, index, suffix)
+
+        await asyncio.to_thread(run_gpt_dialog, names, theme, infos, prompt, ctx)
+        await asyncio.to_thread(run_play_dialog, ctx)
+        await asyncio.to_thread(run_create_audio_dialog, ctx, 0, "dialog")
+        await asyncio.to_thread(run_create_audio_dialog, ctx, 1, "dialog")
+        await asyncio.to_thread(run_create_audio_dialog, ctx, 2, "dialog")
+        await asyncio.to_thread(run_create_audio_dialog, ctx, 3, "dialog")
         """ 
                              create_audio_dialog(ctx, 4, "dialog"), create_audio_dialog(ctx, 5, "dialog"),
                              create_audio_dialog(ctx, 6, "dialog"), create_audio_dialog(ctx, 7, "dialog")
