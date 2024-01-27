@@ -1207,17 +1207,27 @@ async def __dialog(
         await ctx.respond(f"Ошибка при диалоге: {e}")
 
 
-async def run_async_functions_in_threads(names, theme, infos, prompt, ctx):
+async def async_functions_in_threads(names, theme, infos, prompt, ctx):
     # Запуск асинхронных функций в отдельных потоках
-    await asyncio.to_thread(gpt_dialog, names, theme, infos, prompt, ctx)
-    await asyncio.to_thread(play_dialog, ctx)
+    tasks = [
+        gpt_dialog(names, theme, infos, prompt, ctx),
+        play_dialog(ctx),
+        create_audio_dialog(ctx, 0, "dialog"),
+        create_audio_dialog(ctx, 1, "dialog"),
+        create_audio_dialog(ctx, 2, "dialog"),
+        create_audio_dialog(ctx, 3, "dialog")
+    ]
 
-    # запустим сразу 4 процессов для обработки голоса
-    await asyncio.to_thread(create_audio_dialog, ctx, 0, "dialog")
-    await asyncio.to_thread(create_audio_dialog, ctx, 1, "dialog")
-    await asyncio.to_thread(create_audio_dialog, ctx, 2, "dialog")
-    print("Finish?")
-    await create_audio_dialog(ctx, 3, "dialog")
+    # Создаем и запускаем асинхронные подпроцессы
+    processes = []
+    for task in tasks:
+        process = await asyncio.create_subprocess_exec(
+            "python", "-m", "asyncio", "-c", f"asyncio.run({task})"
+        )
+        processes.append(process)
+
+    print("Runned all")
+    await asyncio.gather(*processes)
 
 
 async def agrs_with_txt(txt_file):
