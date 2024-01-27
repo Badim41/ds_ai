@@ -1391,6 +1391,7 @@ async def play_dialog(ctx):
     number = int(await set_get_config_all("dialog", "play_number", None))
     while await set_get_config_all("dialog", "dialog", None) == "True":
         try:
+            await asyncio.sleep(0.5)
             files = os.listdir("song_output")
             files = sorted(files)
             for file in files:
@@ -1409,7 +1410,6 @@ async def play_dialog(ctx):
                     await playSoundFile("song_output/" + file, -1, 0, ctx)
                     os.remove("song_output/" + file)
                     await ctx.send("end")
-            await asyncio.sleep(0.5)
         except Exception as e:
             traceback_str = traceback.format_exc()
             print(str(traceback_str))
