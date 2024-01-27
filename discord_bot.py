@@ -1391,7 +1391,7 @@ async def play_dialog(ctx):
     number = int(await set_get_config_all("dialog", "play_number", None))
     while await set_get_config_all("dialog", "dialog", None) == "True":
         try:
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.75)
             files = os.listdir("song_output")
             files = sorted(files)
             not_found_file = True
