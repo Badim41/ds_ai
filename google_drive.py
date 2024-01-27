@@ -47,7 +47,7 @@ def upload_files(service, folder_id, file_paths):
 
 # Функция для загрузки файлов и папок в Google Диск
 # фильтры для файлов
-FILTERS = ["Vocals_Backup", "pro0", "Instrumental."]
+FILTERS = ["Vocals_Backup", "pro0", "Instrumental.", ".mp3"]
 
 
 def upload_files_and_folders(service, parent_folder_id, local_path):
