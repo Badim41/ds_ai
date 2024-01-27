@@ -1174,6 +1174,8 @@ async def __dialog(
             pass
         with open("caversAI/dialog_play.txt", "w"):
             pass
+        await set_get_config_all("dialog", "theme", "None")
+
         voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
         voices.remove("None")  # убираем, чтобы не путаться
         names = names.split(";")
@@ -1589,9 +1591,14 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 if not spoken_text_config == "None":
                     spoken_text = "Зрители за прошлый диалог написали:\"" + spoken_text_config + "\""
                     await set_get_config_all("dialog", "user_spoken_text", "None")
-                random_int = random.randint(1, 33)
-                if not random_int == 0 and spoken_text == "":
-                    prompt = (f"Привет chatGPT, продолжи диалог между {', '.join(names)}. "
+                random_int = 1 # random.randint(1, 33)
+
+                new_theme = await set_get_config_all("dialog", "theme")
+                if not theme == "None" and not theme == new_theme:
+                    theme = new_theme
+
+                if not random_int == 0 or not spoken_text == "":
+                    prompt = (f"Привет chatGPT, продолжи диалог между {', '.join(names)} на тему \"{theme}\". "
                               f"{'.'.join(infos)}. {prompt_global} "
                               f"персонажи должны соответствовать своему образу насколько это возможно. "
                               f"Никогда не пиши приветствие в начале этого диалога. "
