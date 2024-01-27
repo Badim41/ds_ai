@@ -1199,7 +1199,7 @@ async def __dialog(
 
         # names, theme, infos, prompt, ctx
 
-        await asyncio.create_task(run_async_functions_in_threads(names, theme, infos, prompt, ctx))
+        await asyncio.create_task(async_functions_in_threads(names, theme, infos, prompt, ctx))
         print("Finish.")
     except Exception as e:
         traceback_str = traceback.format_exc()
