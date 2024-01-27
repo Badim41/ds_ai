@@ -1470,6 +1470,8 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam", 
         except Exception as e:
             from function import remove_unavaible_voice_api_key
             print(f"Ошибка при выполнении команды (ID:f16): {e}")
+            if "Please play" in str(e):
+                await set_get_config_all("voice", "avaible_keys", "None")
             await remove_unavaible_voice_api_key()
             pitch = await text_to_speech_file(tts, currentpitch, file_name, voice_model=voice_model,
                                               stability=stability, similarity_boost=similarity_boost, style=style)
