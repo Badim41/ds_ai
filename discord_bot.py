@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import json
 import multiprocessing
@@ -5,29 +6,26 @@ import os
 import random
 import re
 import subprocess
-import asyncio
+import sys
 import time
 import traceback
-
+from moviepy.editor import VideoFileClip
+from pathlib import Path
+from pydub import AudioSegment
 from pytube import Playlist
 
-from PIL import Image
-from pydub import AudioSegment
-from moviepy.editor import VideoFileClip
-# from langdetect import detect
-# from bark import preload_models
-
-from typing import Union
-from discord import option, Option
-from modifed_sinks import StreamSink
 import speech_recognition as sr
-from pathlib import Path
-import sys
+
 import discord
+from discord import Option
 from discord.ext import commands
+from modifed_sinks import StreamSink
+from set_get_config import set_get_config_all, set_get_config_all_not_async
 from use_free_cuda import use_cuda_async, stop_use_cuda_async, use_cuda_images, check_cuda_images, \
     stop_use_cuda_images
-from set_get_config import set_get_config_all, set_get_config_all_not_async
+
+# from langdetect import detect
+# from bark import preload_models
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
@@ -1169,12 +1167,18 @@ async def __dialog(
         if await set_get_config_all("dialog", "dialog", None) == "True":
             await ctx.respond("Уже идёт диалог!")
             return
+
         # отчищаем прошлые диалоги
         with open("caversAI/dialog_create.txt", "w"):
             pass
         with open("caversAI/dialog_play.txt", "w"):
             pass
         await set_get_config_all("dialog", "theme", "None")
+        for file in os.listdir('song_output'):
+            if os.path.isfile(file):
+                os.remove(os.path.join('song_output', file))
+        await set_get_config_all("dialog", "files_number", "0")
+        await set_get_config_all("dialog", "play_number", "0")
 
         voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
         voices.remove("None")  # убираем, чтобы не путаться
@@ -1248,7 +1252,8 @@ async def agrs_with_txt(txt_file):
         return None, None, None, None, None, None, None, None, None
 
 
-async def download_voice(ctx, url, name, gender, info, speed, voice_model, change_voice, stability="0.4", similarity_boost="0.25", style="0.4"):
+async def download_voice(ctx, url, name, gender, info, speed, voice_model, change_voice, stability="0.4",
+                         similarity_boost="0.25", style="0.4"):
     if name == "None" or ";" in name or "/" in name or "\\" in name:
         await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
     # !python download_voice_model.py {url} {dir_name} {gender} {info}
@@ -1323,7 +1328,8 @@ async def __add_voice(
     await ctx.defer()
     await ctx.respond('Выполнение...')
     if txt_file:
-        urls, names, genders, infos, speeds, voice_models, stabilities, similarity_boosts, styles = await agrs_with_txt(txt_file)
+        urls, names, genders, infos, speeds, voice_models, stabilities, similarity_boosts, styles = await agrs_with_txt(
+            txt_file)
         print("url:", urls)
         print("name:", names)
         print("gender:", genders)
@@ -1343,7 +1349,8 @@ async def __add_voice(
             if genders[i] is None:
                 await ctx.send(f"Не указан пол в {i + 1} моделе ({name})")
                 continue
-            await download_voice(ctx, urls[i], names[i], genders[i], infos[i], speeds[i], voice_models[i], False, stability=stabilities[i], similarity_boost=similarity_boosts[i], style=styles[i])
+            await download_voice(ctx, urls[i], names[i], genders[i], infos[i], speeds[i], voice_models[i], False,
+                                 stability=stabilities[i], similarity_boost=similarity_boosts[i], style=styles[i])
         await ctx.send("Все модели успешно установлены!")
         return
     if pitch is None:
@@ -1417,7 +1424,8 @@ async def get_voice_id_by_name(voice_name):
     return voice["voice_id"] if voice else None
 
 
-async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam", stability=None, similarity_boost=None, style=None):
+async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam", stability=None, similarity_boost=None,
+                              style=None):
     from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
     max_simbols = await set_get_config_all("voice", "max_simbols", None)
 
@@ -1459,7 +1467,8 @@ async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam", 
             from function import remove_unavaible_voice_api_key
             print(f"Ошибка при выполнении команды (ID:f16): {e}")
             await remove_unavaible_voice_api_key()
-            pitch = await text_to_speech_file(tts, currentpitch, file_name, voice_model=voice_model, stability=stability, similarity_boost=similarity_boost, style=style)
+            pitch = await text_to_speech_file(tts, currentpitch, file_name, voice_model=voice_model,
+                                              stability=stability, similarity_boost=similarity_boost, style=style)
             return pitch
             # gtts(tts, language[:2], file_name)
     return currentpitch
@@ -1503,7 +1512,8 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                 filename = int(await set_get_config_all("dialog", "files_number", None))
                 await set_get_config_all("dialog", "files_number", filename + 1)
                 filename = "song_output/" + str(filename) + name + ".mp3"
-                pitch = await text_to_speech_file(line[:line.find("-voice")], pitch, filename, stability=stability, similarity_boost=similarity_boost, style=style)
+                pitch = await text_to_speech_file(line[:line.find("-voice")], pitch, filename, stability=stability,
+                                                  similarity_boost=similarity_boost, style=style)
                 try:
                     command = [
                         "python",
@@ -1591,7 +1601,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 if not spoken_text_config == "None":
                     spoken_text = "Зрители за прошлый диалог написали:\"" + spoken_text_config + "\""
                     await set_get_config_all("dialog", "user_spoken_text", "None")
-                random_int = 1 # random.randint(1, 33)
+                random_int = 1  # random.randint(1, 33)
 
                 new_theme = await set_get_config_all("dialog", "theme")
                 if not theme == "None" and not theme == new_theme:
@@ -1630,8 +1640,10 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 while int(await set_get_config_all("dialog", "files_number", None)) - int(
                         await set_get_config_all("dialog", "play_number", None)) > 10:
                     await asyncio.sleep(5)
-                    print("wait, difference:", int(await set_get_config_all("dialog", "files_number", None)),
-                          int(await set_get_config_all("dialog", "play_number", None)))
+                    print("wait, difference > 10")
+
+                    if await set_get_config_all("dialog", "dialog") == "False":
+                        return
 
             except Exception as e:
                 traceback_str = traceback.format_exc()
@@ -1840,31 +1852,6 @@ async def recognize(ctx):
         except FileNotFoundError:
             pass
     print("Stop_Recording")
-
-
-async def get_file_type(ctx, attachment):
-    if not attachment:
-        await ctx.send("Файл не прикреплен.")
-        return
-    import magic
-    mime = magic.Magic()
-    file_type = mime.from_buffer(attachment.fp.read(2048))
-
-    # Определить тип файла на основе MIME-типа
-    if file_type.startswith('image'):
-        return "image"
-    elif file_type.startswith('video'):
-        return "video"
-    elif file_type.startswith('audio'):
-        return "audio"
-    else:
-        await ctx.send("Неизвестный тип файла.")
-
-
-async def get_image_dimensions(file_path):
-    with Image.open(file_path) as img:
-        sizes = img.size
-    return str(sizes).replace("(", "").replace(")", "").replace(" ", "").split(",")
 
 
 if __name__ == "__main__":
