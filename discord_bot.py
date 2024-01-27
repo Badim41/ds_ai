@@ -1676,8 +1676,8 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 await ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
 
 
-@bot.command(aliases=['theme_change'], help="тема для диалога")
-async def theme_changer(ctx, *args):
+@bot.command(aliases=['themer'], help="тема для диалога")
+async def themer(ctx, *args):
     text = " ".join(args)
     await set_get_config_all("dialog", "theme", text)
     await ctx.send("Обновлена тема на:", text)
