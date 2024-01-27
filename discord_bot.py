@@ -1604,7 +1604,8 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 for name in names:
                     # Человек: привет
                     # Человек (man): привет
-                    if line.startswith(name):
+                    # Чэловек: привет
+                    if (line.startswith(name) or line.startswith(name.replace("э", "е"))) and ":" in line:
                         line = line[line.find(":") + 1:]
                         writer.write(line + f"-voice {name}\n")
 
