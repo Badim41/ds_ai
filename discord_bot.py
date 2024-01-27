@@ -1655,6 +1655,14 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                                 line = line[line.find(":") + 1:]
                                 writer.write(line + f"-voice {name}\n")
                                 break
+                with open("caversAI/history.txt", "a") as writer:
+                    for line in result.split("\n"):
+                        for name in names:
+                            if line.startswith(name):
+                                line = line[line.find(":") + 1:]
+                                writer.write(f"{name}:{line}\n")
+                                break
+
                 # слишком большой разрыв
                 while int(await set_get_config_all("dialog", "files_number", None)) - int(
                         await set_get_config_all("dialog", "play_number", None)) > 4:
