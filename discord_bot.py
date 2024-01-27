@@ -1632,7 +1632,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                         f"Обязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
                         f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
                 # print("PROMPT:", prompt)
-                result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
+                result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "").replace("Привет, ребята", "").replace("Эй", "")
                 # await write_in_discord(ctx, result)
                 with open("caversAI/dialog_create.txt", "a") as writer:
                     for line in result.split("\n"):
