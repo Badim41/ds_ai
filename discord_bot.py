@@ -1589,6 +1589,9 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                   f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
                   f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
         result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
+        if "*" in result:
+            result = re.sub(r'\*.*?\*', '', result)
+
         # await write_in_discord(ctx, result)
         with open("caversAI/dialog_create.txt", "a") as writer:
             for line in result.split("\n"):
@@ -1639,6 +1642,9 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 # print("PROMPT:", prompt)
                 result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "").replace(
                     "Привет, ребята", "").replace("Эй", "")
+                if "*" in result:
+                    result = re.sub(r'\*.*?\*', '', result)
+
                 # await write_in_discord(ctx, result)
                 with open("caversAI/dialog_create.txt", "a") as writer:
                     for line in result.split("\n"):
@@ -1651,9 +1657,9 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                                 break
                 # слишком большой разрыв
                 while int(await set_get_config_all("dialog", "files_number", None)) - int(
-                        await set_get_config_all("dialog", "play_number", None)) > 7:
+                        await set_get_config_all("dialog", "play_number", None)) > 4:
                     await asyncio.sleep(5)
-                    print("wait, difference > 7")
+                    print("wait, difference > 4")
 
                     if await set_get_config_all("dialog", "dialog") == "False":
                         return
@@ -1662,9 +1668,9 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 while True:
                     with open("caversAI/dialog_create.txt", "r") as reader:
                         num_lines = len(reader.readlines())
-                    if num_lines > 8:
+                    if num_lines > 4:
                         await asyncio.sleep(3)
-                        print("wait, too many text > 8")
+                        print("wait, too many text > 4")
 
                         if await set_get_config_all("dialog", "dialog") == "False":
                             return
