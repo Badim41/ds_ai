@@ -61,26 +61,27 @@ async def on_message(message):
     # minecraft chat bot
     if message.author.id == 1165023027847757836:
         text = message.content
-        ctx = await bot.get_context(message)
+        if not text.startswith("\\"):
+            ctx = await bot.get_context(message)
 
-        if await set_get_config_all("Default", "robot_name_need") == "False":
-            text = await set_get_config_all("Default", "currentainame") + ", " + text
-        from function import replace_mat_in_sentence
-        text_out = await replace_mat_in_sentence(text)
-        if not text_out == text.lower():
-            text = text_out
-        user = text[:text.find(":")]
-        if "[" in text and "]" in text:
-            text = re.sub(r'[.*?]', '', text)
-        await set_get_config_all("Default", "user_name", value=user)
-        # info
-        info_was = await set_get_config_all("Default", "currentaiinfo")
-        await set_get_config_all("Default", "currentaiinfo",
-                                 "Ты сейчас играешь на сервере майнкрафт GoldenFire и отвечаешь на сообщения игроков из чата")
-        await run_main_with_settings(ctx, text, True)
-        # info2
-        await set_get_config_all("Default", "currentaiinfo", info_was)
-        return
+            if await set_get_config_all("Default", "robot_name_need") == "False":
+                text = await set_get_config_all("Default", "currentainame") + ", " + text
+            from function import replace_mat_in_sentence
+            text_out = await replace_mat_in_sentence(text)
+            if not text_out == text.lower():
+                text = text_out
+            user = text[:text.find(":")]
+            if "[" in text and "]" in text:
+                text = re.sub(r'[.*?]', '', text)
+            await set_get_config_all("Default", "user_name", value=user)
+            # info
+            info_was = await set_get_config_all("Default", "currentaiinfo")
+            await set_get_config_all("Default", "currentaiinfo",
+                                     "Ты сейчас играешь на сервере майнкрафт GoldenFire и отвечаешь на сообщения игроков из чата")
+            await run_main_with_settings(ctx, text, True)
+            # info2
+            await set_get_config_all("Default", "currentaiinfo", info_was)
+            return
 
     # other users
     if message.author.bot:
@@ -1643,9 +1644,9 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                         f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
                 # print("PROMPT:", prompt)
                 result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "").replace(
-                    "Привет, ребята", "").replace("Эй", "")
-                if "*" in result:
-                    result = re.sub(r'\*.*?\*', '', result)
+                    "Привет, ребята!", "").replace("Привет, ребята", "").replace("Эй", "")
+                if "(" in result and ")" in result:
+                    result = re.sub(r'\(.*?\)', '', result)
 
                 # await write_in_discord(ctx, result)
                 with open("caversAI/dialog_create.txt", "a") as writer:
