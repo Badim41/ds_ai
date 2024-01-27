@@ -1196,38 +1196,19 @@ async def __dialog(
                 infos.append(f"Вот информация о {name}: {file_content}")
         await set_get_config_all("dialog", "dialog", "True")
         await set_get_config_all("gpt", "gpt_mode", "None")
-
         # names, theme, infos, prompt, ctx
-
-        await asyncio.create_task(async_functions_in_threads(names, theme, infos, prompt, ctx))
-        print("Finish.")
+        # запустим сразу 3 процессов для обработки голоса
+        await asyncio.gather(gpt_dialog(names, theme, infos, prompt, ctx), play_dialog(ctx),
+                             create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"),
+                             create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"))
+        """ 
+                             create_audio_dialog(ctx, 4, "dialog"), create_audio_dialog(ctx, 5, "dialog"),
+                             create_audio_dialog(ctx, 6, "dialog"), create_audio_dialog(ctx, 7, "dialog")
+                            """
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
         await ctx.respond(f"Ошибка при диалоге: {e}")
-
-
-async def async_functions_in_threads(names, theme, infos, prompt, ctx):
-    # Запуск асинхронных функций в отдельных потоках
-    tasks = [
-        gpt_dialog(names, theme, infos, prompt, ctx),
-        play_dialog(ctx),
-        create_audio_dialog(ctx, 0, "dialog"),
-        create_audio_dialog(ctx, 1, "dialog"),
-        create_audio_dialog(ctx, 2, "dialog"),
-        create_audio_dialog(ctx, 3, "dialog")
-    ]
-
-    # Создаем и запускаем асинхронные подпроцессы
-    processes = []
-    for task in tasks:
-        process = await asyncio.create_subprocess_exec(
-            "python", "-m", "asyncio", "-c", f"asyncio.run({task})"
-        )
-        processes.append(process)
-
-    print("Runned all")
-    await asyncio.gather(*processes)
 
 
 async def agrs_with_txt(txt_file):
