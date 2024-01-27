@@ -1513,7 +1513,8 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                 filename = int(await set_get_config_all("dialog", "files_number", None))
                 await set_get_config_all("dialog", "files_number", filename + 1)
                 filename = "song_output/" + str(filename) + name + ".mp3"
-                pitch = await text_to_speech_file(line[:line.find("-voice")], pitch, filename, voice_model=voice_model, stability=stability,
+                pitch = await text_to_speech_file(line[:line.find("-voice")], pitch, filename, voice_model=voice_model,
+                                                  stability=stability,
                                                   similarity_boost=similarity_boost, style=style)
                 try:
                     command = [
@@ -1643,12 +1644,25 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                                 break
                 # слишком большой разрыв
                 while int(await set_get_config_all("dialog", "files_number", None)) - int(
-                        await set_get_config_all("dialog", "play_number", None)) > 10:
+                        await set_get_config_all("dialog", "play_number", None)) > 5:
                     await asyncio.sleep(5)
-                    print("wait, difference > 10")
+                    print("wait, difference > 5")
 
                     if await set_get_config_all("dialog", "dialog") == "False":
                         return
+
+                # Слишком много текста
+                while True:
+                    with open("caversAI/dialog_create.txt", "r") as reader:
+                        num_lines = len(reader.readlines())
+                    if num_lines > 8:
+                        await asyncio.sleep(3)
+                        print("wait, too many text > 8")
+
+                        if await set_get_config_all("dialog", "dialog") == "False":
+                            return
+                    else:
+                        break
 
             except Exception as e:
                 traceback_str = traceback.format_exc()
@@ -1716,7 +1730,7 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
         resume = False
         while ctx.voice_client.is_playing():
 
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.5)
             voice_client = ctx.voice_client
             pause = await set_get_config_all("Sound", "pause", None) == "True"
             if pause:
@@ -1727,9 +1741,8 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
             if resume:
                 voice_client.resume()
 
-            # stop_milliseconds += 1000
             await set_get_config_all("Sound", "stop_milliseconds",
-                                     int(await set_get_config_all("Sound", "stop_milliseconds")) + 1000)
+                                     int(await set_get_config_all("Sound", "stop_milliseconds")) + 500)
         await set_get_config_all("Sound", "playing", "False")
     except Exception as e:
         traceback_str = traceback.format_exc()
