@@ -1116,7 +1116,15 @@ async def __cover(
                         "-pro", "0.05"
                     ]
                     print("run RVC, AIName:", voice)
-                    subprocess.run(command, check=True)
+                    process = await asyncio.create_subprocess_exec(
+                        *command,
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.PIPE
+                    )
+
+                    # Асинхронно читаем вывод
+                    await process.communicate()
+
                     await send_file(ctx, filename, delete_file=True)
                 except subprocess.CalledProcessError as e:
                     traceback_str = traceback.format_exc()
@@ -1536,7 +1544,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                         "-slow"  # значение для диалога
                     ]
                     print("run RVC, AIName:", name)
-                    subprocess.run(' '.join(command), check=True)
+                    subprocess.run(command, check=True)
 
                     # диалог завершён.
                     # print("DIALOG_TEMP:", await set_get_config_all("dialog", wait_untill, None))
