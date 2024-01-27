@@ -1383,8 +1383,20 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=No
         with open(f"rvc_models/{ai_dictionary}/voice_model.txt", "r") as reader:
             voice_model = reader.read()
 
+    # выставлены аргументы для elevenlabs
+    stability, similarity_boost, style = None, None, None
+    try:
+        with open(f"rvc_models/{ai_dictionary}/stability.txt", "r") as file:
+            stability = file.read()
+        with open(f"rvc_models/{ai_dictionary}/similarity_boost.txt", "r") as file:
+            similarity_boost = file.read()
+        with open(f"rvc_models/{ai_dictionary}/style.txt", "r") as file:
+            style = file.read()
+    except Exception:
+        pass
+
     from discord_bot import text_to_speech_file
-    pitch = await text_to_speech_file(tts, currentpitch, file_name, voice_model=voice_model)
+    pitch = await text_to_speech_file(tts, currentpitch, file_name, voice_model=voice_model, stability=stability, similarity_boost=similarity_boost, style=style)
     pitch += pitch_change
     # если голос не выставлен
     if ai_dictionary == "None" or await set_get_config_all("Default", "currentainame") == "None":
