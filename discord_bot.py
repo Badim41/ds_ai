@@ -1173,7 +1173,7 @@ async def __dialog(
             pass
         with open("caversAI/dialog_play.txt", "w"):
             pass
-        await set_get_config_all("dialog", "theme", "None")
+        await set_get_config_all("dialog", "theme", theme)
         for file in os.listdir('song_output'):
             if os.path.isfile(file):
                 os.remove(os.path.join('song_output', file))
