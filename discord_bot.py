@@ -1215,7 +1215,8 @@ async def run_async_functions_in_threads(names, theme, infos, prompt, ctx):
     await asyncio.to_thread(create_audio_dialog, ctx, 0, "dialog")
     await asyncio.to_thread(create_audio_dialog, ctx, 1, "dialog")
     await asyncio.to_thread(create_audio_dialog, ctx, 2, "dialog")
-    await asyncio.to_thread(create_audio_dialog, ctx, 3, "dialog")
+    print("Finish?")
+    await create_audio_dialog(ctx, 3, "dialog")
 
 
 async def agrs_with_txt(txt_file):
