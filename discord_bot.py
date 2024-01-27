@@ -1517,8 +1517,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
 
                 filename = int(await set_get_config_all("dialog", "files_number", None))
                 await set_get_config_all("dialog", "files_number", filename + 1)
-                filename = "song_output/" + str(filename) + name + "Row.mp3"
-                filename_2 = "song_output/" + str(filename) + name + ".mp3"
+                filename = "song_output/" + str(filename) + name + ".mp3"
                 pitch = await text_to_speech_file(line[:line.find("-voice")], pitch, filename, voice_model=voice_model,
                                                   stability=stability,
                                                   similarity_boost=similarity_boost, style=style)
@@ -1527,7 +1526,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                         "python",
                         f"only_voice_change_cuda{cuda}.py",
                         "-i", f"{filename}",
-                        "-o", f"{filename_2}",
+                        "-o", f"{filename}",
                         "-dir", name,
                         "-p", f"{pitch}",
                         "-ir", "0.1",
@@ -1538,12 +1537,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                     ]
                     print("run RVC, AIName:", name)
                     from function import execute_command
-                    asyncio.ensure_future(execute_command(' '.join(command), ctx))
-                    for i in range(600):
-                        if os.path.exists(filename_2):
-                            os.remove(filename)
-                            break
-                        await asyncio.sleep(0.1)
+                    await asyncio.ensure_future(execute_command(' '.join(command), ctx))
 
                     # диалог завершён.
                     # print("DIALOG_TEMP:", await set_get_config_all("dialog", wait_untill, None))
