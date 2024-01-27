@@ -1585,6 +1585,28 @@ async def remove_line_from_txt(file_path, delete_line):
         raise f"Ошибка при удалении строки: {e}"
 
 
+async def write_dialog_in_txt(result, names):
+    from function import result_command_change, Color
+    await result_command_change(result, Color.GRAY)
+    with open("caversAI/dialog_create.txt", "a") as writer:
+        for line in result.split("\n"):
+            for name in names:
+                # Человек: привет
+                # Человек (man): привет
+                # Чэловек: привет
+                if (line.startswith(name) or line.startswith(name.replace("э", "е"))) and ":" in line:
+                    line = line[line.find(":") + 1:]
+                    writer.write(line + f"-voice {name}\n")
+                    break
+    with open("caversAI/history.txt", "a") as writer:
+        for line in result.split("\n"):
+            for name in names:
+                if line.startswith(name):
+                    line = line[line.find(":") + 1:]
+                    writer.write(f"{name}:{line}\n")
+                    break
+
+
 async def gpt_dialog(names, theme, infos, prompt_global, ctx):
     from function import chatgpt_get_result
     # Делаем диалог между собой
@@ -1598,16 +1620,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
         if "*" in result:
             result = re.sub(r'\*.*?\*', '', result)
 
-        # await write_in_discord(ctx, result)
-        with open("caversAI/dialog_create.txt", "a") as writer:
-            for line in result.split("\n"):
-                for name in names:
-                    # Человек: привет
-                    # Человек (man): привет
-                    # Чэловек: привет
-                    if (line.startswith(name) or line.startswith(name.replace("э", "е"))) and ":" in line:
-                        line = line[line.find(":") + 1:]
-                        writer.write(line + f"-voice {name}\n")
+        await write_dialog_in_txt(result, names)
 
         theme_last = ""
         while await set_get_config_all("dialog", "dialog", None) == "True":
@@ -1652,23 +1665,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 if "(" in result and ")" in result:
                     result = re.sub(r'\(.*?\)', '', result)
 
-                # await write_in_discord(ctx, result)
-                with open("caversAI/dialog_create.txt", "a") as writer:
-                    for line in result.split("\n"):
-                        for name in names:
-                            # Человек: привет
-                            # Человек (man): привет
-                            if line.startswith(name):
-                                line = line[line.find(":") + 1:]
-                                writer.write(line + f"-voice {name}\n")
-                                break
-                with open("caversAI/history.txt", "a") as writer:
-                    for line in result.split("\n"):
-                        for name in names:
-                            if line.startswith(name):
-                                line = line[line.find(":") + 1:]
-                                writer.write(f"{name}:{line}\n")
-                                break
+                await write_dialog_in_txt(result, names)
 
                 # слишком большой разрыв
                 while int(await set_get_config_all("dialog", "files_number", None)) - int(
