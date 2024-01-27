@@ -1537,7 +1537,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                     ]
                     print("run RVC, AIName:", name)
                     from function import execute_command
-                    await asyncio.to_thread(execute_command, ' '.join(command), ctx)
+                    await execute_command(' '.join(command), ctx)
 
                     # диалог завершён.
                     # print("DIALOG_TEMP:", await set_get_config_all("dialog", wait_untill, None))
