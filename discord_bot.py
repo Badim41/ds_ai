@@ -1649,9 +1649,9 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                                 break
                 # слишком большой разрыв
                 while int(await set_get_config_all("dialog", "files_number", None)) - int(
-                        await set_get_config_all("dialog", "play_number", None)) > 4:
+                        await set_get_config_all("dialog", "play_number", None)) > 5:
                     await asyncio.sleep(5)
-                    print("wait, difference > 4")
+                    print("wait, difference > 5")
 
                     if await set_get_config_all("dialog", "dialog") == "False":
                         return
@@ -1660,9 +1660,9 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 while True:
                     with open("caversAI/dialog_create.txt", "r") as reader:
                         num_lines = len(reader.readlines())
-                    if num_lines > 6:
+                    if num_lines > 8:
                         await asyncio.sleep(3)
-                        print("wait, too many text > 6")
+                        print("wait, too many text > 8")
 
                         if await set_get_config_all("dialog", "dialog") == "False":
                             return
