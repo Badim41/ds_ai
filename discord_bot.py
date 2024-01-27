@@ -1199,15 +1199,11 @@ async def __dialog(
         # names, theme, infos, prompt, ctx
         # запустим сразу 8 процессов для обработки голоса
         asyncio.ensure_future(gpt_dialog(names, theme, infos, prompt, ctx))
-        asyncio.ensure_future(create_audio_dialog(ctx, 0, "dialog"))
-        asyncio.ensure_future(create_audio_dialog(ctx, 1, "dialog"))
-        asyncio.ensure_future(create_audio_dialog(ctx, 2, "dialog"))
-        asyncio.ensure_future(create_audio_dialog(ctx, 3, "dialog"))
-        await play_dialog(ctx)
-        # await asyncio.gather(create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"),
-        #                      create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"))
-                             # create_audio_dialog(ctx, 4, "dialog"), create_audio_dialog(ctx, 5, "dialog"),
-                             # create_audio_dialog(ctx, 6, "dialog"), create_audio_dialog(ctx, 7, "dialog"))
+        asyncio.ensure_future(play_dialog(ctx))
+        await asyncio.gather(create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"),
+                             create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"),
+                             create_audio_dialog(ctx, 4, "dialog"), create_audio_dialog(ctx, 5, "dialog"),
+                             create_audio_dialog(ctx, 6, "dialog"), create_audio_dialog(ctx, 7, "dialog"))
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
@@ -1654,9 +1650,9 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                                 break
                 # слишком большой разрыв
                 while int(await set_get_config_all("dialog", "files_number", None)) - int(
-                        await set_get_config_all("dialog", "play_number", None)) > 5:
+                        await set_get_config_all("dialog", "play_number", None)) > 6:
                     await asyncio.sleep(5)
-                    print("wait, difference > 5")
+                    print("wait, difference > 6")
 
                     if await set_get_config_all("dialog", "dialog") == "False":
                         return
@@ -1665,7 +1661,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 while True:
                     with open("caversAI/dialog_create.txt", "r") as reader:
                         num_lines = len(reader.readlines())
-                    if num_lines > 8:
+                    if num_lines 8:
                         await asyncio.sleep(3)
                         print("wait, too many text > 8")
 
