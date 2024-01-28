@@ -699,11 +699,11 @@ async def pause(ctx):
             await ctx.respond("Диалог остановлен")
 
             # скипаем аудио
-            voice_client = ctx.voice_client
-            if voice_client.is_playing():
-                voice_client.stop()
-                await set_get_config_all("Sound", "stop_milliseconds", 0)
-                await set_get_config_all("Sound", "playing", "False")
+            # voice_client = ctx.voice_client
+            # if voice_client.is_playing():
+            #     voice_client.stop()
+            #     await set_get_config_all("Sound", "stop_milliseconds", 0)
+            #     await set_get_config_all("Sound", "playing", "False")
             return
         voice_client = ctx.voice_client
         if voice_client.is_playing():
@@ -1624,8 +1624,10 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
         theme_last = ""
         while await set_get_config_all("dialog", "dialog", None) == "True":
             try:
-                if "\n" in result:
-                    result = result[result.rfind("\n"):]
+                if "**" in result:
+                    result = result[result.rfind("**"):400]
+                elif "\n" in result:
+                    result = result[result.rfind("\n"):400]
                 spoken_text = ""
                 spoken_text_config = await set_get_config_all("dialog", "user_spoken_text", None)
                 if not spoken_text_config == "None":
