@@ -57,17 +57,17 @@ async def download_online_model(url, dir_name, gender, info, speed, voice_model,
             with open(os.path.join(extraction_folder + "/info.txt"), 'w') as writer:
                 writer.write(info)
             with open(os.path.join(extraction_folder + "/gender.txt"), 'w') as writer:
-                writer.write(gender)
+                writer.write(gender.replace(" ", ""))
             with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
-                writer.write(str(speed))
+                writer.write(str(speed).replace(" ", ""))
             with open(os.path.join(extraction_folder + "/voice_model.txt"), "w") as writer:
                 writer.write(voice_model)
             with open(os.path.join(extraction_folder + "/stability.txt"), "w") as writer:
-                writer.write(stability)
+                writer.write(stability.replace(" ", ""))
             with open(os.path.join(extraction_folder + "/similarity_boost.txt"), "w") as writer:
-                writer.write(similarity_boost)
+                writer.write(similarity_boost.replace(" ", ""))
             with open(os.path.join(extraction_folder + "/style.txt"), "w") as writer:
-                writer.write(style)
+                writer.write(style.replace(" ", ""))
             return f'Модель {dir_name} уже существует, но её информация/скорость были изменены'
 
         if 'pixeldrain.com' in url:
