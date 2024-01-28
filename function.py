@@ -336,7 +336,7 @@ async def run_official_gpt(prompt, delay_for_gpt, key_gpt, model="gpt-3.5-turbo"
             if "Error code: 429" in str(e) or "Incorrect API key provided" in str(e):
                 return ""
     else:
-        # не поддерживается в python 3.9
+        # уже поддерживается в python 3.9
         try:
             auth_key = await set_get_config_all("gpt", "auth_key")
             if not auth_key == "None":
