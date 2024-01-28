@@ -1538,7 +1538,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                         "-fr", "3",
                         "-rms", "0.3",
                         "-pro", "0.15",
-                        "-slow"  # значение для диалога
+                        # "-slow"  # значение для диалога
                     ]
                     print("run RVC, AIName:", name)
                     from function import execute_command
