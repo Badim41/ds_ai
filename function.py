@@ -28,26 +28,29 @@ _providers = [
     # AUTH
     # g4f.Provider.Raycast,
     # g4f.Provider.Phind,
-    g4f.Provider.Liaobots,  # - Doker output
+    # g4f.Provider.Liaobots,  # - Doker output
     # g4f.Provider.Bing,
     # g4f.Provider.Bard,
     # g4f.Provider.OpenaiChat,
     # g4f.Provider.Theb,
+    g4f.Provider.GptChatly,
 
     # good providers
     # g4f.Provider.GPTalk,
     # g4f.Provider.AiAsk,  # - rate limit
+    # g4f.Provider.AItianhu,
     g4f.Provider.GeekGpt,  # short answer
     g4f.Provider.GptGo,
     g4f.Provider.Hashnode,
     g4f.Provider.FakeGpt,
+    g4f.Provider.Aichat,
+    g4f.Provider.MyShell,
     # g4f.Provider.Vercel,  # cut answer
     # g4f.Provider.ChatgptDemo,  # error 403
     # g4f.Provider.ChatgptLogin,  # error 403
     # g4f.Provider.ChatgptX,  # error
     # g4f.Provider.ChatgptFree,
     # g4f.Provider.AItianhuSpace,
-    # g4f.Provider.AItianhu,
     # g4f.Provider.ChatForAi,
 
     # bad providers
@@ -1323,7 +1326,8 @@ async def speed_up_audio(input_file, speed_factor):
         sped_up_audio.export(input_file, format="mp3")
 
 
-async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=None, voice_model=None, skip_tts=None, pitch_change=0):
+async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=None, voice_model=None, skip_tts=None,
+                         pitch_change=0):
     currentpitch = int(await set_get_config_all("Default", "currentaipitch", None))
     if tts is None or tts.replace("\n", "").replace(" ", "") == "":
         await result_command_change(f"Пустой текст \"{tts}\"", Color.RED)
@@ -1396,7 +1400,8 @@ async def text_to_speech(tts, write_in_memory, ctx, ai_dictionary=None, speed=No
         pass
 
     from discord_bot import text_to_speech_file
-    pitch = await text_to_speech_file(tts, currentpitch, file_name, voice_model=voice_model, stability=stability, similarity_boost=similarity_boost, style=style)
+    pitch = await text_to_speech_file(tts, currentpitch, file_name, voice_model=voice_model, stability=stability,
+                                      similarity_boost=similarity_boost, style=style)
     pitch += pitch_change
     # если голос не выставлен
     if ai_dictionary == "None" or await set_get_config_all("Default", "currentainame") == "None":
