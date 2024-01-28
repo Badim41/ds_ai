@@ -128,6 +128,7 @@ if __name__ == '__main__':
             if not set_get_config_all_not_async(f"rvc{cuda_number}", "result") == "None":
                 set_get_config_all_not_async(f"rvc{cuda_number}", "result", "None")
                 break
+            time.sleep(0.25)
     else:
         try:
             rvc_model_path, rvc_index_path = get_rvc_model(rvc_dirname)
