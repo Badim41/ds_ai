@@ -838,7 +838,7 @@ async def __tts(
 
     try:
 
-        await ctx.response.send_message('Выполнение...', ai_voice)
+        await ctx.response.send_message('Выполнение...' + ai_voice)
         # count time
         for voice_model in voice_models:
             start_time = datetime.datetime.now()
