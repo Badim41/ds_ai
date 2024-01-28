@@ -1660,7 +1660,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                         f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
                 # print("PROMPT:", prompt)
                 result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "").replace(
-                    "Привет, ребята!", "").replace("Привет, ребята", "").replace("Эй", "")
+                    "Привет, ребята! ", "").replace("Привет, ребята", "").replace("Всем привет, ", "").replace("Эй", "")
                 if "(" in result and ")" in result:
                     result = re.sub(r'\(.*?\)', '', result)
 
