@@ -1638,6 +1638,8 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 if not theme_last == new_theme:
                     theme_last = new_theme
                     theme_temp = new_theme
+                    with open("caversAI/history.txt", "a") as writer:
+                        writer.write(f"\n==Новая тема==: {new_theme}\n\n")
                 else:
                     theme_temp = f"Изначальная тема диалога была {new_theme}, не сильно отходи от её"
 
