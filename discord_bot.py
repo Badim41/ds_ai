@@ -1679,9 +1679,9 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
                 while True:
                     with open("caversAI/dialog_create.txt", "r") as reader:
                         num_lines = len(reader.readlines())
-                    if num_lines > 1:
+                    if num_lines > 2:
                         await asyncio.sleep(3)
-                        print("wait, too many text > 1")
+                        print("wait, too many text > 2")
 
                         if await set_get_config_all("dialog", "dialog") == "False":
                             return
