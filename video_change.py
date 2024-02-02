@@ -51,7 +51,7 @@ async def image_change(output_folder, prompt, cuda_number, cuda_index):
 
 async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
                          pitch, indexrate, loudness, main_vocal, back_vocal,
-                         music, roomsize, wetness, dryness, cuda_numbers):
+                         music, roomsize, wetness, dryness, cuda_numbers, strength_negative_prompt, strength_prompt, strength, seed, steps, negative_prompt):
     try:
 
         # === разбиваем видео на карды ===
@@ -143,7 +143,7 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
             await set_get_config_all("voice", "generated", "None")
             command = [
                 "python",
-                "main_cuda0.py",
+                "cover_gen.py",
                 "-i", extracted_audio_path,
                 "-dir", voice,
                 "-p", str(pitch),

@@ -315,7 +315,7 @@ async def ai_cover(
                 try:
                     command = [
                         "python",
-                        "only_voice_change_cuda0.py",
+                        "voice_change.py",
                         "-i", f"{filename}",
                         "-o", f"{filename}",
                         "-dir", str(voice),
@@ -641,7 +641,7 @@ async def tts(
             await set_get_config_all("Default", "currentainame", ai_voice)
             # запускаем TTS
             from function import text_to_speech
-            await text_to_speech(text, False, ctx, ai_dictionary=ai_voice, speed=speed, voice_model=voice_model,
+            await text_to_speech(text, ctx, ai_dictionary=ai_voice, speed=speed, voice_model=voice_model,
                                  skip_tts=False, pitch_change=pitch_change)
             # await run_main_with_settings(ctx, f"робот протокол 24 {text}",
             #                              False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
@@ -836,7 +836,6 @@ async def create_audio_dialog(ctx: Interaction, cuda, wait_untill):
                         "-slow"  # значение для диалога
                     ]
                     print("run RVC, AIName:", name)
-                    from function import execute_command
                     await execute_command(' '.join(command), ctx)
 
                     # диалог завершён.
@@ -1144,7 +1143,7 @@ if __name__ == "__main__":
 
         if len(arguments) > 1:
             # === load voice models ===
-            from only_voice_change_cuda0 import voice_change0
+            from voice_change import voice_change0
             from only_voice_change_cuda1 import voice_change1
 
             pool = multiprocessing.Pool(processes=2)

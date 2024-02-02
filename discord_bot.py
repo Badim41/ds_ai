@@ -1,40 +1,42 @@
-import asyncio
 import datetime
-import json
 import multiprocessing
-import os
 import random
-import re
-import subprocess
 import sys
-import time
 import traceback
+from PIL import Image
 from moviepy.editor import VideoFileClip
 from pathlib import Path
-from pydub import AudioSegment
 from pytube import Playlist
-
 import speech_recognition as sr
+from openai import AsyncOpenAI
+import base64
 
 import discord
 from discord import Option
 from discord.ext import commands
 from modifed_sinks import StreamSink
-from set_get_config import set_get_config_all, set_get_config_all_not_async
-from use_free_cuda import use_cuda_async, stop_use_cuda_async, use_cuda_images, check_cuda_images, \
-    stop_use_cuda_images
+from function import *
+from discord_tools.detect_mat import moderate_mat_in_sentence
+from discord_tools.chat_gpt import ChatGPT
+from discord_tools.sql_db import set_get_database_async as set_get_config_all
+from discord_tools.secret import *
+from images_AI import Image_Generator
+from video_change import video_pipeline
 
 # from langdetect import detect
 # from bark import preload_models
 
 # Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
-ALL_VOICES = ['Rachel [Ж]', 'Clyde [М]', 'Domi [Ж]', 'Dave [М]', 'Fin [М]', 'Bella [Ж]', 'Antoni [М]', 'Thomas [М]',
-              'Charlie [М]', 'Emily [Ж]', 'Elli [Ж]', 'Callum [М]', 'Patrick [М]', 'Harry [М]', 'Liam [М]',
-              'Dorothy [Ж]', 'Josh [М]', 'Arnold [М]', 'Charlotte [Ж]', 'Matilda [Ж]', 'Matthew [М]', 'James [М]',
-              'Joseph [М]', 'Jeremy [М]', 'Michael [М]', 'Ethan [М]', 'Gigi [Ж]', 'Freya [Ж]', 'Grace [Ж]',
-              'Daniel [М]', 'Serena [Ж]', 'Adam [М]', 'Nicole [Ж]', 'Jessie [М]', 'Ryan [М]', 'Sam [М]', 'Glinda [Ж]',
-              'Giovanni [М]', 'Mimi [Ж]']
+ALL_VOICES = {'Rachel': "Ж", 'Clyde': 'М', 'Domi': 'Ж', 'Dave': 'М', 'Fin': 'М', 'Bella': 'Ж', 'Antoni': 'М',
+              'Thomas': 'М',
+              'Charlie': 'М', 'Emily': 'Ж', 'Elli': 'Ж', 'Callum': 'М', 'Patrick': 'М', 'Harry': 'М', 'Liam': 'М',
+              'Dorothy': 'Ж', 'Josh': 'М', 'Arnold': 'М', 'Charlotte': 'Ж', 'Matilda': 'Ж', 'Matthew': 'М',
+              'James': 'М',
+              'Joseph': 'М', 'Jeremy': 'М', 'Michael': 'М', 'Ethan': 'М', 'Gigi': 'Ж', 'Freya': 'Ж', 'Grace': 'Ж',
+              'Daniel': 'М', 'Serena': 'Ж', 'Adam': 'М', 'Nicole': 'Ж', 'Jessie': 'М', 'Ryan': 'М', 'Sam': 'М',
+              'Glinda': 'Ж',
+              'Giovanni': 'М', 'Mimi': 'Ж'}
 
 connections = {}
 
@@ -42,6 +44,8 @@ stream_sink = StreamSink()
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='\\', intents=intents)
+cuda_manager = Use_Cuda()
+image_generators = []
 
 
 @bot.event
@@ -67,23 +71,14 @@ async def on_message(message):
             return
         ctx = await bot.get_context(message)
 
-        if await set_get_config_all("Default", "robot_name_need") == "False":
-            text = await set_get_config_all("Default", "currentainame") + ", " + text
-        from function import replace_mat_in_sentence
-        text_out = await replace_mat_in_sentence(text)
-        if not text_out == text.lower():
-            text = text_out
+        _, text = await moderate_mat_in_sentence(text)
+
         user = text[:text.find(":")]
         if "[" in text and "]" in text:
             text = re.sub(r'[.*?]', '', text)
-        await set_get_config_all("Default", "user_name", value=user)
-        # info
-        info_was = await set_get_config_all("Default", "currentaiinfo")
-        await set_get_config_all("Default", "currentaiinfo",
-                                 "Ты сейчас играешь на сервере майнкрафт GoldenFire и отвечаешь на сообщения игроков из чата")
-        await run_main_with_settings(ctx, text, True)
-        # info2
-        await set_get_config_all("Default", "currentaiinfo", info_was)
+        chatGPT = ChatGPT()
+        answer = await chatGPT.run_all_gpt(f"{user}:{text}", user_id=user)
+        await ctx.send(answer)
         return
 
     # other users
@@ -91,6 +86,7 @@ async def on_message(message):
         return
     if bot.user in message.mentions:
         text = message.content
+        user = message.author
         ctx = await bot.get_context(message)
         try:
             # получение, на какое сообщение ответили
@@ -100,17 +96,14 @@ async def on_message(message):
                 if "||" in reply_on_message:
                     reply_on_message = re.sub(r'\|\|.*?\|\|', '', reply_on_message)
                 text += f" (Пользователь отвечает на ваше сообщение \"{reply_on_message}\")"
-            if await set_get_config_all("Default", "robot_name_need") == "False":
-                text = await set_get_config_all("Default", "currentainame") + ", " + text
-            from function import replace_mat_in_sentence
-            text_out = await replace_mat_in_sentence(text)
-            if not text_out == text.lower():
-                text = text_out
-            await set_get_config_all("Default", "user_name", value=message.author)
-            await run_main_with_settings(ctx, text, True)
+
+            _, text_out = await moderate_mat_in_sentence(text)
+            chatGPT = ChatGPT()
+            answer = await chatGPT.run_all_gpt(f"{user}:{text}", user_id=user)
+            await ctx.send(answer)
         except Exception as e:
             traceback_str = traceback.format_exc()
-            print(str(traceback_str))
+            await logger.logging(str(traceback_str), Color.RED)
             await ctx.send(f"Ошибка при команде say с параметрами {message}: {e}")
     await bot.process_commands(message)
 
@@ -149,7 +142,7 @@ async def help_command(
             "и музыки\n")
     elif command == "tts":
         await ctx.respond(
-            "# /tts\n(Озвучить текст)\n**text - произносимый текст**\nai_voice - голосовая модель\nspeed - "
+            "# /tts\n(Озвучить текст)\n**text - произносимый текст**\nvoice_name - голосовая модель\nspeed - "
             "Ускорение/замедление\nvoice_model - Модель голоса elevenlab\noutput - Отправляет файл в чат\n"
             "stability - Стабильность голоса (0 - нестабильный, 1 - стабильный)\*\n"
             "similarity_boost - Повышение сходства (0 - отсутствует)\*\n"
@@ -200,59 +193,8 @@ async def help_command(
         await ctx.respond("# /skip\n - пропуск аудио")
 
 
-@bot.slash_command(name="gpt_img", description='Отправить запрос к gpt-4')
-async def __gpt4_image(ctx,
-                       image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
-                                     required=True),
-                       prompt: Option(str, description='запрос', required=True)):
-    from openai import AsyncOpenAI
-    import base64
-
-    api_key = await set_get_config_all("gpt", "avaible_keys")
-    if not api_key == "None""":
-        def encode_image(image_path):
-            with open(image_path, "rb") as image_file:
-                return base64.b64encode(image_file.read()).decode('utf-8')
-
-        image_path = "image" + str(random.randint(1, 1000000)) + ".png"
-        await image.save(image_path)
-        base64_image = encode_image(image_path)
-
-        client = AsyncOpenAI(api_key=api_key)
-
-        response = await client.chat.completions.create(
-            model="gpt-4-vision-preview",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": f"{prompt}"},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/png;base64,{base64_image}"
-                            }
-                        }
-                    ]
-                }
-            ]
-        )
-
-        await write_in_discord(ctx, response.choices[0].message.content)
-    else:
-        await ctx.respond("Не указан API ключ для GPT-4")
-
-
-@bot.slash_command(name="gpt4", description='Отправить запрос к gpt-4')
-async def __gpt4(ctx, prompt: Option(str, description='запрос', required=True)):
-    await ctx.respond("Выполнение...")
-    from function import run_official_gpt
-    text = await run_official_gpt(prompt, 1, True, "gpt-4-1106-preview")
-    await write_in_discord(ctx, text)
-
-
 @bot.slash_command(name="change_video",
-                   description='перерисовать и переозвучить видео. Бот также предложит вам название')
+                   description='Перерисовать и переозвучить видео')
 async def __change_video(
         ctx,
         video_path: Option(discord.SlashCommandOptionType.attachment, description='Файл с видео',
@@ -306,9 +248,9 @@ async def __change_video(
 ):
     cuda_numbers = None
     try:
-        # ошибки входных данных
         await ctx.defer()
 
+        # ошибки входных данных
         voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
         if voice not in voices:
             await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
@@ -319,7 +261,7 @@ async def __change_video(
         if not video_path:
             return
         # используем видеокарты
-        cuda_avaible = await check_cuda_images()
+        cuda_avaible = await cuda_manager.check_cuda()
         if cuda_avaible == 0:
             await ctx.respond("Нет свободных видеокарт")
             return
@@ -328,13 +270,12 @@ async def __change_video(
 
         cuda_numbers = []
         for i in range(cuda_avaible):
-            cuda_numbers.append(await use_cuda_images())
+            cuda_numbers.append(await cuda_manager.use_cuda_images())
 
         # run timer
-        start_time = datetime.datetime.now()
+        timer = Time_Count()
         # save
-        filename = str(random.randint(1, 1000000)) + ".mp4"
-        print(filename)
+        filename = f"{ctx.author.id}.mp4"
         await video_path.save(filename)
         # сколько кадров будет в результате
         video_clip = VideoFileClip(filename)
@@ -344,10 +285,9 @@ async def __change_video(
             await ctx.send(
                 f"Слишком много кадров, снизьте параметр FPS! Максимальное разрешённое количество кадров в видео: {max_frames}. Количество кадров у вас - {total_frames}")
             for i in cuda_numbers:
-                await stop_use_cuda_async(i)
+                await cuda_manager.stop_use_cuda(i)
             return
         else:
-            # на kaggle тратится около 13 секунд, на колаб - 16
             if len(cuda_numbers) > 1:
                 seconds = total_frames * 13 / len(cuda_numbers)
             else:
@@ -374,40 +314,27 @@ async def __change_video(
             else:
                 time_spend = f"{seconds} секунд"
             await ctx.send(f"Видео будет обрабатываться ~{time_spend}")
-        # loading params
-        for i in cuda_numbers:
-            await set_get_config_all(f"Image{i}", "strength_negative_prompt", strength_negative_prompt)
-            await set_get_config_all(f"Image{i}", "strength_prompt", strength_prompt)
-            await set_get_config_all(f"Image{i}", "strength", strength)
-            await set_get_config_all(f"Image{i}", "seed", seed)
-            await set_get_config_all(f"Image{i}", "steps", steps)
-            await set_get_config_all(f"Image{i}", "negative_prompt", negative_prompt)
         print("params suc")
         # wait for answer
-        from video_change import video_pipeline
         video_path = await video_pipeline(filename, fps, extension, prompt, voice, pitch,
                                           indexrate, loudness, main_vocal, back_vocal, music,
-                                          roomsize, wetness, dryness, cuda_numbers)
-        # count time
-        end_time = datetime.datetime.now()
-        spent_time = str(end_time - start_time)
-        # убираем миллисекунды
-        spent_time = spent_time[:spent_time.find(".")]
-        # отправляем
-        await ctx.send("Вот как я изменил ваше видео🖌. Потрачено " + spent_time)
+                                          roomsize, wetness, dryness, cuda_numbers, strength_negative_prompt,
+                                          strength_prompt, strength, seed, steps, negative_prompt)
+
+        await ctx.send("Вот как я изменил ваше видео🖌. Потрачено " + timer.count_time())
         await send_file(ctx, video_path)
         # освобождаем видеокарты
         for i in cuda_numbers:
-            await stop_use_cuda_images(i)
+            await cuda_manager.stop_use_cuda(i)
     except Exception as e:
         await ctx.send(f"Ошибка при изменении картинки (с параметрами\
                           {fps, extension, prompt, negative_prompt, steps, seed, strength, strength_prompt, voice, pitch, indexrate, loudness, main_vocal, back_vocal, music, roomsize, wetness, dryness}\
                           ): {e}")
         if cuda_numbers:
             for i in range(cuda_avaible):
-                await stop_use_cuda_images(i)
+                await cuda_manager.stop_use_cuda(i)
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         raise e
 
 
@@ -456,6 +383,11 @@ async def __image(ctx,
                                   default=1, min_value=1,
                                   max_value=16)
                   ):
+    async def get_image_dimensions(file_path):
+        with Image.open(file_path) as img:
+            sizes = img.size
+        return str(sizes).replace("(", "").replace(")", "").replace(" ", "").split(",")
+
     await ctx.defer()
     if await set_get_config_all(f"Image0", "model_loaded") == "False":
         await ctx.respond("модель для картинок не загружена")
@@ -464,16 +396,14 @@ async def __image(ctx,
         cuda_number = None
         try:
             try:
-                cuda_number = await use_cuda_images()
+                cuda_number = await cuda_manager.use_cuda_images()
             except Exception:
                 await ctx.respond("Нет свободных видеокарт")
                 return
 
             await set_get_config_all(f"Image{cuda_number}", "result", "None")
-            # throw extensions
-            # run timer
-            start_time = datetime.datetime.now()
-            input_image = "images/image" + str(random.randint(1, 1000000)) + ".png"
+            timer = Time_Count()
+            input_image = "images/image" + str(ctx.author.id) + ".png"
             await image.save(input_image)
             # get image size and round to 64
             if x is None or y is None:
@@ -494,46 +424,27 @@ async def __image(ctx,
                 seed_current = random.randint(1, 9007199254740991)
             else:
                 seed_current = seed
-            await set_get_config_all(f"Image{cuda_number}", "strength_negative_prompt", strength_negative_prompt)
-            await set_get_config_all(f"Image{cuda_number}", "strength_prompt", strength_prompt)
-            await set_get_config_all(f"Image{cuda_number}", "strength", strength)
-            await set_get_config_all(f"Image{cuda_number}", "seed", seed_current)
-            await set_get_config_all(f"Image{cuda_number}", "steps", steps)
-            await set_get_config_all(f"Image{cuda_number}", "negative_prompt", negative_prompt)
-            await set_get_config_all(f"Image{cuda_number}", "prompt", prompt)
-            await set_get_config_all(f"Image{cuda_number}", "x", x)
-            await set_get_config_all(f"Image{cuda_number}", "y", y)
-            await set_get_config_all(f"Image{cuda_number}", "input", input_image)
-            print("params suc")
-            # wait for answer
-            while True:
-                output_image = await set_get_config_all(f"Image{cuda_number}", "result", None)
-                if not output_image == "None":
-                    break
-                await asyncio.sleep(0.25)
+            image_path = image_generator_1.generate_image(prompt, negative_prompt, x, y, steps, seed, strength,
+                                                          strength_prompt,
+                                                          strength_negative_prompt, input_image)
 
-            # count time
-            end_time = datetime.datetime.now()
-            spent_time = str(end_time - start_time)
-            # убираем часы и миллисекунды
-            spent_time = spent_time[spent_time.find(":") + 1:]
-            spent_time = spent_time[:spent_time.find(".")]
             # отправляем
             if repeats == 1:
-                await ctx.respond("Вот как я изменил ваше изображение🖌. Потрачено " + spent_time)
+                await ctx.respond("Вот как я изменил ваше изображение🖌. Потрачено " + timer.count_time())
             else:
-                await ctx.send("Вот как я изменил ваше изображение🖌. Потрачено " + spent_time + f"сид:{seed_current}")
-            await send_file(ctx, output_image, delete_file=True)
+                await ctx.send(
+                    "Вот как я изменил ваше изображение🖌. Потрачено " + timer.count_time() + f"сид:{seed_current}")
+            await send_file(ctx, image_path, delete_file=True)
             # перестаём использовать видеокарту
-            await stop_use_cuda_images(cuda_number)
+            await cuda_manager.stop_use_cuda(cuda_number)
         except Exception as e:
             traceback_str = traceback.format_exc()
-            print(str(traceback_str))
+            await logger.logging(str(traceback_str), Color.RED)
             await ctx.send(f"Ошибка при изменении картинки (с параметрами\
                               {prompt, negative_prompt, steps, x, y, strength, strength_prompt, strength_negative_prompt}): {e}")
             # перестаём использовать видеокарту
             if not cuda_number is None:
-                await stop_use_cuda_images(cuda_number)
+                await cuda_manager.stop_use_cuda(cuda_number)
 
 
 @bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
@@ -556,7 +467,7 @@ async def __config(
             await ctx.respond(section + " " + key + " " + value)
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при изменении конфига (с параметрами{section},{key},{value}): {e}")
 
 
@@ -569,7 +480,6 @@ async def __read_messages(
                        required=True)
 ):
     await ctx.defer()
-    from function import chatgpt_get_result, text_to_speech
     try:
         messages = []
         async for message in ctx.channel.history(limit=number):
@@ -578,14 +488,12 @@ async def __read_messages(
         messages = messages[::-1]
         # убираем последнее / последние сообщения
         messages = messages[:number - 1]
-        print(messages)
-        result = await chatgpt_get_result(f"{prompt}. Вот история сообщений:{messages}", ctx)
-        print(result)
-        await ctx.respond(result)
-        await text_to_speech(result, False, ctx)
+        chatGPT = ChatGPT()
+        answer = await chatGPT.run_all_gpt(f"{prompt}. Вот история сообщений:{messages}", user_id=0)
+        await ctx.respond(answer)
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Произошла ошибка: {e}")
 
 
@@ -613,7 +521,7 @@ async def join(ctx):
         await ctx.respond("Присоединяюсь")
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при присоединении: {e}")
 
 
@@ -652,7 +560,7 @@ async def record(ctx):  # if you're using commands.Bot, this will also work.
         await recognize(ctx)
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при записи звука из микрофона: {e}")
 
 
@@ -668,7 +576,7 @@ async def stop_recording(ctx):
             await ctx.respond("Я и так тебя не слушал ._.")
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при остановки записи микрофона: {e}")
 
 
@@ -686,7 +594,7 @@ async def disconnect(ctx):
             del connections[ctx.guild.id]  # remove the guild from the cache.
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при выходе из войс-чата: {e}")
 
 
@@ -718,7 +626,7 @@ async def pause(ctx):
             await ctx.respond("Нет активного аудио для приостановки или продолжения.")
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при паузе: {e}")
 
 
@@ -737,27 +645,8 @@ async def skip(ctx):
             await ctx.respond("Нет активного аудио для пропуска.")
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при пропуске: {e}")
-
-
-@bot.slash_command(name="lenght", description='Длина запроса')
-async def __lenght(
-        ctx,
-        number: Option(int, description='Длина запроса для GPT (Число от 1 до 1000)', required=True, min_value=1,
-                       max_value=1000)
-):
-    try:
-        await ctx.defer()
-        await ctx.respond('Выполнение...')
-        # for argument in (number,"""boolean, member, text, choice"""):
-        print(f'{number} ({type(number).__name__})\n')
-        await run_main_with_settings(ctx, f"робот длина запроса {number}", True)
-        await ctx.respond(f"Длина запроса: {number}")
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        print(str(traceback_str))
-        await ctx.respond(f"Ошибка при изменении длины запроса (с параметрами{number}): {e}")
 
 
 @bot.slash_command(name="say", description='Сказать роботу что-то')
@@ -770,26 +659,20 @@ async def __say(
 ):
     # ["fast", "all", "None"], ["быстрый режим", "много ответов (медленный)", "Экономный режим"]
     if gpt_mode:
-        gpt_mode = gpt_mode.replace("быстрый режим", "fast").replace("много ответов (медленный)", "all").replace(
+        gpt_mode = gpt_mode.replace("быстрый режим", "Fast").replace("много ответов (медленный)", "All").replace(
             "экономный режим", "None")
     try:
         await ctx.respond('Выполнение...')
 
         if gpt_mode:
-            await set_get_config_all("gpt", "gpt_mode", gpt_mode)
-        if await set_get_config_all("Default", "robot_name_need") == "False":
-            text = await set_get_config_all("Default", "currentainame") + ", " + text
-        from function import replace_mat_in_sentence
-        text_out = await replace_mat_in_sentence(text)
-        if not text_out == text.lower():
-            text = text_out
-        print(f'{text} ({type(text).__name__})\n')
-        await set_get_config_all("Default", "user_name", value=ctx.author.name)
-
-        await run_main_with_settings(ctx, text, True)
+            gpt_mode = "Fast"
+        _, text = await moderate_mat_in_sentence(text)
+        chatGPT = ChatGPT()
+        answer = await chatGPT.run_all_gpt(text, user_id=ctx.author.id, mode=gpt_mode)
+        await ctx.send(answer)
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при команде say (с параметрами{text}): {e}")
 
 
@@ -797,9 +680,9 @@ async def __say(
 async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
-        ai_voice: Option(str, description='Голос для озвучки', required=False, default=None),
+        voice_name: Option(str, description='Голос для озвучки', required=False, default=None),
         speed: Option(float, description='Ускорение голоса', required=False, default=None, min_value=1, max_value=3),
-        voice_model: Option(str, description=f'Какая модель elevenlabs будет использована', required=False,
+        voice_model_eleven: Option(str, description=f'Какая модель elevenlabs будет использована', required=False,
                             default=None),
         stability: Option(float, description='Стабильность голоса', required=False, default=None, min_value=0,
                           max_value=1),
@@ -811,63 +694,39 @@ async def __tts(
         pitch_change: Option(int, description="Изменить тональность", required=False, default=0, min_value=-24,
                              max_value=24)
 ):
-    if voice_model == "All":
-        voice_models = ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie', 'Emily',
-                        'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte',
-                        'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya', 'Grace',
-                        'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni', 'Mimi']
-    elif voice_model:
-        found_voice = False
-        for voice_1 in ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie', 'Emily',
-                        'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte',
-                        'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya', 'Grace',
-                        'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni', 'Mimi']:
-            if voice_1 in voice_model:
-                voice_models = [voice_1]
-                found_voice = True
-                break
-        if not found_voice:
+    voice_models = None
+    if voice_model_eleven == "All":
+        voice_models = ALL_VOICES
+    elif voice_model_eleven:
+        for voice_model_temp, gender in ALL_VOICES:
+            if voice_model_temp.lower == voice_model_eleven.lower():
+                voice_models = {voice_model_temp: gender}
+        if voice_models is None:
             await ctx.response.send_message("Список голосов (М - мужские, Ж - женские): \n" + ';'.join(ALL_VOICES))
             return
     else:
-        voice_models = [None]
-    # заменяем 3 значения
-    for key in [stability, similarity_boost, style]:
-        if key:
-            await set_get_config_all("voice", str(key), key)
-
+        voice_models = {None: "Ж"}
     try:
 
-        await ctx.response.send_message('Выполнение...' + ai_voice)
+        await ctx.response.send_message('Выполнение...' + voice_name)
         # count time
-        for voice_model in voice_models:
-            start_time = datetime.datetime.now()
-            cuda = await use_cuda_async()
+        for voice_model, _ in voice_models:
+            timer = Time_Count()
+            cuda = await cuda_manager.use_cuda()
             voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
-            if str(ai_voice) not in voices:
+            if str(voice_name) not in voices:
                 return await ctx.response.send_message("Выберите голос из списка: " + ';'.join(voices))
-            from function import replace_mat_in_sentence
-            text_out = await replace_mat_in_sentence(text)
-            if not text_out == text.lower():
-                await ctx.response.send_message("Такое точно нельзя произносить!")
+            mat_found, text = await moderate_mat_in_sentence(text)
+            if mat_found:
+                await ctx.respond("Такое точно нельзя произносить!")
                 return
-            print(f'{text} ({type(text).__name__})\n')
             # запускаем TTS
-            from function import text_to_speech
-            await text_to_speech(text, False, ctx, ai_dictionary=ai_voice, speed=speed, voice_model=voice_model,
-                                 skip_tts=False, pitch_change=pitch_change)
-            # await run_main_with_settings(ctx, f"робот протокол 24 {text}",
-            #                              False)  # await text_to_speech(text, False, ctx, ai_dictionary=ai_voice)
-            # перестаём использовать видеокарту
-            await stop_use_cuda_async(cuda)
+            voice_changer = TextToSpeechRVC(voice_name=voice_name, voice_model_eleven=voice_model_eleven, pitch_change=pitch_change)
 
-            # count time
-            end_time = datetime.datetime.now()
-            spent_time = str(end_time - start_time)
-            # убираем миллисекунды
-            spent_time = spent_time[:spent_time.find(".")]
-            if "0:00:00" not in str(spent_time):
-                await ctx.respond("Потрачено на обработку:" + spent_time)
+            # перестаём использовать видеокарту
+            await cuda_manager.stop_use_cuda(cuda)
+
+            await ctx.respond("Потрачено на обработку:" + timer.count_time())
             if output:
                 if output.startswith("1"):
                     await send_file(ctx, f"{voice_model}.mp3")
@@ -876,44 +735,42 @@ async def __tts(
                     await send_file(ctx, f"{voice_model}.mp3")
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
         # перестаём использовать видеокарту
-        await stop_use_cuda_async(cuda)
+        await cuda_manager.stop_use_cuda(cuda_number)
 
 
 # @bot.slash_command(name="bark", description='Тоже, что и tts, но менее стабильный')
 async def __bark(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
-        ai_voice: Option(str, description='Голос для озвучки', required=False, default=None),
+        voice_name: Option(str, description='Голос для озвучки', required=False, default=None),
         speaker: Option(int, description='Говорящий (0-6 - мужские, 7-9 - женские)', required=False,
                         max_value=9, min_value=0, default=1),
         output: Option(str, description='Отправить результат', required=False,
                        choices=["1 файл (RVC)", "2 файла (RVC & Bark)", "None"], default=None)
 ):
-    ai_voice_temp = None
+    voice_name_temp = None
     try:
         await ctx.defer()
         await ctx.respond('Выполнение...')
         # count time
         start_time = datetime.datetime.now()
-        cuda = await use_cuda_async()
+        cuda = await cuda_manager.use_cuda()
         voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
-        if str(ai_voice) not in voices:
+        if str(voice_name) not in voices:
             return await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
-        from function import replace_mat_in_sentence
         text_out = await replace_mat_in_sentence(text)
         if not text_out == text.lower():
             await ctx.respond("Такое точно нельзя произносить!")
             return
         print(f'{text} ({type(text).__name__})\n')
         # меняем голос
-        if ai_voice is None:
-            ai_voice = await set_get_config_all("Default", "currentainame")
+        if voice_name is None:
+            voice_name = await set_get_config_all("Default", "currentainame")
             print(await set_get_config_all("Default", "currentainame"))
         # запускаем TTS
-        from function import gtts
 
         language = "ru"
         # try:
@@ -932,21 +789,21 @@ async def __bark(
                 f"only_voice_change_cuda{cuda}.py",
                 "-i", "bark1.mp3",
                 "-o", "bark2.mp3",
-                "-dir", ai_voice,
+                "-dir", voice_name,
                 "-p", "0",
                 "-ir", "0.5",
                 "-fr", "3",
                 "-rms", "0.3",
                 "-pro", "0.15"
             ]
-            print("run RVC, AIName:", ai_voice)
+            print("run RVC, AIName:", voice_name)
             subprocess.run(command, check=True)
         except subprocess.CalledProcessError as e:
             traceback_str = traceback.format_exc()
-            print(str(traceback_str))
+            await logger.logging(str(traceback_str), Color.RED)
             await ctx.respond(f"Ошибка при изменении голоса(ID:d1): {e}")
 
-        await stop_use_cuda_async(cuda)
+        await cuda_manager.stop_use_cuda(cuda_number)
 
         # count time
         end_time = datetime.datetime.now()
@@ -963,13 +820,13 @@ async def __bark(
                 await send_file(ctx, "bark2.mp3")
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
         # возращаем голос
-        if not ai_voice_temp is None:
-            await set_get_config_all("Default", "currentainame", ai_voice_temp)
+        if not voice_name_temp is None:
+            await set_get_config_all("Default", "currentainame", voice_name_temp)
         # перестаём использовать видеокарту
-        await stop_use_cuda_async(cuda)
+        await cuda_manager.stop_use_cuda(cuda_number)
 
 
 async def get_links_from_playlist(playlist_url):
@@ -982,7 +839,7 @@ async def get_links_from_playlist(playlist_url):
         return video_links
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         print(f"Произошла ошибка при извлечении плейлиста: {e}")
         return []
 
@@ -1109,7 +966,7 @@ async def __cover(
                 try:
                     command = [
                         "python",
-                        "only_voice_change_cuda0.py",
+                        "voice_change.py",
                         "-i", f"{filename}",
                         "-o", f"{filename}",
                         "-dir", str(voice),
@@ -1124,7 +981,7 @@ async def __cover(
                     await send_file(ctx, filename, delete_file=True)
                 except subprocess.CalledProcessError as e:
                     traceback_str = traceback.format_exc()
-                    print(str(traceback_str))
+                    await logger.logging(str(traceback_str), Color.RED)
                     await ctx.respond(f"Ошибка при изменении голоса(ID:d1): {e}")
             else:
                 # изменить голос без музыки
@@ -1152,7 +1009,7 @@ async def __cover(
 
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при изменении голоса(ID:d5) (с параметрами {param_string}): {e}")
 
 
@@ -1205,12 +1062,12 @@ async def __dialog(
         asyncio.ensure_future(gpt_dialog(names, theme, infos, prompt, ctx))
         asyncio.ensure_future(play_dialog(ctx))
         await asyncio.gather(create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"))
-                             # create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"),
+        # create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"),
         # create_audio_dialog(ctx, 4, "dialog"), create_audio_dialog(ctx, 5, "dialog"))
         # create_audio_dialog(ctx, 6, "dialog"), create_audio_dialog(ctx, 7, "dialog"))
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при диалоге: {e}")
 
 
@@ -1226,14 +1083,14 @@ async def agrs_with_txt(txt_file):
         gender = []
         info = []
         speed = []
-        voice_model = []
+        voice_model_eleven = []
         stability, similarity_boost, style = [], [], []
         for line in lines:
             if line.strip():
                 # забейте, просто нужен пробел и всё
                 line += " "
                 line = line.replace(": ", ":")
-                # /add_voice url:url_to_model name:some_name gender:мужчина info:some_info speed:some_speed voice_model:some_model
+                # /add_voice url:url_to_model name:some_name gender:мужчина info:some_info speed:some_speed voice_model_eleven:some_model
                 pattern = r'(\w+):(.+?)\s(?=\w+:|$)'
 
                 matches = re.findall(pattern, line)
@@ -1244,18 +1101,18 @@ async def agrs_with_txt(txt_file):
                 gender.append(arguments.get('gender', None))
                 info.append(arguments.get('info', "Отсутствует"))
                 speed.append(arguments.get('speed', "1"))
-                voice_model.append(arguments.get('voice_model', "James"))
+                voice_model_eleven.append(arguments.get('voice_model_eleven', "James"))
                 stability.append(arguments.get('stability', "0.4"))
                 similarity_boost.append(arguments.get('similarity_boost', "0.25"))
                 style.append(arguments.get('style', "0.4"))
-        return url, name, gender, info, speed, voice_model, stability, similarity_boost, style
+        return url, name, gender, info, speed, voice_model_eleven, stability, similarity_boost, style
     except Exception:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         return None, None, None, None, None, None, None, None, None
 
 
-async def download_voice(ctx, url, name, gender, info, speed, voice_model, change_voice, stability="0.4",
+async def download_voice(ctx, url, name, gender, info, speed, voice_model_eleven, change_voice, stability="0.4",
                          similarity_boost="0.25", style="0.4"):
     if name == "None" or ";" in name or "/" in name or "\\" in name:
         await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
@@ -1275,7 +1132,7 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model, chang
             name,
             gender,
             f"{info}",
-            voice_model,
+            voice_model_eleven,
             str(speed),
             stability,
             similarity_boost,
@@ -1290,7 +1147,7 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model, chang
         await ctx.send(f"Модель {name} успешно установлена!")
     except subprocess.CalledProcessError as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.respond("Ошибка при скачивании голоса.")
 
 
@@ -1307,7 +1164,7 @@ async def __add_voice(
                      default="Отсутствует"),
         speed: Option(float, description=f'Ускорение/замедление голоса', required=False,
                       default=1, min_value=1, max_value=3),
-        voice_model: Option(str, description=f'Какая модель elevenlabs будет использована', required=False,
+        voice_model_eleven: Option(str, description=f'Какая модель elevenlabs будет использована', required=False,
                             default="Adam"),
         change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
                              default=False),
@@ -1315,30 +1172,20 @@ async def __add_voice(
                          description='Файл txt для добавления нескольких моделей сразу',
                          required=False, default=None)
 ):
-    if voice_model:
-        found_voice = False
-        for voice_1 in ['Rachel', 'Clyde', 'Domi', 'Dave', 'Fin', 'Bella', 'Antoni', 'Thomas', 'Charlie', 'Emily',
-                        'Elli', 'Callum', 'Patrick', 'Harry', 'Liam', 'Dorothy', 'Josh', 'Arnold', 'Charlotte',
-                        'Matilda', 'Matthew', 'James', 'Joseph', 'Jeremy', 'Michael', 'Ethan', 'Gigi', 'Freya', 'Grace',
-                        'Daniel', 'Serena', 'Adam', 'Nicole', 'Jessie', 'Ryan', 'Sam', 'Glinda', 'Giovanni', 'Mimi']:
-            if voice_1 in voice_model:
-                voice_model = voice_1
-                found_voice = True
-                break
-        if not found_voice:
-            await ctx.respond("Список голосов (М - мужские, Ж - женские): \n" + ';'.join(ALL_VOICES))
-            return
+    if voice_model_eleven not in ALL_VOICES:
+        await ctx.respond("Список голосов: \n" + '; '.join(ALL_VOICES))
+        return
     await ctx.defer()
     await ctx.respond('Выполнение...')
     if txt_file:
-        urls, names, genders, infos, speeds, voice_models, stabilities, similarity_boosts, styles = await agrs_with_txt(
+        urls, names, genders, infos, speeds, voice_model_elevens, stabilities, similarity_boosts, styles = await agrs_with_txt(
             txt_file)
         print("url:", urls)
         print("name:", names)
         print("gender:", genders)
         print("info:", infos)
         print("speed:", speeds)
-        print("voice_model:", voice_models)
+        print("voice_model_eleven:", voice_model_elevens)
         print("stabilities:", stabilities)
         print("similarity_boosts:", similarity_boosts)
         print("styles:", styles)
@@ -1352,13 +1199,13 @@ async def __add_voice(
             if genders[i] is None:
                 await ctx.send(f"Не указан пол в {i + 1} моделе ({name})")
                 continue
-            await download_voice(ctx, urls[i], names[i], genders[i], infos[i], speeds[i], voice_models[i], False,
+            await download_voice(ctx, urls[i], names[i], genders[i], infos[i], speeds[i], voice_model_elevens[i], False,
                                  stability=stabilities[i], similarity_boost=similarity_boosts[i], style=styles[i])
         await ctx.send("Все модели успешно установлены!")
         return
     if pitch is None:
         pitch = gender
-    await download_voice(ctx, url, name, pitch, info, speed, voice_model, change_voice)
+    await download_voice(ctx, url, name, pitch, info, speed, voice_model_eleven, change_voice)
 
 
 @bot.command(aliases=['cmd'], help="командная строка")
@@ -1382,11 +1229,11 @@ async def command_line(ctx, *args):
                 await ctx.author.send(line)
     except subprocess.CalledProcessError as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.author.send(f"Ошибка выполнения команды: {e}")
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.author.send(f"Произошла неизвестная ошибка: {e}")
 
 
@@ -1405,7 +1252,6 @@ async def play_dialog(ctx):
                         if file not in lines:
                             await asyncio.sleep(0.1)
                             continue
-                    from function import playSoundFile
                     number += 1
                     await set_get_config_all("dialog", "play_number", number)
                     speaker = file[:file.find(".")]
@@ -1416,71 +1262,11 @@ async def play_dialog(ctx):
                     await ctx.send("end")
                     not_found_file = False
             if not_found_file:
-                from function import result_command_change, Color
-                await result_command_change("Нет аудио для диалога!", Color.RED)
+                await logger.logging("warn: Нет аудио для диалога!", Color.RED)
         except Exception as e:
             traceback_str = traceback.format_exc()
-            print(str(traceback_str))
+            await logger.logging(str(traceback_str), Color.RED)
             await ctx.send(f"Ошибка при изменении голоса(ID:d2): {e}")
-
-
-async def get_voice_id_by_name(voice_name):
-    with open('voices.json', 'r', encoding='utf-8') as file:
-        data = json.load(file)
-    voice = next((v for v in data["voices"] if v["name"] == voice_name), None)
-    return voice["voice_id"] if voice else None
-
-
-async def text_to_speech_file(tts, currentpitch, file_name, voice_model="Adam", stability=None, similarity_boost=None,
-                              style=None):
-    from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
-    max_simbols = await set_get_config_all("voice", "max_simbols", None)
-
-    if len(tts) > int(max_simbols) or await set_get_config_all("voice", "avaible_keys",
-                                                               None) == "None" or voice_model == "None":
-        print("gtts1")
-        from function import gtts
-        await gtts(tts, file_name, language="ru")
-        currentpitch -= 12
-    else:
-        # получаем ключ для elevenlab
-        keys = (await set_get_config_all("voice", "avaible_keys", None)).split(";")
-        key = keys[0]
-        if not key == "Free":
-            set_api_key(key)
-
-        if stability is None:
-            stability = float(await set_get_config_all("voice", "stability"))
-        if similarity_boost is None:
-            similarity_boost = float(await set_get_config_all("voice", "similarity_boost"))
-        if style is None:
-            style = float(await set_get_config_all("voice", "style"))
-        try:
-            # Arnold(быстрый) Thomas Adam Antoni !Antoni(мяг) !Clyde(тяж) !Daniel(нейтр) !Harry !James Patrick
-            voice_id = await get_voice_id_by_name(voice_model)
-            # print("VOICE_ID_ELEVENLABS:", voice_id)
-            audio = generate(
-                text=tts,
-                model='eleven_multilingual_v2',
-                voice=Voice(
-                    voice_id=voice_id,
-                    settings=VoiceSettings(stability=stability, similarity_boost=similarity_boost, style=style,
-                                           use_speaker_boost=True)
-                ),
-            )
-
-            save(audio, file_name)
-        except Exception as e:
-            from function import remove_unavaible_voice_api_key
-            print(f"Ошибка при выполнении команды (ID:f16): {e}")
-            if "Please play" in str(e):
-                await set_get_config_all("voice", "avaible_keys", "None")
-            await remove_unavaible_voice_api_key()
-            pitch = await text_to_speech_file(tts, currentpitch, file_name, voice_model=voice_model,
-                                              stability=stability, similarity_boost=similarity_boost, style=style)
-            return pitch
-            # gtts(tts, language[:2], file_name)
-    return currentpitch
 
 
 async def create_audio_dialog(ctx, cuda, wait_untill):
@@ -1507,10 +1293,10 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                         pitch = int(text)
 
                 # выставлены аргументы для elevenlabs
-                voice_model, stability, similarity_boost, style = None, None, None, None
+                voice_model_eleven, stability, similarity_boost, style = None, None, None, None
                 try:
-                    with open(f"rvc_models/{name}/voice_model.txt", "r") as file:
-                        voice_model = file.read()
+                    with open(f"rvc_models/{name}/voice_model_eleven.txt", "r") as file:
+                        voice_model_eleven = file.read()
                     with open(f"rvc_models/{name}/stability.txt", "r") as file:
                         stability = file.read()
                     with open(f"rvc_models/{name}/similarity_boost.txt", "r") as file:
@@ -1523,7 +1309,7 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                 filename = int(await set_get_config_all("dialog", "files_number", None))
                 await set_get_config_all("dialog", "files_number", filename + 1)
                 filename = "song_output/" + str(filename) + name + ".mp3"
-                pitch = await text_to_speech_file(line[:line.find("-voice")], pitch, filename, voice_model=voice_model,
+                pitch = await text_to_speech_file(line[:line.find("-voice")], pitch, filename, voice_model_eleven=voice_model_eleven,
                                                   stability=stability,
                                                   similarity_boost=similarity_boost, style=style)
                 try:
@@ -1541,7 +1327,6 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                         # "-slow"  # значение для диалога
                     ]
                     print("run RVC, AIName:", name)
-                    from function import execute_command
                     await asyncio.ensure_future(execute_command(' '.join(command), ctx))
 
                     # диалог завершён.
@@ -1554,13 +1339,12 @@ async def create_audio_dialog(ctx, cuda, wait_untill):
                         with open(os.path.join(f"rvc_models/{name}/speed.txt"), "r") as reader:
                             speed = float(reader.read())
                             # print("SPEED:", speed)
-                        from function import speed_up_audio
                         await speed_up_audio(filename, speed)
                     with open(play_path, "a") as writer:
                         writer.write(filename + "\n")
                 except Exception as e:
                     traceback_str = traceback.format_exc()
-                    print(str(traceback_str))
+                    await logger.logging(str(traceback_str), Color.RED)
                     await ctx.send(f"Ошибка при изменении голоса(ID:d3): {e}")
             else:
                 await asyncio.sleep(0.5)
@@ -1585,8 +1369,7 @@ async def remove_line_from_txt(file_path, delete_line):
 
 
 async def write_dialog_in_txt(result, names):
-    from function import result_command_change, Color
-    await result_command_change(result, Color.GRAY)
+    await logger.logging(result, Color.GRAY)
     with open("caversAI/dialog_create.txt", "a") as writer:
         for line in result.split("\n"):
             for name in names:
@@ -1607,7 +1390,6 @@ async def write_dialog_in_txt(result, names):
 
 
 async def gpt_dialog(names, theme, infos, prompt_global, ctx):
-    from function import chatgpt_get_result
     # Делаем диалог между собой
     if await set_get_config_all("dialog", "dialog", None) == "True":
         prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)}. На тему \"{theme}\". "
@@ -1694,7 +1476,7 @@ async def gpt_dialog(names, theme, infos, prompt_global, ctx):
 
             except Exception as e:
                 traceback_str = traceback.format_exc()
-                print(str(traceback_str))
+                await logger.logging(str(traceback_str), Color.RED)
                 await ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
 
 
@@ -1706,14 +1488,12 @@ async def themer_set(ctx, *args):
 
 
 async def run_main_with_settings(ctx, spokenText, writeAnswer):
-    from function import start_bot
     await start_bot(ctx, spokenText, writeAnswer)
 
 
 async def write_in_discord(ctx, text):
-    from function import result_command_change, Color
     if text == "" or text is None:
-        await result_command_change("ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
+        await logger.logging("error: ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
         return
     if len(text) < 1990:
         await ctx.send(text)
@@ -1741,14 +1521,15 @@ async def send_file(ctx, file_path, delete_file=False):
         await ctx.send('Файл не найден.')
     except discord.HTTPException as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         await ctx.send(f'Произошла ошибка при отправке файла: {e}.')
 
 
-async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
-    # Проверяем, находится ли бот в голосовом канале
-    if start_seconds == -1:
-        start_seconds = int(await set_get_config_all("Sound", "stop_milliseconds", None)) // 1000
+async def playSoundFileDiscord(ctx, audio_file_path, duration=0, start_seconds=0):
+    if not ctx.voice_client:
+        print("Skip play")
+        return
+
     try:
         if not ctx.voice_client:
             await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
@@ -1756,6 +1537,10 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
         # Проверяем, играет ли что-то уже
         while await set_get_config_all("Sound", "playing", None) == "True":
             await asyncio.sleep(0.1)
+
+        if duration <= 0:
+            duration = len(AudioSegment.from_file(audio_file_path)) / 1000
+
         await set_get_config_all("Sound", "playing", "True")
         # проигрываем
         source = discord.FFmpegPCMAudio(audio_file_path, options=f"-ss {start_seconds} -t {duration}")
@@ -1776,12 +1561,10 @@ async def playSoundFileDiscord(ctx, audio_file_path, duration, start_seconds):
             if resume:
                 voice_client.resume()
 
-            await set_get_config_all("Sound", "stop_milliseconds",
-                                     int(await set_get_config_all("Sound", "stop_milliseconds")) + 500)
         await set_get_config_all("Sound", "playing", "False")
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         print(f"Ошибка, {e}")
         await set_get_config_all("Sound", "playing", "False")
 
@@ -1835,7 +1618,7 @@ async def recognize(ctx):
                     pass
                 except sr.RequestError as e:
                     traceback_str = traceback.format_exc()
-                    print(str(traceback_str))
+                    await logger.logging(str(traceback_str), Color.RED)
                     print(f"Ошибка при распознавании: {e}")
                 # удаление out_all.wav
                 try:
@@ -1849,11 +1632,10 @@ async def recognize(ctx):
                     empty_audio.export(wav_filename, format="wav")
                 except Exception as e:
                     traceback_str = traceback.format_exc()
-                    print(str(traceback_str))
+                    await logger.logging(str(traceback_str), Color.RED)
                     print(f"Ошибка при создании пустого аудиофайла: {e}")
-                # вызов function
+
                 if not text is None:
-                    from function import replace_mat_in_sentence
                     text_out = await replace_mat_in_sentence(text)
                     if not text_out == text.lower():
                         text = text_out
@@ -1895,7 +1677,7 @@ async def recognize(ctx):
                 result.export(wav_filename, format="wav")
             except Exception as e:
                 traceback_str = traceback.format_exc()
-                print(str(traceback_str))
+                await logger.logging(str(traceback_str), Color.RED)
                 print(f"Ошибка при экспорте аудио: {e}")
 
         # удаление временного файла
@@ -1927,65 +1709,27 @@ if __name__ == "__main__":
             load_images2 = False
             if len(arguments) > 2:
                 args = arguments[2]
-                if "gpt_local" in args:
-                    load_gpt = True
-                if "gpt_provider" in args:
-                    set_get_config_all_not_async("gpt", "use_gpt_provider", "True")
                 if "img1" in args:
                     load_images1 = True
-                    set_get_config_all_not_async("Values", "cuda0_is_busy", "True")
                 if "img2" in args:
                     load_images1 = True
-                    set_get_config_all_not_async("Values", "cuda0_is_busy", "True")
                     load_images2 = True
-                    set_get_config_all_not_async("Values", "cuda1_is_busy", "True")
         else:
             # raise error & exit
             print("Укажите discord_TOKEN")
             exit(-1)
         # === load models ===
-        # == load gpt ==
-        if load_gpt:
-            print("load gpt model")
-            from GPT_runner import run
-
-            pool = multiprocessing.Pool(processes=1)
-            pool.apply_async(run)
-            pool.close()
-
-            while True:
-                time.sleep(0.5)
-                if set_get_config_all_not_async("gpt", "gpt") == "True":
-                    break
 
         # == load images ==
+        global image_generators
         if load_images1:
             print("load image model on GPU-0")
-
-            from image_create_cuda0 import generate_picture0
-
-            pool = multiprocessing.Pool(processes=1)
-            pool.apply_async(generate_picture0)
-            pool.close()
-            while True:
-                time.sleep(0.5)
-                if set_get_config_all_not_async("Image0", "model_loaded") == "True":
-                    break
+            image_generator_1 = Image_Generator(0)
         if load_images2:
             print("load image model on GPU-1")
-
-            from image_create_cuda1 import generate_picture1
-
-            pool = multiprocessing.Pool(processes=1)
-            pool.apply_async(generate_picture1)
-            pool.close()
-            while True:
-                time.sleep(0.5)
-                if set_get_config_all_not_async("Image1", "model_loaded") == "True":
-                    break
+            image_generator_2 = Image_Generator(1)
         # === load voice models ===
-        from only_voice_change_cuda0 import voice_change0
-        from only_voice_change_cuda1 import voice_change1
+        voice_changer()
 
         pool = multiprocessing.Pool(processes=2)
         pool.apply_async(voice_change0)
@@ -2001,5 +1745,5 @@ if __name__ == "__main__":
         loop.run_until_complete(bot.start(discord_token))
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        await logger.logging(str(traceback_str), Color.RED)
         print(f"Произошла ошибка: {e}")

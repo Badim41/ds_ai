@@ -1,29 +1,23 @@
-import os
-import argparse
-
-from set_get_config import set_get_config_all_not_async
-
-cuda_number = "1"
-os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
-import torch
+import asyncio
 import gc
 import hashlib
 import json
+import numpy as np
+import os
 import shlex
+import shutil
 import subprocess
 from contextlib import suppress
+from pydub import AudioSegment
 from urllib.parse import urlparse, parse_qs
-import shutil
-
 import librosa
-import numpy as np
 import soundfile as sf
 import sox
 import yt_dlp
 from pedalboard import Pedalboard, Reverb, Compressor, HighpassFilter
 from pedalboard.io import AudioFile
-from pydub import AudioSegment
 
+from function import logger, Color
 from rvc import Config, load_hubert, get_vc, rvc_infer
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -158,9 +152,25 @@ def display_progress(message):
     print(message)
 
 
+class LocalTorch:
+    def __init__(self, cuda):
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(cuda)
+        import torch
+        self.local_torch = torch
+    def run_mdx_with_current_cuda(self, model_params, output_dir, model_path, filename, exclude_main=False, exclude_inversion=False,
+            suffix=None,
+            invert_suffix=None, denoise=False, keep_orig=True, m_threads=2):
+
+        from mdx import run_mdx
+        return run_mdx(self.local_torch, model_params, output_dir,
+                model_path,
+                filename, exclude_main, exclude_inversion, suffix,
+                invert_suffix, denoise, keep_orig, m_threads)
+
+
 def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_type=None):
     try:
-        from mdx_cuda1 import run_mdx
+        local_torch = LocalTorch(cuda_number)
 
         keep_orig = False
         if input_type == 'yt':
@@ -176,14 +186,14 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
         song_output_dir = os.path.join(output_dir, song_id)
         orig_song_path = convert_to_stereo(orig_song_path)
         display_progress(f'[~] Separating Vocals from Instrumental... GPU:{cuda_number}')
-        vocals_path, instrumentals_path = run_mdx(mdx_model_params, song_output_dir,
+        vocals_path, instrumentals_path = local_torch.run_mdx_with_current_cuda(mdx_model_params, song_output_dir,
                                                   os.path.join(mdxnet_models_dir, 'Kim_Vocal_2.onnx'),
                                                   orig_song_path, denoise=True, keep_orig=keep_orig)
+
         # вторая нейросеть
-        instrumentals_path_2, vocals_path_2 = run_mdx(mdx_model_params, song_output_dir,
+        instrumentals_path_2, vocals_path_2 = local_torch.run_mdx_with_current_cuda(mdx_model_params, song_output_dir,
                                                       os.path.join(mdxnet_models_dir, "UVR-MDX-NET-Inst_HQ_1.onnx"),
-                                                      instrumentals_path, suffix='music_2', invert_suffix='vocal_2',
-                                                      denoise=True,
+                                                      instrumentals_path, suffix='music_2', invert_suffix='vocal_2', denoise=True,
                                                       keep_orig=True)
 
         vocals_1 = AudioSegment.from_file(vocals_path)
@@ -199,13 +209,13 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
         combined_music.export(instrumentals_path, format="wav")
         combined_vocals.export(vocals_path, format="wav")
 
+
         display_progress(f'[~] Separating Main Vocals from Backup Vocals... GPU:{cuda_number}')
-        backup_vocals_path, main_vocals_path = run_mdx(mdx_model_params, song_output_dir,
-                                                       os.path.join(mdxnet_models_dir, 'UVR_MDXNET_KARA_2.onnx'),
-                                                       # UVR_MDXNET_KARA_2.onnx
+        backup_vocals_path, main_vocals_path = local_torch.run_mdx_with_current_cuda(mdx_model_params, song_output_dir,
+                                                       os.path.join(mdxnet_models_dir, 'UVR_MDXNET_KARA_2.onnx'), # UVR_MDXNET_KARA_2.onnx
                                                        vocals_path, suffix='Backup', invert_suffix='Main', denoise=True)
         display_progress(f'[~] Applying DeReverb to Vocals... GPU:{cuda_number}')
-        _, main_vocals_dereverb_path = run_mdx(mdx_model_params, song_output_dir,
+        _, main_vocals_dereverb_path = local_torch.run_mdx_with_current_cuda(mdx_model_params, song_output_dir,
                                                os.path.join(mdxnet_models_dir, 'Reverb_HQ_By_FoxJoy.onnx'),
                                                main_vocals_path, invert_suffix='DeReverb', exclude_main=True,
                                                denoise=True)
@@ -217,7 +227,6 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
 def download_video_or_use_file(song_input, input_type):
     keep_orig = False
     if input_type == 'yt':
-        display_progress(f'[~] Downloading song... GPU:{cuda_number}')
         song_link = song_input.split('&')[0]
         print(song_link)
         orig_song_path = yt_download(song_link)
@@ -229,15 +238,13 @@ def download_video_or_use_file(song_input, input_type):
     return orig_song_path, keep_orig
 
 
-def voice_change(cuda_number, voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
+def voice_change(voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
                  rms_mix_rate, protect, crepe_hop_length, is_webui):
     rvc_model_path, rvc_index_path = get_rvc_model(voice_model, is_webui)
-    # os.environ["CUDA_VISIBLE_DEVICES"] = str(cuda_number)
     device = 'cuda:0'
     config2 = Config(device, True)
     hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
     cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
-
     # convert main vocals
     rvc_infer(rvc_index_path, index_rate, vocals_path, output_path, pitch_change, f0_method, cpt, version, net_g,
               filter_radius, tgt_sr, rms_mix_rate, protect, crepe_hop_length, vc, hubert_model)
@@ -341,7 +348,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
 
         if not os.path.exists(ai_vocals_path):
             display_progress('[~] Converting voice using RVC...')
-            voice_change(cuda_number, voice_model, main_vocals_dereverb_path, ai_vocals_path, pitch_change, f0_method,
+            voice_change(voice_model, main_vocals_dereverb_path, ai_vocals_path, pitch_change, f0_method,
                          index_rate,
                          filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui)
 
@@ -384,10 +391,10 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
 #     return False
 
 def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radius=3, rms_mix_rate=0.25,
-                     pitch_detection_algo='rmvpe', crepe_hop_length=128, protect=0.33, main_vol=0, backup_vol=0,
-                     inst_vol=0,
-                     pitch_change_all=0, reverb_size=0.15, reverb_wetness=0.2, reverb_dryness=0.8, reverb_damping=0.7,
-                     output_format='mp3', start='0', time='-1', write_in_queue=True, cuda_number=0, output='None'):
+        pitch_detection_algo='rmvpe', crepe_hop_length=128, protect=0.33, main_vol=0, backup_vol=0, inst_vol=0,
+        pitch_change_all=0, reverb_size=0.15, reverb_wetness=0.2, reverb_dryness=0.8, reverb_damping=0.7,
+        output_format='mp3', cuda_number=0):
+
     if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
         raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
     cover_path = song_cover_pipeline(song_input, rvc_dirname, pitch, False,
@@ -407,7 +414,7 @@ def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radi
             song_id = get_youtube_video_id(song_input)
             if song_id is None:
                 error_msg = 'Invalid YouTube url.'
-                print(error_msg)
+                asyncio.run(logger.logging(error_msg, Color.RED))
 
         # local audio file
         else:
@@ -417,110 +424,5 @@ def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radi
             else:
                 error_msg = f'{song_input} does not exist.'
                 song_id = None
-                print(error_msg)
+                asyncio.run(logger.logging(error_msg, Color.RED))
         shutil.rmtree(os.path.join(output_dir, song_id))
-    else:
-        if not write_in_queue:
-            print("WRITING3!!!")
-            set_get_config_all_not_async('voice', 'generated_path', cover_path)
-        else:
-            try:
-                # Записываем путь файла в очередь
-                print("WRITING4!!!")
-                with open("caversAI/queue.txt", "a", encoding="utf-8") as writer:
-                    writer.write(f"{cover_path} -time {time} -start {start} -output {output}")
-            except IOError as e:
-                print(e)
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate a AI cover song in the song_output/id directory.',
-                                     add_help=True)
-    parser.add_argument('-i', '--song-input', type=str, required=True,
-                        help='Link to a YouTube video or the filepath to a local mp3/wav file to create an AI cover of')
-    parser.add_argument('-dir', '--rvc-dirname', type=str, required=True,
-                        help='Name of the folder in the rvc_models directory containing the RVC model file and optional index file to use')
-    parser.add_argument('-p', '--pitch-change', type=int, required=True,
-                        help='Change the pitch of AI Vocals only. Generally, use 1 for male to female and -1 for vice-versa. (Octaves)')
-    parser.add_argument('-k', '--keep-files', action=argparse.BooleanOptionalAction,
-                        help='Whether to keep all intermediate audio files generated in the song_output/id directory, e.g. Isolated Vocals/Instrumentals')
-    parser.add_argument('-ir', '--index-rate', type=float, default=0.5,
-                        help='A decimal number e.g. 0.5, used to reduce/resolve the timbre leakage problem. If set to 1, more biased towards the timbre quality of the training dataset')
-    parser.add_argument('-fr', '--filter-radius', type=int, default=3,
-                        help='A number between 0 and 7. If >=3: apply median filtering to the harvested pitch results. The value represents the filter radius and can reduce breathiness.')
-    parser.add_argument('-rms', '--rms-mix-rate', type=float, default=0.25,
-                        help="A decimal number e.g. 0.25. Control how much to use the original vocal's loudness (0) or a fixed loudness (1).")
-    parser.add_argument('-palgo', '--pitch-detection-algo', type=str, default='rmvpe',
-                        help='Best option is rmvpe (clarity in vocals), then mangio-crepe (smoother vocals).')
-    parser.add_argument('-hop', '--crepe-hop-length', type=int, default=128,
-                        help='If pitch detection algo is mangio-crepe, controls how often it checks for pitch changes in milliseconds. The higher the value, the faster the conversion and less risk of voice cracks, but there is less pitch accuracy. Recommended: 128.')
-    parser.add_argument('-pro', '--protect', type=float, default=0.33,
-                        help='A decimal number e.g. 0.33. Protect voiceless consonants and breath sounds to prevent artifacts such as tearing in electronic music. Set to 0.5 to disable. Decrease the value to increase protection, but it may reduce indexing accuracy.')
-    parser.add_argument('-mv', '--main-vol', type=int, default=0,
-                        help='Volume change for AI main vocals in decibels. Use -3 to decrease by 3 decibels and 3 to increase by 3 decibels')
-    parser.add_argument('-bv', '--backup-vol', type=int, default=0, help='Volume change for backup vocals in decibels')
-    parser.add_argument('-iv', '--inst-vol', type=int, default=0, help='Volume change for instrumentals in decibels')
-    parser.add_argument('-pall', '--pitch-change-all', type=int, default=0,
-                        help='Change the pitch/key of vocals and instrumentals. Changing this slightly reduces sound quality')
-    parser.add_argument('-rsize', '--reverb-size', type=float, default=0.15, help='Reverb room size between 0 and 1')
-    parser.add_argument('-rwet', '--reverb-wetness', type=float, default=0.2, help='Reverb wet level between 0 and 1')
-    parser.add_argument('-rdry', '--reverb-dryness', type=float, default=0.8, help='Reverb dry level between 0 and 1')
-    parser.add_argument('-rdamp', '--reverb-damping', type=float, default=0.7, help='Reverb damping between 0 and 1')
-    parser.add_argument('-oformat', '--output-format', type=str, default='mp3',
-                        help='Output format of audio file. mp3 for smaller file size, wav for best quality')
-    parser.add_argument('-start', '--start', type=str, default='0',
-                        help='Здесь не используется. Время начала')
-    parser.add_argument('-time', '--time', type=str, default='-1',
-                        help='Здесь не используется. Длительность файла')
-    parser.add_argument('-write', '--write-in-queue', type=bool, default=True,
-                        help='нужно ли записать в файл queue')
-    parser.add_argument('-cuda', '--cuda-number', type=int, default=0,
-                        help='номер видеокарты')
-    parser.add_argument('-output', '--output', type=str, default="None",
-                        help='Здесь не используется. Отправка файла')
-    args = parser.parse_args()
-
-    rvc_dirname = args.rvc_dirname
-    if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
-        raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
-    cover_path = song_cover_pipeline(args.song_input, rvc_dirname, args.pitch_change, args.keep_files,
-                                     main_gain=args.main_vol, backup_gain=args.backup_vol, inst_gain=args.inst_vol,
-                                     index_rate=args.index_rate, filter_radius=args.filter_radius,
-                                     rms_mix_rate=args.rms_mix_rate, f0_method=args.pitch_detection_algo,
-                                     crepe_hop_length=args.crepe_hop_length, protect=args.protect,
-                                     pitch_change_all=args.pitch_change_all,
-                                     reverb_rm_size=args.reverb_size, reverb_wet=args.reverb_wetness,
-                                     reverb_dry=args.reverb_dryness, reverb_damping=args.reverb_damping,
-                                     output_format="mp3", cuda_number=args.cuda_number)
-    print(f'[+] Cover generated at {cover_path}')
-    # ошибка при генерации
-    if cover_path is None:
-        # if youtube url
-        if urlparse(args.song_input).scheme == 'https':
-            song_id = get_youtube_video_id(args.song_input)
-            if song_id is None:
-                error_msg = 'Invalid YouTube url.'
-                print(error_msg)
-
-        # local audio file
-        else:
-            song_input = args.song_input.strip('\"')
-            if os.path.exists(song_input):
-                song_id = get_hash(song_input)
-            else:
-                error_msg = f'{song_input} does not exist.'
-                song_id = None
-                print(error_msg)
-        shutil.rmtree(os.path.join(output_dir, song_id))
-    else:
-        if not args.write_in_queue:
-            print("WRITING1!!!")
-            set_get_config_all_not_async('voice', 'generated_path', cover_path)
-        else:
-            print("WRITING2!!!")
-            try:
-                # Записываем путь файла в очередь
-                with open(os.path.join(BASE_DIR, "caversAI/queue.txt"), "a", encoding="utf-8") as writer:
-                    writer.write(f"{cover_path} -time {args.time} -start {args.start} -output {args.output}\n")
-            except IOError as e:
-                print(e)

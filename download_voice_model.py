@@ -5,11 +5,13 @@ import zipfile
 import shutil
 import requests
 
+import json
+
 BASE_DIR = os.getcwd()
 rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
 
 
-async def extract_zip(extraction_folder, zip_name, info, gender, speed, voice_model):
+async def extract_zip(extraction_folder, zip_name, parameters):
     os.makedirs(extraction_folder)
     with zipfile.ZipFile(zip_name, 'r') as zip_ref:
         zip_ref.extractall(extraction_folder)
@@ -28,14 +30,9 @@ async def extract_zip(extraction_folder, zip_name, info, gender, speed, voice_mo
         print(f'Нет .pth файла в zip. архиву. Проверьте {extraction_folder}.')
         return f'Нет .pth файла в zip. архиву. Проверьте {extraction_folder}.'
 
-    with open(os.path.join(extraction_folder + "/info.txt"), 'w') as writer:
-        writer.write(info)
-    with open(os.path.join(extraction_folder + "/gender.txt"), 'w') as writer:
-        writer.write(gender)
-    with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
-        writer.write(str(speed))
-    with open(os.path.join(extraction_folder + "/voice_model.txt"), "w") as writer:
-        writer.write(voice_model)
+    json_file_path = os.path.join(extraction_folder, "params.json")
+    with open(json_file_path, 'w') as json_writer:
+        json.dump(parameters, json_writer, indent=4)
 
     # move model and index file to extraction folder
     os.rename(model_filepath, os.path.join(extraction_folder, os.path.basename(model_filepath)))
@@ -48,26 +45,15 @@ async def extract_zip(extraction_folder, zip_name, info, gender, speed, voice_mo
             shutil.rmtree(os.path.join(extraction_folder, filepath))
 
 
-async def download_online_model(url, dir_name, gender, info, speed, voice_model, stability, similarity_boost, style):
+async def download_online_model(url, dir_name, parameters):
     try:
         print(f'[~] Скачивание модели с именем {dir_name}...')
         zip_name = url.split('/')[-1]
         extraction_folder = os.path.join(rvc_models_dir, dir_name)
         if os.path.exists(extraction_folder):
-            with open(os.path.join(extraction_folder + "/info.txt"), 'w') as writer:
-                writer.write(info)
-            with open(os.path.join(extraction_folder + "/gender.txt"), 'w') as writer:
-                writer.write(gender.replace(" ", ""))
-            with open(os.path.join(extraction_folder + "/speed.txt"), 'w') as writer:
-                writer.write(str(speed).replace(" ", ""))
-            with open(os.path.join(extraction_folder + "/voice_model.txt"), "w") as writer:
-                writer.write(voice_model)
-            with open(os.path.join(extraction_folder + "/stability.txt"), "w") as writer:
-                writer.write(stability.replace(" ", ""))
-            with open(os.path.join(extraction_folder + "/similarity_boost.txt"), "w") as writer:
-                writer.write(similarity_boost.replace(" ", ""))
-            with open(os.path.join(extraction_folder + "/style.txt"), "w") as writer:
-                writer.write(style.replace(" ", ""))
+            json_file_path = os.path.join(extraction_folder, "params.json")
+            with open(json_file_path, 'w') as json_writer:
+                json.dump(parameters, json_writer, indent=4)
             return f'Модель {dir_name} уже существует, но её информация/скорость были изменены'
 
         if 'pixeldrain.com' in url:
@@ -79,7 +65,7 @@ async def download_online_model(url, dir_name, gender, info, speed, voice_model,
                 file.write(chunk)
 
         print('[~] Разархивация...')
-        error = await extract_zip(extraction_folder, zip_name, info, gender, speed, voice_model)
+        error = await extract_zip(extraction_folder, zip_name, parameters)
         if error:
             return error
         print(f'[+] {dir_name} модель успешно установлена!')
@@ -97,7 +83,7 @@ if __name__ == "__main__":
         dir_name_input = arguments[2]
         gender = arguments[3]
         info = "Вот информация о тебе:" + arguments[4]
-        voice_model = arguments[5]
+        voice_model_eleven = arguments[5]
         speed = float(arguments[6])
         if speed is None or speed < 0 or speed > 2:
             speed = 1
@@ -106,8 +92,17 @@ if __name__ == "__main__":
             print("stabilyty found")
         else:
             stability, similarity_boost, style = 0.4, 0.25, 0.4
+        parameters = {
+            "info": info,
+            "gender": gender.replace(" ", ""),
+            "speed": str(speed).replace(" ", ""),
+            "voice_model_eleven": voice_model_eleven,
+            "stability": stability.replace(" ", ""),
+            "similarity_boost": similarity_boost.replace(" ", ""),
+            "style": style.replace(" ", ""),
+        }
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(download_online_model(url_input, dir_name_input, gender, info, speed, voice_model, stability, similarity_boost, style))
+        loop.run_until_complete(download_online_model(url_input, dir_name_input, parameters))
     else:
         print("Нужно указать ссылку и имя модели")
         exit(-1)

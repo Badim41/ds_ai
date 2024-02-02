@@ -9,7 +9,6 @@ import numpy as np
 import onnxruntime as ort
 import soundfile as sf
 from tqdm import tqdm
-from main_cuda0 import torch
 
 warnings.filterwarnings("ignore")
 stem_naming = {'Vocals': 'Instrumental', 'Other': 'Instruments', 'Instrumental': 'Vocals', 'Drums': 'Drumless',
@@ -17,10 +16,8 @@ stem_naming = {'Vocals': 'Instrumental', 'Other': 'Instruments', 'Instrumental':
 
 
 class MDXModel:
-    def __init__(self, device, dim_f, dim_t, n_fft, hop=1024, stem_name=None, compensation=1.000):
-        # global cuda_number_global
-        # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number_global
-        # import torch
+    def __init__(self, local_torch, device, dim_f, dim_t, n_fft, hop=1024, stem_name=None, compensation=1.000):
+        self.local_torch = local_torch
         self.dim_f = dim_f
         self.dim_t = dim_t
         self.dim_c = 4
@@ -31,35 +28,29 @@ class MDXModel:
 
         self.n_bins = self.n_fft // 2 + 1
         self.chunk_size = hop * (self.dim_t - 1)
-        self.window = torch.hann_window(window_length=self.n_fft, periodic=True).to(device)
+        self.window = self.local_torch.hann_window(window_length=self.n_fft, periodic=True).to(device)
 
         out_c = self.dim_c
 
-        self.freq_pad = torch.zeros([1, out_c, self.n_bins - self.dim_f, self.dim_t]).to(device)
+        self.freq_pad = self.local_torch.zeros([1, out_c, self.n_bins - self.dim_f, self.dim_t]).to(device)
 
     def stft(self, x):
-        # global cuda_number_global
-        # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number_global
-        # import torch
         x = x.reshape([-1, self.chunk_size])
-        x = torch.stft(x, n_fft=self.n_fft, hop_length=self.hop, window=self.window, center=True, return_complex=True)
-        x = torch.view_as_real(x)
+        x = self.local_torch.stft(x, n_fft=self.n_fft, hop_length=self.hop, window=self.window, center=True, return_complex=True)
+        x = self.local_torch.view_as_real(x)
         x = x.permute([0, 3, 1, 2])
         x = x.reshape([-1, 2, 2, self.n_bins, self.dim_t]).reshape([-1, 4, self.n_bins, self.dim_t])
         return x[:, :, :self.dim_f]
 
     def istft(self, x, freq_pad=None):
-        # global cuda_number_global
-        # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number_global
-        # import torch
         freq_pad = self.freq_pad.repeat([x.shape[0], 1, 1, 1]) if freq_pad is None else freq_pad
-        x = torch.cat([x, freq_pad], -2)
+        x = self.local_torch.cat([x, freq_pad], -2)
         # c = 4*2 if self.target_name=='*' else 2
         x = x.reshape([-1, 2, 2, self.n_bins, self.dim_t]).reshape([-1, 2, self.n_bins, self.dim_t])
         x = x.permute([0, 2, 3, 1])
         x = x.contiguous()
-        x = torch.view_as_complex(x)
-        x = torch.istft(x, n_fft=self.n_fft, hop_length=self.hop, window=self.window, center=True)
+        x = self.local_torch.view_as_complex(x)
+        x = self.local_torch.istft(x, n_fft=self.n_fft, hop_length=self.hop, window=self.window, center=True)
         return x.reshape([-1, 2, self.chunk_size])
 
 
@@ -72,12 +63,8 @@ class MDX:
     DEFAULT_PROCESSOR = 0
 
     def __init__(self, model_path: str, params: MDXModel):
-
-        # global cuda_number_global
-        # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number_global
-        # import torch
-        # Set the device and the provider (CPU or CUDA)
-        self.device = torch.device(f"cuda:0")
+        self.local_torch = params.local_torch
+        self.device = self.local_torch.device(f"cuda:0")
         self.provider = ['CUDAExecutionProvider']
 
         self.model = params
@@ -85,7 +72,7 @@ class MDX:
         # Load the ONNX model using ONNX Runtime
         self.ort = ort.InferenceSession(model_path, providers=self.provider)
         # Preload the model for faster performance
-        self.ort.run(None, {'input': torch.rand(1, 4, params.dim_f, params.dim_t).numpy()})
+        self.ort.run(None, {'input': self.local_torch.rand(1, 4, params.dim_f, params.dim_t).numpy()})
         self.process = lambda spec: self.ort.run(None, {'input': spec.cpu().numpy()})[0]
 
         self.prog = None
@@ -165,10 +152,6 @@ class MDX:
                 - pad: Number of samples that were padded
                 - trim: Number of samples that were trimmed
         """
-
-        # global cuda_number_global
-        # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number_global
-        # import torch
         n_sample = wave.shape[1]
         trim = self.model.n_fft // 2
         gen_size = self.model.chunk_size - 2 * trim
@@ -182,7 +165,7 @@ class MDX:
             waves = np.array(wave_p[:, i:i + self.model.chunk_size])
             mix_waves.append(waves)
 
-        mix_waves = torch.tensor(mix_waves, dtype=torch.float32).to(self.device)
+        mix_waves = self.local_torch.tensor(mix_waves, dtype=self.local_torch.float32).to(self.device)
 
         return mix_waves, pad, trim
 
@@ -200,17 +183,13 @@ class MDX:
         Returns:
             numpy array: Processed wave segment
         """
-
-        # global cuda_number_global
-        # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number_global
-        # import torch
         mix_waves = mix_waves.split(1)
-        with torch.no_grad():
+        with self.local_torch.no_grad():
             pw = []
             for mix_wave in mix_waves:
                 self.prog.update()
                 spec = self.model.stft(mix_wave)
-                processed_spec = torch.tensor(self.process(spec))
+                processed_spec = self.local_torch.tensor(self.process(spec))
                 processed_wav = self.model.istft(processed_spec.to(self.device))
                 processed_wav = processed_wav[:, :, trim:-trim].transpose(0, 1).reshape(2, -1).cpu().numpy()
                 pw.append(processed_wav)
@@ -255,20 +234,18 @@ class MDX:
         return self.segment(processed_batches, True, chunk)
 
 
-def run_mdx(model_params, output_dir, model_path, filename, exclude_main=False, exclude_inversion=False,
+def run_mdx(local_torch, model_params, output_dir, model_path, filename, exclude_main=False, exclude_inversion=False,
             suffix=None,
             invert_suffix=None, denoise=False, keep_orig=True, m_threads=2):
-    print("DEV_TEMP_CUDA_USED: 0")
-    # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number_global
-    # import torch
-    device = torch.device(f"cuda:0")
-    device_properties = torch.cuda.get_device_properties(device)
+    device = local_torch.device(f"cuda:0")
+    device_properties = local_torch.cuda.get_device_properties(device)
     vram_gb = device_properties.total_memory / 1024 ** 3
     m_threads = 1 if vram_gb < 8 else 2
     model_hash = MDX.get_hash(model_path)
     mp = model_params.get(model_hash)
     model = MDXModel(
-        device,
+        local_torch=local_torch,
+        device=device,
         dim_f=mp["mdx_dim_f_set"],
         dim_t=2 ** mp["mdx_dim_t_set"],
         n_fft=mp["mdx_n_fft_scale_set"],
