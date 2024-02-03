@@ -90,7 +90,7 @@ class TextToSpeechRVC:
                                        pitch=pitch,
                                        filter_radius=filter_radius, rms_mix_rate=rms_mix_rate, protect=protect,
                                        algo=algo)
-        self.voice_name = voice_name.replace(" ", "")
+        self.voice_name = voice_name
         self.pitch = pitch
         self.voice_model_eleven = voice_model_eleven
         self.speed = speed
@@ -170,7 +170,7 @@ class TextToSpeechRVC:
     async def get_elevenlabs_voice_id_by_name(self):
         with open('voices.json', 'r', encoding='utf-8') as file:
             data = json.load(file)
-        voice = next((v for v in data["voices"] if v["name"] == self.voice_name), None)
+        voice = next((v for v in data["voices"] if v["name"] == self.voice_model_eleven), None)
         return voice["voice_id"] if voice else None
 
 
