@@ -177,7 +177,7 @@ class TextToSpeechRVC:
 
 
 class Character:
-    def __init__(self, name, max_simbols=300, algo="rmwpe", protect=0.2, rms_mix_rate=0.3, index_rate=0.5,
+    def __init__(self, name, max_simbols=300, algo="rmvpe", protect=0.2, rms_mix_rate=0.3, index_rate=0.5,
                  filter_radius=3, speaker_boost=True):
         from discord_bot import DiscordUser, SQL_Keys, characters_all
 
