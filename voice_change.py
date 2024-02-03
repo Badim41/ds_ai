@@ -31,12 +31,11 @@ class Voice_Changer:
     def __init__(self, cuda_number:int, voice_name:str, index_rate=0.5, pitch=0, filter_radius=3, rms_mix_rate=0.3, protect=0.33, algo="rmvpe"):
         logger.logging(cuda_number)
         from rvc import Config, load_hubert, get_vc
-        self.voice_name = voice_name
         self.rvc_model_path, self.rvc_index_path = get_rvc_model(voice_name)
         device = f'cuda:{cuda_number}'
         config2 = Config(device, True)
         self.hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
-        self.cpt, self.version, self.net_g, self.tgt_sr, self.vc = get_vc(device, config2.is_half, config2, voice_name)
+        self.cpt, self.version, self.net_g, self.tgt_sr, self.vc = get_vc(device, config2.is_half, config2, self.rvc_model_path)
         self.index_rate = index_rate
         self.pitch = pitch
         self.filter_radius = filter_radius
