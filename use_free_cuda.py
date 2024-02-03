@@ -30,6 +30,7 @@ class Use_Cuda:
             while True:
                 for i in range(len(self.cuda_is_busy)):
                     if not self.cuda_is_busy[i]:
+                        self.cuda_is_busy[i] = True
                         return i
                 await asyncio.sleep(0.25)
 
