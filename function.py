@@ -105,7 +105,6 @@ class TextToSpeechRVC:
         if text is None or text.replace("\n", "").replace(" ", "") == "":
             logger.logging(f"Пустой текст \"{text}\"", color=Color.RED)
             raise "No text"
-        mat_found, text = await moderate_mat_in_sentence(text)
 
         # убираем текст до коментария
         if "||" in text:
