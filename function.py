@@ -18,6 +18,7 @@ from discord_bot import DiscordUser, SQL_Keys, characters_all
 from discord_tools.detect_mat import moderate_mat_in_sentence
 from discord_tools.logs import Color, Logs
 from discord_tools.secret import load_secret, SecretKey, create_secrets
+from discord_tools.sql_db import set_get_database_async
 from voice_change import Voice_Changer
 
 logger = Logs(warnings=True)
@@ -175,6 +176,7 @@ class TextToSpeechRVC:
 class Character:
     def __init__(self, name, max_simbols=300, algo="rmwpe", protect=0.2, rms_mix_rate=0.3, index_rate=0.5,
                  filter_radius=3, speaker_boost=True):
+        # asyncio.run(set_get_database_async)
         if name in characters_all.items():
             existing_character = characters_all[name]
             self.__dict__.update(existing_character.__dict__)
