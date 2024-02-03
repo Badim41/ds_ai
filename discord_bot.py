@@ -35,7 +35,6 @@ bot = commands.Bot(command_prefix='\\', intents=intents)
 cuda_manager = Use_Cuda()
 image_generators = []
 
-
 logger = Logs(warnings=True)
 
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
@@ -131,7 +130,6 @@ async def on_message(message):
         return
     if bot.user in message.mentions:
         text = message.content
-        user = message.author
         try:
             # получение, на какое сообщение ответили
             if message.reference:
