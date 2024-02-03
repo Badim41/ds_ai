@@ -403,7 +403,7 @@ async def __tts(
 
     voices = await get_voice_list()
     if str(voice_name) not in voices:
-        return await ctx.response.send_message("Выберите голос из списка: " + ';'.join(voices))
+        return await ctx.response.send_message("Выберите голос для озвучки (или /add_voice): " + ';'.join(voices))
 
     if voice_model_eleven == "All":
         voice_models = ALL_VOICES.keys()
@@ -572,24 +572,20 @@ async def __cover(
     try:
         await ctx.defer()
         await ctx.respond('Выполнение...')
-        voices = await get_voice_list()
         user = DiscordUser(ctx)
 
-        if voice_name is None:
+        if not voice_name:
             voice_name = user.character.name
-            if voice_name is None:
-                voice_name = await set_get_config_all("Default", SQL_Keys.AIname)
-                if voice_name is None:
-                    await ctx.respond("Выберите голос для озвучки:" + ', '.join(voices))
-                    return
-        elif voice_name not in voices:
-            await ctx.respond("Выберите голос для озвучки:", ', '.join(voices))
+        elif not user.character.name == voice_name:
+            await ctx.send("Обновлена базовая модель на:" + voice_name)
+            await user.set_user_config(SQL_Keys.AIname, voice_name)
+
+        voices = await get_voice_list()
+        if voice_name not in voices:
+            await ctx.respond("Выберите голос для озвучки (или /add_voice):", ', '.join(voices))
             return
 
         if pitch is None:
-            if user.character.name == "None":
-                await ctx.respond("Выберите голос для озвучки:", ', '.join(voices))
-                return
             pitch = user.character.pitch
 
         logger.logging("suc params", color=Color.CYAN)
