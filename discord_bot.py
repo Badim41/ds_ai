@@ -1,15 +1,14 @@
-from dotenv import load_dotenv
 import random
 import sys
 import zipfile
-
 from pathlib import Path
 from pytube import Playlist
+
 import speech_recognition as sr
+
 import discord
 from discord import Option
 from discord.ext import commands
-
 from use_free_cuda import Use_Cuda
 
 recognizers = {}
