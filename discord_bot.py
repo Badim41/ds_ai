@@ -376,8 +376,9 @@ async def __tts(
         pitch: Option(int, description="Изменить тональность", required=False, default=0, min_value=-24,
                       max_value=24)
 ):
+    user = DiscordUser(ctx)
     if not voice_name:
-        voice_name = await set_get_config_all(ctx.author.id, SQL_Keys.AIname)
+        voice_name = user.character.name
     voices = await get_voice_list()
     if voice_name not in voices:
         return await ctx.response.send_message("Выберите голос из списка: " + ';'.join(voices))
@@ -389,13 +390,13 @@ async def __tts(
         if voice_models not in ALL_VOICES.values():
             await ctx.response.send_message("Список голосов elevenlabs: \n" + ';'.join(ALL_VOICES.values()))
             return
-    character = Character(voice_name)
+    character = user.character
 
     try:
 
         await ctx.response.send_message('Выполнение...' + voice_name)
         cuda_number = await cuda_manager.use_cuda()
-        await character.load_voice(cuda_number)
+        await character.load_voice(cuda_number, speed=speed, stability=stability, similarity_boost=similarity_boost, style=style, pitch=pitch)
         for voice_model in voice_models:
             timer = Time_Count()
             character.voice_model_eleven = voice_model
@@ -543,16 +544,21 @@ async def __cover(
         await ctx.defer()
         await ctx.respond('Выполнение...')
         voices = await get_voice_list()
+        user = DiscordUser(ctx)
 
         if voice_name is None:
-            voice_name = await set_get_config_all("Default", SQL_Keys.AIname)
+            voice_name = user.character.name
+            if voice_name is None:
+                voice_name = await set_get_config_all("Default", SQL_Keys.AIname)
+                if voice_name is None:
+                    await ctx.respond("Выберите голос для озвучки:", ', '.join(voices))
+                    return
         elif voice_name not in voices:
-            await ctx.respond("Голос не найден")
+            await ctx.respond("Выберите голос для озвучки:", ', '.join(voices))
             return
 
         if pitch is None:
-            character = Character(voice_name)
-            pitch = character.pitch
+            pitch = user.character.pitch
 
         logger.logging("suc params", Color.CYAN)
 
