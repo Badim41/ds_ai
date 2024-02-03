@@ -657,7 +657,8 @@ async def __dialog(
         await ctx.respond(f"Ошибка при диалоге: {e}")
 class Dialog_AI:
     def __init__(self, ctx, characters, theme, global_prompt):
-        if dialogs[ctx.guild.id]:
+
+        if ctx.guild_id in dialogs:
             asyncio.run(ctx.send("Уже идёт диалог"))
             return
 
