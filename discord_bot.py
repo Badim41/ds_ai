@@ -388,7 +388,11 @@ async def __tts(
         output: Option(str, description='Отправить результат', required=False,
                        choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"], default="1 файл (RVC)"),
         pitch: Option(int, description="Изменить тональность", required=False, default=0, min_value=-24,
-                      max_value=24)
+                      max_value=24),
+        palgo: Option(str, description='Алгоритм. Rmvpe - лучший вариант, mangio-crepe - более мягкий вокал',
+                      required=False,
+                      choices=['rmvpe', 'mangio-crepe'], default="rmvpe"),
+
 ):
     user = DiscordUser(ctx)
     if not voice_name:
@@ -415,7 +419,7 @@ async def __tts(
         await ctx.response.send_message('Выполнение...' + voice_name)
         cuda_number = await cuda_manager.use_cuda()
         await character.load_voice(cuda_number, speed=speed, stability=stability, similarity_boost=similarity_boost,
-                                   style=style, pitch=pitch)
+                                   style=style, pitch=pitch, algo=palgo)
         for voice_model in voice_models:
             timer = Time_Count()
             character.voice_model_eleven = voice_model
@@ -1103,7 +1107,7 @@ class AudioPlayerDiscord:
             create_new = True
 
         if create_new:
-            logger.logging("Новый audio_player")
+            logger.logging("Новый audio_player", Color.PURPLE)
             audio_players[ctx.guild.id] = self
             self.ctx = ctx
             self.guild = ctx.guild.id
