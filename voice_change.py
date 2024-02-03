@@ -1,7 +1,6 @@
 import gc
 import os
 
-from rvc import Config, load_hubert, get_vc, rvc_infer
 from discord_tools.logs import Logs, Color
 
 logger = Logs(warnings=True)
@@ -32,6 +31,7 @@ class Voice_Changer:
         cuda_number = str(cuda_number)
         os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
         import torch
+        from rvc import Config, load_hubert, get_vc
         self.torch = torch
         self.voice_name = voice_name
         self.rvc_model_path, self.rvc_index_path = get_rvc_model(voice_name)
@@ -49,6 +49,7 @@ class Voice_Changer:
         self.algo = algo
 
     async def voice_change(self, input_path: str, output_path: str, pitch_change=0):
+        from rvc import rvc_infer
         rvc_infer(self.rvc_index_path, self.index_rate, input_path, output_path, self.pitch + pitch_change, self.algo, self.cpt,
                   self.version,
                   self.net_g,
