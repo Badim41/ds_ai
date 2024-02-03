@@ -93,7 +93,8 @@ class DiscordUser:
 
 @bot.event
 async def on_ready():
-    logger.logging('Status: online', Color.GREEN)
+    import torch
+    logger.logging('Status: online', torch.cuda.device_count(), Color.GREEN)
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
     id = await set_get_config_all("Default", SQL_Keys.owner_id)
