@@ -1,8 +1,10 @@
 import gc
 import os
 
-from function import logger
 from rvc import Config, load_hubert, get_vc, rvc_infer
+from discord_tools.logs import Logs, Color
+
+logger = Logs(warnings=True)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')

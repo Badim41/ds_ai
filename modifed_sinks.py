@@ -3,8 +3,10 @@ from pydub import AudioSegment
 from queue import Queue
 
 from discord.sinks.core import Filters, Sink, default_filters
-from discord_tools.logs import Color
-from function import logger
+from discord_tools.logs import Logs, Color
+
+logger = Logs(warnings=True)
+
 
 
 class StreamSink(Sink):

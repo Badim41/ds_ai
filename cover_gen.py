@@ -17,8 +17,10 @@ import yt_dlp
 from pedalboard import Pedalboard, Reverb, Compressor, HighpassFilter
 from pedalboard.io import AudioFile
 
-from function import logger, Color
 from rvc import Config, load_hubert, get_vc, rvc_infer
+from discord_tools.logs import Logs, Color
+
+logger = Logs(warnings=True)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 

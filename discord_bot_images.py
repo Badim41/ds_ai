@@ -1,4 +1,9 @@
+from PIL import Image
+from moviepy.video.io.VideoFileClip import VideoFileClip
+
 from discord_bot import *
+from video_change import video_pipeline
+
 
 @bot.slash_command(name="change_video",
                    description='Перерисовать и переозвучить видео')
