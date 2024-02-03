@@ -587,6 +587,9 @@ async def __cover(
             return
 
         if pitch is None:
+            if user.character.name == "None":
+                await ctx.respond("Выберите голос для озвучки:", ', '.join(voices))
+                return
             pitch = user.character.pitch
 
         logger.logging("suc params", color=Color.CYAN)
