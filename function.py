@@ -38,7 +38,7 @@ async def execute_command(command, ctx):
 
         for line in stdout.decode().split('\n'):
             if line.strip():
-                await logger.logging(line, color=Color.GRAY)
+                logger.logging(line, color=Color.GRAY)
                 # await ctx.send(line)
     except subprocess.CalledProcessError as e:
         await ctx.send(f"Ошибка выполнения команды (ID:f8): {e}")
@@ -103,7 +103,7 @@ class TextToSpeechRVC:
 
     async def text_to_speech(self, text, audio_path="1.mp3", output_name=None):
         if text is None or text.replace("\n", "").replace(" ", "") == "":
-            await logger.logging(f"Пустой текст \"{text}\"", color=Color.RED)
+            logger.logging(f"Пустой текст \"{text}\"", color=Color.RED)
             raise "No text"
         mat_found, text = await moderate_mat_in_sentence(text)
 
@@ -125,7 +125,7 @@ class TextToSpeechRVC:
         pitch = self.pitch
 
         if len(text) > max_simbols:
-            await logger.logging("gtts", text, color=Color.YELLOW)
+            logger.logging("gtts", text, color=Color.YELLOW)
             await self.gtts(text, audio_file, language="ru")
             pitch -= 12
         else:
@@ -150,7 +150,7 @@ class TextToSpeechRVC:
 
                 save(audio, audio_file)
             except Exception as e:
-                await logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
+                logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
                 if "Please play" in str(e):
                     create_secret(SecretKey.voice_keys, "None")
                 self.elevenlabs_voice_keys = self.elevenlabs_voice_keys[1:]
@@ -164,7 +164,7 @@ class TextToSpeechRVC:
 
     async def voice_changer(self, input_path, output_path, pitch_change):
         audio_path = self.voice_RVC.voice_change(input_path, output_path, pitch_change=pitch_change)
-        await logger.logging("done RVC", color=Color.GREEN)
+        logger.logging("done RVC", color=Color.GREEN)
         await speed_up_audio(audio_path, self.speed)
         return audio_path
 
@@ -319,7 +319,7 @@ class Image_Generator:
         if not self.loaded:
             raise "Модель не загружена"
         if self.busy:
-            await logger.logging("warn: Модель занята", color=Color.YELLOW)
+            logger.logging("warn: Модель занята", color=Color.YELLOW)
             await asyncio.sleep(0.25)
         self.busy = True
         try:

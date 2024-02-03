@@ -473,7 +473,7 @@ async def send_output(ctx, audio_path, output, timer):
                 zipf.write(file_path, os.path.basename(file_path))
         link = await get_link_to_file(zip_name, ctx)
         await ctx.send(f"Ссылка на скачку:{link}")
-    await logger.logging("Играет " + os.path.basename(audio_path)[:-4], color=Color.GREEN)
+    logger.logging("Играет " + os.path.basename(audio_path)[:-4], color=Color.GREEN)
     audio_player = AudioPlayerDiscord(ctx)
     await audio_player.play(audio_path)
 
