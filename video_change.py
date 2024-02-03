@@ -1,63 +1,59 @@
 import asyncio
-import multiprocessing
+import imageio
+import os
 import random
 import shutil
 import subprocess
 import time
-from PIL import Image
 from moviepy.editor import VideoFileClip, AudioFileClip
-import imageio
-import os
-from set_get_config import set_get_config_all
 
-#                                       количество---индекс
-async def image_change(output_folder, prompt, cuda_number, cuda_index):
-    print("image changing...")
-    if cuda_number == 1:
-        # 1 GPU
-        for filename in sorted(os.listdir(output_folder)):
-            if filename.endswith('.png'):
-                print("changing...", filename)
-                await set_get_config_all(f"Image{cuda_index}", "result", "None")
-                await set_get_config_all(f"Image{cuda_index}", "input", "frames/" + filename)
-                await set_get_config_all(f"Image{cuda_index}", "prompt", prompt)
-                # wait for answer
-                while True:
-                    if not await set_get_config_all(f"Image{cuda_index}", "result", None) == "None":
-                        break
-                    await asyncio.sleep(0.25)
-        await set_get_config_all(f"Video", f"result_video{cuda_index}", True)
-    else:
-        # 2 GPU
-        i = 0
-        for filename in sorted(os.listdir(output_folder)):
-            # чётные карды на 2-ой видеокарте, нечётные - на 1-ой
-            i += 1
-            if i % 2 == cuda_index:
-                continue
-            if filename.endswith('.png'):
-                print("changing...", filename)
-                await set_get_config_all(f"Image{cuda_index}", "result", "None")
-                await set_get_config_all(f"Image{cuda_index}", "input", "frames/" + filename)
-                await set_get_config_all(f"Image{cuda_index}", "prompt", prompt)
-                # wait for answer
-                while True:
-                    if not await set_get_config_all(f"Image{cuda_index}", "result", None) == "None":
-                        break
-                    await asyncio.sleep(0.25)
-        await set_get_config_all(f"Video", f"result_video{cuda_index}", True)
+from PIL import Image
+
+from cover_gen import run_ai_cover_gen
+from discord_bot import image_generators
+from function import Character
+
+
+async def image_change(output_folder, prompt, negative_prompt, x, y, steps, seed, strength, strength_prompt,
+                       strength_negative_prompt, cuda_all: int, cuda_index: int):
+    print("image changing...", cuda_index)
+    # several GPU
+    for i, filename in enumerate(sorted(os.listdir(output_folder))):
+        if i % cuda_all == cuda_index:
+            continue
+        if filename.endswith('.png'):
+            await image_generators.generate_image(prompt, negative_prompt, x, y, steps, seed, strength, strength_prompt,
+                                                  strength_negative_prompt, filename)
     return
 
 
-async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
-                         pitch, indexrate, loudness, main_vocal, back_vocal,
-                         music, roomsize, wetness, dryness, cuda_numbers, strength_negative_prompt, strength_prompt, strength, seed, steps, negative_prompt):
+async def write_in_discord(ctx, text):
+    if text == "" or text is None:
+        logger.logging("error: ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
+        return
+    if len(text) < 1990:
+        await ctx.send(text)
+    else:
+        # начинает строку с "```" если оно встретилось и убирает, когда "```" опять появится
+        add_format = False
+        lines = text.split("\n")
+        for line in lines:
+            if "```" in line:
+                add_format = not add_format
+            if line.strip():
+                if add_format:
+                    line = line.replace("```", "")
+                    line = "```" + line + "```"
+                await ctx.send(line)
+
+
+async def video_pipeline(video_path, fps_output, video_extension, prompt, voice_name, video_id, cuda_all, strength_negative_prompt, strength_prompt,
+                         strength, seed, steps, negative_prompt):
     try:
 
         # === разбиваем видео на карды ===
         output_folder = 'frames'
         os.makedirs(output_folder, exist_ok=True)
-        video_id = str(random.randint(1, 1000000))
 
         # считаем FPS
         video_clip = VideoFileClip(video_path)
@@ -123,49 +119,15 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice,
         print(f"saved {frame_number // save_img_step} frames!")
 
         # === обработка изображений ===
-        if len(cuda_numbers) == 1:
-            await set_get_config_all(f"Video", f"result_video0", False)
-            await image_change(output_folder, prompt, 1, cuda_numbers[0])
-        else:
-            await set_get_config_all(f"Video", f"result_video0", False)
-            await set_get_config_all(f"Video", f"result_video1", False)
-            await asyncio.gather(image_change(output_folder, prompt, len(cuda_numbers), 0), image_change(output_folder, prompt, len(cuda_numbers), 1))  # результаты всех функций
+        functions = [image_change(output_folder=output_folder, prompt=prompt, negative_prompt=negative_prompt, x=x, y=y,
+                                  steps=steps, seed=seed, strength=strength, strength_prompt=strength_prompt,
+                                  strength_negative_prompt=strength_negative_prompt, cuda_all=cuda_all, cuda_index=i)
+                     for i in cuda_all]
+        await asyncio.gather(*functions)  # результаты всех функций
 
-        # wait for results
-        # for i in cuda_numbers:
-        #     print("temp3")
-        #     while True:
-        #         if await set_get_config_all(f"Video", f"result_video{i}", None) == "True":
-        #             break
-        #         await asyncio.sleep(5)
-        # === обработка звука ===
-        if not voice == "None":
-            await set_get_config_all("voice", "generated", "None")
-            command = [
-                "python",
-                "cover_gen.py",
-                "-i", extracted_audio_path,
-                "-dir", voice,
-                "-p", str(pitch),
-                "-ir", str(indexrate),
-                "-fr", str(loudness),
-                "-mv", str(main_vocal),
-                "-bv", str(back_vocal),
-                "-iv", str(music),
-                "-rsize", str(roomsize),
-                "-rwet", str(wetness),
-                "-rdry", str(dryness)
-            ]
-            subprocess.run(command, check=True)
-
-            # wait for result
-            while True:
-                audio_path = await set_get_config_all('voice', 'generated', None)
-                if not audio_path == "None":
-                    break
-                time.sleep(2.5)
-        else:
-            audio_path = extracted_audio_path
+        character = Character(voice_name)
+        pitch = character.pitch
+        audio_path = await run_ai_cover_gen(song_input=extracted_audio_path, rvc_dirname=voice_name, pitch=pitch, cuda_number=cuda_all[0])
 
         # === Снова создаём видео ===
         images = []

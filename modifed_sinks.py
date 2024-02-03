@@ -1,11 +1,16 @@
+import traceback
+
 from discord.sinks.core import Filters, Sink, default_filters
 from pydub import AudioSegment
 from queue import Queue
 import sys
 
+from discord_tools.logs import Color
+from function import logger
+
 
 class StreamSink(Sink):
-    def __init__(self, *, filters=None):
+    def __init__(self, ctx, *, filters=None):
         if filters is None:
             filters = default_filters
         self.filters = filters
@@ -15,7 +20,7 @@ class StreamSink(Sink):
 
         # user id for parsing their specific audio data
         self.user_id = None
-        self.buffer = StreamBuffer()
+        self.buffer = StreamBuffer(ctx)
 
     def write(self, data, user):
 
@@ -40,7 +45,7 @@ class StreamSink(Sink):
 
 
 class StreamBuffer:
-    def __init__(self) -> None:
+    def __init__(self, ctx) -> None:
         # holds byte-form audio data as it builds
         self.byte_buffer = bytearray()  # bytes
         self.segment_buffer = Queue()  # pydub.AudioSegments
@@ -55,7 +60,9 @@ class StreamBuffer:
         self.buff_lim = int(self.bytes_ps * self.block_len)
 
         # temp var for outputting audio
-        self.ct = 1
+        self.previous_audio_filename = None
+        self.speaking = False
+        self.ctx = ctx
 
     def write(self, data, user):
         self.byte_buffer += data  # data is a bytearray object
@@ -78,6 +85,29 @@ class StreamBuffer:
             # adding AudioSegment to the queue
             self.segment_buffer.put(audio_segment)
 
-            # temporary for validating process
-            audio_segment.export(f"output{self.ct}.wav", format="wav")
-            self.ct += 1
+            filename = f"output{self.ctx.author.id}.wav"
+
+            # Если есть прошлый аудиофайл, загрузим его
+            if self.previous_audio_filename:
+                try:
+                    previous_audio = AudioSegment.from_file(self.previous_audio_filename, format="wav")
+                except Exception as e:
+                    traceback_str = traceback.format_exc()
+                    logger.logging(str(traceback_str), Color.RED)
+                    print(f"Ошибка при чтении прошлого аудиофайла: {e}")
+                    previous_audio = AudioSegment.silent(duration=0)
+            else:
+                previous_audio = AudioSegment.silent(duration=0)
+
+            # Обновление
+            combined_audio = previous_audio + audio_segment
+
+            try:
+                combined_audio.export(filename, format="wav")
+            except Exception as e:
+                traceback_str = traceback.format_exc()
+                logger.logging(str(traceback_str), Color.RED)
+                print(f"Ошибка при экспорте объединенного аудио: {e}")
+
+            self.previous_audio_filename = filename
+            self.speaking = True

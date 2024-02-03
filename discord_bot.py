@@ -1,32 +1,23 @@
-import datetime
-import multiprocessing
+import asyncio
 import random
 import sys
-import traceback
-from PIL import Image
-from moviepy.editor import VideoFileClip
+import zipfile
+
 from pathlib import Path
 from pytube import Playlist
 import speech_recognition as sr
-from openai import AsyncOpenAI
-import base64
 
 import discord
 from discord import Option
 from discord.ext import commands
-from modifed_sinks import StreamSink
-from function import *
-from discord_tools.detect_mat import moderate_mat_in_sentence
 from discord_tools.chat_gpt import ChatGPT
 from discord_tools.sql_db import set_get_database_async as set_get_config_all
-from discord_tools.secret import *
-from images_AI import Image_Generator
-from video_change import video_pipeline
+from discord_tools.timer import Time_Count
+from function import *
+from function import Image_Generator
+from modifed_sinks import StreamSink
+from use_free_cuda import Use_Cuda
 
-# from langdetect import detect
-# from bark import preload_models
-
-# Значения по умолчанию
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
 ALL_VOICES = {'Rachel': "Ж", 'Clyde': 'М', 'Domi': 'Ж', 'Dave': 'М', 'Fin': 'М', 'Bella': 'Ж', 'Antoni': 'М',
               'Thomas': 'М',
@@ -38,9 +29,10 @@ ALL_VOICES = {'Rachel': "Ж", 'Clyde': 'М', 'Domi': 'Ж', 'Dave': 'М', 'Fin': 
               'Glinda': 'Ж',
               'Giovanni': 'М', 'Mimi': 'Ж'}
 
-connections = {}
-
-stream_sink = StreamSink()
+recognizers = {}
+audio_players = {}
+dialogs = {}
+characters_all = {}
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='\\', intents=intents)
@@ -48,13 +40,50 @@ cuda_manager = Use_Cuda()
 image_generators = []
 
 
+class SQL_Keys:
+    AIname = "AIname"
+    reload = "reload"
+    owner_id = "owner_id"
+    delay_record = "delay_record"
+    gpt_mode = "gpt_mode"
+
+    # [Default]
+    # reload
+    # owner_id
+    # AIname
+    # delay_record
+    # gpt_role
+    # [User]
+    # gpt_mode
+
+
+class DiscordUser:
+    def __init__(self, ctx):
+        self.ctx = ctx
+        self.id = ctx.author.id
+        self.name = ctx.author.name
+        character_name = asyncio.run(set_get_config_all(self.id, SQL_Keys.AIname))
+        self.character = Character(character_name)
+        self.gpt_mode = asyncio.run(set_get_config_all(self.id, SQL_Keys.gpt_mode))
+        self.owner = asyncio.run(set_get_config_all("Default", SQL_Keys.owner_id)) == str(self.id)
+
+    async def set_user_config(self, key, value=None):
+        await set_get_config_all(self.id, key, value)
+        await self.update_values()
+
+    async def update_values(self):
+        self.gpt_mode = await set_get_config_all(self.id, SQL_Keys.gpt_mode)
+        character_name = await set_get_config_all(self.id, SQL_Keys.AIname)
+        self.character = Character(character_name)
+
+
 @bot.event
 async def on_ready():
-    print('Status: online')
+    logger.logging('Status: online', Color.GREEN)
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
-    id = await set_get_config_all("Default", "reload")
-    print("ID:", id)
+    id = await set_get_config_all("Default", SQL_Keys.owner_id)
+    logger.logging("ID:", id, Color.GRAY)
     if not id == "True":
         user = await bot.fetch_user(int(id))
         await user.send("Перезагружен!")
@@ -62,14 +91,20 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    # minecraft chat bot
-    if message.author.id == 1165023027847757836:
+    ctx = await bot.get_context(message)
+
+    if message.author.id == 1165023027847757836:  # minecraft chat bot
         text = message.content
         if text.startswith("\\themer "):
             text = text.replace("\\themer ", "")
-            await set_get_config_all("dialog", "theme", text)
+
+            guild_id = ctx.guild.id
+            if guild_id in dialogs:
+                dialog = next((rec for rec in dialogs[guild_id] if rec.ctx == ctx), None)
+                if dialog:
+                    dialog.theme = text
+                    await ctx.send("Изменена тема:" + text)
             return
-        ctx = await bot.get_context(message)
 
         _, text = await moderate_mat_in_sentence(text)
 
@@ -87,7 +122,6 @@ async def on_message(message):
     if bot.user in message.mentions:
         text = message.content
         user = message.author
-        ctx = await bot.get_context(message)
         try:
             # получение, на какое сообщение ответили
             if message.reference:
@@ -98,12 +132,19 @@ async def on_message(message):
                 text += f" (Пользователь отвечает на ваше сообщение \"{reply_on_message}\")"
 
             _, text_out = await moderate_mat_in_sentence(text)
+
+            user = DiscordUser(ctx)
+            gpt_role = user.character.gpt_info
+
             chatGPT = ChatGPT()
-            answer = await chatGPT.run_all_gpt(f"{user}:{text}", user_id=user)
+            answer = await chatGPT.run_all_gpt(f"{user.name}:{text}", user_id=user.id, gpt_role=gpt_role)
             await ctx.send(answer)
+            audio_player = AudioPlayerDiscord(ctx)
+            if audio_player.voice_client and user.character:
+                await user.character.text_to_speech(answer)
         except Exception as e:
             traceback_str = traceback.format_exc()
-            await logger.logging(str(traceback_str), Color.RED)
+            logger.logging(str(traceback_str), Color.RED)
             await ctx.send(f"Ошибка при команде say с параметрами {message}: {e}")
     await bot.process_commands(message)
 
@@ -133,7 +174,7 @@ async def help_command(
             "# /ai_cover:\n(Перепеть/озвучить видео или аудио)\n**url - ссылка на видео**\n**audio_path - "
             "аудио файл**\nvoice - голосовая модель\ngender - пол (для тональности)\npitch - тональность (12 "
             "из мужского в женский, -12 из женского в мужской)\nindexrate - индекс голоса (чем больше, тем больше "
-            "черт черт голоса говорящего)\nloudness - количество шума (чем больше, тем больше шума)\nfilter_radius - "
+            "черт черт голоса говорящего)\nrms_mix_rate - количество шума (чем больше, тем больше шума)\nfilter_radius - "
             "размер фильтра (чем больше, тем больше шума)\nmain_vocal, back_vocal, music - громкость каждой "
             "аудиодорожки\nroomsize, wetness, dryness - параметры реверберации\npalgo - rmvpe - лучший, mangio-crepe "
             "- более плавный\nhop - длина для учитывания тональности (mangio-crepe)\ntime - продолжительность (для "
@@ -176,7 +217,7 @@ async def help_command(
             "strength_prompt - сила для запроса\nstrength_negative_prompt - сила для негативного запроса\n"
             "voice - голосовая модель\npitch - тональность (12 из мужского в женский, -12 из женского в "
             "мужской)\nindexrate - индекс голоса (чем больше, тем больше черт черт голоса говорящего)\n"
-            "loudness - количество шума (чем больше, тем больше шума)\nfilter_radius - размер фильтра (чем "
+            "rms_mix_rate - количество шума (чем больше, тем больше шума)\nfilter_radius - размер фильтра (чем "
             "больше, тем больше шума)\nmain_vocal, back_vocal, music - громкость каждой аудиодорожки\n"
             "roomsize, wetness, dryness - параметры реверберации\n")
     elif command == "join":
@@ -193,261 +234,7 @@ async def help_command(
         await ctx.respond("# /skip\n - пропуск аудио")
 
 
-@bot.slash_command(name="change_video",
-                   description='Перерисовать и переозвучить видео')
-async def __change_video(
-        ctx,
-        video_path: Option(discord.SlashCommandOptionType.attachment, description='Файл с видео',
-                           required=True),
-        fps: Option(int, description='Частота кадров (ОЧЕНЬ влияет на время ожидания))', required=True,
-                    choices=[30, 15, 10, 6, 5, 3, 2, 1]),
-        extension: Option(str, description='Расширение (сильно влияет на время ожидания)', required=True,
-                          choices=["144p", "240p", "360p", "480p", "720p"]),
-        prompt: Option(str, description='запрос', required=True),
-        negative_prompt: Option(str, description='негативный запрос', default="NSFW", required=False),
-        steps: Option(int, description='число шагов', required=False,
-                      default=30,
-                      min_value=1,
-                      max_value=500),
-        seed: Option(int, description='сид изображения', required=False,
-                     default=random.randint(1, 1000000),
-                     min_value=1,
-                     max_value=1000000),
-        strength: Option(float, description='насколько сильны будут изменения', required=False,
-                         default=0.15, min_value=0,
-                         max_value=1),
-        strength_prompt: Option(float,
-                                description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется положительный промпт',
-                                required=False,
-                                default=0.85, min_value=0.1,
-                                max_value=1),
-        strength_negative_prompt: Option(float,
-                                         description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется отрицательный промпт',
-                                         required=False,
-                                         default=1, min_value=0.1,
-                                         max_value=1),
-        voice: Option(str, description='Голос для видео', required=False, default="None"),
-        pitch: Option(str, description='Кто говорит/поёт в видео?', required=False,
-                      choices=['мужчина', 'женщина'], default=None),
-        indexrate: Option(float, description='Индекс голоса (от 0 до 1)', required=False, default=0.5, min_value=0,
-                          max_value=1),
-        loudness: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.2, min_value=0,
-                         max_value=1),
-        main_vocal: Option(int, description='Громкость основного вокала (от -50 до 0)', required=False, default=0,
-                           min_value=-50, max_value=0),
-        back_vocal: Option(int, description='Громкость бэквокала (от -50 до 0)', required=False, default=0,
-                           min_value=-50, max_value=0),
-        music: Option(int, description='Громкость музыки (от -50 до 0)', required=False, default=0, min_value=-50,
-                      max_value=0),
-        roomsize: Option(float, description='Размер помещения (от 0 до 1)', required=False, default=0.2, min_value=0,
-                         max_value=1),
-        wetness: Option(float, description='Влажность (от 0 до 1)', required=False, default=0.1, min_value=0,
-                        max_value=1),
-        dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.85, min_value=0,
-                        max_value=1)
-):
-    cuda_numbers = None
-    try:
-        await ctx.defer()
-
-        # ошибки входных данных
-        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
-        if voice not in voices:
-            await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
-            return
-        if await set_get_config_all(f"Image0", "model_loaded") == "False":
-            await ctx.respond("модель для картинок не загружена")
-            return
-        if not video_path:
-            return
-        # используем видеокарты
-        cuda_avaible = await cuda_manager.check_cuda()
-        if cuda_avaible == 0:
-            await ctx.respond("Нет свободных видеокарт")
-            return
-        else:
-            await ctx.respond(f"Используется {cuda_avaible} видеокарт для обработки видео")
-
-        cuda_numbers = []
-        for i in range(cuda_avaible):
-            cuda_numbers.append(await cuda_manager.use_cuda_images())
-
-        # run timer
-        timer = Time_Count()
-        # save
-        filename = f"{ctx.author.id}.mp4"
-        await video_path.save(filename)
-        # сколько кадров будет в результате
-        video_clip = VideoFileClip(filename)
-        total_frames = int((video_clip.fps * video_clip.duration) / (30 / fps))
-        max_frames = int(await set_get_config_all("Video", "max_frames", None))
-        if max_frames <= total_frames:
-            await ctx.send(
-                f"Слишком много кадров, снизьте параметр FPS! Максимальное разрешённое количество кадров в видео: {max_frames}. Количество кадров у вас - {total_frames}")
-            for i in cuda_numbers:
-                await cuda_manager.stop_use_cuda(i)
-            return
-        else:
-            if len(cuda_numbers) > 1:
-                seconds = total_frames * 13 / len(cuda_numbers)
-            else:
-                seconds = total_frames * 16
-            if seconds >= 3600:
-                hours = seconds // 3600
-                minutes = (seconds % 3600) // 60
-                remaining_seconds = seconds % 60
-                if minutes == 0 and remaining_seconds == 0:
-                    time_spend = f"{hours} часов"
-                elif remaining_seconds == 0:
-                    time_spend = f"{hours} часов, {minutes} минут"
-                elif minutes == 0:
-                    time_spend = f"{hours} часов, {remaining_seconds} секунд"
-                else:
-                    time_spend = f"{hours} часов, {minutes} минут, {remaining_seconds} секунд"
-            elif seconds >= 60:
-                minutes = seconds // 60
-                remaining_seconds = seconds % 60
-                if remaining_seconds == 0:
-                    time_spend = f"{minutes} минут"
-                else:
-                    time_spend = f"{minutes} минут, {remaining_seconds} секунд"
-            else:
-                time_spend = f"{seconds} секунд"
-            await ctx.send(f"Видео будет обрабатываться ~{time_spend}")
-        print("params suc")
-        # wait for answer
-        video_path = await video_pipeline(filename, fps, extension, prompt, voice, pitch,
-                                          indexrate, loudness, main_vocal, back_vocal, music,
-                                          roomsize, wetness, dryness, cuda_numbers, strength_negative_prompt,
-                                          strength_prompt, strength, seed, steps, negative_prompt)
-
-        await ctx.send("Вот как я изменил ваше видео🖌. Потрачено " + timer.count_time())
-        await send_file(ctx, video_path)
-        # освобождаем видеокарты
-        for i in cuda_numbers:
-            await cuda_manager.stop_use_cuda(i)
-    except Exception as e:
-        await ctx.send(f"Ошибка при изменении картинки (с параметрами\
-                          {fps, extension, prompt, negative_prompt, steps, seed, strength, strength_prompt, voice, pitch, indexrate, loudness, main_vocal, back_vocal, music, roomsize, wetness, dryness}\
-                          ): {e}")
-        if cuda_numbers:
-            for i in range(cuda_avaible):
-                await cuda_manager.stop_use_cuda(i)
-        traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        raise e
-
-
-@bot.slash_command(name="change_image", description='изменить изображение нейросетью')
-async def __image(ctx,
-                  image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
-                                required=True),
-                  # prompt=prompt, negative_prompt=negative_prompt, x=512, y=512, steps=50,
-                  #                      seed=random.randint(1, 10000), strenght=0.5
-                  prompt: Option(str, description='запрос', required=True),
-                  negative_prompt: Option(str, description='негативный запрос', default="NSFW", required=False),
-                  steps: Option(int, description='число шагов', required=False,
-                                default=60,
-                                min_value=1,
-                                max_value=500),
-                  seed: Option(int, description='сид изображения', required=False,
-                               default=None,
-                               min_value=1,
-                               max_value=9007199254740991),
-                  x: Option(int,
-                            description='изменить размер картинки по x',
-                            required=False,
-                            default=None, min_value=64,
-                            max_value=768),
-                  y: Option(int,
-                            description='изменить размер картинки по y',
-                            required=False,
-                            default=None, min_value=64,
-                            max_value=768),
-                  strength: Option(float, description='насколько сильны будут изменения', required=False,
-                                   default=0.5, min_value=0,
-                                   max_value=1),
-                  strength_prompt: Option(float,
-                                          description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется положительный промпт',
-                                          required=False,
-                                          default=0.85, min_value=0.1,
-                                          max_value=1),
-                  strength_negative_prompt: Option(float,
-                                                   description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется отрицательный промпт',
-                                                   required=False,
-                                                   default=1, min_value=0.1,
-                                                   max_value=1),
-                  repeats: Option(int,
-                                  description='Количество повторов',
-                                  required=False,
-                                  default=1, min_value=1,
-                                  max_value=16)
-                  ):
-    async def get_image_dimensions(file_path):
-        with Image.open(file_path) as img:
-            sizes = img.size
-        return str(sizes).replace("(", "").replace(")", "").replace(" ", "").split(",")
-
-    await ctx.defer()
-    if await set_get_config_all(f"Image0", "model_loaded") == "False":
-        await ctx.respond("модель для картинок не загружена")
-        return
-    for i in range(repeats):
-        cuda_number = None
-        try:
-            try:
-                cuda_number = await cuda_manager.use_cuda_images()
-            except Exception:
-                await ctx.respond("Нет свободных видеокарт")
-                return
-
-            await set_get_config_all(f"Image{cuda_number}", "result", "None")
-            timer = Time_Count()
-            input_image = "images/image" + str(ctx.author.id) + ".png"
-            await image.save(input_image)
-            # get image size and round to 64
-            if x is None or y is None:
-                x, y = await get_image_dimensions(input_image)
-                x = int(x)
-                y = int(y)
-                # скэйлинг во избежания ошибок из-за нехватки памяти
-                scale_factor = (1000000 / (x * y)) ** 0.5
-                x = int(x * scale_factor)
-                y = int(y * scale_factor)
-            if not x % 64 == 0:
-                x = ((x // 64) + 1) * 64
-            if not y % 64 == 0:
-                y = ((y // 64) + 1) * 64
-            print("X:", x, "Y:", y)
-            # loading params
-            if seed is None or repeats > 1:
-                seed_current = random.randint(1, 9007199254740991)
-            else:
-                seed_current = seed
-            image_path = image_generator_1.generate_image(prompt, negative_prompt, x, y, steps, seed, strength,
-                                                          strength_prompt,
-                                                          strength_negative_prompt, input_image)
-
-            # отправляем
-            if repeats == 1:
-                await ctx.respond("Вот как я изменил ваше изображение🖌. Потрачено " + timer.count_time())
-            else:
-                await ctx.send(
-                    "Вот как я изменил ваше изображение🖌. Потрачено " + timer.count_time() + f"сид:{seed_current}")
-            await send_file(ctx, image_path, delete_file=True)
-            # перестаём использовать видеокарту
-            await cuda_manager.stop_use_cuda(cuda_number)
-        except Exception as e:
-            traceback_str = traceback.format_exc()
-            await logger.logging(str(traceback_str), Color.RED)
-            await ctx.send(f"Ошибка при изменении картинки (с параметрами\
-                              {prompt, negative_prompt, steps, x, y, strength, strength_prompt, strength_negative_prompt}): {e}")
-            # перестаём использовать видеокарту
-            if not cuda_number is None:
-                await cuda_manager.stop_use_cuda(cuda_number)
-
-
-@bot.slash_command(name="config", description='изменить конфиг (лучше не трогать, если не знаешь!)')
+@bot.slash_command(name="config", description='изменить конфиг')
 async def __config(
         ctx,
         section: Option(str, description='секция', required=True),
@@ -456,7 +243,7 @@ async def __config(
 ):
     try:
         await ctx.defer()
-        owner_id = await set_get_config_all("Default", "owner_id")
+        owner_id = await set_get_config_all("Default", SQL_Keys.owner_id)
         if not ctx.author.id == int(owner_id):
             await ctx.author.send("Доступ запрещён")
             return
@@ -467,7 +254,7 @@ async def __config(
             await ctx.respond(section + " " + key + " " + value)
     except Exception as e:
         traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при изменении конфига (с параметрами{section},{key},{value}): {e}")
 
 
@@ -493,160 +280,42 @@ async def __read_messages(
         await ctx.respond(answer)
     except Exception as e:
         traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Произошла ошибка: {e}")
 
 
 @bot.slash_command(name="join", description='присоединиться к голосовому каналу')
 async def join(ctx):
-    try:
-        await ctx.defer()
-
-        # уже в войс-чате
-        if ctx.voice_client is not None and ctx.voice_client.is_connected():
-            await ctx.respond("Бот уже находится в голосовом канале.")
-            return
-
-        voice = ctx.author.voice
-        if not voice:
-            await ctx.respond(voiceChannelErrorText)
-            return
-
-        voice_channel = voice.channel
-
-        if ctx.voice_client is not None:
-            return await ctx.voice_client.move_to(voice_channel)
-
-        await voice_channel.connect()
-        await ctx.respond("Присоединяюсь")
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        await ctx.respond(f"Ошибка при присоединении: {e}")
-
-
-@bot.slash_command(name="record", description='воспринимать команды из микрофона')
-async def record(ctx):  # if you're using commands.Bot, this will also work.
-    try:
-        voice = ctx.author.voice
-        voice_channel = voice.channel
-        # добавляем ключ к connetions
-        if ctx.guild.id not in connections:
-            connections[ctx.guild.id] = []
-
-        if not voice:
-            return await ctx.respond(voiceChannelErrorText)
-
-        if ctx.voice_client is None:
-            # если бота НЕТ в войс-чате
-            vc = await voice_channel.connect()
-        else:
-            # если бот УЖЕ в войс-чате
-            vc = ctx.voice_client
-        # если уже записывает
-        if vc in connections[ctx.guild.id]:
-            return await ctx.respond("Уже записываю ваш голос🎤")
-        stream_sink.set_user(ctx.author.id)
-        connections[ctx.guild.id].append(vc)
-
-        # Начинаем запись
-        vc.start_recording(
-            stream_sink,  # the sink type to use.
-            once_done,  # what to do once done.
-            ctx.channel  # the channel to disconnect from.
-        )
-        await set_get_config_all("Sound", "record", "True")
-        await ctx.respond("Внимательно вас слушаю")
-        await recognize(ctx)
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        await ctx.respond(f"Ошибка при записи звука из микрофона: {e}")
-
-
-@bot.slash_command(name="stop_recording", description='перестать воспринимать команды из микрофона')
-async def stop_recording(ctx):
-    try:
-        if ctx.guild.id in connections:
-            vc = connections[ctx.guild.id][0]  # Получаем элемент списка
-            vc.stop_recording()
-            del connections[ctx.guild.id]
-            await ctx.respond("Я перестал вас слышать")
-        else:
-            await ctx.respond("Я и так тебя не слушал ._.")
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        await ctx.respond(f"Ошибка при остановки записи микрофона: {e}")
+    await ctx.defer()
+    await AudioPlayerDiscord(ctx).join_channel()
+    await ctx.respond("Присоединяюсь")
 
 
 @bot.slash_command(name="disconnect", description='выйти из войс-чата')
 async def disconnect(ctx):
-    try:
-        await ctx.defer()
-        voice = ctx.voice_client
-        if voice:
-            await voice.disconnect(force=True)
-            await ctx.respond("выхожу")
-        else:
-            await ctx.respond("Я не в войсе")
-        if ctx.guild.id in connections:
-            del connections[ctx.guild.id]  # remove the guild from the cache.
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        await ctx.respond(f"Ошибка при выходе из войс-чата: {e}")
+    await ctx.defer()
+    await AudioPlayerDiscord(ctx).disconnect()
+    await ctx.respond("Покидаю войс-чат")
 
 
 @bot.slash_command(name="pause", description='пауза/воспроизведение (остановка диалога)')
 async def pause(ctx):
-    try:
-        await ctx.defer()
-        if await set_get_config_all("dialog", "dialog", None) == "True":
-            await set_get_config_all("dialog", "dialog", "False")
-            await ctx.respond("Диалог остановлен")
-
-            # скипаем аудио
-            # voice_client = ctx.voice_client
-            # if voice_client.is_playing():
-            #     voice_client.stop()
-            #     await set_get_config_all("Sound", "stop_milliseconds", 0)
-            #     await set_get_config_all("Sound", "playing", "False")
-            return
-        voice_client = ctx.voice_client
-        if voice_client.is_playing():
-            # voice_client.pause()
-            await set_get_config_all("Sound", "pause", "True")
-            await ctx.respond("Пауза ⏸")
-        elif voice_client.is_paused():
-            # voice_client.resume()
-            await set_get_config_all("Sound", "pause", "False")
-            await ctx.respond("Продолжаем воспроизведение ▶️")
-        else:
-            await ctx.respond("Нет активного аудио для приостановки или продолжения.")
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        await ctx.respond(f"Ошибка при паузе: {e}")
+    await ctx.defer()
+    guild_id = ctx.guild.id
+    if guild_id in dialogs:
+        dialog = next((rec for rec in dialogs[guild_id] if rec.ctx == ctx), None)
+        if dialog:
+            await dialog.stop_dialog()
+            await ctx.respond("Остановлен диалог")
+    await AudioPlayerDiscord(ctx).stop()
+    await ctx.respond("Пауза")
 
 
 @bot.slash_command(name="skip", description='пропуск аудио')
 async def skip(ctx):
-    try:
-        await ctx.defer()
-        await ctx.respond('Выполнение...')
-        voice_client = ctx.voice_client
-        if voice_client.is_playing():
-            voice_client.stop()
-            await ctx.respond("Аудио пропущено ⏭️")
-            await set_get_config_all("Sound", "stop_milliseconds", 0)
-            await set_get_config_all("Sound", "playing", "False")
-        else:
-            await ctx.respond("Нет активного аудио для пропуска.")
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        await ctx.respond(f"Ошибка при пропуске: {e}")
+    await ctx.defer()
+    await AudioPlayerDiscord(ctx).skip()
+    await ctx.respond("Остановлено")
 
 
 @bot.slash_command(name="say", description='Сказать роботу что-то')
@@ -658,22 +327,40 @@ async def __say(
                          default=None)
 ):
     # ["fast", "all", "None"], ["быстрый режим", "много ответов (медленный)", "Экономный режим"]
+    user = DiscordUser(ctx)
     if gpt_mode:
         gpt_mode = gpt_mode.replace("быстрый режим", "Fast").replace("много ответов (медленный)", "All").replace(
             "экономный режим", "None")
+        await user.set_user_config(SQL_Keys.gpt_mode, gpt_mode)
+    else:
+        gpt_mode = user.gpt_mode
+
     try:
         await ctx.respond('Выполнение...')
-
-        if gpt_mode:
+        if not gpt_mode:
             gpt_mode = "Fast"
         _, text = await moderate_mat_in_sentence(text)
+
+        gpt_role = user.character.gpt_info
+
         chatGPT = ChatGPT()
-        answer = await chatGPT.run_all_gpt(text, user_id=ctx.author.id, mode=gpt_mode)
+        answer = await chatGPT.run_all_gpt(f"{user.name}:{text}", user_id=user.id, gpt_role=gpt_role, mode=gpt_mode)
         await ctx.send(answer)
+        audio_player = AudioPlayerDiscord(ctx)
+        if audio_player.voice_client and user.character:
+            await user.character.text_to_speech(answer)
     except Exception as e:
         traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при команде say (с параметрами{text}): {e}")
+
+
+async def get_voice_list():
+    from cover_gen import rvc_models_dir
+    directory_path = rvc_models_dir
+
+    # Получение имен папок
+    return [folder for folder in os.listdir(directory_path) if os.path.isdir(os.path.join(directory_path, folder))]
 
 
 @bot.slash_command(name="tts", description='Заставить бота говорить всё, что захочешь')
@@ -683,7 +370,7 @@ async def __tts(
         voice_name: Option(str, description='Голос для озвучки', required=False, default=None),
         speed: Option(float, description='Ускорение голоса', required=False, default=None, min_value=1, max_value=3),
         voice_model_eleven: Option(str, description=f'Какая модель elevenlabs будет использована', required=False,
-                            default=None),
+                                   default=None),
         stability: Option(float, description='Стабильность голоса', required=False, default=None, min_value=0,
                           max_value=1),
         similarity_boost: Option(float, description='Повышение сходства', required=False, default=None, min_value=0,
@@ -691,40 +378,39 @@ async def __tts(
         style: Option(float, description='Выражение', required=False, default=None, min_value=0, max_value=1),
         output: Option(str, description='Отправить результат', required=False,
                        choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"], default="1 файл (RVC)"),
-        pitch_change: Option(int, description="Изменить тональность", required=False, default=0, min_value=-24,
-                             max_value=24)
+        pitch: Option(int, description="Изменить тональность", required=False, default=0, min_value=-24,
+                      max_value=24)
 ):
+    if not voice_name:
+        voice_name = await set_get_config_all(ctx.author.id, SQL_Keys.AIname)
+    voices = await get_voice_list()
+    if voice_name not in voices:
+        return await ctx.response.send_message("Выберите голос из списка: " + ';'.join(voices))
+
     voice_models = None
     if voice_model_eleven == "All":
-        voice_models = ALL_VOICES
+        voice_models = ALL_VOICES.values()
     elif voice_model_eleven:
-        for voice_model_temp, gender in ALL_VOICES:
-            if voice_model_temp.lower == voice_model_eleven.lower():
-                voice_models = {voice_model_temp: gender}
-        if voice_models is None:
-            await ctx.response.send_message("Список голосов (М - мужские, Ж - женские): \n" + ';'.join(ALL_VOICES))
+        if voice_models not in ALL_VOICES.values():
+            await ctx.response.send_message("Список голосов elevenlabs: \n" + ';'.join(ALL_VOICES.values()))
             return
-    else:
-        voice_models = {None: "Ж"}
+    character = Character(voice_name)
+
     try:
 
         await ctx.response.send_message('Выполнение...' + voice_name)
-        # count time
-        for voice_model, _ in voice_models:
+        cuda_number = await cuda_manager.use_cuda()
+        await character.load_voice(cuda_number)
+        for voice_model in voice_models:
             timer = Time_Count()
-            cuda = await cuda_manager.use_cuda()
-            voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
-            if str(voice_name) not in voices:
-                return await ctx.response.send_message("Выберите голос из списка: " + ';'.join(voices))
+            character.voice_model_eleven = voice_model
             mat_found, text = await moderate_mat_in_sentence(text)
             if mat_found:
                 await ctx.respond("Такое точно нельзя произносить!")
                 return
             # запускаем TTS
-            voice_changer = TextToSpeechRVC(voice_name=voice_name, voice_model_eleven=voice_model_eleven, pitch_change=pitch_change)
-
+            await character.text_to_speech(text, audio_path=f"{ctx.author.id}.mp3")
             # перестаём использовать видеокарту
-            await cuda_manager.stop_use_cuda(cuda)
 
             await ctx.respond("Потрачено на обработку:" + timer.count_time())
             if output:
@@ -733,115 +419,67 @@ async def __tts(
                 elif output.startswith("2"):
                     await send_file(ctx, "1.mp3")
                     await send_file(ctx, f"{voice_model}.mp3")
+        await cuda_manager.stop_use_cuda(cuda_number)
     except Exception as e:
         traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
         # перестаём использовать видеокарту
         await cuda_manager.stop_use_cuda(cuda_number)
 
 
-# @bot.slash_command(name="bark", description='Тоже, что и tts, но менее стабильный')
-async def __bark(
-        ctx,
-        text: Option(str, description='Текст для озвучки', required=True),
-        voice_name: Option(str, description='Голос для озвучки', required=False, default=None),
-        speaker: Option(int, description='Говорящий (0-6 - мужские, 7-9 - женские)', required=False,
-                        max_value=9, min_value=0, default=1),
-        output: Option(str, description='Отправить результат', required=False,
-                       choices=["1 файл (RVC)", "2 файла (RVC & Bark)", "None"], default=None)
-):
-    voice_name_temp = None
-    try:
-        await ctx.defer()
-        await ctx.respond('Выполнение...')
-        # count time
-        start_time = datetime.datetime.now()
-        cuda = await cuda_manager.use_cuda()
-        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
-        if str(voice_name) not in voices:
-            return await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
-        text_out = await replace_mat_in_sentence(text)
-        if not text_out == text.lower():
-            await ctx.respond("Такое точно нельзя произносить!")
-            return
-        print(f'{text} ({type(text).__name__})\n')
-        # меняем голос
-        if voice_name is None:
-            voice_name = await set_get_config_all("Default", "currentainame")
-            print(await set_get_config_all("Default", "currentainame"))
-        # запускаем TTS
+async def send_output(ctx, audio_path, output, timer):
+    await ctx.send("===Файлы " + os.path.basename(audio_path)[:-4] + "===")
+    output = output.replace(" ", "")
+    # конечный файл
+    if output == "file":
+        await send_file(ctx, audio_path)
+    # все файлы
+    elif output == "all_files":
+        for filename in os.listdir(os.path.dirname(audio_path)):
+            file_path = os.path.join(os.path.dirname(audio_path), filename)
+            await send_file(ctx, file_path, delete_file=True)
+    # zip файл по ссылке
+    elif output == "link":
+        zip_name = os.path.dirname(audio_path) + f"/all_files.zip"
+        with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for filename in os.listdir(os.path.dirname(audio_path)):
+                file_path = os.path.join(os.path.dirname(audio_path), filename)
+                if ".zip" in file_path:
+                    continue
+                zipf.write(file_path, os.path.basename(file_path))
+        link = await get_link_to_file(zip_name, ctx)
+        await ctx.send(f"Ссылка на скачку:{link}")
+    await logger.logging("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
+    audio_player = AudioPlayerDiscord(ctx)
+    await audio_player.play(audio_path)
 
-        language = "ru"
-        # try:
-        #     language = detect(text)
-        # except Exception:
-        #     language = "en"
-        #
-        # if language != "ru":
-        #     language = "en"
+    if not output == "None":
+        await ctx.send(timer.count_time())
 
-        await gtts(text, "bark1.mp3", speaker=speaker, bark=True, language=language)
-
-        try:
-            command = [
-                "python",
-                f"only_voice_change_cuda{cuda}.py",
-                "-i", "bark1.mp3",
-                "-o", "bark2.mp3",
-                "-dir", voice_name,
-                "-p", "0",
-                "-ir", "0.5",
-                "-fr", "3",
-                "-rms", "0.3",
-                "-pro", "0.15"
-            ]
-            print("run RVC, AIName:", voice_name)
-            subprocess.run(command, check=True)
-        except subprocess.CalledProcessError as e:
-            traceback_str = traceback.format_exc()
-            await logger.logging(str(traceback_str), Color.RED)
-            await ctx.respond(f"Ошибка при изменении голоса(ID:d1): {e}")
-
-        await cuda_manager.stop_use_cuda(cuda_number)
-
-        # count time
-        end_time = datetime.datetime.now()
-        spent_time = str(end_time - start_time)
-        # убираем миллисекунды
-        spent_time = spent_time[:spent_time.find(".")]
-        if "0:00:00" not in str(spent_time):
-            await ctx.respond("Потрачено на обработку:" + spent_time)
-        if output:
-            if output.startswith("1"):
-                await send_file(ctx, "bark2.mp3")
-            elif output.startswith("2"):
-                await send_file(ctx, "bark1.mp3")
-                await send_file(ctx, "bark2.mp3")
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
-        # возращаем голос
-        if not voice_name_temp is None:
-            await set_get_config_all("Default", "currentainame", voice_name_temp)
-        # перестаём использовать видеокарту
-        await cuda_manager.stop_use_cuda(cuda_number)
+    else:
+        await ctx.send("Произошла ошибка")
 
 
-async def get_links_from_playlist(playlist_url):
-    try:
-        playlist = Playlist(playlist_url)
-        playlist._video_regex = re.compile(r"\"url\":\"(/watch\?v=[\w-]*)")
-        video_links = playlist.video_urls
-        video_links = str(video_links).replace("'", "").replace("[", "").replace("]", "").replace(" ", "").replace(",",
-                                                                                                                   ";")
-        return video_links
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        print(f"Произошла ошибка при извлечении плейлиста: {e}")
-        return []
+async def run_ai_cover_gen_several_cuda(song_input, rvc_dirname, pitch, index_rate, filter_radius, rms_mix_rate,
+                                        protect, pitch_detection_algo,
+                                        crepe_hop_length, main_vol, backup_vol,
+                                        inst_vol, reverb_size, reverb_wetness, reverb_dryness,
+                                        reverb_damping,
+                                        output_format, output, ctx):
+    cuda_number = await cuda_manager.use_cuda()
+    timer = Time_Count()
+    audio_path = await run_ai_cover_gen(song_input=song_input, rvc_dirname=rvc_dirname, pitch=pitch,
+                                        index_rate=index_rate,
+                                        filter_radius=filter_radius, rms_mix_rate=rms_mix_rate, protect=protect,
+                                        pitch_detection_algo=pitch_detection_algo,
+                                        crepe_hop_length=crepe_hop_length, main_vol=main_vol, backup_vol=backup_vol,
+                                        inst_vol=inst_vol, reverb_size=reverb_size, reverb_wetness=reverb_wetness,
+                                        reverb_dryness=reverb_dryness,
+                                        reverb_damping=reverb_damping,
+                                        output_format=output_format, cuda_number=cuda_number)
+    await send_output(ctx=ctx, audio_path=audio_path, output=output, timer=timer)
+    await cuda_manager.stop_use_cuda(cuda_number)
 
 
 @bot.slash_command(name="ai_cover", description='Заставить бота озвучить видео/спеть песню')
@@ -850,18 +488,14 @@ async def __cover(
         url: Option(str, description='Ссылка на видео', required=False, default=None),
         audio_path: Option(discord.SlashCommandOptionType.attachment, description='Аудиофайл',
                            required=False, default=None),
-        voice: Option(str, description='Голос для видео', required=False, default=None),
-        gender: Option(str, description='Кто говорит/поёт в видео? (или указать pitch)', required=False,
-                       choices=['мужчина', 'женщина'], default=None),
+        voice_name: Option(str, description='Голос для видео', required=False, default=None),
         pitch: Option(int, description='Какую использовать тональность (от -24 до 24) (или указать gender)',
                       required=False,
-                      default=0, min_value=-24, max_value=24),
-        time: Option(int, description='Ограничить длительность воспроизведения (в секундах)', required=False,
-                     default=-1, min_value=-1),
+                      default=None, min_value=-24, max_value=24),
         indexrate: Option(float, description='Индекс голоса (от 0 до 1)', required=False, default=0.5, min_value=0,
                           max_value=1),
-        loudness: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.4, min_value=0,
-                         max_value=1),
+        rms_mix_rate: Option(float, description='Громкость шума (от 0 до 1)', required=False, default=0.4, min_value=0,
+                             max_value=1),
         filter_radius: Option(int,
                               description='Насколько далеко от каждой точки в данных будут учитываться значения... (от 1 до 7)',
                               required=False, default=3, min_value=0,
@@ -884,8 +518,6 @@ async def __cover(
         hop: Option(int, description='Как часто проверяет изменения тона в mango-crepe', required=False, default=128,
                     min_value=64,
                     max_value=1280),
-        start: Option(int, description='Начать воспроизводить с (в секундах). -1 для продолжения', required=False,
-                      default=0, min_value=-2),
         output: Option(str, description='Отправить результат',
                        choices=["ссылка на все файлы", "только результат (1 файл)", "все файлы", "не отправлять"],
                        required=False, default="только результат (1 файл)"),
@@ -893,6 +525,21 @@ async def __cover(
                                   description='Не извлекать инструментал и бэквокал, изменить голос. Не поддерживаются ссылки',
                                   required=False, default=False)
 ):
+    async def get_links_from_playlist(playlist_url):
+        try:
+            playlist = Playlist(playlist_url)
+            playlist._video_regex = re.compile(r"\"url\":\"(/watch\?v=[\w-]*)")
+            video_links = playlist.video_urls
+            video_links = str(video_links).replace("'", "").replace("[", "").replace("]", "").replace(" ", "").replace(
+                ",",
+                ";")
+            return video_links
+        except Exception as e:
+            traceback_str = traceback.format_exc()
+            logger.logging(str(traceback_str), Color.RED)
+            logger.logging(f"Произошла ошибка при извлечении плейлиста", Color.RED)
+            return []
+
     param_string = None
     # ["link", "file", "all_files", "None"], ["ссылка на все файлы", "только результат (1 файл)", "все файлы", "не отправлять"]
     output = output.replace("ссылка на все файлы", "link").replace("только результат (1 файл)", "file").replace(
@@ -900,255 +547,218 @@ async def __cover(
     try:
         await ctx.defer()
         await ctx.respond('Выполнение...')
-        params = []
-        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
+        voices = await get_voice_list()
 
-        if voice is None:
-            voice = await set_get_config_all("Default", "currentAIname")
-        elif voice not in voices:
+        if voice_name is None:
+            voice_name = await set_get_config_all("Default", SQL_Keys.AIname)
+        elif voice_name not in voices:
             await ctx.respond("Голос не найден")
             return
-        if voice:
-            params.append(f"-voice {voice}")
-        # если мужчина-мужчина, женщина-женщина, pitch не меняем
-        pitch_int = pitch
-        # если женщина, а AI мужчина = -12,
-        if gender == 'женщина':
-            if await set_get_config_all("Default", "currentaipitch") == "0":
-                pitch_int = -12
-        # если мужчина, а AI женщина = 12,
-        elif gender == 'мужчина':
-            if not await set_get_config_all("Default", "currentaipitch") == "0":
-                pitch_int = 12
-        params.append(f"-pitch {pitch_int}")
-        if time is None:
-            params.append(f"-time -1")
-        else:
-            params.append(f"-time {time}")
-        if palgo != "rmvpe":
-            params.append(f"-palgo {palgo}")
-        if hop != 128:
-            params.append(f"-hop {hop}")
-        if indexrate != 0.5:
-            params.append(f"-indexrate {indexrate}")
-        if loudness != 0.2:
-            params.append(f"-loudness {loudness}")
-        if filter_radius != 3:
-            params.append(f"-filter_radius {filter_radius}")
-        if main_vocal != 0:
-            params.append(f"-vocal {main_vocal}")
-        if back_vocal != 0:
-            params.append(f"-bvocal {back_vocal}")
-        if music != 0:
-            params.append(f"-music {music}")
-        if roomsize != 0.2:
-            params.append(f"-roomsize {roomsize}")
-        if wetness != 0.1:
-            params.append(f"-wetness {wetness}")
-        if dryness != 0.85:
-            params.append(f"-dryness {dryness}")
-        if start == -2:
-            stop_seconds = int(await set_get_config_all("Sound", "stop_milliseconds", None)) // 1000
-            params.append(f"-start {stop_seconds}")
-        elif start == -1 or start != 0:
-            params.append(f"-start {start}")
-        if output != "None":
-            params.append(f"-output {output}")
 
-        param_string = ' '.join(params)
-        # print("suc params")
+        if pitch is None:
+            character = Character(voice_name)
+            pitch = character.pitch
 
+        logger.logging("suc params", Color.CYAN)
+
+        urls = []
         if audio_path:
-            filename = str(random.randint(1, 1000000)) + ".mp3"
+            filename = f"{ctx.author.id}-{random.randint(1, 1000000)}.mp3"
             await audio_path.save(filename)
-            # Изменить ТОЛЬКО ГОЛОС
+            urls.append(filename)
             if only_voice_change:
-                try:
-                    command = [
-                        "python",
-                        "voice_change.py",
-                        "-i", f"{filename}",
-                        "-o", f"{filename}",
-                        "-dir", str(voice),
-                        "-p", f"{pitch_int}",
-                        "-ir", f"{indexrate}",
-                        "-fr", f"{filter_radius}",
-                        "-rms", f"{roomsize}",
-                        "-pro", "0.05"
-                    ]
-                    print("run RVC, AIName:", voice)
-                    subprocess.run(command, check=True)
-                    await send_file(ctx, filename, delete_file=True)
-                except subprocess.CalledProcessError as e:
-                    traceback_str = traceback.format_exc()
-                    await logger.logging(str(traceback_str), Color.RED)
-                    await ctx.respond(f"Ошибка при изменении голоса(ID:d1): {e}")
-            else:
-                # изменить голос без музыки
-                param_string += f" -url {filename} "
-                await run_main_with_settings(ctx, "робот протокол 13 " + param_string, False)
-        elif url:
+                cuda = await cuda_manager.use_cuda()
+                voice_changer = Voice_Changer(cuda_number=cuda, voice_name=voice_name, index_rate=indexrate,
+                                              pitch=pitch, filter_radius=filter_radius, rms_mix_rate=rms_mix_rate,
+                                              protect=0.3, algo=palgo)
+                await voice_changer.voice_change(input_path=filename, output_path=filename)
+                await send_file(ctx, file_path=filename)
+                await cuda_manager.stop_use_cuda(cuda)
+                return
+        if url:
             if ";" in url:
-                urls = url.split(";")
+                urls += url.split(";")
             elif "playlist" in url:
-                urls = await get_links_from_playlist(url)
-                urls = urls.split(";")
-                if urls == "" or urls is None:
-                    ctx.respond("Ошибка нахождения видео в плейлисте")
-            else:
-                urls = [url]
-            args = ""
-            i = 0
-            for one_url in urls:
-                i += 1
-                args += f"робот протокол 13 -url {one_url} {param_string}\n"
-            await run_main_with_settings(ctx, args, True)
-        else:
+                urls += (await get_links_from_playlist(url)).split(";")
+
+        for i, url in enumerate(urls):
+            asyncio.ensure_future(
+                run_ai_cover_gen_several_cuda(song_input=url, rvc_dirname=voice_name, pitch=pitch, index_rate=indexrate,
+                                              filter_radius=filter_radius, rms_mix_rate=rms_mix_rate, protect=0.3,
+                                              pitch_detection_algo=palgo,
+                                              crepe_hop_length=hop, main_vol=main_vocal, backup_vol=back_vocal,
+                                              inst_vol=music, reverb_size=roomsize, reverb_wetness=wetness,
+                                              reverb_dryness=dryness,
+                                              reverb_damping=0.7,
+                                              output_format='mp3', output=output, ctx=ctx))
+        if not urls:
             await ctx.respond('Не указана ссылка или аудиофайл')
             return
 
     except Exception as e:
         traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), Color.RED)
         await ctx.respond(f"Ошибка при изменении голоса(ID:d5) (с параметрами {param_string}): {e}")
 
 
-@bot.slash_command(name="create_dialog", description='Имитировать диалог людей')
-async def __dialog(
-        ctx,
-        names: Option(str, description="Участники диалога через ';' (у каждого должен быть добавлен голос!)",
-                      required=True),
-        theme: Option(str, description="Начальная тема разговора", required=False, default="случайная тема"),
-        prompt: Option(str, description="Общий запрос для всех диалогов", required=False, default="")
-):
-    try:
-        await ctx.defer()
-        await ctx.respond('Бот выводит диалог только в голосовом чате. Используйте /join')
+class Dialog_AI:
+    def __init__(self, ctx, characters, theme, global_prompt):
+        self.alive = True
+        self.ctx = ctx
 
-        if await set_get_config_all("dialog", "dialog", None) == "True":
-            await ctx.respond("Уже идёт диалог!")
-            return
+        dialogs[self.ctx.guild.id].append(self)
 
-        # отчищаем прошлые диалоги
-        with open("caversAI/dialog_create.txt", "w"):
-            pass
-        with open("caversAI/dialog_play.txt", "w"):
-            pass
-        await set_get_config_all("dialog", "theme", theme)
-        for file in os.listdir('song_output'):
-            if os.path.isfile(file):
-                os.remove(os.path.join('song_output', file))
-        await set_get_config_all("dialog", "files_number", "0")
-        await set_get_config_all("dialog", "play_number", "0")
+        self.characters = []
+        self.names = []
+        self.infos = []
 
-        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
-        voices.remove("None")  # убираем, чтобы не путаться
-        names = names.split(";")
-        if len(names) < 2:
-            await ctx.respond("Должно быть как минимум 2 персонажа")
-            return
-        infos = []
-        for name in names:
-            if name not in voices:
-                await ctx.respond("Выберите голоса из списка: " + ';'.join(voices))
-                return
-            with open(f"rvc_models/{name}/info.txt") as reader:
-                file_content = reader.read().replace("Вот информация о тебе:", "")
-                infos.append(f"Вот информация о {name}: {file_content}")
-        await set_get_config_all("dialog", "dialog", "True")
-        await set_get_config_all("gpt", "gpt_mode", "None")
-        # names, theme, infos, prompt, ctx
-        # запустим сразу 8 процессов для обработки голоса
-        asyncio.ensure_future(gpt_dialog(names, theme, infos, prompt, ctx))
-        asyncio.ensure_future(play_dialog(ctx))
-        await asyncio.gather(create_audio_dialog(ctx, 0, "dialog"), create_audio_dialog(ctx, 1, "dialog"))
-        # create_audio_dialog(ctx, 2, "dialog"), create_audio_dialog(ctx, 3, "dialog"),
-        # create_audio_dialog(ctx, 4, "dialog"), create_audio_dialog(ctx, 5, "dialog"))
-        # create_audio_dialog(ctx, 6, "dialog"), create_audio_dialog(ctx, 7, "dialog"))
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        await ctx.respond(f"Ошибка при диалоге: {e}")
+        for i, name in enumerate(characters):
+            character = Character(name=name)
+            character.load_voice(i % 2)
+            self.characters.append(character)
+            self.names.append(character.name)
+            self.infos.append(character.info)
 
+        self.theme = theme
+        self.global_prompt = global_prompt
+        self.audio_player = AudioPlayerDiscord(ctx)
+        self.audio_player.join_channel()
 
-async def agrs_with_txt(txt_file):
-    try:
-        filename = "temp_args.txt"
-        await txt_file.save(filename)
-        with open(filename, "r", encoding="utf-8") as file:
-            lines = file.readlines()
-            lines[-1] = lines[-1] + " "
-        url = []
-        name = []
-        gender = []
-        info = []
-        speed = []
-        voice_model_eleven = []
-        stability, similarity_boost, style = [], [], []
-        for line in lines:
-            if line.strip():
-                # забейте, просто нужен пробел и всё
-                line += " "
-                line = line.replace(": ", ":")
-                # /add_voice url:url_to_model name:some_name gender:мужчина info:some_info speed:some_speed voice_model_eleven:some_model
-                pattern = r'(\w+):(.+?)\s(?=\w+:|$)'
+        self.recognizer = Recognizer(ctx=ctx, with_gpt=False)
 
-                matches = re.findall(pattern, line)
-                arguments = dict(matches)
+        self.play_number = 0
+        self.files_number = 0
+        self.gpt = ChatGPT(openAI_keys=False, openAI_moderation=False, auth_keys=False)
+        self.user_id = ctx.author.id * 10
 
-                url.append(arguments.get('url', None))
-                name.append(arguments.get('name', None))
-                gender.append(arguments.get('gender', None))
-                info.append(arguments.get('info', "Отсутствует"))
-                speed.append(arguments.get('speed', "1"))
-                voice_model_eleven.append(arguments.get('voice_model_eleven', "James"))
-                stability.append(arguments.get('stability', "0.4"))
-                similarity_boost.append(arguments.get('similarity_boost', "0.25"))
-                style.append(arguments.get('style', "0.4"))
-        return url, name, gender, info, speed, voice_model_eleven, stability, similarity_boost, style
-    except Exception:
-        traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        return None, None, None, None, None, None, None, None, None
+        self.dialog_create = {}
+        self.dialog_play = {}
 
+        asyncio.ensure_future(self.gpt_dialog())
+        asyncio.ensure_future(self.play_dialog())
+        functions = [self.create_audio_dialog(character) for character in self.characters]
+        for function in functions:
+            asyncio.ensure_future(function)
 
-async def download_voice(ctx, url, name, gender, info, speed, voice_model_eleven, change_voice, stability="0.4",
-                         similarity_boost="0.25", style="0.4"):
-    if name == "None" or ";" in name or "/" in name or "\\" in name:
-        await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
-    # !python download_voice_model.py {url} {dir_name} {gender} {info}
-    name = name.replace(" ", "_")
-    if gender == "женщина":
-        gender = "female"
-    elif gender == "мужчина":
-        gender = "male"
-    else:
-        gender = "male"
-    try:
-        command = [
-            "python",
-            "download_voice_model.py",
-            url,
-            name,
-            gender,
-            f"{info}",
-            voice_model_eleven,
-            str(speed),
-            stability,
-            similarity_boost,
-            style
-        ]
-        subprocess.run(command, check=True)
-        voices = (await set_get_config_all("Sound", "voices")).split(";")
-        voices.append(name)
-        await set_get_config_all("Sound", "voices", ';'.join(voices))
-        if change_voice:
-            await run_main_with_settings(ctx, f"робот измени голос на {name}", True)
-        await ctx.send(f"Модель {name} успешно установлена!")
-    except subprocess.CalledProcessError as e:
-        traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        await ctx.respond("Ошибка при скачивании голоса.")
+    async def stop_dialog(self):
+        if self.ctx.guild.id in dialogs:
+            dialogs[self.ctx.guild.id].remove(self)
+            self.alive = False
+
+    async def play_dialog(self):
+        while self.alive:
+            if self.dialog_play[self.play_number]:
+                name, audio_path = self.dialog_play[self.play_number]
+                del self.dialog_play[self.play_number]
+
+                self.play_number += 1
+
+                await self.ctx.send("говорит " + name)
+                await self.audio_player.play(audio_path)
+                os.remove(audio_path)
+            else:
+                logger.logging("warn: Нет аудио для диалога!", Color.RED)
+                await asyncio.sleep(0.75)
+
+    async def create_audio_dialog(self, character):
+        while self.alive:
+            files_number = self.files_number
+            text = self.dialog_create[files_number][character.name]
+            if text:
+                audio_path = f"{self.files_number}{character.name}.mp3"
+                character.text_to_speech(text=text, audio_path=audio_path, output_name=audio_path)
+                del self.dialog_create[files_number][character.name][text]
+                self.dialog_play[files_number] = (character.name, audio_path)
+            await asyncio.sleep(0.5)
+
+    async def save_dialog(self, result):
+        logger.logging(result, Color.GRAY)
+        with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
+            for line in result.split("\n"):
+                for name in self.names:
+                    # Человек: привет
+                    # Человек (man): привет
+                    # Чэловек: привет
+                    if (line.startswith(name) or line.startswith(name.replace("э", "е"))) and ":" in line:
+                        line = line[line.find(":") + 1:]
+                        self.dialog_create[self.files_number][name] = line
+                        writer.write(f"{name}:{line}\n")
+                        self.files_number += 1
+                        break
+
+    async def run_gpt(self, prompt):
+        result = await self.gpt.run_all_gpt(prompt=prompt, user_id=self.user_id)
+        if "(" in result and ")" in result:
+            result = re.sub(r'\(.*?\)', '', result)
+        return result.replace("[", "").replace("]", "").replace(
+            "Привет, ребята! ", "").replace("Привет, ребята", "").replace("Всем привет, ", "").replace("Эй", "")
+
+    async def gpt_dialog(self):
+        prompt = (
+            f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(self.names)}. На тему \"{self.theme}\". "
+            f"персонажи должны соответствовать своему образу насколько это возможно. "
+            f"{'.'.join(self.infos)}. {self.global_prompt}. "
+            f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
+            f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
+        result = await self.run_gpt(prompt)
+        if "*" in result:
+            result = re.sub(r'\*.*?\*', '', result)
+
+        await self.save_dialog(result)
+
+        theme_last = self.theme
+        while self.alive:
+            try:
+                if "**" in result:
+                    result = result[result.rfind("**"):400]
+                elif "\n" in result:
+                    result = result[result.rfind("\n"):400]
+
+                spoken_text = self.recognizer.recognized
+                if spoken_text:
+                    spoken_text = "Зрители за прошлый диалог написали:\"" + spoken_text + "\""
+                    self.recognizer.recognized = ""
+
+                # Тема добавляется в запрос, если она изменилась
+                new_theme = self.theme
+                if not theme_last == new_theme:
+                    theme_last = new_theme
+                    theme_temp = " на тему" + new_theme
+                    with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
+                        writer.write(f"\n==Новая тема==: {new_theme}\n\n")
+                else:
+                    theme_temp = f"Изначальная тема диалога была {new_theme}, не сильно отходи от её"
+
+                prompt = (f"Привет chatGPT, продолжи диалог между {', '.join(self.names)}{theme_temp}. "
+                          f"{'.'.join(self.infos)}. {self.global_prompt} "
+                          f"персонажи должны соответствовать своему образу насколько это возможно. "
+                          f"Никогда не пиши приветствие в начале этого диалога. "
+                          f"Никогда не повторяй то, что было в прошлом диалоге! Вот что было в прошлом диалоге:\"{result}\". {spoken_text}"
+                          f"\nОбязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
+                          f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
+
+                result = await self.run_gpt(prompt)
+
+                await self.save_dialog(result)
+
+                # слишком большой разрыв
+                while self.files_number - self.play_number > 4:
+                    logger.logging("wait, difference > 4", Color.YELLOW)
+                    await asyncio.sleep(2.5)
+                    if not self.alive:
+                        return
+
+                # Слишком много текста
+                while len(self.dialog_create) > 2:
+                    logger.logging("wait, too many text > 2", Color.YELLOW)
+                    await asyncio.sleep(2.5)
+                    if not self.alive:
+                        return
+
+            except Exception as e:
+                traceback_str = traceback.format_exc()
+                logger.logging(str(traceback_str), Color.RED)
+                await self.ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
 
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
@@ -1165,30 +775,30 @@ async def __add_voice(
         speed: Option(float, description=f'Ускорение/замедление голоса', required=False,
                       default=1, min_value=1, max_value=3),
         voice_model_eleven: Option(str, description=f'Какая модель elevenlabs будет использована', required=False,
-                            default="Adam"),
+                                   default="Adam"),
         change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
                              default=False),
         txt_file: Option(discord.SlashCommandOptionType.attachment,
                          description='Файл txt для добавления нескольких моделей сразу',
                          required=False, default=None)
 ):
-    if voice_model_eleven not in ALL_VOICES:
-        await ctx.respond("Список голосов: \n" + '; '.join(ALL_VOICES))
+    if voice_model_eleven not in ALL_VOICES.values():
+        await ctx.respond("Список голосов: \n" + '; '.join(ALL_VOICES.values()))
         return
     await ctx.defer()
     await ctx.respond('Выполнение...')
     if txt_file:
         urls, names, genders, infos, speeds, voice_model_elevens, stabilities, similarity_boosts, styles = await agrs_with_txt(
             txt_file)
-        print("url:", urls)
-        print("name:", names)
-        print("gender:", genders)
-        print("info:", infos)
-        print("speed:", speeds)
-        print("voice_model_eleven:", voice_model_elevens)
-        print("stabilities:", stabilities)
-        print("similarity_boosts:", similarity_boosts)
-        print("styles:", styles)
+        logger.logging("url:", urls)
+        logger.logging("name:", names)
+        logger.logging("gender:", genders)
+        logger.logging("info:", infos)
+        logger.logging("speed:", speeds)
+        logger.logging("voice_model_eleven:", voice_model_elevens)
+        logger.logging("stabilities:", stabilities)
+        logger.logging("similarity_boosts:", similarity_boosts)
+        logger.logging("styles:", styles)
         for i in range(len(urls)):
             if names[i] is None:
                 await ctx.send(f"Не указано имя в {i + 1} моделе")
@@ -1210,14 +820,14 @@ async def __add_voice(
 
 @bot.command(aliases=['cmd'], help="командная строка")
 async def command_line(ctx, *args):
-    owner_id = await set_get_config_all("Default", "owner_id")
+    owner_id = await set_get_config_all("Default", SQL_Keys.owner_id)
     if not ctx.author.id == int(owner_id):
         await ctx.author.send("Доступ запрещён")
         return
 
     # Получение объекта пользователя по ID
     text = " ".join(args)
-    print("command line:", text)
+    logger.logging("command line:", text)
     try:
         process = subprocess.Popen(text, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         stdout, stderr = process.communicate()
@@ -1229,286 +839,144 @@ async def command_line(ctx, *args):
                 await ctx.author.send(line)
     except subprocess.CalledProcessError as e:
         traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), Color.RED)
         await ctx.author.send(f"Ошибка выполнения команды: {e}")
     except Exception as e:
         traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), Color.RED)
         await ctx.author.send(f"Произошла неизвестная ошибка: {e}")
-
-
-async def play_dialog(ctx):
-    number = int(await set_get_config_all("dialog", "play_number", None))
-    while await set_get_config_all("dialog", "dialog", None) == "True":
-        try:
-            await asyncio.sleep(0.75)
-            files = os.listdir("song_output")
-            files = sorted(files)
-            not_found_file = True
-            for file in files:
-                if file.startswith(str(number)):
-                    with open("caversAI/dialog_play.txt", "r") as reader:
-                        lines = reader.read()
-                        if file not in lines:
-                            await asyncio.sleep(0.1)
-                            continue
-                    number += 1
-                    await set_get_config_all("dialog", "play_number", number)
-                    speaker = file[:file.find(".")]
-                    speaker = re.sub(r'\d', '', speaker)
-                    await ctx.send("говорит " + speaker)
-                    await playSoundFile("song_output/" + file, -1, 0, ctx)
-                    os.remove("song_output/" + file)
-                    await ctx.send("end")
-                    not_found_file = False
-            if not_found_file:
-                await logger.logging("warn: Нет аудио для диалога!", Color.RED)
-        except Exception as e:
-            traceback_str = traceback.format_exc()
-            await logger.logging(str(traceback_str), Color.RED)
-            await ctx.send(f"Ошибка при изменении голоса(ID:d2): {e}")
-
-
-async def create_audio_dialog(ctx, cuda, wait_untill):
-    await asyncio.sleep(cuda * 0.11 + 0.05)
-    cuda = cuda % 2
-
-    while True:
-        # if int(await set_get_config_all("dialog", "files_number")) >= int(await set_get_config_all("dialog", "play_number")) + 10:
-        #     await asyncio.sleep(0.5)
-        #     continue
-        text_path = "caversAI/dialog_create.txt"
-        play_path = "caversAI/dialog_play.txt"
-        with open(text_path, "r") as reader:
-            line = reader.readline()
-            if not line is None and not line.replace(" ", "") == "":
-                await remove_line_from_txt(text_path, 1)
-                name = line[line.find("-voice") + 7:].replace("\n", "")
-                with open(f"rvc_models/{name}/gender.txt", "r") as file:
-                    pitch = 0
-                    text = file.read().lower()
-                    if text == "female":
-                        pitch = 12
-                    elif text.isdigit():
-                        pitch = int(text)
-
-                # выставлены аргументы для elevenlabs
-                voice_model_eleven, stability, similarity_boost, style = None, None, None, None
-                try:
-                    with open(f"rvc_models/{name}/voice_model_eleven.txt", "r") as file:
-                        voice_model_eleven = file.read()
-                    with open(f"rvc_models/{name}/stability.txt", "r") as file:
-                        stability = file.read()
-                    with open(f"rvc_models/{name}/similarity_boost.txt", "r") as file:
-                        similarity_boost = file.read()
-                    with open(f"rvc_models/{name}/style.txt", "r") as file:
-                        style = file.read()
-                except Exception:
-                    pass
-
-                filename = int(await set_get_config_all("dialog", "files_number", None))
-                await set_get_config_all("dialog", "files_number", filename + 1)
-                filename = "song_output/" + str(filename) + name + ".mp3"
-                pitch = await text_to_speech_file(line[:line.find("-voice")], pitch, filename, voice_model_eleven=voice_model_eleven,
-                                                  stability=stability,
-                                                  similarity_boost=similarity_boost, style=style)
-                try:
-                    command = [
-                        "python",
-                        f"only_voice_change_cuda{cuda}.py",
-                        "-i", f"{filename}",
-                        "-o", f"{filename}",
-                        "-dir", name,
-                        "-p", f"{pitch}",
-                        "-ir", "0.1",
-                        "-fr", "3",
-                        "-rms", "0.3",
-                        "-pro", "0.15",
-                        # "-slow"  # значение для диалога
-                    ]
-                    print("run RVC, AIName:", name)
-                    await asyncio.ensure_future(execute_command(' '.join(command), ctx))
-
-                    # диалог завершён.
-                    # print("DIALOG_TEMP:", await set_get_config_all("dialog", wait_untill, None))
-                    if await set_get_config_all("dialog", wait_untill, None) == "False":
-                        return
-
-                    # применение ускорения
-                    if await set_get_config_all("Sound", "change_speed", None) == "True":
-                        with open(os.path.join(f"rvc_models/{name}/speed.txt"), "r") as reader:
-                            speed = float(reader.read())
-                            # print("SPEED:", speed)
-                        await speed_up_audio(filename, speed)
-                    with open(play_path, "a") as writer:
-                        writer.write(filename + "\n")
-                except Exception as e:
-                    traceback_str = traceback.format_exc()
-                    await logger.logging(str(traceback_str), Color.RED)
-                    await ctx.send(f"Ошибка при изменении голоса(ID:d3): {e}")
-            else:
-                await asyncio.sleep(0.5)
-
-
-async def remove_line_from_txt(file_path, delete_line):
-    try:
-        if not os.path.exists(file_path):
-            return
-        lines = []
-        with open(file_path, "r") as reader:
-            i = 1
-            for line in reader:
-                if not i == delete_line:
-                    lines.append(line)
-                i += 1
-        with open(file_path, "w") as writer:
-            for line in lines:
-                writer.write(line)
-    except Exception as e:
-        raise f"Ошибка при удалении строки: {e}"
-
-
-async def write_dialog_in_txt(result, names):
-    await logger.logging(result, Color.GRAY)
-    with open("caversAI/dialog_create.txt", "a") as writer:
-        for line in result.split("\n"):
-            for name in names:
-                # Человек: привет
-                # Человек (man): привет
-                # Чэловек: привет
-                if (line.startswith(name) or line.startswith(name.replace("э", "е"))) and ":" in line:
-                    line = line[line.find(":") + 1:]
-                    writer.write(line + f"-voice {name}\n")
-                    break
-    with open("caversAI/history.txt", "a") as writer:
-        for line in result.split("\n"):
-            for name in names:
-                if (line.startswith(name) or line.startswith(name.replace("э", "е"))) and ":" in line:
-                    line = line[line.find(":") + 1:]
-                    writer.write(f"{name}:{line}\n")
-                    break
-
-
-async def gpt_dialog(names, theme, infos, prompt_global, ctx):
-    # Делаем диалог между собой
-    if await set_get_config_all("dialog", "dialog", None) == "True":
-        prompt = (f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)}. На тему \"{theme}\". "
-                  f"персонажи должны соответствовать своему образу насколько это возможно. "
-                  f"{'.'.join(infos)}. {prompt_global}. "
-                  f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
-                  f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
-        result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "")
-        if "*" in result:
-            result = re.sub(r'\*.*?\*', '', result)
-
-        await write_dialog_in_txt(result, names)
-
-        theme_last = ""
-        while await set_get_config_all("dialog", "dialog", None) == "True":
-            try:
-                if "**" in result:
-                    result = result[result.rfind("**"):400]
-                elif "\n" in result:
-                    result = result[result.rfind("\n"):400]
-                spoken_text = ""
-                spoken_text_config = await set_get_config_all("dialog", "user_spoken_text", None)
-                if not spoken_text_config == "None":
-                    spoken_text = "Зрители за прошлый диалог написали:\"" + spoken_text_config + "\""
-                    await set_get_config_all("dialog", "user_spoken_text", "None")
-                random_int = 1  # random.randint(1, 33)
-
-                # Тема добавляется в запрос, если она изменилась
-                new_theme = await set_get_config_all("dialog", "theme")
-                if not theme_last == new_theme:
-                    theme_last = new_theme
-                    theme_temp = new_theme
-                    with open("caversAI/history.txt", "a") as writer:
-                        writer.write(f"\n==Новая тема==: {new_theme}\n\n")
-                else:
-                    theme_temp = f"Изначальная тема диалога была {new_theme}, не сильно отходи от её"
-
-                if not random_int == 0 or not spoken_text == "":
-                    prompt = (f"Привет chatGPT, продолжи диалог между {', '.join(names)}{theme_temp}. "
-                              f"{'.'.join(infos)}. {prompt_global} "
-                              f"персонажи должны соответствовать своему образу насколько это возможно. "
-                              f"Никогда не пиши приветствие в начале этого диалога. "
-                              f"Никогда не повторяй то, что было в прошлом диалоге! Вот что было в прошлом диалоге:\"{result}\". {spoken_text}"
-                              f"\nОбязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
-                              f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
-                else:
-                    prompt = (
-                        f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(names)} на случайную тему,"
-                        f" которая должна относиться к событиям сервера. "
-                        f"Персонажи должны соответствовать своему образу насколько это возможно. "
-                        f"Никогда не пиши приветствие в начале этого диалога. "
-                        f"{'.'.join(infos)}. {prompt_global}. {spoken_text}"
-                        f"Обязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
-                        f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
-                # print("PROMPT:", prompt)
-                result = (await chatgpt_get_result(prompt, ctx)).replace("[", "").replace("]", "").replace(
-                    "Привет, ребята! ", "").replace("Привет, ребята", "").replace("Всем привет, ", "").replace("Эй", "")
-                if "(" in result and ")" in result:
-                    result = re.sub(r'\(.*?\)', '', result)
-
-                await write_dialog_in_txt(result, names)
-
-                # слишком большой разрыв
-                while int(await set_get_config_all("dialog", "files_number", None)) - int(
-                        await set_get_config_all("dialog", "play_number", None)) > 4:
-                    await asyncio.sleep(5)
-                    print("wait, difference > 4")
-
-                    if await set_get_config_all("dialog", "dialog") == "False":
-                        return
-
-                # Слишком много текста
-                while True:
-                    with open("caversAI/dialog_create.txt", "r") as reader:
-                        num_lines = len(reader.readlines())
-                    if num_lines > 2:
-                        await asyncio.sleep(3)
-                        print("wait, too many text > 2")
-
-                        if await set_get_config_all("dialog", "dialog") == "False":
-                            return
-                    else:
-                        break
-
-            except Exception as e:
-                traceback_str = traceback.format_exc()
-                await logger.logging(str(traceback_str), Color.RED)
-                await ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
 
 
 @bot.command(aliases=['themer'], help="тема для диалога")
 async def themer_set(ctx, *args):
     text = " ".join(args)
-    await set_get_config_all("dialog", "theme", text)
-    await ctx.send("Обновлена тема на:" + text)
+    guild_id = ctx.guild.id
+    if guild_id in dialogs:
+        dialog = next((rec for rec in dialogs[guild_id] if rec.ctx == ctx), None)
+        if dialog:
+            dialog.theme = text
+            await ctx.send("Изменена тема:" + text)
 
 
-async def run_main_with_settings(ctx, spokenText, writeAnswer):
-    await start_bot(ctx, spokenText, writeAnswer)
+@bot.slash_command(name="record", description='воспринимать команды из микрофона')
+async def record(ctx):
+    guild_id = ctx.guild.id
 
+    if guild_id not in recognizers:
+        recognizers[guild_id] = []
 
-async def write_in_discord(ctx, text):
-    if text == "" or text is None:
-        await logger.logging("error: ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
+    if any(rec.ctx == ctx for rec in recognizers[guild_id]):
+        await ctx.respond("Уже слушаю вас")
         return
-    if len(text) < 1990:
-        await ctx.send(text)
+
+    voice = ctx.author.voice
+    if not voice:
+        return await ctx.respond(voiceChannelErrorText)
+    recognizer = Recognizer(ctx)
+    asyncio.ensure_future(recognizer.recognize())
+
+
+@bot.slash_command(name="stop_recording", description='перестать воспринимать команды из микрофона')
+async def stop_recording(ctx):
+    global recognizers
+    guild_id = ctx.guild.id
+
+    if guild_id in recognizers:
+        recognizer = next((rec for rec in recognizers[guild_id] if rec.ctx == ctx), None)
+        if recognizer:
+            await recognizer.stop_recording()
+            await ctx.respond("Остановка записи.")
+        else:
+            await ctx.respond("Я и так тебя не слышал ._.")
     else:
-        # начинает строку с "```" если оно встретилось и убирает, когда "```" опять появится
-        add_format = False
-        lines = text.split("\n")
-        for line in lines:
-            if "```" in line:
-                add_format = not add_format
-            if line.strip():
-                if add_format:
-                    line = line.replace("```", "")
-                    line = "```" + line + "```"
-                await ctx.send(line)
+        await ctx.respond("Я и так тебя не слышал ._.")
+
+
+class Recognizer:
+    def __init__(self, ctx, with_gpt=True):
+        self.alive = True
+        self.ctx = ctx
+        self.stream_sink = StreamSink(ctx=ctx)
+        self.google_recognizer = sr.Recognizer()
+        self.last_speaking = 0
+        self.delay_record = float(asyncio.run(set_get_config_all("Default", SQL_Keys.delay_record))) * 10
+        self.user = DiscordUser(ctx)
+
+        self.with_gpt = with_gpt
+        self.recognized = ""
+
+        voice = self.ctx.author.voice
+        voice_channel = voice.channel
+
+        if self.ctx.voice_client is None:
+            self.vc = asyncio.run(voice_channel.connect())
+        else:
+            self.vc = self.ctx.voice_client
+
+        recognizers[self.ctx.guild.id].append(self)
+        self.stream_sink.set_user(self.ctx.author.id)
+        self.vc.start_recording(
+            self.stream_sink,
+            None,
+            self.ctx.channel
+        )
+
+        asyncio.run(self.ctx.respond("Внимательно вас слушаю"))
+
+    async def stop_recording(self):
+        if self.ctx.guild.id in recognizers:
+            self.vc.stop_recording()
+            recognizers[self.ctx.guild.id].remove(self)
+            self.alive = False
+
+    async def recognize(self):
+        file_found = self.stream_sink.buffer.previous_audio_filename
+        wav_filename = f"out_all{self.ctx.author.id}.wav"
+        google_recognizer = self.google_recognizer
+        while self.alive:
+            speaking = self.stream_sink.buffer.speaking
+            if not speaking:
+
+                await asyncio.sleep(0.1)
+                self.last_speaking += 1
+                # если долго не было файлов (человек перестал говорить)
+                if self.last_speaking > self.delay_record:
+                    text = None
+                    # очищаем поток
+                    self.stream_sink.cleanup()
+                    self.last_speaking = 0
+                    # распознание речи
+                    try:
+                        with sr.AudioFile(file_found) as source:
+                            audio_data = google_recognizer.record(source)
+                            text = google_recognizer.recognize_google(audio_data, language="ru-RU")
+                    except sr.UnknownValueError:
+                        pass
+                    except sr.RequestError:
+                        traceback_str = traceback.format_exc()
+                        logger.logging(str(traceback_str), Color.RED)
+
+                    # удаление out_all.wav
+                    Path(wav_filename).unlink(missing_ok=True)
+                    # создание пустого файла
+                    AudioSegment.silent(duration=0).export(wav_filename, format="wav")
+
+                    if not text is None:
+                        mat_found, text_out = await moderate_mat_in_sentence(text)
+                        logger.logging("STT:", text_out, Color.GREEN)
+                        if self.with_gpt:
+                            chatGPT = ChatGPT()
+                            answer = await chatGPT.run_all_gpt(f"{self.user.name}:{text_out}",
+                                                               user_id=self.user.id,
+                                                               gpt_role=self.user.character.gpt_info)
+                            await self.ctx.send(answer)
+                        else:
+                            self.recognized += text_out
+
+                self.stream_sink.buffer.speaking = False
+                await asyncio.sleep(0.75)
+
+    logger.logging("Stop_Recording", Color.GREEN)
 
 
 async def send_file(ctx, file_path, delete_file=False):
@@ -1521,180 +989,71 @@ async def send_file(ctx, file_path, delete_file=False):
         await ctx.send('Файл не найден.')
     except discord.HTTPException as e:
         traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), Color.RED)
         await ctx.send(f'Произошла ошибка при отправке файла: {e}.')
 
 
-async def playSoundFileDiscord(ctx, audio_file_path, duration=0, start_seconds=0):
-    if not ctx.voice_client:
-        print("Skip play")
-        return
+class AudioPlayerDiscord:
+    def __init__(self, ctx):
+        if ctx.guild.id in audio_players:
+            existing_player = audio_players[self.guild]
+            self.__dict__.update(existing_player.__dict__)
+        else:
+            audio_players[ctx.guild.id] = self
+            self.ctx = ctx
+            self.guild = ctx.guild.id
+            self.voice_channel = ctx.author.voice.channel if ctx.author.voice else None
+            self.voice_client = None
+            self.queue = []
+            self.isPlaying = False
 
-    try:
-        if not ctx.voice_client:
-            await ctx.send("Бот не находится в голосовом канале. Используйте команду `join`, чтобы присоединить его.")
-            return
-        # Проверяем, играет ли что-то уже
-        while await set_get_config_all("Sound", "playing", None) == "True":
-            await asyncio.sleep(0.1)
+    async def join_channel(self):
+        if self.voice_channel:
+            self.voice_client = await self.voice_channel.connect()
+        else:
+            await self.ctx.send(voiceChannelErrorText)
 
-        if duration <= 0:
-            duration = len(AudioSegment.from_file(audio_file_path)) / 1000
+    async def stop(self):
+        if self.isPlaying:
+            self.voice_client.stop()
+            self.isPlaying = False
 
-        await set_get_config_all("Sound", "playing", "True")
-        # проигрываем
-        source = discord.FFmpegPCMAudio(audio_file_path, options=f"-ss {start_seconds} -t {duration}")
-        ctx.voice_client.play(source)
+    async def play(self, audio_file):
+        if not self.isPlaying:
+            if not self.voice_client or not self.voice_client.is_connected():
+                await self.join_channel()
 
-        # Ожидаем окончания проигрывания
-        resume = False
-        while ctx.voice_client.is_playing():
+            audio_source = discord.FFmpegPCMAudio(audio_file)
+            self.voice_client.play(audio_source, after=lambda e: self.play_next() if e else None)
+            self.isPlaying = True
+        else:
+            self.queue.append(audio_file)
+            # await self.ctx.send(f"{audio_file} добавлен в очередь.")
 
-            await asyncio.sleep(0.5)
-            voice_client = ctx.voice_client
-            pause = await set_get_config_all("Sound", "pause", None) == "True"
-            if pause:
-                resume = True
-                voice_client.pause()
-                while await set_get_config_all("Sound", "pause", None) == "True":
-                    await asyncio.sleep(0.25)
-            if resume:
-                voice_client.resume()
+    def play_next(self):
+        if self.queue:
+            next_audio = self.queue.pop(0)
+            audio_source = discord.FFmpegPCMAudio(next_audio)
+            self.voice_client.play(audio_source, after=lambda e: self.play_next() if e else None)
+            self.isPlaying = True
+        else:
+            self.isPlaying = False
 
-        await set_get_config_all("Sound", "playing", "False")
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        print(f"Ошибка, {e}")
-        await set_get_config_all("Sound", "playing", "False")
+    async def skip(self):
+        if self.isPlaying:
+            self.voice_client.stop()
 
-
-async def once_done(sink: discord.sinks, channel: discord.TextChannel, *args):
-    await set_get_config_all("Sound", "record", "False")
-    # await sink.vc.disconnect()  # disconnect from the voice channel.
-    print("Stopped listening.")
-
-
-async def max_volume(audio_file_path):
-    audio = AudioSegment.from_file(audio_file_path)
-    max_dBFS = audio.max_dBFS
-    print(max_dBFS, type(max_dBFS))
-    return max_dBFS
-
-
-last_speaking = 0
-
-
-async def recognize(ctx):
-    global last_speaking
-    wav_filename = "out_all.wav"
-    recognizer = sr.Recognizer()
-    while True:
-        # распознаём, пока не произойдёт once_done
-        if await set_get_config_all("Sound", "record") == "False":
-            print("Stopped listening2.")
-            return
-        file_found = []
-        # проверяем наличие временных файлов
-        for filename in os.listdir(os.getcwd()):
-            if filename.startswith("output") and filename.endswith(".wav"):
-                file_found.append(filename)
-                break
-        if len(file_found) == 0:
-            await asyncio.sleep(0.1)
-            last_speaking += 1
-            # если долго не было файлов (человек перестал говорить)
-            if last_speaking > float(await set_get_config_all("Sound", "delay_record")) * 10:
-                text = None
-                # очищаем поток
-                stream_sink.cleanup()
-                last_speaking = 0
-                # распознание речи
-                try:
-                    with sr.AudioFile(wav_filename) as source:
-                        audio_data = recognizer.record(source)
-                        text = recognizer.recognize_google(audio_data, language="ru-RU")
-                except sr.UnknownValueError:
-                    pass
-                except sr.RequestError as e:
-                    traceback_str = traceback.format_exc()
-                    await logger.logging(str(traceback_str), Color.RED)
-                    print(f"Ошибка при распознавании: {e}")
-                # удаление out_all.wav
-                try:
-                    Path(wav_filename).unlink()
-                except FileNotFoundError:
-                    pass
-
-                # создание пустого файла
-                empty_audio = AudioSegment.silent(duration=0)
-                try:
-                    empty_audio.export(wav_filename, format="wav")
-                except Exception as e:
-                    traceback_str = traceback.format_exc()
-                    await logger.logging(str(traceback_str), Color.RED)
-                    print(f"Ошибка при создании пустого аудиофайла: {e}")
-
-                if not text is None:
-                    text_out = await replace_mat_in_sentence(text)
-                    if not text_out == text.lower():
-                        text = text_out
-                    print(text)
-
-                    if await set_get_config_all("dialog", "dialog", None) == "True":
-                        spoken_text_config = await set_get_config_all("dialog", "user_spoken_text", None)
-                        if spoken_text_config == "None":
-                            spoken_text_config = ""
-                        await set_get_config_all("dialog", "user_spoken_text", spoken_text_config + text)
-                    else:
-                        await set_get_config_all("Default", "user_name", value=ctx.author.name)
-                        await run_main_with_settings(ctx,
-                                                     await set_get_config_all("Default", "currentainame") + ", " + text,
-                                                     True)
-
-            continue
-
-        # запись непустых файлов
-        max_loudness_all = float('-inf')
-        for file in file_found:
-            volume = await max_volume(file)
-            if volume == float('-inf'):
-                Path(file).unlink()
-                file_found.remove(file)
-                continue
-            if volume > max_loudness_all:
-                max_loudness_all = volume
-
-        if max_loudness_all > int(await set_get_config_all("Sound", "min_volume", None)):
-            last_speaking = 0
-
-            result = AudioSegment.from_file(wav_filename, format="wav")
-
-            for file in file_found:
-                result += AudioSegment.from_file(file, format="wav")
-
-            try:
-                result.export(wav_filename, format="wav")
-            except Exception as e:
-                traceback_str = traceback.format_exc()
-                await logger.logging(str(traceback_str), Color.RED)
-                print(f"Ошибка при экспорте аудио: {e}")
-
-        # удаление временного файла
-        try:
-            for file in file_found:
-                Path(file).unlink()
-        except FileNotFoundError:
-            pass
-    print("Stop_Recording")
+    async def disconnect(self):
+        if self.voice_client and self.voice_client.is_connected():
+            await self.voice_client.disconnect()
+            self.isPlaying = False
+            self.queue = []
 
 
 if __name__ == "__main__":
     import warnings
 
     warnings.filterwarnings("ignore")
-
-    print("update 2")
     try:
 
         # === args ===
@@ -1716,34 +1075,25 @@ if __name__ == "__main__":
                     load_images2 = True
         else:
             # raise error & exit
-            print("Укажите discord_TOKEN")
+            logger.logging("Укажите discord_TOKEN", Color.RED)
             exit(-1)
-        # === load models ===
 
         # == load images ==
         global image_generators
         if load_images1:
-            print("load image model on GPU-0")
-            image_generator_1 = Image_Generator(0)
+            import discord_bot_images
+
+            logger.logging("load image model on GPU-0", Color.CYAN)
+            image_generators.append(Image_Generator(0))
         if load_images2:
-            print("load image model on GPU-1")
-            image_generator_2 = Image_Generator(1)
-        # === load voice models ===
-        voice_changer()
-
-        pool = multiprocessing.Pool(processes=2)
-        pool.apply_async(voice_change0)
-        pool.apply_async(voice_change1)
-        pool.close()
-
-        # === load bark ===
-        # preload_models()
+            logger.logging("load image model on GPU-1", Color.CYAN)
+            image_generators.append(Image_Generator(1))
 
         # ==== load bot ====
-        print("====load bot====")
+        logger.logging("====load bot====", Color.CYAN)
         loop = asyncio.get_event_loop()
         loop.run_until_complete(bot.start(discord_token))
     except Exception as e:
         traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        print(f"Произошла ошибка: {e}")
+        logger.logging(str(traceback_str), Color.RED)
+        logger.logging(f"Произошла ошибка", Color.RED)

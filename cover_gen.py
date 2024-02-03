@@ -157,15 +157,16 @@ class LocalTorch:
         os.environ["CUDA_VISIBLE_DEVICES"] = str(cuda)
         import torch
         self.local_torch = torch
-    def run_mdx_with_current_cuda(self, model_params, output_dir, model_path, filename, exclude_main=False, exclude_inversion=False,
-            suffix=None,
-            invert_suffix=None, denoise=False, keep_orig=True, m_threads=2):
 
+    def run_mdx_with_current_cuda(self, model_params, output_dir, model_path, filename, exclude_main=False,
+                                  exclude_inversion=False,
+                                  suffix=None,
+                                  invert_suffix=None, denoise=False, keep_orig=True, m_threads=2):
         from mdx import run_mdx
         return run_mdx(self.local_torch, model_params, output_dir,
-                model_path,
-                filename, exclude_main, exclude_inversion, suffix,
-                invert_suffix, denoise, keep_orig, m_threads)
+                       model_path,
+                       filename, exclude_main, exclude_inversion, suffix,
+                       invert_suffix, denoise, keep_orig, m_threads)
 
 
 def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_type=None):
@@ -187,14 +188,20 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
         orig_song_path = convert_to_stereo(orig_song_path)
         display_progress(f'[~] Separating Vocals from Instrumental... GPU:{cuda_number}')
         vocals_path, instrumentals_path = local_torch.run_mdx_with_current_cuda(mdx_model_params, song_output_dir,
-                                                  os.path.join(mdxnet_models_dir, 'Kim_Vocal_2.onnx'),
-                                                  orig_song_path, denoise=True, keep_orig=keep_orig)
+                                                                                os.path.join(mdxnet_models_dir,
+                                                                                             'Kim_Vocal_2.onnx'),
+                                                                                orig_song_path, denoise=True,
+                                                                                keep_orig=keep_orig)
 
         # вторая нейросеть
         instrumentals_path_2, vocals_path_2 = local_torch.run_mdx_with_current_cuda(mdx_model_params, song_output_dir,
-                                                      os.path.join(mdxnet_models_dir, "UVR-MDX-NET-Inst_HQ_1.onnx"),
-                                                      instrumentals_path, suffix='music_2', invert_suffix='vocal_2', denoise=True,
-                                                      keep_orig=True)
+                                                                                    os.path.join(mdxnet_models_dir,
+                                                                                                 "UVR-MDX-NET-Inst_HQ_1.onnx"),
+                                                                                    instrumentals_path,
+                                                                                    suffix='music_2',
+                                                                                    invert_suffix='vocal_2',
+                                                                                    denoise=True,
+                                                                                    keep_orig=True)
 
         vocals_1 = AudioSegment.from_file(vocals_path)
         vocals_2 = AudioSegment.from_file(vocals_path_2)
@@ -209,16 +216,20 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
         combined_music.export(instrumentals_path, format="wav")
         combined_vocals.export(vocals_path, format="wav")
 
-
         display_progress(f'[~] Separating Main Vocals from Backup Vocals... GPU:{cuda_number}')
         backup_vocals_path, main_vocals_path = local_torch.run_mdx_with_current_cuda(mdx_model_params, song_output_dir,
-                                                       os.path.join(mdxnet_models_dir, 'UVR_MDXNET_KARA_2.onnx'), # UVR_MDXNET_KARA_2.onnx
-                                                       vocals_path, suffix='Backup', invert_suffix='Main', denoise=True)
+                                                                                     os.path.join(mdxnet_models_dir,
+                                                                                                  'UVR_MDXNET_KARA_2.onnx'),
+                                                                                     # UVR_MDXNET_KARA_2.onnx
+                                                                                     vocals_path, suffix='Backup',
+                                                                                     invert_suffix='Main', denoise=True)
         display_progress(f'[~] Applying DeReverb to Vocals... GPU:{cuda_number}')
         _, main_vocals_dereverb_path = local_torch.run_mdx_with_current_cuda(mdx_model_params, song_output_dir,
-                                               os.path.join(mdxnet_models_dir, 'Reverb_HQ_By_FoxJoy.onnx'),
-                                               main_vocals_path, invert_suffix='DeReverb', exclude_main=True,
-                                               denoise=True)
+                                                                             os.path.join(mdxnet_models_dir,
+                                                                                          'Reverb_HQ_By_FoxJoy.onnx'),
+                                                                             main_vocals_path, invert_suffix='DeReverb',
+                                                                             exclude_main=True,
+                                                                             denoise=True)
         return orig_song_path, vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path
     except Exception as e:
         raise e
@@ -389,23 +400,41 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
 #     except IOError as e:
 #         print(e)
 #     return False
+async def run_ai_cover_gen_async(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radius=3, rms_mix_rate=0.25,
+                                 pitch_detection_algo='rmvpe', crepe_hop_length=128, protect=0.33, main_vol=0,
+                                 backup_vol=0, inst_vol=0,
+                                 pitch_change_all=0, reverb_size=0.15, reverb_wetness=0.2, reverb_dryness=0.8,
+                                 reverb_damping=0.7,
+                                 output_format='mp3', cuda_number=0):
+    await run_ai_cover_gen(song_input, rvc_dirname, pitch, ...)
 
-def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radius=3, rms_mix_rate=0.25,
-        pitch_detection_algo='rmvpe', crepe_hop_length=128, protect=0.33, main_vol=0, backup_vol=0, inst_vol=0,
-        pitch_change_all=0, reverb_size=0.15, reverb_wetness=0.2, reverb_dryness=0.8, reverb_damping=0.7,
-        output_format='mp3', cuda_number=0):
 
+async def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radius=3, rms_mix_rate=0.25,
+                           pitch_detection_algo='rmvpe', crepe_hop_length=128, protect=0.33, main_vol=0, backup_vol=0,
+                           inst_vol=0,
+                           pitch_change_all=0, reverb_size=0.15, reverb_wetness=0.2, reverb_dryness=0.8,
+                           reverb_damping=0.7,
+                           output_format='mp3', cuda_number=0):
     if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
         raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
-    cover_path = song_cover_pipeline(song_input, rvc_dirname, pitch, False,
-                                     main_gain=main_vol, backup_gain=backup_vol, inst_gain=inst_vol,
-                                     index_rate=index_rate, filter_radius=filter_radius,
-                                     rms_mix_rate=rms_mix_rate, f0_method=pitch_detection_algo,
-                                     crepe_hop_length=crepe_hop_length, protect=protect,
-                                     pitch_change_all=pitch_change_all,
-                                     reverb_rm_size=reverb_size, reverb_wet=reverb_wetness,
-                                     reverb_dry=reverb_dryness, reverb_damping=reverb_damping,
-                                     output_format=output_format, cuda_number=cuda_number)
+    loop = asyncio.get_running_loop()
+    cover_path = await loop.run_in_executor(None, lambda: song_cover_pipeline(song_input, rvc_dirname, pitch, False,
+                                                                              main_gain=main_vol,
+                                                                              backup_gain=backup_vol,
+                                                                              inst_gain=inst_vol,
+                                                                              index_rate=index_rate,
+                                                                              filter_radius=filter_radius,
+                                                                              rms_mix_rate=rms_mix_rate,
+                                                                              f0_method=pitch_detection_algo,
+                                                                              crepe_hop_length=crepe_hop_length,
+                                                                              protect=protect,
+                                                                              pitch_change_all=pitch_change_all,
+                                                                              reverb_rm_size=reverb_size,
+                                                                              reverb_wet=reverb_wetness,
+                                                                              reverb_dry=reverb_dryness,
+                                                                              reverb_damping=reverb_damping,
+                                                                              output_format=output_format,
+                                                                              cuda_number=cuda_number))
     print(f'[+] Cover generated at {cover_path}')
     # ошибка при генерации
     if cover_path is None:
@@ -426,3 +455,4 @@ def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radi
                 song_id = None
                 asyncio.run(logger.logging(error_msg, Color.RED))
         shutil.rmtree(os.path.join(output_dir, song_id))
+    return cover_path
