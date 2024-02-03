@@ -886,7 +886,6 @@ async def record(ctx):
 
 @bot.slash_command(name="stop_recording", description='перестать воспринимать команды из микрофона')
 async def stop_recording(ctx):
-    global recognizers
     guild_id = ctx.guild.id
 
     if guild_id in recognizers:
@@ -1087,7 +1086,6 @@ if __name__ == "__main__":
             exit(-1)
 
         # == load images ==
-        global image_generators
         if load_images1:
             import discord_bot_images
 
