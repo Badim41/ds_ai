@@ -125,7 +125,7 @@ class TextToSpeechRVC:
         pitch = self.pitch
 
         if len(text) > max_simbols:
-            await logger.logging("gtts", text, color=color=Color.YELLOW)
+            await logger.logging("gtts", text, color=Color.YELLOW)
             await self.gtts(text, audio_file, language="ru")
             pitch -= 12
         else:
@@ -150,7 +150,7 @@ class TextToSpeechRVC:
 
                 save(audio, audio_file)
             except Exception as e:
-                await logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=color=Color.RED)
+                await logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
                 if "Please play" in str(e):
                     create_secret(SecretKey.voice_keys, "None")
                 self.elevenlabs_voice_keys = self.elevenlabs_voice_keys[1:]
