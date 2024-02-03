@@ -1,8 +1,6 @@
 import asyncio
 from contextlib import asynccontextmanager
 
-from discord_bot import image_generators
-
 
 @asynccontextmanager
 async def cuda_lock():
@@ -42,6 +40,7 @@ class Use_Cuda:
             self.cuda_is_busy[index] = False
 
     async def use_cuda_images(self, index=None):
+        from discord_bot import image_generators
         async with cuda_lock():
             if not index is None:
                 if self.cuda_is_busy_images[index]:
@@ -74,6 +73,7 @@ class Use_Cuda:
         return found
 
     async def check_cuda_images(self):
+        from discord_bot import image_generators
         found = 0
         for i, cuda in enumerate(self.cuda_is_busy):
             if cuda and i <= len(image_generators):
