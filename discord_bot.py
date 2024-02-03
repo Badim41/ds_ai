@@ -24,8 +24,12 @@ from discord_tools.timer import Time_Count
 from function import Image_Generator, Character, Voice_Changer, get_link_to_file
 from modifed_sinks import StreamSink
 from use_free_cuda import Use_Cuda
-import nest_asyncio
-nest_asyncio.apply()
+
+try:
+    import nest_asyncio
+    nest_asyncio.apply()
+except:
+    pass
 
 recognizers = {}
 audio_players = {}

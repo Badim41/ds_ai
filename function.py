@@ -18,6 +18,12 @@ from discord_tools.logs import Color, Logs
 from discord_tools.secret import load_secret, SecretKey, create_secret
 from voice_change import Voice_Changer
 
+try:
+    import nest_asyncio
+    nest_asyncio.apply()
+except:
+    pass
+
 logger = Logs(warnings=True)
 
 
