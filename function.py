@@ -188,8 +188,8 @@ class Character:
             logger.logging("Новый character", Color.PURPLE)
             characters_all[name] = self
 
-            json_file_path = os.path.join(f'rvc_models', name, "params.json")
-            self.name = name
+            self.name = str(name)
+            json_file_path = os.path.join(f'rvc_models', self.name, "params.json")
             if name is None or not os.path.exists(json_file_path):
                 self.gpt_info = "Вы полезный ассистент и даёте только полезную информацию"
             else:
