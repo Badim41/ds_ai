@@ -402,7 +402,7 @@ async def __tts(
         await user.set_user_config(SQL_Keys.AIname, voice_name)
 
     voices = await get_voice_list()
-    if voice_name not in voices:
+    if str(voice_name) not in voices:
         return await ctx.response.send_message("Выберите голос из списка: " + ';'.join(voices))
 
     voice_models = None
