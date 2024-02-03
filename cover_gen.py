@@ -153,13 +153,6 @@ def get_hash(filepath):
 def display_progress(message):
     print(message)
 
-
-class LocalTorch:
-    def __init__(self, cuda):
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(cuda)
-        import torch
-        self.local_torch = torch
-
     def run_mdx_with_current_cuda(self, model_params, output_dir, model_path, filename, exclude_main=False,
                                   exclude_inversion=False,
                                   suffix=None,

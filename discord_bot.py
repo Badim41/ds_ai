@@ -91,6 +91,11 @@ class DiscordUser:
         character_name = await set_get_config_all(self.id, SQL_Keys.AIname)
         self.character = Character(character_name)
 
+class LocalTorch:
+    def __init__(self, cuda):
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(cuda)
+        import torch
+        self.local_torch = torch
 
 @bot.event
 async def on_ready():
@@ -394,6 +399,8 @@ async def __tts(
                       choices=['rmvpe', 'mangio-crepe'], default="rmvpe"),
 
 ):
+    torch = LocalTorch(0).local_torch
+    print(torch.cuda.get_device_name(0))
     user = DiscordUser(ctx)
     if not voice_name:
         voice_name = user.character.name
