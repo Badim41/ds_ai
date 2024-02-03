@@ -33,6 +33,11 @@ class Voice_Changer:
         import torch
         from rvc import Config, load_hubert, get_vc
         self.torch = torch
+        logger.logging("CUDA CHECK", Color.PURPLE)
+        if self.torch.cuda.is_available():
+            logger.logging("CUDA is avaible", Color.GREEN)
+        else:
+            logger.logging("CUDA IS NOT AWAIBLE", Color.RED)
         self.voice_name = voice_name
         self.rvc_model_path, self.rvc_index_path = get_rvc_model(voice_name)
         device = 'cuda:0'
