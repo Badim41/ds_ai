@@ -192,6 +192,7 @@ class Character:
             json_file_path = os.path.join(f'rvc_models', self.name, "params.json")
             if name is None or not os.path.exists(json_file_path):
                 self.gpt_info = "Вы полезный ассистент и даёте только полезную информацию"
+                logger.logging("Not exist", Color.YELLOW)
             else:
                 with open(json_file_path, 'r') as json_file:
                     json_data = json.load(json_file)
@@ -275,7 +276,7 @@ class Character:
                                          voice_model_eleven=voice_model_eleven, stability=stability,
                                          similarity_boost=similarity_boost, style=style, max_simbols=max_simbols,
                                          speaker_boost=speaker_boost)
-            logger.logging(f"Updated {self.name} params", Color.CYAN)
+            logger.logging(f"Updated {self.name} voice params", Color.CYAN)
 
     async def text_to_speech(self, text, audio_path="1.mp3", output_name="2.mp3"):
         if not self.voice:
