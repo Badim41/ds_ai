@@ -428,7 +428,7 @@ async def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filte
             song_id = get_youtube_video_id(song_input)
             if song_id is None:
                 error_msg = 'Invalid YouTube url.'
-                asyncio.run(logger.logging(error_msg, Color.RED))
+                asyncio.run(logger.logging(error_msg, color=Color.RED))
 
         # local audio file
         else:
@@ -438,6 +438,6 @@ async def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filte
             else:
                 error_msg = f'{song_input} does not exist.'
                 song_id = None
-                asyncio.run(logger.logging(error_msg, Color.RED))
+                asyncio.run(logger.logging(error_msg, color=Color.RED))
         shutil.rmtree(os.path.join(output_dir, song_id))
     return cover_path

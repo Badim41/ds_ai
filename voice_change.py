@@ -21,7 +21,7 @@ def get_rvc_model(voice_name):
             rvc_index_filename = file
 
     if rvc_model_filename is None:
-        logger.logging(f'No model file exists in {model_dir}.', Color.RED)
+        logger.logging(f'No model file exists in {model_dir}.', color=Color.RED)
 
     return os.path.join(model_dir, rvc_model_filename), os.path.join(model_dir,
                                                                      rvc_index_filename) if rvc_index_filename else ''

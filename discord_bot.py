@@ -94,11 +94,11 @@ class DiscordUser:
 @bot.event
 async def on_ready():
     import torch
-    logger.logging('Status: online', torch.cuda.device_count(), Color.GREEN)
+    logger.logging('Status: online', torch.cuda.device_count(), color=Color.GREEN)
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
     id = await set_get_config_all("Default", SQL_Keys.owner_id)
-    logger.logging("ID:", id, Color.GRAY)
+    logger.logging("ID:", id, color=Color.GRAY)
     if not id == "True":
         user = await bot.fetch_user(int(id))
         await user.send("Перезагружен!")
@@ -158,7 +158,7 @@ async def on_message(message):
                 await user.character.text_to_speech(answer)
         except Exception as e:
             traceback_str = traceback.format_exc()
-            logger.logging(str(traceback_str), Color.RED)
+            logger.logging(str(traceback_str), color=Color.RED)
             await ctx.send(f"Ошибка при команде say с параметрами {message}: {e}")
     await bot.process_commands(message)
 
@@ -263,7 +263,7 @@ async def __config(
             await ctx.respond(section + " " + key + " " + value)
     except Exception as e:
         traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), color=Color.RED)
         await ctx.respond(f"Ошибка при изменении конфига (с параметрами{section},{key},{value}): {e}")
 
 
@@ -289,7 +289,7 @@ async def __read_messages(
         await ctx.respond(answer)
     except Exception as e:
         traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), color=Color.RED)
         await ctx.respond(f"Произошла ошибка: {e}")
 
 
@@ -360,7 +360,7 @@ async def __say(
             await user.character.text_to_speech(answer)
     except Exception as e:
         traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), color=Color.RED)
         await ctx.respond(f"Ошибка при команде say (с параметрами{text}): {e}")
 
 
@@ -445,7 +445,7 @@ async def __tts(
         await cuda_manager.stop_use_cuda(cuda_number)
     except Exception as e:
         traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), color=Color.RED)
         await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
         # перестаём использовать видеокарту
         await cuda_manager.stop_use_cuda(cuda_number)
@@ -473,7 +473,7 @@ async def send_output(ctx, audio_path, output, timer):
                 zipf.write(file_path, os.path.basename(file_path))
         link = await get_link_to_file(zip_name, ctx)
         await ctx.send(f"Ссылка на скачку:{link}")
-    await logger.logging("Играет " + os.path.basename(audio_path)[:-4], Color.GREEN)
+    await logger.logging("Играет " + os.path.basename(audio_path)[:-4], color=Color.GREEN)
     audio_player = AudioPlayerDiscord(ctx)
     await audio_player.play(audio_path)
 
@@ -559,8 +559,8 @@ async def __cover(
             return video_links
         except Exception as e:
             traceback_str = traceback.format_exc()
-            logger.logging(str(traceback_str), Color.RED)
-            logger.logging(f"Произошла ошибка при извлечении плейлиста", Color.RED)
+            logger.logging(str(traceback_str), color=Color.RED)
+            logger.logging(f"Произошла ошибка при извлечении плейлиста", color=Color.RED)
             return []
 
     param_string = None
@@ -587,7 +587,7 @@ async def __cover(
         if pitch is None:
             pitch = user.character.pitch
 
-        logger.logging("suc params", Color.CYAN)
+        logger.logging("suc params", color=Color.CYAN)
 
         urls = []
         if audio_path:
@@ -625,7 +625,7 @@ async def __cover(
 
     except Exception as e:
         traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), color=Color.RED)
         await ctx.respond(f"Ошибка при изменении голоса(ID:d5) (с параметрами {param_string}): {e}")
 
 
@@ -685,7 +685,7 @@ class Dialog_AI:
                 await self.audio_player.play(audio_path)
                 os.remove(audio_path)
             else:
-                logger.logging("warn: Нет аудио для диалога!", Color.RED)
+                logger.logging("warn: Нет аудио для диалога!", color=Color.RED)
                 await asyncio.sleep(0.75)
 
     async def create_audio_dialog(self, character):
@@ -700,7 +700,7 @@ class Dialog_AI:
             await asyncio.sleep(0.5)
 
     async def save_dialog(self, result):
-        logger.logging(result, Color.GRAY)
+        logger.logging(result, color=Color.GRAY)
         with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
             for line in result.split("\n"):
                 for name in self.names:
@@ -771,21 +771,21 @@ class Dialog_AI:
 
                 # слишком большой разрыв
                 while self.files_number - self.play_number > 4:
-                    logger.logging("wait, difference > 4", Color.YELLOW)
+                    logger.logging("wait, difference > 4", color=Color.YELLOW)
                     await asyncio.sleep(2.5)
                     if not self.alive:
                         return
 
                 # Слишком много текста
                 while len(self.dialog_create) > 2:
-                    logger.logging("wait, too many text > 2", Color.YELLOW)
+                    logger.logging("wait, too many text > 2", color=Color.YELLOW)
                     await asyncio.sleep(2.5)
                     if not self.alive:
                         return
 
             except Exception as e:
                 traceback_str = traceback.format_exc()
-                logger.logging(str(traceback_str), Color.RED)
+                logger.logging(str(traceback_str), color=Color.RED)
                 await self.ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
 
 
@@ -883,7 +883,7 @@ async def agrs_with_txt(txt_file):
         return url, name, gender, info, speed, voice_model_eleven, stability, similarity_boost, style
     except Exception:
         traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), color=Color.RED)
         return None, None, None, None, None, None, None, None, None
 
 
@@ -920,7 +920,7 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model_eleven
         await ctx.send(f"Модель {name} успешно установлена!")
     except subprocess.CalledProcessError as e:
         traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), color=Color.RED)
         await ctx.respond("Ошибка при скачивании голоса.")
 
 
@@ -945,11 +945,11 @@ async def command_line(ctx, *args):
                 await ctx.author.send(line)
     except subprocess.CalledProcessError as e:
         traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), color=Color.RED)
         await ctx.author.send(f"Ошибка выполнения команды: {e}")
     except Exception as e:
         traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), color=Color.RED)
         await ctx.author.send(f"Произошла неизвестная ошибка: {e}")
 
 
@@ -1059,7 +1059,7 @@ class Recognizer:
                         pass
                     except sr.RequestError:
                         traceback_str = traceback.format_exc()
-                        logger.logging(str(traceback_str), Color.RED)
+                        logger.logging(str(traceback_str), color=Color.RED)
 
                     # удаление out_all.wav
                     Path(wav_filename).unlink(missing_ok=True)
@@ -1068,7 +1068,7 @@ class Recognizer:
 
                     if not text is None:
                         mat_found, text_out = await moderate_mat_in_sentence(text)
-                        logger.logging("STT:", text_out, Color.GREEN)
+                        logger.logging("STT:", text_out, color=Color.GREEN)
                         if self.with_gpt:
                             chatGPT = ChatGPT()
                             answer = await chatGPT.run_all_gpt(f"{self.user.name}:{text_out}",
@@ -1081,7 +1081,7 @@ class Recognizer:
                 self.stream_sink.buffer.speaking = False
                 await asyncio.sleep(0.75)
 
-    logger.logging("Stop_Recording", Color.GREEN)
+    logger.logging("Stop_Recording", color=Color.GREEN)
 
 
 async def send_file(ctx, file_path, delete_file=False):
@@ -1094,7 +1094,7 @@ async def send_file(ctx, file_path, delete_file=False):
         await ctx.send('Файл не найден.')
     except discord.HTTPException as e:
         traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), Color.RED)
+        logger.logging(str(traceback_str), color=Color.RED)
         await ctx.send(f'Произошла ошибка при отправке файла: {e}.')
 
 
@@ -1111,7 +1111,7 @@ class AudioPlayerDiscord:
             create_new = True
 
         if create_new:
-            logger.logging("Новый audio_player", Color.PURPLE)
+            logger.logging("Новый audio_player", color=Color.PURPLE)
             audio_players[ctx.guild.id] = self
             self.ctx = ctx
             self.guild = ctx.guild.id
@@ -1191,24 +1191,24 @@ if __name__ == "__main__":
                     load_images2 = True
         else:
             # raise error & exit
-            logger.logging("Укажите discord_TOKEN", Color.RED)
+            logger.logging("Укажите discord_TOKEN", color=Color.RED)
             exit(-1)
 
         # == load images ==
         if load_images1:
             import discord_bot_images
 
-            logger.logging("load image model on GPU-0", Color.CYAN)
+            logger.logging("load image model on GPU-0", color=Color.CYAN)
             image_generators.append(Image_Generator(0))
         if load_images2:
-            logger.logging("load image model on GPU-1", Color.CYAN)
+            logger.logging("load image model on GPU-1", color=Color.CYAN)
             image_generators.append(Image_Generator(1))
 
         # ==== load bot ====
-        logger.logging("====load bot====", Color.CYAN)
+        logger.logging("====load bot====", color=Color.CYAN)
         loop = asyncio.get_event_loop()
         loop.run_until_complete(bot.start(discord_token))
     except Exception as e:
         traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), Color.RED)
-        logger.logging(f"Произошла ошибка", Color.RED)
+        logger.logging(str(traceback_str), color=Color.RED)
+        logger.logging(f"Произошла ошибка", color=Color.RED)

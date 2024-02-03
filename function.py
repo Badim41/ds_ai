@@ -38,7 +38,7 @@ async def execute_command(command, ctx):
 
         for line in stdout.decode().split('\n'):
             if line.strip():
-                await logger.logging(line, Color.GRAY)
+                await logger.logging(line, color=Color.GRAY)
                 # await ctx.send(line)
     except subprocess.CalledProcessError as e:
         await ctx.send(f"Ошибка выполнения команды (ID:f8): {e}")
@@ -59,7 +59,7 @@ async def get_link_to_file(zip_name, ctx):
 
         for line in stdout.decode().split('\n'):
             if line.strip():
-                logger.logging(line,Color.CYAN)
+                logger.logging(line,color=Color.CYAN)
                 # {"id":"123"}
                 if "id" in line:
                     line = line[line.find(":") + 2:]
@@ -103,7 +103,7 @@ class TextToSpeechRVC:
 
     async def text_to_speech(self, text, audio_path="1.mp3", output_name=None):
         if text is None or text.replace("\n", "").replace(" ", "") == "":
-            await logger.logging(f"Пустой текст \"{text}\"", Color.RED)
+            await logger.logging(f"Пустой текст \"{text}\"", color=Color.RED)
             raise "No text"
         mat_found, text = await moderate_mat_in_sentence(text)
 
@@ -125,7 +125,7 @@ class TextToSpeechRVC:
         pitch = self.pitch
 
         if len(text) > max_simbols:
-            await logger.logging("gtts", text, color=Color.YELLOW)
+            await logger.logging("gtts", text, color=color=Color.YELLOW)
             await self.gtts(text, audio_file, language="ru")
             pitch -= 12
         else:
@@ -136,7 +136,7 @@ class TextToSpeechRVC:
 
             try:
                 voice_id = await self.get_elevenlabs_voice_id_by_name()
-                logger.logging("VOICE_ID_ELEVENLABS:", voice_id, Color.GRAY)
+                logger.logging("VOICE_ID_ELEVENLABS:", voice_id, color=Color.GRAY)
                 audio = generate(
                     text=text,
                     model='eleven_multilingual_v2',
@@ -150,7 +150,7 @@ class TextToSpeechRVC:
 
                 save(audio, audio_file)
             except Exception as e:
-                await logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
+                await logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=color=Color.RED)
                 if "Please play" in str(e):
                     create_secret(SecretKey.voice_keys, "None")
                 self.elevenlabs_voice_keys = self.elevenlabs_voice_keys[1:]
@@ -164,7 +164,7 @@ class TextToSpeechRVC:
 
     async def voice_changer(self, input_path, output_path, pitch_change):
         audio_path = self.voice_RVC.voice_change(input_path, output_path, pitch_change=pitch_change)
-        await logger.logging("done RVC", Color.GREEN)
+        await logger.logging("done RVC", color=Color.GREEN)
         await speed_up_audio(audio_path, self.speed)
         return audio_path
 
@@ -185,18 +185,18 @@ class Character:
             existing_character = characters_all[name]
             self.__dict__.update(existing_character.__dict__)
         else:
-            logger.logging("Новый character", name, Color.PURPLE)
+            logger.logging("Новый character", name, color=Color.PURPLE)
             characters_all[name] = self
 
             self.name = str(name)
             json_file_path = os.path.join(f'rvc_models', self.name, "params.json")
             if name is None or not os.path.exists(json_file_path):
                 self.gpt_info = "Вы полезный ассистент и даёте только полезную информацию"
-                logger.logging("Not exist", Color.YELLOW)
+                logger.logging("Not exist", color=Color.YELLOW)
             else:
                 with open(json_file_path, 'r') as json_file:
                     json_data = json.load(json_file)
-                    logger.logging(json_data, Color.GRAY)
+                    logger.logging(json_data, color=Color.GRAY)
                 self.info = json_data["info"]
 
                 self.gpt_info = (f"Привет, chatGPT. Вы собираетесь притвориться {self.name}. "
@@ -277,7 +277,7 @@ class Character:
                                          voice_model_eleven=voice_model_eleven, stability=stability,
                                          similarity_boost=similarity_boost, style=style, max_simbols=max_simbols,
                                          speaker_boost=speaker_boost)
-            logger.logging(f"Updated {self.name} voice params", Color.CYAN)
+            logger.logging(f"Updated {self.name} voice params", color=Color.CYAN)
 
     async def text_to_speech(self, text, audio_path="1.mp3", output_name="2.mp3"):
         if not self.voice:
@@ -300,7 +300,7 @@ class Image_Generator:
 
     def load_models(self):
         try:
-            logger.logging(f"image model loading... GPU:{self.cuda_index}", Color.GRAY)
+            logger.logging(f"image model loading... GPU:{self.cuda_index}", color=Color.GRAY)
             self.pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
                 "kandinsky-community/kandinsky-2-2-prior", torch_dtype=self.torch.float16
             )
@@ -309,17 +309,17 @@ class Image_Generator:
                 "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=self.torch.float16
             )
 
-            logger.logging(f"==========Images Model Loaded{self.cuda_index}!==========", Color.GRAY)
+            logger.logging(f"==========Images Model Loaded{self.cuda_index}!==========", color=Color.GRAY)
             self.loaded = True
         except Exception as e:
-            logger.logging(f"Error while loading models: {e}", Color.RED)
+            logger.logging(f"Error while loading models: {e}", color=Color.RED)
 
     async def generate_image(self, prompt, negative_prompt, x, y, steps, seed, strength, strength_prompt,
                              strength_negative_prompt, image_name):
         if not self.loaded:
             raise "Модель не загружена"
         if self.busy:
-            await logger.logging("warn: Модель занята", Color.YELLOW)
+            await logger.logging("warn: Модель занята", color=Color.YELLOW)
             await asyncio.sleep(0.25)
         self.busy = True
         try:
