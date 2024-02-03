@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fairseq import checkpoint_utils
 from scipy.io import wavfile
+import torch
 
 from infer_pack.models import (
     SynthesizerTrnMs256NSFsid,
@@ -17,19 +18,18 @@ BASE_DIR = Path(__file__).resolve().parent
 
 
 class Config:
-    def __init__(self, device, is_half, torch):
+    def __init__(self, device, is_half):
         self.device = device
         self.is_half = is_half
         self.n_cpu = 0
         self.gpu_name = None
         self.gpu_mem = None
-        self.torch = torch
         self.x_pad, self.x_query, self.x_center, self.x_max = self.device_config()
 
     def device_config(self) -> tuple:
-        if self.torch.cuda.is_available():
+        if torch.cuda.is_available():
             i_device = int(self.device.split(":")[-1])
-            self.gpu_name = self.torch.cuda.get_device_name(i_device)
+            self.gpu_name = torch.cuda.get_device_name(i_device)
             if (
                     ("16" in self.gpu_name and "V100" not in self.gpu_name.upper())
                     or "P40" in self.gpu_name.upper()
@@ -51,7 +51,7 @@ class Config:
             else:
                 self.gpu_name = None
             self.gpu_mem = int(
-                self.torch.cuda.get_device_properties(i_device).total_memory
+                torch.cuda.get_device_properties(i_device).total_memory
                 / 1024
                 / 1024
                 / 1024
@@ -62,7 +62,7 @@ class Config:
                     strr = f.read().replace("3.7", "3.0")
                 with open(BASE_DIR / "trainset_preprocess_pipeline_print.py", "w") as f:
                     f.write(strr)
-        elif self.torch.backends.mps.is_available():
+        elif torch.backends.mps.is_available():
             print("No supported N-card found, use MPS for inference")
             self.device = "mps"
         else:
@@ -109,7 +109,7 @@ def load_hubert(device, is_half, model_path):
     return hubert
 
 
-def get_vc(device, is_half, config, model_path, torch):
+def get_vc(device, is_half, config, model_path):
     cpt = torch.load(model_path, map_location='cpu')
     if "config" not in cpt or "weight" not in cpt:
         raise ValueError(f'Incorrect format for {model_path}. Use a voice model trained using RVC v2 instead.')

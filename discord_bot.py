@@ -91,19 +91,9 @@ class DiscordUser:
         character_name = await set_get_config_all(self.id, SQL_Keys.AIname)
         self.character = Character(character_name)
 
-class LocalTorch:
-    def __init__(self, cuda):
-        # os.environ["CUDA_VISIBLE_DEVICES"] = str(cuda)
-        import torch
-        self.local_torch = torch
-
 @bot.event
 async def on_ready():
     logger.logging('Status: online', Color.GREEN)
-    torch = LocalTorch(0).local_torch
-    print(torch.cuda.get_device_name(0))
-    torch = LocalTorch(1).local_torch
-    print(torch.cuda.get_device_name(1))
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
     id = await set_get_config_all("Default", SQL_Keys.owner_id)

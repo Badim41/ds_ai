@@ -236,8 +236,8 @@ class MDX:
 
 def run_mdx(local_torch, model_params, output_dir, model_path, filename, exclude_main=False, exclude_inversion=False,
             suffix=None,
-            invert_suffix=None, denoise=False, keep_orig=True, m_threads=2):
-    device = local_torch.device(f"cuda:0")
+            invert_suffix=None, denoise=False, keep_orig=True, m_threads=2, cuda_number=cuda_number):
+    device = local_torch.device(f"cuda:{cuda_number}")
     device_properties = local_torch.cuda.get_device_properties(device)
     vram_gb = device_properties.total_memory / 1024 ** 3
     m_threads = 1 if vram_gb < 8 else 2

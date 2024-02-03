@@ -17,6 +17,7 @@ import yt_dlp
 from pedalboard import Pedalboard, Reverb, Compressor, HighpassFilter
 from pedalboard.io import AudioFile
 
+from mdx import run_mdx
 from rvc import Config, load_hubert, get_vc, rvc_infer
 from discord_tools.logs import Logs, Color
 
@@ -154,26 +155,8 @@ def display_progress(message):
     print(message)
 
 
-class LocalTorch:
-    def __init__(self, cuda):
-        # os.environ["CUDA_VISIBLE_DEVICES"] = str(cuda)
-        import torch
-        self.local_torch = torch
-
-    def run_mdx_with_current_cuda(self, model_params, output_dir, model_path, filename, exclude_main=False,
-                                  exclude_inversion=False,
-                                  suffix=None,
-                                  invert_suffix=None, denoise=False, keep_orig=True, m_threads=2):
-        from mdx import run_mdx
-        return run_mdx(self.local_torch, model_params, output_dir,
-                       model_path,
-                       filename, exclude_main, exclude_inversion, suffix,
-                       invert_suffix, denoise, keep_orig, m_threads)
-
-
 def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_type=None):
     try:
-        local_torch = LocalTorch(cuda_number)
 
         keep_orig = False
         if input_type == 'yt':
@@ -189,21 +172,21 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
         song_output_dir = os.path.join(output_dir, song_id)
         orig_song_path = convert_to_stereo(orig_song_path)
         display_progress(f'[~] Separating Vocals from Instrumental... GPU:{cuda_number}')
-        vocals_path, instrumentals_path = local_torch.run_mdx_with_current_cuda(mdx_model_params, song_output_dir,
+        vocals_path, instrumentals_path = run_mdx(mdx_model_params, song_output_dir,
                                                                                 os.path.join(mdxnet_models_dir,
                                                                                              'Kim_Vocal_2.onnx'),
                                                                                 orig_song_path, denoise=True,
-                                                                                keep_orig=keep_orig)
+                                                                                keep_orig=keep_orig, cuda_number=cuda_number)
 
         # вторая нейросеть
-        instrumentals_path_2, vocals_path_2 = local_torch.run_mdx_with_current_cuda(mdx_model_params, song_output_dir,
+        instrumentals_path_2, vocals_path_2 = run_mdx(mdx_model_params, song_output_dir,
                                                                                     os.path.join(mdxnet_models_dir,
                                                                                                  "UVR-MDX-NET-Inst_HQ_1.onnx"),
                                                                                     instrumentals_path,
                                                                                     suffix='music_2',
                                                                                     invert_suffix='vocal_2',
                                                                                     denoise=True,
-                                                                                    keep_orig=True)
+                                                                                    keep_orig=True, cuda_number=cuda_number)
 
         vocals_1 = AudioSegment.from_file(vocals_path)
         vocals_2 = AudioSegment.from_file(vocals_path_2)
@@ -219,19 +202,19 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
         combined_vocals.export(vocals_path, format="wav")
 
         display_progress(f'[~] Separating Main Vocals from Backup Vocals... GPU:{cuda_number}')
-        backup_vocals_path, main_vocals_path = local_torch.run_mdx_with_current_cuda(mdx_model_params, song_output_dir,
+        backup_vocals_path, main_vocals_path = run_mdx(mdx_model_params, song_output_dir,
                                                                                      os.path.join(mdxnet_models_dir,
                                                                                                   'UVR_MDXNET_KARA_2.onnx'),
                                                                                      # UVR_MDXNET_KARA_2.onnx
                                                                                      vocals_path, suffix='Backup',
-                                                                                     invert_suffix='Main', denoise=True)
+                                                                                     invert_suffix='Main', denoise=True, cuda_number=cuda_number)
         display_progress(f'[~] Applying DeReverb to Vocals... GPU:{cuda_number}')
-        _, main_vocals_dereverb_path = local_torch.run_mdx_with_current_cuda(mdx_model_params, song_output_dir,
+        _, main_vocals_dereverb_path = run_mdx(mdx_model_params, song_output_dir,
                                                                              os.path.join(mdxnet_models_dir,
                                                                                           'Reverb_HQ_By_FoxJoy.onnx'),
                                                                              main_vocals_path, invert_suffix='DeReverb',
                                                                              exclude_main=True,
-                                                                             denoise=True)
+                                                                             denoise=True, cuda_number=cuda_number)
         return orig_song_path, vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path
     except Exception as e:
         raise e
@@ -254,11 +237,10 @@ def download_video_or_use_file(song_input, input_type):
 def voice_change(voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
                  rms_mix_rate, protect, crepe_hop_length, is_webui, cuda_number):
     rvc_model_path, rvc_index_path = get_rvc_model(voice_model, is_webui)
-    device = 'cuda:0'
-    local_torch = LocalTorch(cuda_number)
-    config2 = Config(device, True, torch=local_torch.local_torch)
+    device = f'cuda:{cuda_number}'
+    config2 = Config(device, True)
     hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
-    cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path, local_torch.local_torch)
+    cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
     # convert main vocals
     rvc_infer(rvc_index_path, index_rate, vocals_path, output_path, pitch_change, f0_method, cpt, version, net_g,
               filter_radius, tgt_sr, rms_mix_rate, protect, crepe_hop_length, vc, hubert_model)
