@@ -93,7 +93,7 @@ class DiscordUser:
 
 class LocalTorch:
     def __init__(self, cuda):
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(cuda)
+        # os.environ["CUDA_VISIBLE_DEVICES"] = str(cuda)
         import torch
         self.local_torch = torch
 
