@@ -1103,6 +1103,7 @@ class AudioPlayerDiscord:
             create_new = True
 
         if create_new:
+            logger.logging("Новый audio_player")
             audio_players[ctx.guild.id] = self
             self.ctx = ctx
             self.guild = ctx.guild.id
