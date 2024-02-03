@@ -256,7 +256,7 @@ def voice_change(voice_model, vocals_path, output_path, pitch_change, f0_method,
     rvc_model_path, rvc_index_path = get_rvc_model(voice_model, is_webui)
     device = 'cuda:0'
     local_torch = LocalTorch(cuda_number)
-    config2 = Config(device, True, local_torch.local_torch)
+    config2 = Config(device, True, torch=local_torch.local_torch)
     hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
     cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path, local_torch.local_torch)
     # convert main vocals

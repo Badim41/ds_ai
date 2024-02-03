@@ -23,8 +23,8 @@ class Config:
         self.n_cpu = 0
         self.gpu_name = None
         self.gpu_mem = None
-        self.x_pad, self.x_query, self.x_center, self.x_max = self.device_config()
         self.torch = torch
+        self.x_pad, self.x_query, self.x_center, self.x_max = self.device_config()
 
     def device_config(self) -> tuple:
         if self.torch.cuda.is_available():
