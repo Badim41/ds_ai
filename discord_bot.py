@@ -100,6 +100,10 @@ class LocalTorch:
 @bot.event
 async def on_ready():
     logger.logging('Status: online', Color.GREEN)
+    torch = LocalTorch(0).local_torch
+    print(torch.cuda.get_device_name(0))
+    torch = LocalTorch(1).local_torch
+    print(torch.cuda.get_device_name(0))
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
     id = await set_get_config_all("Default", SQL_Keys.owner_id)
@@ -399,8 +403,6 @@ async def __tts(
                       choices=['rmvpe', 'mangio-crepe'], default="rmvpe"),
 
 ):
-    torch = LocalTorch(0).local_torch
-    print(torch.cuda.get_device_name(0))
     user = DiscordUser(ctx)
     if not voice_name:
         voice_name = user.character.name
