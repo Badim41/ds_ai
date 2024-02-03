@@ -379,6 +379,10 @@ async def __tts(
     user = DiscordUser(ctx)
     if not voice_name:
         voice_name = user.character.name
+    elif not user.character.name == voice_name:
+        await ctx.send("Обновлена базовая модель на:" + voice_name)
+        await user.set_user_config(SQL_Keys.AIname, voice_name)
+
     voices = await get_voice_list()
     if voice_name not in voices:
         return await ctx.response.send_message("Выберите голос из списка: " + ';'.join(voices))
@@ -390,7 +394,7 @@ async def __tts(
         if voice_models not in ALL_VOICES.values():
             await ctx.response.send_message("Список голосов elevenlabs: \n" + ';'.join(ALL_VOICES.values()))
             return
-    character = user.character
+    character = Character(voice_name)
 
     try:
 
