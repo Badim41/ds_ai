@@ -15,7 +15,7 @@ class Use_Cuda:
 
         self.cuda_is_busy = []
         self.cuda_is_busy_images = []
-        for _ in gpu_count:
+        for _ in range(gpu_count):
             self.cuda_is_busy.append(False)
             self.cuda_is_busy_images.append(False)
 
