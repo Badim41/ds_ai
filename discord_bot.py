@@ -394,7 +394,6 @@ async def __tts(
                       choices=['rmvpe', 'mangio-crepe'], default="rmvpe"),
 
 ):
-    logger.logging("text to speech temp-5", text, color=Color.GRAY)
     user = DiscordUser(ctx)
     if not voice_name:
         voice_name = user.character.name
@@ -435,7 +434,6 @@ async def __tts(
                 await ctx.respond("Такое точно нельзя произносить!")
                 return
             # запускаем TTS
-            logger.logging("text to speech temp-1", text, color=Color.GRAY)
             await character.text_to_speech(text, audio_path=f"{ctx.author.id}.mp3")
             # перестаём использовать видеокарту
 
