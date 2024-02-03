@@ -17,7 +17,7 @@ from cover_gen import run_ai_cover_gen
 from discord_bot import DiscordUser, SQL_Keys, characters_all
 from discord_tools.detect_mat import moderate_mat_in_sentence
 from discord_tools.logs import Color, Logs
-from discord_tools.secret import load_secret, SecretKey, create_secrets
+from discord_tools.secret import load_secret, SecretKey, create_secret
 from discord_tools.sql_db import set_get_database_async
 from voice_change import Voice_Changer
 
@@ -150,9 +150,9 @@ class TextToSpeechRVC:
             except Exception as e:
                 await logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
                 if "Please play" in str(e):
-                    create_secrets(SecretKey.voice_keys, "None")
+                    create_secret(SecretKey.voice_keys, "None")
                 self.elevenlabs_voice_keys = self.elevenlabs_voice_keys[1:]
-                create_secrets(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys))
+                create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys))
                 pitch = await self.elevenlabs_text_to_speech(text, audio_file)
         return pitch
 

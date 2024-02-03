@@ -1,4 +1,4 @@
-import asyncio
+from dotenv import load_dotenv
 import random
 import sys
 import zipfile
