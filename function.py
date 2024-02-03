@@ -196,7 +196,7 @@ class Character:
             else:
                 with open(json_file_path, 'r') as json_file:
                     json_data = json.load(json_file)
-                    logger.logging(json_data)
+                    logger.logging(json_data, Color.GRAY)
                 self.info = json_data["info"]
 
                 self.gpt_info = (f"Привет, chatGPT. Вы собираетесь притвориться {self.name}. "
