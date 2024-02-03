@@ -1,10 +1,8 @@
 import traceback
-
-from discord.sinks.core import Filters, Sink, default_filters
 from pydub import AudioSegment
 from queue import Queue
-import sys
 
+from discord.sinks.core import Filters, Sink, default_filters
 from discord_tools.logs import Color
 from function import logger
 
