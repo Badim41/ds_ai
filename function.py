@@ -135,7 +135,7 @@ class TextToSpeechRVC:
 
             try:
                 voice_id = await self.get_elevenlabs_voice_id_by_name()
-                logger.logging("VOICE_ID_ELEVENLABS:", voice_id, color=Color.GRAY)
+                logger.logging("VOICE_ID_ELEVENLABS:", voice_id, self.voice_model_eleven, color=Color.GRAY)
                 audio = generate(
                     text=text,
                     model='eleven_multilingual_v2',
@@ -285,12 +285,11 @@ class Character:
 
 
 class Image_Generator:
-    def __init__(self, cuda_index):
-        cuda_number = str(cuda_index)
-        os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
+    def __init__(self, cuda_number):
+        # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
         import torch
         self.torch = torch
-        self.cuda_index = cuda_index
+        self.cuda_number = str(cuda_number)
         self.pipe_prior = None
         self.pipe = None
         self.load_models()
@@ -299,7 +298,7 @@ class Image_Generator:
 
     def load_models(self):
         try:
-            logger.logging(f"image model loading... GPU:{self.cuda_index}", color=Color.GRAY)
+            logger.logging(f"image model loading... GPU:{self.cuda_number}", color=Color.GRAY)
             self.pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
                 "kandinsky-community/kandinsky-2-2-prior", torch_dtype=self.torch.float16
             )
@@ -308,7 +307,7 @@ class Image_Generator:
                 "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=self.torch.float16
             )
 
-            logger.logging(f"==========Images Model Loaded{self.cuda_index}!==========", color=Color.GRAY)
+            logger.logging(f"==========Images Model Loaded{self.cuda_number}!==========", color=Color.GRAY)
             self.loaded = True
         except Exception as e:
             logger.logging(f"Error while loading models: {e}", color=Color.RED)
@@ -337,7 +336,7 @@ class Image_Generator:
             # make hint
             img = load_image(image_name).resize((x, y))
             depth_estimator = pipeline("depth-estimation")
-            hint = make_hint(img, depth_estimator).unsqueeze(0).half().to("cuda:0")
+            hint = make_hint(img, depth_estimator).unsqueeze(0).half().to(f"cuda:{self.cuda_number}")
 
             # run prior pipeline
             img_emb = self.pipe_prior(prompt=prompt, image=img, strength=strength_prompt,

@@ -136,8 +136,6 @@ async def on_message(message):
         return
     if bot.user in message.mentions:
         text = message.content
-        if text == "Памаги":
-            await ctx.send("Нет пути.")
         try:
             # получение, на какое сообщение ответили
             if message.reference:

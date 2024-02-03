@@ -17,7 +17,8 @@ stem_naming = {'Vocals': 'Instrumental', 'Other': 'Instruments', 'Instrumental':
 
 
 class MDXModel:
-    def __init__(self, device, dim_f, dim_t, n_fft, hop=1024, stem_name=None, compensation=1.000):
+    def __init__(self, cuda_number, device, dim_f, dim_t, n_fft, hop=1024, stem_name=None, compensation=1.000):
+        self.cuda_number = cuda_number
         self.dim_f = dim_f
         self.dim_t = dim_t
         self.dim_c = 4
@@ -63,7 +64,7 @@ class MDX:
     DEFAULT_PROCESSOR = 0
 
     def __init__(self, model_path: str, params: MDXModel):
-        self.device = torch.device(f"cuda:0")
+        self.device = torch.device(f"cuda:{params.cuda_number}")
         self.provider = ['CUDAExecutionProvider']
 
         self.model = params
@@ -243,6 +244,7 @@ def run_mdx(model_params, output_dir, model_path, filename, exclude_main=False, 
     model_hash = MDX.get_hash(model_path)
     mp = model_params.get(model_hash)
     model = MDXModel(
+        cuda_number=cuda_number,
         device=device,
         dim_f=mp["mdx_dim_f_set"],
         dim_t=2 ** mp["mdx_dim_t_set"],
