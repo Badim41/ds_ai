@@ -406,14 +406,14 @@ async def __tts(
         return await ctx.response.send_message("Выберите голос из списка: " + ';'.join(voices))
 
     if voice_model_eleven == "All":
-        voice_models = ALL_VOICES.values()
+        voice_models = ALL_VOICES.keys()
     else:
         if voice_model_eleven is None:
             voice_model_eleven = user.character.voice_model_eleven
             if voice_model_eleven is None:
                 return await ctx.response.send_message(f"Голосовая модель персонажа: {voice_model_eleven}, что недопустимо")
-        if voice_model_eleven not in ALL_VOICES.values():
-            await ctx.response.send_message("Список голосов elevenlabs: \n" + ';'.join(ALL_VOICES.values()))
+        if voice_model_eleven not in ALL_VOICES.keys():
+            await ctx.response.send_message("Список голосов elevenlabs: \n" + ';'.join(ALL_VOICES.keys()))
             return
         voice_models = [voice_model_eleven]
     character = user.character
@@ -810,8 +810,8 @@ async def __add_voice(
                          description='Файл txt для добавления нескольких моделей сразу',
                          required=False, default=None)
 ):
-    if voice_model_eleven not in ALL_VOICES.values():
-        await ctx.respond("Список голосов: \n" + '; '.join(ALL_VOICES.values()))
+    if voice_model_eleven not in ALL_VOICES.keys():
+        await ctx.respond("Список голосов: \n" + '; '.join(ALL_VOICES.keys()))
         return
     await ctx.defer()
     await ctx.respond('Выполнение...')
