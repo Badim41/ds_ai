@@ -1112,10 +1112,13 @@ class AudioPlayerDiscord:
             self.isPlaying = False
 
     async def join_channel(self):
-        if self.voice_channel:
-            self.voice_client = await self.voice_channel.connect()
-        else:
-            await self.ctx.send(voiceChannelErrorText)
+        try:
+            if self.voice_channel:
+                self.voice_client = await self.voice_channel.connect()
+            else:
+                await self.ctx.send(voiceChannelErrorText)
+        except discord.ClientException:
+            await self.ctx.send("Уже в голосовом канале")
 
     async def stop(self):
         if self.isPlaying:
