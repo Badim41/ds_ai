@@ -99,7 +99,11 @@ class TextToSpeechRVC:
         self.style = style
         self.max_simbols = max_simbols
         self.speaker_boost = speaker_boost
-        self.elevenlabs_voice_keys = load_secret(SecretKey.voice_keys) if not None else "Free"
+        secret_keys = load_secret(SecretKey.voice_keys)
+        if secret_keys:
+            self.elevenlabs_voice_keys = secret_keys.split(";")
+        else:
+            self.elevenlabs_voice_keys = ["Free"]
 
     async def text_to_speech(self, text, audio_path="1.mp3", output_name=None):
         if text is None or text.replace("\n", "").replace(" ", "") == "":
