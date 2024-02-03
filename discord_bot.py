@@ -610,6 +610,8 @@ async def __cover(
                 urls += url.split(";")
             elif "playlist" in url:
                 urls += (await get_links_from_playlist(url)).split(";")
+            else:
+                urls.append(url)
 
         for i, url in enumerate(urls):
             asyncio.ensure_future(
