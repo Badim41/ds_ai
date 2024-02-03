@@ -316,15 +316,15 @@ async def pause(ctx):
         if dialog:
             await dialog.stop_dialog()
             await ctx.respond("Остановлен диалог")
-    await AudioPlayerDiscord(ctx).stop()
-    await ctx.respond("Пауза")
+    result = await AudioPlayerDiscord(ctx).stop()
+    await ctx.respond(result)
 
 
 @bot.slash_command(name="skip", description='пропуск аудио')
 async def skip(ctx):
     await ctx.defer()
-    await AudioPlayerDiscord(ctx).skip()
-    await ctx.respond("Остановлено")
+    result = await AudioPlayerDiscord(ctx).skip()
+    await ctx.respond(result)
 
 
 @bot.slash_command(name="say", description='Сказать роботу что-то')
@@ -582,7 +582,7 @@ async def __cover(
 
         voices = await get_voice_list()
         if voice_name not in voices:
-            await ctx.respond("Выберите голос для озвучки (или /add_voice):", ', '.join(voices))
+            await ctx.respond("Выберите голос для озвучки (или /add_voice):" + ', '.join(voices))
             return
 
         if pitch is None:
@@ -1136,6 +1136,9 @@ class AudioPlayerDiscord:
         if self.isPlaying:
             self.voice_client.stop()
             self.isPlaying = False
+            return "Остановлено"
+        else:
+            return "Нет аудио для остановки"
 
     async def play(self, audio_file):
         if not self.isPlaying:
@@ -1143,8 +1146,8 @@ class AudioPlayerDiscord:
                 await self.join_channel()
 
             audio_source = discord.FFmpegPCMAudio(audio_file)
-            self.voice_client.play(audio_source, after=lambda e: self.play_next() if e else None)
             self.isPlaying = True
+            self.voice_client.play(audio_source, after=lambda e: self.play_next() if e else None)
         else:
             self.queue.append(audio_file)
             # await self.ctx.send(f"{audio_file} добавлен в очередь.")
@@ -1161,6 +1164,9 @@ class AudioPlayerDiscord:
     async def skip(self):
         if self.isPlaying:
             self.voice_client.stop()
+            return "Пропущено"
+        else:
+            return "Нет аудио для пропуска"
 
     async def disconnect(self):
         if self.voice_client and self.voice_client.is_connected():

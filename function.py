@@ -180,7 +180,7 @@ class Character:
         from discord_bot import characters_all
 
         # asyncio.run(set_get_database_async)
-        if name in characters_all.values():
+        if name in characters_all:
             existing_character = characters_all[name]
             self.__dict__.update(existing_character.__dict__)
         else:
