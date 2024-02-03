@@ -90,7 +90,7 @@ class TextToSpeechRVC:
                                        pitch=pitch,
                                        filter_radius=filter_radius, rms_mix_rate=rms_mix_rate, protect=protect,
                                        algo=algo)
-        self.voice_name = voice_name
+        self.voice_name = voice_name.replace(" ", "")
         self.pitch = pitch
         self.voice_model_eleven = voice_model_eleven
         self.speed = speed

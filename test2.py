@@ -1,17 +1,10 @@
-import asyncio
+import json
 
-from use_free_cuda import Use_Cuda
-cuda_manager = Use_Cuda()
 
-async def test_use_cuda(cuda_number):
-    await asyncio.sleep(cuda_number)
-    cuda = await cuda_manager.use_cuda()
-    print("use", cuda)
-    await asyncio.sleep(10)
-    await cuda_manager.stop_use_cuda(cuda)
-    print("stop", cuda)
-async def stuck_cuda():
-    functions = [test_use_cuda(cuda%2) for cuda in range(2)]
-    await asyncio.gather(*functions)
+def get_elevenlabs_voice_id_by_name(voice_name):
+    with open('voices.json', 'r', encoding='utf-8') as file:
+        data = json.load(file)
+    voice = next((v for v in data["voices"] if v["name"] == voice_name), None)
+    return voice["voice_id"] if voice else None
 
-asyncio.run(stuck_cuda())
+print(get_elevenlabs_voice_id_by_name("Adam"))
