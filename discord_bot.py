@@ -115,7 +115,7 @@ async def on_message(message):
 
             guild_id = ctx.guild.id
             if guild_id in dialogs:
-                dialog = next((rec for rec in dialogs[guild_id] if rec.ctx == ctx), None)
+                dialog = next((rec for rec in dialogs if rec.ctx.guild.id == ctx.guild.id), None)
                 if dialog:
                     dialog.theme = text
                     await ctx.send("Изменена тема:" + text)
@@ -312,7 +312,7 @@ async def pause(ctx):
     await ctx.defer()
     guild_id = ctx.guild.id
     if guild_id in dialogs:
-        dialog = next((rec for rec in dialogs[guild_id] if rec.ctx == ctx), None)
+        dialog = next((rec for rec in dialogs if rec.ctx.guild.id == ctx.guild.id), None)
         if dialog:
             await dialog.stop_dialog()
             await ctx.respond("Остановлен диалог")
@@ -988,7 +988,7 @@ async def themer_set(ctx, *args):
     text = " ".join(args)
     guild_id = ctx.guild.id
     if guild_id in dialogs:
-        dialog = next((rec for rec in dialogs[guild_id] if rec.ctx == ctx), None)
+        dialog = next((rec for rec in dialogs if rec.ctx.guild.id == ctx.guild.id), None)
         if dialog:
             dialog.theme = text
             await ctx.send("Изменена тема:" + text)
@@ -1017,7 +1017,7 @@ async def stop_recording(ctx):
     guild_id = ctx.guild.id
 
     if guild_id in recognizers:
-        recognizer = next((rec for rec in recognizers[guild_id] if rec.ctx == ctx), None)
+        recognizer = next((rec for rec in recognizers[guild_id] if rec.ctx.auhor.id == ctx.auhor.id), None)
         if recognizer:
             await recognizer.stop_recording()
             await ctx.respond("Остановка записи.")
@@ -1034,7 +1034,7 @@ class Recognizer:
         self.stream_sink = StreamSink(ctx=ctx)
         self.google_recognizer = sr.Recognizer()
         self.last_speaking = 0
-        self.delay_record = float(asyncio.run(set_get_config_all("Default", SQL_Keys.delay_record))) * 10
+        self.delay_record = float(asyncio.run(set_get_config_all("Default", SQL_Keys.delay_record)) if not None else 5) * 10
         self.user = DiscordUser(ctx)
 
         self.with_gpt = with_gpt
