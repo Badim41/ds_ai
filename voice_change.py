@@ -1,5 +1,6 @@
 import gc
 import os
+import torch
 
 from discord_tools.logs import Logs, Color
 
@@ -30,7 +31,6 @@ class Voice_Changer:
     def __init__(self, cuda_number:int, voice_name:str, index_rate=0.5, pitch=0, filter_radius=3, rms_mix_rate=0.3, protect=0.33, algo="rmvpe"):
         cuda_number = str(cuda_number)
         os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
-        import torch
         from rvc import Config, load_hubert, get_vc
         self.torch = torch
         logger.logging("CUDA CHECK-1", cuda_number, Color.PURPLE)
