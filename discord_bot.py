@@ -631,13 +631,39 @@ async def __cover(
         logger.logging(str(traceback_str), color=Color.RED)
         await ctx.respond(f"Ошибка при изменении голоса(ID:d5) (с параметрами {param_string}): {e}")
 
+@bot.slash_command(name="create_dialog", description='Имитировать диалог людей')
+async def __dialog(
+        ctx,
+        names: Option(str, description="Участники диалога через ';' (у каждого должен быть добавлен голос!)",
+                      required=True),
+        theme: Option(str, description="Начальная тема разговора", required=False, default="случайная тема"),
+        prompt: Option(str, description="Общий запрос для всех диалогов", required=False, default="")
+):
+    try:
+        await ctx.respond('Выполнение...')
+        user = DiscordUser(ctx)
+        names = names.split(";")
+        voices = await get_voice_list()
+        for name in names:
+            if name not in voices:
+                await ctx.respond("Выберите голос для озвучки (или /add_voice):" + ', '.join(voices))
+                return
 
+        Dialog_AI(ctx, names, theme, prompt)
+
+    except Exception as e:
+        traceback_str = traceback.format_exc()
+        print(str(traceback_str))
+        await ctx.respond(f"Ошибка при диалоге: {e}")
 class Dialog_AI:
     def __init__(self, ctx, characters, theme, global_prompt):
+        if dialogs[ctx.guild.id]:
+            asyncio.run(ctx.send("Уже идёт диалог"))
+            return
+
         self.alive = True
         self.ctx = ctx
-
-        dialogs[self.ctx.guild.id].append(self)
+        dialogs[self.ctx.guild.id] = self
 
         self.characters = []
         self.names = []
@@ -673,7 +699,7 @@ class Dialog_AI:
 
     async def stop_dialog(self):
         if self.ctx.guild.id in dialogs:
-            dialogs[self.ctx.guild.id].remove(self)
+            del dialogs[self.ctx.guild.id]
             self.alive = False
 
     async def play_dialog(self):
