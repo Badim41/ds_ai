@@ -185,7 +185,7 @@ class Character:
             existing_character = characters_all[name]
             self.__dict__.update(existing_character.__dict__)
         else:
-            logger.logging("Новый character", Color.PURPLE)
+            logger.logging("Новый character", name, Color.PURPLE)
             characters_all[name] = self
 
             self.name = str(name)
