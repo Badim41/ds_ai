@@ -1,7 +1,13 @@
+import asyncio
+import os
 import random
+import re
+import subprocess
 import sys
+import traceback
 import zipfile
 from pathlib import Path
+from pydub import AudioSegment
 from pytube import Playlist
 
 import speech_recognition as sr
@@ -10,6 +16,13 @@ import discord
 from cover_gen import run_ai_cover_gen
 from discord import Option
 from discord.ext import commands
+from discord_tools.chat_gpt import ChatGPT
+from discord_tools.detect_mat import moderate_mat_in_sentence
+from discord_tools.logs import Logs, Color
+from discord_tools.sql_db import set_get_database_async as set_get_config_all
+from discord_tools.timer import Time_Count
+from function import Image_Generator, Character, Voice_Changer, get_link_to_file
+from modifed_sinks import StreamSink
 from use_free_cuda import Use_Cuda
 
 recognizers = {}
@@ -22,12 +35,8 @@ bot = commands.Bot(command_prefix='\\', intents=intents)
 cuda_manager = Use_Cuda()
 image_generators = []
 
-from discord_tools.chat_gpt import ChatGPT
-from discord_tools.sql_db import set_get_database_async as set_get_config_all
-from discord_tools.timer import Time_Count
-from function import *
-from function import Image_Generator
-from modifed_sinks import StreamSink
+
+logger = Logs(warnings=True)
 
 voiceChannelErrorText = '❗ Вы должны находиться в голосовом канале ❗'
 ALL_VOICES = {'Rachel': "Ж", 'Clyde': 'М', 'Domi': 'Ж', 'Dave': 'М', 'Fin': 'М', 'Bella': 'Ж', 'Antoni': 'М',
