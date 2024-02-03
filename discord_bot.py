@@ -1067,8 +1067,9 @@ class Recognizer:
     async def recognize(self):
         google_recognizer = self.google_recognizer
         while self.alive:
-            file_found = self.stream_sink.buffer.previous_audio_filename
-            if not file_found:
+            speaking = self.stream_sink.buffer.speaking
+            audio_file = self.stream_sink.buffer.previous_audio_filename
+            if not speaking and not audio_file:
                 self.not_speaking += 1
 
                 await asyncio.sleep(0.1)
@@ -1080,7 +1081,7 @@ class Recognizer:
                     self.not_speaking = 0
                     # распознание речи
                     try:
-                        with sr.AudioFile(file_found) as source:
+                        with sr.AudioFile(audio_file) as source:
                             audio_data = google_recognizer.record(source)
                             text = google_recognizer.recognize_google(audio_data, language="ru-RU")
                     except sr.UnknownValueError:
@@ -1090,9 +1091,10 @@ class Recognizer:
                         logger.logging(str(traceback_str), color=Color.RED)
 
                     # удаление out_all.wav
-                    Path(file_found).unlink(missing_ok=True)
+                    self.stream_sink.buffer.previous_audio_filename = None
+                    Path(audio_file).unlink(missing_ok=True)
                     # создание пустого файла
-                    AudioSegment.silent(duration=0).export(file_found, format="wav")
+                    AudioSegment.silent(duration=0).export(audio_file, format="wav")
 
                     if not text is None:
                         mat_found, text_out = await moderate_mat_in_sentence(text)
@@ -1106,6 +1108,7 @@ class Recognizer:
                         else:
                             self.recognized += text_out
 
+            self.stream_sink.buffer.speaking = False
             self.not_speaking = 0
             await asyncio.sleep(self.stream_sink.buffer.block_len)
 

@@ -49,6 +49,7 @@ class StreamBuffer:
         # holds byte-form audio data as it builds
         self.byte_buffer = bytearray()  # bytes
         self.segment_buffer = Queue()  # pydub.AudioSegments
+        self.speaking = False
 
         # audio data specifications
         self.sample_width = 2
@@ -109,3 +110,4 @@ class StreamBuffer:
                 print(f"Ошибка при экспорте объединенного аудио: {e}")
 
             self.previous_audio_filename = filename
+            self.speaking = True
