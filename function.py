@@ -84,7 +84,7 @@ async def speed_up_audio(input_file, speed_factor):
 class TextToSpeechRVC:
     def __init__(self, voice_name, cuda_number, index_rate=0.5, pitch=0, filter_radius=3,
                  rms_mix_rate=0.3,
-                 protect=0.33, algo="rmvpe", speed=1, voice_model_eleven="Adam", stability=0.4,
+                 protect=0.33, algo="rmvpe", speed=1.0, voice_model_eleven="Adam", stability=0.4,
                  similarity_boost=0.25,
                  style=0.4, max_simbols=300, speaker_boost=True):
         self.voice_RVC = Voice_Changer(cuda_number=cuda_number, voice_name=voice_name, index_rate=index_rate,
@@ -215,7 +215,7 @@ class Character:
                 else:
                     self.pitch = 0
 
-                self.speed = int(json_data["speed"])
+                self.speed = float(json_data["speed"])
                 self.voice_model_eleven = json_data["voice_model_eleven"]
                 self.stability = float(json_data["stability"])
                 self.similarity_boost = float(json_data["similarity_boost"])
