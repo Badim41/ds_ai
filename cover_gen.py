@@ -252,12 +252,13 @@ def download_video_or_use_file(song_input, input_type):
 
 
 def voice_change(voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
-                 rms_mix_rate, protect, crepe_hop_length, is_webui):
+                 rms_mix_rate, protect, crepe_hop_length, is_webui, cuda_number):
     rvc_model_path, rvc_index_path = get_rvc_model(voice_model, is_webui)
     device = 'cuda:0'
-    config2 = Config(device, True)
+    local_torch = LocalTorch(cuda_number)
+    config2 = Config(device, True, local_torch.local_torch)
     hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
-    cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path)
+    cpt, version, net_g, tgt_sr, vc = get_vc(device, config2.is_half, config2, rvc_model_path, local_torch.local_torch)
     # convert main vocals
     rvc_infer(rvc_index_path, index_rate, vocals_path, output_path, pitch_change, f0_method, cpt, version, net_g,
               filter_radius, tgt_sr, rms_mix_rate, protect, crepe_hop_length, vc, hubert_model)
@@ -363,7 +364,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
             display_progress('[~] Converting voice using RVC...')
             voice_change(voice_model, main_vocals_dereverb_path, ai_vocals_path, pitch_change, f0_method,
                          index_rate,
-                         filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui)
+                         filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui, cuda_number)
 
         display_progress('[~] Applying audio effects to Vocals...')
         ai_vocals_mixed_path = add_audio_effects(ai_vocals_path, reverb_rm_size, reverb_wet, reverb_dry, reverb_damping)

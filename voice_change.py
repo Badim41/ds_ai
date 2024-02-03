@@ -38,7 +38,7 @@ class Voice_Changer:
         device = 'cuda:0'
         config2 = Config(device, True)
         self.hubert_model = load_hubert(device, config2.is_half, os.path.join(rvc_models_dir, 'hubert_base.pt'))
-        self.cpt, self.version, self.net_g, self.tgt_sr, self.vc = get_vc(device, config2.is_half, config2, voice_name)
+        self.cpt, self.version, self.net_g, self.tgt_sr, self.vc = get_vc(device, config2.is_half, config2, voice_name, self.torch)
         self.index_rate = index_rate
         self.pitch = pitch
         self.filter_radius = filter_radius
