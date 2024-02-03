@@ -405,11 +405,12 @@ async def __tts(
     if str(voice_name) not in voices:
         return await ctx.response.send_message("Выберите голос из списка: " + ';'.join(voices))
 
-    voice_models = None
     if voice_model_eleven == "All":
         voice_models = ALL_VOICES.values()
-    elif voice_model_eleven:
-        if voice_models not in ALL_VOICES.values():
+    else:
+        if not voice_model_eleven:
+            voice_model_eleven = user.character.voice_model_eleven
+        if voice_model_eleven not in ALL_VOICES.values():
             await ctx.response.send_message("Список голосов elevenlabs: \n" + ';'.join(ALL_VOICES.values()))
             return
         voice_models = [voice_model_eleven]
