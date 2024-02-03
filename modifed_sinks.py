@@ -61,7 +61,6 @@ class StreamBuffer:
 
         # temp var for outputting audio
         self.previous_audio_filename = None
-        self.speaking = False
         self.ctx = ctx
 
     def write(self, data, user):
@@ -110,4 +109,3 @@ class StreamBuffer:
                 print(f"Ошибка при экспорте объединенного аудио: {e}")
 
             self.previous_audio_filename = filename
-            self.speaking = True

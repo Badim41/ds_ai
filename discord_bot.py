@@ -1033,7 +1033,7 @@ class Recognizer:
         self.ctx = ctx
         self.stream_sink = StreamSink(ctx=ctx)
         self.google_recognizer = sr.Recognizer()
-        self.last_speaking = 0
+        self.not_speaking = 0
         self.delay_record = float(asyncio.run(set_get_config_all("Default", SQL_Keys.delay_record)) if not None else 5) * 10
         self.user = DiscordUser(ctx)
 
@@ -1065,21 +1065,19 @@ class Recognizer:
             self.alive = False
 
     async def recognize(self):
-        file_found = self.stream_sink.buffer.previous_audio_filename
-        wav_filename = f"out_all{self.ctx.author.id}.wav"
         google_recognizer = self.google_recognizer
         while self.alive:
-            speaking = self.stream_sink.buffer.speaking
-            if not speaking:
+            file_found = self.stream_sink.buffer.previous_audio_filename
+            if not file_found:
+                self.not_speaking += 1
 
                 await asyncio.sleep(0.1)
-                self.last_speaking += 1
                 # если долго не было файлов (человек перестал говорить)
-                if self.last_speaking > self.delay_record:
+                if self.not_speaking > self.delay_record:
                     text = None
                     # очищаем поток
                     self.stream_sink.cleanup()
-                    self.last_speaking = 0
+                    self.not_speaking = 0
                     # распознание речи
                     try:
                         with sr.AudioFile(file_found) as source:
@@ -1092,9 +1090,9 @@ class Recognizer:
                         logger.logging(str(traceback_str), color=Color.RED)
 
                     # удаление out_all.wav
-                    Path(wav_filename).unlink(missing_ok=True)
+                    Path(file_found).unlink(missing_ok=True)
                     # создание пустого файла
-                    AudioSegment.silent(duration=0).export(wav_filename, format="wav")
+                    AudioSegment.silent(duration=0).export(file_found, format="wav")
 
                     if not text is None:
                         mat_found, text_out = await moderate_mat_in_sentence(text)
@@ -1108,8 +1106,8 @@ class Recognizer:
                         else:
                             self.recognized += text_out
 
-                self.stream_sink.buffer.speaking = False
-                await asyncio.sleep(0.75)
+            self.not_speaking = 0
+            await asyncio.sleep(self.stream_sink.buffer.block_len)
 
     logger.logging("Stop_Recording", color=Color.GREEN)
 
