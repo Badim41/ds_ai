@@ -412,6 +412,7 @@ async def __tts(
         if voice_models not in ALL_VOICES.values():
             await ctx.response.send_message("Список голосов elevenlabs: \n" + ';'.join(ALL_VOICES.values()))
             return
+        voice_models = [voice_model_eleven]
     character = Character(voice_name)
 
     try:
