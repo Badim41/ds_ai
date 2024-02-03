@@ -580,7 +580,7 @@ async def __cover(
             if voice_name is None:
                 voice_name = await set_get_config_all("Default", SQL_Keys.AIname)
                 if voice_name is None:
-                    await ctx.respond("Выберите голос для озвучки:", ', '.join(voices))
+                    await ctx.respond("Выберите голос для озвучки:" + ', '.join(voices))
                     return
         elif voice_name not in voices:
             await ctx.respond("Выберите голос для озвучки:", ', '.join(voices))
