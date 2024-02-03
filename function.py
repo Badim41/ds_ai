@@ -13,12 +13,9 @@ from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
 from gtts import gTTS
 from transformers import pipeline
 
-from cover_gen import run_ai_cover_gen
-from discord_bot import DiscordUser, SQL_Keys, characters_all
 from discord_tools.detect_mat import moderate_mat_in_sentence
 from discord_tools.logs import Color, Logs
 from discord_tools.secret import load_secret, SecretKey, create_secret
-from discord_tools.sql_db import set_get_database_async
 from voice_change import Voice_Changer
 
 logger = Logs(warnings=True)
@@ -176,6 +173,8 @@ class TextToSpeechRVC:
 class Character:
     def __init__(self, name, max_simbols=300, algo="rmwpe", protect=0.2, rms_mix_rate=0.3, index_rate=0.5,
                  filter_radius=3, speaker_boost=True):
+        from discord_bot import DiscordUser, SQL_Keys, characters_all
+
         # asyncio.run(set_get_database_async)
         if name in characters_all.items():
             existing_character = characters_all[name]
@@ -362,80 +361,3 @@ class Image_Generator:
             error_message = f"Произошла ошибка: {e}"
             return error_message
 
-
-async def agrs_with_txt(txt_file):
-    try:
-        filename = "temp_args.txt"
-        await txt_file.save(filename)
-        with open(filename, "r", encoding="utf-8") as file:
-            lines = file.readlines()
-            lines[-1] = lines[-1] + " "
-        url = []
-        name = []
-        gender = []
-        info = []
-        speed = []
-        voice_model_eleven = []
-        stability, similarity_boost, style = [], [], []
-        for line in lines:
-            if line.strip():
-                # забейте, просто нужен пробел и всё
-                line += " "
-                line = line.replace(": ", ":")
-                # /add_voice url:url_to_model name:some_name gender:мужчина info:some_info speed:some_speed voice_model_eleven:some_model
-                pattern = r'(\w+):(.+?)\s(?=\w+:|$)'
-
-                matches = re.findall(pattern, line)
-                arguments = dict(matches)
-
-                url.append(arguments.get('url', None))
-                name.append(arguments.get('name', None))
-                gender.append(arguments.get('gender', None))
-                info.append(arguments.get('info', "Отсутствует"))
-                speed.append(arguments.get('speed', "1"))
-                voice_model_eleven.append(arguments.get('voice_model_eleven', "James"))
-                stability.append(arguments.get('stability', "0.4"))
-                similarity_boost.append(arguments.get('similarity_boost', "0.25"))
-                style.append(arguments.get('style', "0.4"))
-        return url, name, gender, info, speed, voice_model_eleven, stability, similarity_boost, style
-    except Exception:
-        traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), Color.RED)
-        return None, None, None, None, None, None, None, None, None
-
-
-async def download_voice(ctx, url, name, gender, info, speed, voice_model_eleven, change_voice, stability="0.4",
-                         similarity_boost="0.25", style="0.4"):
-    if name == "None" or ";" in name or "/" in name or "\\" in name:
-        await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
-    # !python download_voice_model.py {url} {dir_name} {gender} {info}
-    name = name.replace(" ", "_")
-    if gender == "женщина":
-        gender = "female"
-    elif gender == "мужчина":
-        gender = "male"
-    else:
-        gender = "male"
-    try:
-        command = [
-            "python",
-            "download_voice_model.py",
-            url,
-            name,
-            gender,
-            f"{info}",
-            voice_model_eleven,
-            str(speed),
-            stability,
-            similarity_boost,
-            style
-        ]
-        subprocess.run(command, check=True)
-        if change_voice:
-            user = DiscordUser(ctx)
-            await user.set_user_config(SQL_Keys.AIname, name)
-        await ctx.send(f"Модель {name} успешно установлена!")
-    except subprocess.CalledProcessError as e:
-        traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), Color.RED)
-        await ctx.respond("Ошибка при скачивании голоса.")

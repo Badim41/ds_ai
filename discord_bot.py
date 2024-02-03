@@ -40,8 +40,6 @@ ALL_VOICES = {'Rachel': "Ж", 'Clyde': 'М', 'Domi': 'Ж', 'Dave': 'М', 'Fin': 
               'Giovanni': 'М', 'Mimi': 'Ж'}
 
 
-
-
 class SQL_Keys:
     AIname = "AIname"
     reload = "reload"
@@ -402,7 +400,8 @@ async def __tts(
 
         await ctx.response.send_message('Выполнение...' + voice_name)
         cuda_number = await cuda_manager.use_cuda()
-        await character.load_voice(cuda_number, speed=speed, stability=stability, similarity_boost=similarity_boost, style=style, pitch=pitch)
+        await character.load_voice(cuda_number, speed=speed, stability=stability, similarity_boost=similarity_boost,
+                                   style=style, pitch=pitch)
         for voice_model in voice_models:
             timer = Time_Count()
             character.voice_model_eleven = voice_model
@@ -823,6 +822,84 @@ async def __add_voice(
     if pitch is None:
         pitch = gender
     await download_voice(ctx, url, name, pitch, info, speed, voice_model_eleven, change_voice)
+
+
+async def agrs_with_txt(txt_file):
+    try:
+        filename = "temp_args.txt"
+        await txt_file.save(filename)
+        with open(filename, "r", encoding="utf-8") as file:
+            lines = file.readlines()
+            lines[-1] = lines[-1] + " "
+        url = []
+        name = []
+        gender = []
+        info = []
+        speed = []
+        voice_model_eleven = []
+        stability, similarity_boost, style = [], [], []
+        for line in lines:
+            if line.strip():
+                # забейте, просто нужен пробел и всё
+                line += " "
+                line = line.replace(": ", ":")
+                # /add_voice url:url_to_model name:some_name gender:мужчина info:some_info speed:some_speed voice_model_eleven:some_model
+                pattern = r'(\w+):(.+?)\s(?=\w+:|$)'
+
+                matches = re.findall(pattern, line)
+                arguments = dict(matches)
+
+                url.append(arguments.get('url', None))
+                name.append(arguments.get('name', None))
+                gender.append(arguments.get('gender', None))
+                info.append(arguments.get('info', "Отсутствует"))
+                speed.append(arguments.get('speed', "1"))
+                voice_model_eleven.append(arguments.get('voice_model_eleven', "James"))
+                stability.append(arguments.get('stability', "0.4"))
+                similarity_boost.append(arguments.get('similarity_boost', "0.25"))
+                style.append(arguments.get('style', "0.4"))
+        return url, name, gender, info, speed, voice_model_eleven, stability, similarity_boost, style
+    except Exception:
+        traceback_str = traceback.format_exc()
+        logger.logging(str(traceback_str), Color.RED)
+        return None, None, None, None, None, None, None, None, None
+
+
+async def download_voice(ctx, url, name, gender, info, speed, voice_model_eleven, change_voice, stability="0.4",
+                         similarity_boost="0.25", style="0.4"):
+    if name == "None" or ";" in name or "/" in name or "\\" in name:
+        await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
+    # !python download_voice_model.py {url} {dir_name} {gender} {info}
+    name = name.replace(" ", "_")
+    if gender == "женщина":
+        gender = "female"
+    elif gender == "мужчина":
+        gender = "male"
+    else:
+        gender = "male"
+    try:
+        command = [
+            "python",
+            "download_voice_model.py",
+            url,
+            name,
+            gender,
+            f"{info}",
+            voice_model_eleven,
+            str(speed),
+            stability,
+            similarity_boost,
+            style
+        ]
+        subprocess.run(command, check=True)
+        if change_voice:
+            user = DiscordUser(ctx)
+            await user.set_user_config(SQL_Keys.AIname, name)
+        await ctx.send(f"Модель {name} успешно установлена!")
+    except subprocess.CalledProcessError as e:
+        traceback_str = traceback.format_exc()
+        logger.logging(str(traceback_str), Color.RED)
+        await ctx.respond("Ошибка при скачивании голоса.")
 
 
 @bot.command(aliases=['cmd'], help="командная строка")
