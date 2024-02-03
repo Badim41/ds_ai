@@ -103,7 +103,7 @@ async def on_ready():
     torch = LocalTorch(0).local_torch
     print(torch.cuda.get_device_name(0))
     torch = LocalTorch(1).local_torch
-    print(torch.cuda.get_device_name(0))
+    print(torch.cuda.get_device_name(1))
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
     id = await set_get_config_all("Default", SQL_Keys.owner_id)
