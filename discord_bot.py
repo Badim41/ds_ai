@@ -1066,10 +1066,12 @@ class Recognizer:
 
     async def recognize(self):
         google_recognizer = self.google_recognizer
+        logger.logging("Record", color=Color.GRAY)
         while self.alive:
             speaking = self.stream_sink.buffer.speaking
             audio_file = self.stream_sink.buffer.previous_audio_filename
             if not speaking and not audio_file:
+                logger.logging("Not speaking", color=Color.GRAY)
                 self.not_speaking += 1
 
                 await asyncio.sleep(0.1)
@@ -1107,10 +1109,11 @@ class Recognizer:
                             await self.ctx.send(answer)
                         else:
                             self.recognized += text_out
-
-            self.stream_sink.buffer.speaking = False
-            self.not_speaking = 0
-            await asyncio.sleep(self.stream_sink.buffer.block_len)
+            else:
+                logger.logging("Speaking", color=Color.GRAY)
+                self.stream_sink.buffer.speaking = False
+                self.not_speaking = 0
+                await asyncio.sleep(self.stream_sink.buffer.block_len)
 
     logger.logging("Stop_Recording", color=Color.GREEN)
 
