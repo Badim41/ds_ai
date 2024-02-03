@@ -91,7 +91,7 @@ if __name__ == "__main__":
             stability, similarity_boost, style = arguments[7], arguments[8], arguments[9]
             print("stabilyty found")
         else:
-            stability, similarity_boost, style = 0.4, 0.25, 0.4
+            stability, similarity_boost, style = "0.4", "0.25", "0.4"
         parameters = {
             "info": info,
             "gender": gender.replace(" ", ""),
