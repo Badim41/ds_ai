@@ -1095,7 +1095,7 @@ class AudioPlayerDiscord:
         create_new = False
         if ctx.guild.id in audio_players:
             try:
-                existing_player = audio_players[self.guild]
+                existing_player = audio_players[ctx.guild.id]
                 self.__dict__.update(existing_player.__dict__)
             except:
                 create_new = True
