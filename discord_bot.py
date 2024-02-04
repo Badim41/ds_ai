@@ -728,7 +728,7 @@ class Dialog_AI:
             with open(self.text_file, "w", encoding="utf-8"):
                 pass
         with open(self.text_file, "a", encoding="utf-8") as writer:
-            writer.write("\n\n" + ', '.join(self.characters))
+            writer.write("\n\n" + ', '.join(self.names))
 
         asyncio.ensure_future(self.gpt_dialog())
         asyncio.ensure_future(self.play_dialog())
