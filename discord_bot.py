@@ -774,8 +774,10 @@ class Dialog_AI:
 
     async def save_dialog(self, result):
         logger.logging(result, color=Color.GRAY)
+        lines = result.split("\n")
         with open(self.text_file, "a", encoding="utf-8") as writer:
-            for line in result.split("\n"):
+            found_max_line = 0
+            for i, line in enumerate(lines):
                 for name in self.names:
                     # Человек: привет
                     # Человек (man): привет
@@ -784,12 +786,16 @@ class Dialog_AI:
                         line = line[line.find(":") + 1:]
                         self.dialog_create[self.files_number] = line
                         writer.write(f"{name}:{line}\n")
+                        found_max_line = i
                         break
+        return lines[found_max_line+1:]
 
     async def run_gpt(self, prompt):
         result = await self.gpt.run_all_gpt(prompt=prompt, user_id=self.user_id)
         if "(" in result and ")" in result:
             result = re.sub(r'\(.*?\)', '', result)
+        if "*" in result:
+            result = re.sub(r'\*.*?\*', '', result)
         return result.replace("[", "").replace("]", "").replace(
             "Привет, ребята! ", "").replace("Привет, ребята", "").replace("Всем привет, ", "").replace("Эй", "")
 
@@ -801,18 +807,12 @@ class Dialog_AI:
             f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
             f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
         result = await self.run_gpt(prompt)
-        if "*" in result:
-            result = re.sub(r'\*.*?\*', '', result)
 
-        await self.save_dialog(result)
+        dialog_next = await self.save_dialog(result)
 
         theme_last = self.theme
         while self.alive:
             try:
-                if "**" in result:
-                    result = result[result.rfind("**"):400]
-                elif "\n" in result:
-                    result = result[result.rfind("\n"):400]
 
                 spoken_text = self.recognizer.recognized
                 if spoken_text:
@@ -833,13 +833,13 @@ class Dialog_AI:
                           f"{'.'.join(self.infos)}. {self.global_prompt} "
                           f"персонажи должны соответствовать своему образу насколько это возможно. "
                           f"Никогда не пиши приветствие в начале этого диалога. "
-                          f"Никогда не повторяй то, что было в прошлом диалоге! Вот что было в прошлом диалоге:\"{result}\". {spoken_text}"
+                          f"Никогда не повторяй то, что было в прошлом диалоге! Вот что было в прошлом диалоге:\"{dialog_next}\". {spoken_text}"
                           f"\nОбязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
                           f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
 
                 result = await self.run_gpt(prompt)
 
-                await self.save_dialog(result)
+                dialog_next = await self.save_dialog(result)
 
                 # слишком большой разрыв
                 while self.files_number - self.play_number > 4:
