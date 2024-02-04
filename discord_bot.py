@@ -766,7 +766,7 @@ class Dialog_AI:
             if self.files_number in self.dialog_create:
                 text = self.dialog_create[self.files_number]
                 audio_path = f"{self.files_number}{character.name}.mp3"
-                character.text_to_speech(text=text, audio_path=audio_path, output_name=audio_path)
+                await character.text_to_speech(text=text, audio_path=audio_path, output_name=audio_path)
                 del self.dialog_create[self.files_number]
                 self.dialog_play[self.files_number] = (character.name, audio_path)
                 self.files_number += 1
