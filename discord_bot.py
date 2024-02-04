@@ -1217,10 +1217,12 @@ class AudioPlayerDiscord:
 
     async def join_channel(self):
         try:
-
-            if self.voice_channel:
-                self.voice_client = await self.voice_channel.connect()
-                return self.voice_client
+            if self.voice_client is None:
+                if self.ctx.author.voice:
+                    await self.ctx.author.voice.channel.connect()
+                    return self.voice_client
+                else:
+                    await self.ctx.send(voiceChannelErrorText)
             else:
                 await self.ctx.send(voiceChannelErrorText)
         except discord.ClientException as e:
@@ -1269,19 +1271,6 @@ class AudioPlayerDiscord:
             await self.voice_client.disconnect(force=True)
             self.isPlaying = False
             self.queue = []
-
-    @play.before_invoke
-    @join_channel.before_invoke
-    @disconnect.before_invoke
-    async def ensure_voice(self, ctx: commands.Context):
-        if ctx.voice_client is None:
-            if ctx.author.voice:
-                await ctx.author.voice.channel.connect()
-            else:
-                await ctx.send("You are not connected to a voice channel.")
-                raise commands.CommandError("Author not connected to a voice channel.")
-        elif ctx.voice_client.is_playing():
-            ctx.voice_client.stop()
 
 
 if __name__ == "__main__":
