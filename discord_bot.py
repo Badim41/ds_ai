@@ -1086,8 +1086,7 @@ class Recognizer:
 
     async def initialize(self):
         if not self.audio_player.voice_client:
-            self.vc = await self.audio_player.join_channel()
-        else:
+            await self.audio_player.join_channel()
             self.vc = self.audio_player.voice_client
 
         if self.vc is None:
@@ -1221,10 +1220,7 @@ class AudioPlayerDiscord:
                 if self.ctx.author.voice:
                     await self.ctx.author.voice.channel.connect()
                     return self.voice_client
-                else:
-                    await self.ctx.send(voiceChannelErrorText)
-            else:
-                await self.ctx.send(voiceChannelErrorText)
+            await self.ctx.send(voiceChannelErrorText)
         except discord.ClientException as e:
             logger.logging("Уже в голосовом канале", e, color=Color.GRAY)
             await self.ctx.voice_client.move_to(self.voice_channel)
