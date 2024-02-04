@@ -707,7 +707,7 @@ class Dialog_AI:
 
         for i, name in enumerate(characters):
             character = Character(name=name)
-            character.load_voice(i % 2)
+            asyncio.run(character.load_voice(i % 2))
             self.characters.append(character)
             self.names.append(character.name)
             self.infos.append(character.info)
