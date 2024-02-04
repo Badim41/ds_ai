@@ -1023,7 +1023,7 @@ async def stop_recording(ctx):
     guild_id = ctx.guild.id
 
     if guild_id in recognizers:
-        recognizer = next((rec for rec in recognizers[guild_id] if rec.ctx.auhor.id == ctx.auhor.id), None)
+        recognizer = next((rec for rec in recognizers[guild_id] if rec.ctx.author.id == ctx.author.id), None)
         if recognizer:
             await recognizer.stop_recording()
             await ctx.respond("Остановка записи.")
