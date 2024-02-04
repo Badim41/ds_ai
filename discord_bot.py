@@ -157,7 +157,10 @@ async def on_message(message):
             await ctx.send(answer)
             audio_player = AudioPlayerDiscord(ctx)
             if audio_player.voice_client and user.character:
-                await user.character.text_to_speech(answer)
+                audio_path_1 = f"{user.id}-{user.character.name}-message-row.mp3"
+                audio_path_2 = f"{user.id}-{user.character.name}-message.mp3"
+                await user.character.text_to_speech(answer, audio_path=audio_path_2, output_name=audio_path_1)
+                await audio_player.play(audio_path_2)
         except Exception as e:
             traceback_str = traceback.format_exc()
             logger.logging(str(traceback_str), color=Color.RED)
@@ -359,7 +362,10 @@ async def __say(
         await ctx.send(answer)
         audio_player = AudioPlayerDiscord(ctx)
         if audio_player.voice_client and user.character:
-            await user.character.text_to_speech(answer)
+            audio_path_1 = f"{user.id}-{user.character.name}-say-row.mp3"
+            audio_path_2 = f"{user.id}-{user.character.name}-say.mp3"
+            await user.character.text_to_speech(answer, audio_path=audio_path_2, output_name=audio_path_1)
+            await audio_player.play(audio_path_2)
     except Exception as e:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
@@ -422,6 +428,8 @@ async def __tts(
     character = user.character
 
     try:
+        audio_path_1 = f"{user.id}-{user.character.name}-tts-row.mp3"
+        audio_path_2 = f"{user.id}-{user.character.name}-tts.mp3"
 
         await ctx.response.send_message('Выполнение...' + voice_name)
         cuda_number = await cuda_manager.use_cuda()
@@ -437,16 +445,16 @@ async def __tts(
                 await ctx.respond("Такое точно нельзя произносить!")
                 return
             # запускаем TTS
-            await character.text_to_speech(text, audio_path=f"{ctx.author.id}.mp3")
+            await character.text_to_speech(text, audio_path=audio_path_2, output_name=audio_path_1)
             # перестаём использовать видеокарту
 
             await ctx.respond("Потрачено на обработку:" + timer.count_time())
             if output:
                 if output.startswith("1"):
-                    await send_file(ctx, f"{voice_model}.mp3")
+                    await send_file(ctx, audio_path_1)
                 elif output.startswith("2"):
-                    await send_file(ctx, "1.mp3")
-                    await send_file(ctx, f"{voice_model}.mp3")
+                    await send_file(ctx, audio_path_1)
+                    await send_file(ctx, audio_path_2)
         await cuda_manager.stop_use_cuda(cuda_number)
     except Exception as e:
         traceback_str = traceback.format_exc()
