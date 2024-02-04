@@ -1040,6 +1040,7 @@ async def record(ctx):
     if not voice:
         return await ctx.respond(voiceChannelErrorText)
     recognizer = Recognizer(ctx)
+    await ctx.respond("Внимательно вас слушаю")
     asyncio.ensure_future(recognizer.recognize())
 
 
@@ -1060,22 +1061,22 @@ async def stop_recording(ctx):
 
 class Recognizer:
     def __init__(self, ctx, with_gpt=True):
-            self.alive = True
-            self.ctx = ctx
-            self.stream_sink = StreamSink(ctx=ctx)
-            self.google_recognizer = sr.Recognizer()
-            self.not_speaking = 0
-            self.delay_record = float(
-                asyncio.run(set_get_config_all("Default", SQL_Keys.delay_record)) if not None else 5) * 10
-            self.user = DiscordUser(ctx)
+        self.alive = True
+        self.ctx = ctx
+        self.stream_sink = StreamSink(ctx=ctx)
+        self.google_recognizer = sr.Recognizer()
+        self.not_speaking = 0
+        self.delay_record = float(
+            asyncio.run(set_get_config_all("Default", SQL_Keys.delay_record)) if not None else 5) * 10
+        self.user = DiscordUser(ctx)
 
-            self.with_gpt = with_gpt
-            self.recognized = ""
+        self.with_gpt = with_gpt
+        self.recognized = ""
 
-            self.audio_player = AudioPlayerDiscord(ctx)
-            self.vc = None
-            asyncio.run(self.initialize())
-            asyncio.run(self.ctx.respond("Внимательно вас слушаю"))
+        self.audio_player = AudioPlayerDiscord(ctx)
+        self.vc = None
+        asyncio.run(self.initialize())
+
     async def initialize(self):
         if not self.audio_player.voice_client:
             self.vc = await self.audio_player.join_channel()
@@ -1092,6 +1093,7 @@ class Recognizer:
             self.once_done,
             self.ctx.channel
         )
+
     async def once_done(self, _1, _2):
         logger.logging("Once done", type(_1), _1, type(_2), _2, Color.GRAY)
 
