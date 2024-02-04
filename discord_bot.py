@@ -1112,6 +1112,7 @@ class Recognizer:
     async def stop_recording(self):
         if self.ctx.author.id in recognizers:
             del recognizers[self.ctx.author.id]
+            del audio_players[self.ctx.author.id]
             logger.logging("RECOGNIZERS LEFT:", recognizers)
             self.alive = False
             if self.vc:
@@ -1203,7 +1204,7 @@ class AudioPlayerDiscord:
         create_new = False
         if ctx.guild.id in audio_players:
             try:
-                existing_player = audio_players[ctx.guild.id]
+                existing_player = audio_players[ctx.auhor.id]
                 self.__dict__.update(existing_player.__dict__)
                 self.voice_channel = ctx.author.voice.channel if ctx.author.voice else None
                 self.ctx = ctx
@@ -1214,7 +1215,7 @@ class AudioPlayerDiscord:
 
         if create_new:
             logger.logging("Новый audio_player", color=Color.PURPLE)
-            audio_players[ctx.guild.id] = self
+            audio_players[ctx.auhor.id] = self
             self.ctx = ctx
             self.guild = ctx.guild.id
             self.voice_channel = ctx.author.voice.channel if ctx.author.voice else None
