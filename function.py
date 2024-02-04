@@ -166,7 +166,7 @@ class TextToSpeechRVC:
         voiceFile.save(output_file)
 
     async def voice_changer(self, input_path, output_path, pitch_change):
-        audio_path = self.voice_RVC.voice_change(input_path, output_path, pitch_change=pitch_change)
+        audio_path = await self.voice_RVC.voice_change(input_path, output_path, pitch_change=pitch_change)
         logger.logging("done RVC", color=Color.GREEN)
         await speed_up_audio(audio_path, self.speed)
         return audio_path
