@@ -1073,7 +1073,10 @@ class Recognizer:
             self.recognized = ""
 
             self.audio_player = AudioPlayerDiscord(ctx)
-            self.vc = asyncio.run(self.audio_player.join_channel())
+            if not self.audio_player.voice_client:
+                self.vc = asyncio.run(self.audio_player.join_channel())
+            else:
+                self.vc = self.audio_player.voice_client
             if self.vc is None:
                 asyncio.run(self.ctx.respond("Ошибка"))
                 return
@@ -1183,7 +1186,6 @@ class AudioPlayerDiscord:
                 existing_player = audio_players[ctx.guild.id]
                 self.__dict__.update(existing_player.__dict__)
                 self.voice_channel = ctx.author.voice.channel if ctx.author.voice else None
-                logger.logging("NEW voice client", self.voice_channel, color=Color.GRAY)
             except:
                 create_new = True
         else:
