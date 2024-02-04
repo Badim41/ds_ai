@@ -1117,6 +1117,7 @@ class Recognizer:
             self.alive = False
             if self.vc:
                 self.vc.stop_recording()
+                await self.vc.disconnect(force=True)
             else:
                 logger.logging("Cant stop recording: None")
         else:
