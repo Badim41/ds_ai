@@ -660,6 +660,11 @@ async def __dialog(
                 await ctx.respond("Выберите голос для озвучки (или /add_voice):" + ', '.join(voices))
                 return
 
+        # не в войс чате
+        voice = ctx.author.voice
+        if not voice:
+            return await ctx.respond(voiceChannelErrorText)
+
         # остановка записи
         guild_id = ctx.guild.id
         if guild_id not in recognizers:
