@@ -1059,7 +1059,7 @@ class Recognizer:
             self.audio_player = AudioPlayerDiscord(ctx)
             self.vc = asyncio.run(self.audio_player.join_channel())
             if self.vc is None:
-                asyncio.run(self.ctx.respond("Уже вас слушаю"))
+                asyncio.run(self.ctx.respond("Ошибка"))
                 return
 
             recognizers[self.ctx.guild.id].append(self)
