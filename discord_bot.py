@@ -1054,7 +1054,6 @@ class Recognizer:
 
             self.with_gpt = with_gpt
             self.recognized = ""
-            self.audio_player = AudioPlayerDiscord(ctx)
 
             voice = self.ctx.author.voice
             voice_channel = voice.channel
@@ -1063,6 +1062,7 @@ class Recognizer:
                 self.vc = asyncio.run(voice_channel.connect())
             except:
                 self.vc = self.ctx.voice_client
+            self.audio_player = AudioPlayerDiscord(ctx, voice_client=self.vc)
 
             recognizers[self.ctx.guild.id].append(self)
             self.stream_sink.set_user(self.ctx.author.id)
@@ -1161,13 +1161,14 @@ async def send_file(ctx, file_path, delete_file=False):
 
 
 class AudioPlayerDiscord:
-    def __init__(self, ctx):
+    def __init__(self, ctx, voice_client=None):
         create_new = False
         if ctx.guild.id in audio_players:
             try:
                 existing_player = audio_players[ctx.guild.id]
                 self.__dict__.update(existing_player.__dict__)
-                self.voice_client = existing_player.voice_client
+                if voice_client:
+                    self.voice_client = voice_client
             except:
                 create_new = True
         else:
