@@ -763,13 +763,11 @@ class Dialog_AI:
 
     async def create_audio_dialog(self, character):
         while self.alive:
-            if self.files_number in self.dialog_create:
-                text = self.dialog_create[self.files_number]
-                audio_path = f"{self.files_number}{character.name}.mp3"
+            for files_number, text in self.dialog_create.items():
+                audio_path = f"{files_number}{character.name}.mp3"
                 await character.text_to_speech(text=text, audio_path=audio_path, output_name=audio_path)
-                del self.dialog_create[self.files_number]
-                self.dialog_play[self.files_number] = (character.name, audio_path)
-                self.files_number += 1
+                del self.dialog_create[files_number]
+                self.dialog_play[files_number] = (character.name, audio_path)
             await asyncio.sleep(0.5)
 
     async def save_dialog(self, result):
@@ -785,6 +783,7 @@ class Dialog_AI:
                     if (line.startswith(name) or line.startswith(name.replace("э", "е"))) and ":" in line:
                         line = line[line.find(":") + 1:]
                         self.dialog_create[self.files_number] = line
+                        self.files_number += 1
                         writer.write(f"{name}:{line}\n")
                         found_max_line = i
                         break
