@@ -1067,9 +1067,9 @@ class Recognizer:
 
     async def stop_recording(self):
         if self.ctx.guild.id in recognizers:
-            self.vc.stop_recording()
             recognizers[self.ctx.guild.id].remove(self)
             self.alive = False
+            self.vc.stop_recording()
 
     async def recognize(self):
         await self.user.character.load_voice(1)
