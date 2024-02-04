@@ -1068,6 +1068,10 @@ async def stop_recording(ctx):
 
 class Recognizer:
     def __init__(self, ctx, with_gpt=True):
+        if ctx.author.id in recognizers:
+            asyncio.run(ctx.send("Уже слушаю вас"))
+            return
+
         self.alive = True
         self.ctx = ctx
         self.stream_sink = StreamSink(ctx=ctx)
