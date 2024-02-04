@@ -1056,8 +1056,7 @@ class Recognizer:
             self.recognized = ""
 
             self.audio_player = AudioPlayerDiscord(ctx)
-            self.audio_player.join_channel()
-            self.vc = self.ctx.voice_client
+            self.vc = asyncio.run(self.audio_player.join_channel())
 
             recognizers[self.ctx.guild.id].append(self)
             self.stream_sink.set_user(self.ctx.author.id)
@@ -1181,6 +1180,7 @@ class AudioPlayerDiscord:
         try:
             if self.voice_channel:
                 self.voice_client = await self.voice_channel.connect()
+                return self.voice_client
             else:
                 await self.ctx.send(voiceChannelErrorText)
         except discord.ClientException:
