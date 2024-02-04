@@ -1029,34 +1029,37 @@ async def stop_recording(ctx):
 
 class Recognizer:
     def __init__(self, ctx, with_gpt=True):
-        self.alive = True
-        self.ctx = ctx
-        self.stream_sink = StreamSink(ctx=ctx)
-        self.google_recognizer = sr.Recognizer()
-        self.not_speaking = 0
-        self.delay_record = float(asyncio.run(set_get_config_all("Default", SQL_Keys.delay_record)) if not None else 5) * 10
-        self.user = DiscordUser(ctx)
+        try:
+            self.alive = True
+            self.ctx = ctx
+            self.stream_sink = StreamSink(ctx=ctx)
+            self.google_recognizer = sr.Recognizer()
+            self.not_speaking = 0
+            self.delay_record = float(asyncio.run(set_get_config_all("Default", SQL_Keys.delay_record)) if not None else 5) * 10
+            self.user = DiscordUser(ctx)
 
-        self.with_gpt = with_gpt
-        self.recognized = ""
+            self.with_gpt = with_gpt
+            self.recognized = ""
 
-        voice = self.ctx.author.voice
-        voice_channel = voice.channel
+            voice = self.ctx.author.voice
+            voice_channel = voice.channel
 
-        if self.ctx.voice_client is None:
-            self.vc = asyncio.run(voice_channel.connect())
-        else:
-            self.vc = self.ctx.voice_client
+            if self.ctx.voice_client is None:
+                self.vc = asyncio.run(voice_channel.connect())
+            else:
+                self.vc = self.ctx.voice_client
 
-        recognizers[self.ctx.guild.id].append(self)
-        self.stream_sink.set_user(self.ctx.author.id)
-        self.vc.start_recording(
-            self.stream_sink,
-            None,
-            self.ctx.channel
-        )
+            recognizers[self.ctx.guild.id].append(self)
+            self.stream_sink.set_user(self.ctx.author.id)
+            self.vc.start_recording(
+                self.stream_sink,
+                None,
+                self.ctx.channel
+            )
 
-        asyncio.run(self.ctx.respond("Внимательно вас слушаю"))
+            asyncio.run(self.ctx.respond("Внимательно вас слушаю"))
+        except discord.sinks.RecordingException:
+            asyncio.run(self.ctx.respond("Уже слушаю вас"))
 
     async def stop_recording(self):
         if self.ctx.guild.id in recognizers:
