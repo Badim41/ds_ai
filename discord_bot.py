@@ -117,7 +117,7 @@ async def on_message(message):
 
             guild_id = ctx.guild.id
             if guild_id in dialogs:
-                dialog = next((rec for rec in dialogs if rec.ctx.guild.id == ctx.guild.id), None)
+                dialog = dialogs[guild_id]
                 if dialog:
                     dialog.theme = text
                     await ctx.send("Изменена тема:" + text)
@@ -317,7 +317,7 @@ async def pause(ctx):
     await ctx.defer()
     guild_id = ctx.guild.id
     if guild_id in dialogs:
-        dialog = next((rec for rec in dialogs if rec.ctx.guild.id == ctx.guild.id), None)
+        dialog = dialogs[guild_id]
         if dialog:
             await dialog.stop_dialog()
             await ctx.respond("Остановлен диалог")
@@ -1008,7 +1008,7 @@ async def themer_set(ctx, *args):
     text = " ".join(args)
     guild_id = ctx.guild.id
     if guild_id in dialogs:
-        dialog = next((rec for rec in dialogs if rec.ctx.guild.id == ctx.guild.id), None)
+        dialog = dialogs[guild_id]
         if dialog:
             dialog.theme = text
             await ctx.send("Изменена тема:" + text)
