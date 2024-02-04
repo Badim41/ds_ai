@@ -1178,7 +1178,7 @@ class Recognizer:
                 self.not_speaking = 0
                 await asyncio.sleep(self.stream_sink.buffer.block_len)
 
-    logger.logging("Stop_Recording", color=Color.GREEN)
+        logger.logging("Stop_Recording", color=Color.GREEN)
 
 
 async def send_file(ctx, file_path, delete_file=False):
