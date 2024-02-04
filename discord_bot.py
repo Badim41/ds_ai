@@ -1109,7 +1109,10 @@ class Recognizer:
             recognizers[self.ctx.guild.id].remove(self)
             logger.logging("RECOGNIZERS LEFT:", recognizers)
             self.alive = False
-            self.vc.stop_recording()
+            if self.vc:
+                self.vc.stop_recording()
+            else:
+                logger.logging("Cant stop recording")
 
     async def recognize(self):
         await self.user.character.load_voice(1)

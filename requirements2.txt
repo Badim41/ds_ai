@@ -21,7 +21,7 @@ imageio[ffmpeg]
 moviepy
 elevenlabs
 gTTS
-g4f
+g4f[all]
 websockets
 js2py
 typing-extensions
