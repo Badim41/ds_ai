@@ -722,6 +722,14 @@ class Dialog_AI:
         self.dialog_create = {}
         self.dialog_play = {}
 
+        self.text_file = f"caversAI/history-{self.ctx.guild.id}"
+
+        if not os.path.exists(self.text_file):
+            with open(self.text_file, "w", encoding="utf-8"):
+                pass
+        with open(self.text_file, "a", encoding="utf-8") as writer:
+            writer.write("\n\n" + ', '.join(self.characters))
+
         asyncio.ensure_future(self.gpt_dialog())
         asyncio.ensure_future(self.play_dialog())
         functions = [self.create_audio_dialog(character) for character in self.characters]
@@ -761,7 +769,7 @@ class Dialog_AI:
 
     async def save_dialog(self, result):
         logger.logging(result, color=Color.GRAY)
-        with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
+        with open(self.text_file, "a", encoding="utf-8") as writer:
             for line in result.split("\n"):
                 for name in self.names:
                     # Человек: привет
