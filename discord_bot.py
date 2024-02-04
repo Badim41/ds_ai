@@ -735,7 +735,7 @@ class Dialog_AI:
 
     async def play_dialog(self):
         while self.alive:
-            if self.play_number in self.dialog_play.keys():
+            if self.play_number in self.dialog_play:
                 name, audio_path = self.dialog_play[self.play_number]
                 del self.dialog_play[self.play_number]
 
@@ -750,30 +750,29 @@ class Dialog_AI:
 
     async def create_audio_dialog(self, character):
         while self.alive:
-            files_number = self.files_number
-            if files_number in self.dialog_create and character.name in self.dialog_create:
-                text = self.dialog_create[files_number][character.name]
+            if self.files_number in self.dialog_create:
+                text = self.dialog_create[self.files_number]
                 audio_path = f"{self.files_number}{character.name}.mp3"
                 character.text_to_speech(text=text, audio_path=audio_path, output_name=audio_path)
-                del self.dialog_create[files_number][character.name][text]
-                self.dialog_play[files_number] = (character.name, audio_path)
+                del self.dialog_create[self.files_number]
+                self.dialog_play[self.files_number] = (character.name, audio_path)
+                self.files_number += 1
             await asyncio.sleep(0.5)
 
 
-async def save_dialog(self, result):
-    logger.logging(result, color=Color.GRAY)
-    with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
-        for line in result.split("\n"):
-            for name in self.names:
-                # Человек: привет
-                # Человек (man): привет
-                # Чэловек: привет
-                if (line.startswith(name) or line.startswith(name.replace("э", "е"))) and ":" in line:
-                    line = line[line.find(":") + 1:]
-                    self.dialog_create[self.files_number][name] = line
-                    writer.write(f"{name}:{line}\n")
-                    self.files_number += 1
-                    break
+    async def save_dialog(self, result):
+        logger.logging(result, color=Color.GRAY)
+        with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
+            for line in result.split("\n"):
+                for name in self.names:
+                    # Человек: привет
+                    # Человек (man): привет
+                    # Чэловек: привет
+                    if (line.startswith(name) or line.startswith(name.replace("э", "е"))) and ":" in line:
+                        line = line[line.find(":") + 1:]
+                        self.dialog_create[self.files_number] = line
+                        writer.write(f"{name}:{line}\n")
+                        break
 
 
 async def run_gpt(self, prompt):
