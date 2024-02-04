@@ -1215,9 +1215,8 @@ class AudioPlayerDiscord:
             self.queue = []
             self.isPlaying = False
 
-    async def join_channel(self, ctx=None):
-        if ctx is None:
-            ctx = self.ctx
+    async def join_channel(self):
+        ctx = self.ctx
         try:
             if self.voice_client is None:
                 if ctx.author.voice:
