@@ -1019,6 +1019,7 @@ async def record(ctx):
         recognizer = next((rec for rec in recognizers[guild_id] if rec.ctx.author.id == ctx.author.id), None)
         if recognizer:
             await ctx.respond("Уже слушаю вас")
+            return
 
     voice = ctx.author.voice
     if not voice:
@@ -1189,8 +1190,8 @@ class AudioPlayerDiscord:
             else:
                 await self.ctx.send(voiceChannelErrorText)
         except discord.ClientException:
-            # await self.ctx.send("Уже в голосовом канале")
             logger.logging("Уже в голосовом канале", color=Color.GRAY)
+            return self.voice_client
 
     async def stop(self):
         if self.isPlaying:
