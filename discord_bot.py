@@ -1046,8 +1046,6 @@ async def record(ctx):
     if not voice:
         return await ctx.respond(voiceChannelErrorText)
     recognizer = Recognizer(ctx)
-    await ctx.respond("Внимательно вас слушаю")
-    asyncio.ensure_future(recognizer.recognize())
 
 
 @bot.slash_command(name="stop_recording", description='перестать воспринимать команды из микрофона')
@@ -1086,7 +1084,9 @@ class Recognizer:
 
         self.audio_player = AudioPlayerDiscord(ctx)
         self.vc = None
+        asyncio.run(ctx.respond("Внимательно вас слушаю"))
         asyncio.run(self.initialize())
+        asyncio.ensure_future(self.recognize())
 
     async def initialize(self):
         if not self.audio_player.voice_client:
