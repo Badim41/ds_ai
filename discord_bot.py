@@ -1059,7 +1059,7 @@ class Recognizer:
             self.stream_sink.set_user(self.ctx.author.id)
             self.vc.start_recording(
                 self.stream_sink,
-                None,
+                self.stop_recording,
                 self.ctx.channel
             )
 
