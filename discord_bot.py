@@ -1082,7 +1082,7 @@ class Recognizer:
             speaking = self.stream_sink.buffer.speaking
             audio_file = self.stream_sink.buffer.previous_audio_filename
             if not speaking:
-                logger.logging("Not speaking", color=Color.GRAY)
+                # logger.logging("Not speaking", color=Color.GRAY)
                 self.not_speaking += 1
 
                 await asyncio.sleep(0.1)
@@ -1126,7 +1126,7 @@ class Recognizer:
                         else:
                             self.recognized += text_out
             else:
-                logger.logging("Speaking", color=Color.GRAY)
+                # logger.logging("Speaking", color=Color.GRAY)
                 self.stream_sink.buffer.speaking = False
                 self.not_speaking = 0
                 await asyncio.sleep(self.stream_sink.buffer.block_len)
