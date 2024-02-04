@@ -308,11 +308,14 @@ async def join(ctx):
 @bot.slash_command(name="disconnect", description='выйти из войс-чата')
 async def disconnect(ctx):
     await ctx.defer()
-    guild_id = ctx.guild.id
-    if guild_id in recognizers:
-        for recognizer_1 in recognizers[guild_id]:
-            if ctx.author.id in recognizer_1:
-                await recognizer_1.stop_recording()
+
+    # остановка записи
+    author_id = ctx.author.id
+    if author_id in recognizers:
+        recognizer = recognizers[author_id]
+        if recognizer:
+            await recognizer.stop_recording()
+
     await AudioPlayerDiscord(ctx).disconnect()
     await ctx.respond("Покидаю войс-чат")
 
