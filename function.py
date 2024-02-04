@@ -240,7 +240,8 @@ class Character:
                          rms_mix_rate=None, protect=None, algo=None, speed=None,
                          voice_model_eleven=None, stability=None, similarity_boost=None,
                          style=None, max_simbols=None, speaker_boost=None):
-
+        if str(self.name) == "None":
+            return
         has_only_old_params = (index_rate is None and pitch is None and filter_radius is None and
                       rms_mix_rate is None and protect is None and algo is None and speed is None and
                       voice_model_eleven is None and stability is None and similarity_boost is None and

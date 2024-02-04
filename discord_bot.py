@@ -27,6 +27,7 @@ from use_free_cuda import Use_Cuda
 
 try:
     import nest_asyncio
+
     nest_asyncio.apply()
 except:
     pass
@@ -90,6 +91,7 @@ class DiscordUser:
         self.gpt_mode = await set_get_config_all(self.id, SQL_Keys.gpt_mode)
         character_name = await set_get_config_all(self.id, SQL_Keys.AIname)
         self.character = Character(character_name)
+
 
 @bot.event
 async def on_ready():
@@ -411,7 +413,8 @@ async def __tts(
         if voice_model_eleven is None:
             voice_model_eleven = user.character.voice_model_eleven
             if voice_model_eleven is None:
-                return await ctx.response.send_message(f"Голосовая модель персонажа: {voice_model_eleven}, что недопустимо")
+                return await ctx.response.send_message(
+                    f"Голосовая модель персонажа: {voice_model_eleven}, что недопустимо")
         if voice_model_eleven not in ALL_VOICES.keys():
             await ctx.response.send_message("Список голосов elevenlabs: \n" + ';'.join(ALL_VOICES.keys()))
             return
@@ -631,6 +634,7 @@ async def __cover(
         logger.logging(str(traceback_str), color=Color.RED)
         await ctx.respond(f"Ошибка при изменении голоса(ID:d5) (с параметрами {param_string}): {e}")
 
+
 @bot.slash_command(name="create_dialog", description='Имитировать диалог людей')
 async def __dialog(
         ctx,
@@ -655,6 +659,8 @@ async def __dialog(
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
         await ctx.respond(f"Ошибка при диалоге: {e}")
+
+
 class Dialog_AI:
     def __init__(self, ctx, characters, theme, global_prompt):
 
@@ -1035,7 +1041,8 @@ class Recognizer:
             self.stream_sink = StreamSink(ctx=ctx)
             self.google_recognizer = sr.Recognizer()
             self.not_speaking = 0
-            self.delay_record = float(asyncio.run(set_get_config_all("Default", SQL_Keys.delay_record)) if not None else 5) * 10
+            self.delay_record = float(
+                asyncio.run(set_get_config_all("Default", SQL_Keys.delay_record)) if not None else 5) * 10
             self.user = DiscordUser(ctx)
 
             self.with_gpt = with_gpt
@@ -1068,6 +1075,7 @@ class Recognizer:
             self.alive = False
 
     async def recognize(self):
+        await self.user.character.load_voice(1)
         google_recognizer = self.google_recognizer
         logger.logging("Record", color=Color.GRAY)
         while self.alive:
@@ -1112,6 +1120,9 @@ class Recognizer:
                                                                user_id=self.user.id,
                                                                gpt_role=self.user.character.gpt_info)
                             await self.ctx.send(answer)
+                            if not self.user.character.name == "None":
+                                await self.user.character.text_to_speech(answer, audio_path=f"{self.user.id}.mp3",
+                                                                         output_name=f"{self.user.id}-{self.user.character.name}.mp3")
                         else:
                             self.recognized += text_out
             else:
