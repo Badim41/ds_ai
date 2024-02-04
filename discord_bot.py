@@ -1073,24 +1073,25 @@ class Recognizer:
             self.recognized = ""
 
             self.audio_player = AudioPlayerDiscord(ctx)
-            if not self.audio_player.voice_client:
-                self.vc = asyncio.run(self.audio_player.join_channel())
-            else:
-                self.vc = self.audio_player.voice_client
-
-            if self.vc is None:
-                asyncio.run(self.ctx.respond("Ошибка"))
-                return
-
-            recognizers[self.ctx.guild.id].append(self)
-            self.stream_sink.set_user(self.ctx.author.id)
-            self.vc.start_recording(
-                self.stream_sink,
-                self.once_done,
-                self.ctx.channel
-            )
-
+            self.vc = None
+            asyncio.run(self.initialize())
             asyncio.run(self.ctx.respond("Внимательно вас слушаю"))
+    async def initialize(self):
+        if not self.audio_player.voice_client:
+            self.vc = await self.audio_player.join_channel()
+        else:
+            self.vc = self.audio_player.voice_client
+
+        if self.vc is None:
+            await self.ctx.respond("Ошибка")
+
+        recognizers[self.ctx.guild.id].append(self)
+        self.stream_sink.set_user(self.ctx.author.id)
+        self.vc.start_recording(
+            self.stream_sink,
+            self.once_done,
+            self.ctx.channel
+        )
     async def once_done(self, _1, _2):
         logger.logging("Once done", type(_1), _1, type(_2), _2, Color.GRAY)
 
