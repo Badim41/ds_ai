@@ -710,7 +710,7 @@ class Dialog_AI:
         self.theme = theme
         self.global_prompt = global_prompt
         self.audio_player = AudioPlayerDiscord(ctx)
-        self.audio_player.join_channel()
+        asyncio.run(self.audio_player.join_channel())
 
         self.recognizer = Recognizer(ctx=ctx, with_gpt=False)
 
