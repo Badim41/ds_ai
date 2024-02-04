@@ -1206,8 +1206,8 @@ class AudioPlayerDiscord:
                 return self.voice_client
             else:
                 await self.ctx.send(voiceChannelErrorText)
-        except discord.ClientException:
-            logger.logging("Уже в голосовом канале", color=Color.GRAY)
+        except discord.ClientException as e:
+            logger.logging("Уже в голосовом канале", e, color=Color.GRAY)
             return self.voice_client
 
     async def stop(self):
