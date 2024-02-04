@@ -660,6 +660,12 @@ async def __dialog(
             if name not in voices:
                 await ctx.respond("Выберите голос для озвучки (или /add_voice):" + ', '.join(voices))
                 return
+        # остановка записи
+        guild_id = ctx.guild.id
+        if guild_id in recognizers:
+            recognizer = next((rec for rec in recognizers[guild_id] if rec.ctx.author.id == ctx.author.id), None)
+            if recognizer:
+                await recognizer.stop_recording()
 
         Dialog_AI(ctx, names, theme, prompt)
 
