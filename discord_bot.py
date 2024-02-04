@@ -1054,6 +1054,7 @@ class Recognizer:
 
             self.with_gpt = with_gpt
             self.recognized = ""
+            self.player = AudioPlayerDiscord(ctx)
 
             voice = self.ctx.author.voice
             voice_channel = voice.channel
@@ -1128,8 +1129,12 @@ class Recognizer:
                                                                gpt_role=self.user.character.gpt_info)
                             await self.ctx.send(answer)
                             if not self.user.character.name == "None":
-                                await self.user.character.text_to_speech(answer, audio_path=f"{self.user.id}.mp3",
-                                                                         output_name=f"{self.user.id}-{self.user.character.name}.mp3")
+                                audio_path_1 = f"{self.user.id}-{self.user.character.name}-record-row.mp3"
+                                audio_path_2 = f"{self.user.id}-{self.user.character.name}-record.mp3"
+                                await self.user.character.text_to_speech(answer, audio_path=audio_path_2,
+                                                                         output_name=audio_path_1)
+                                await self.player.play(audio_path_2)
+
                         else:
                             self.recognized += text_out
             else:
