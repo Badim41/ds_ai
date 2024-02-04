@@ -1045,7 +1045,7 @@ async def record(ctx):
     voice = ctx.author.voice
     if not voice:
         return await ctx.respond(voiceChannelErrorText)
-    recognizer = Recognizer(ctx)
+    Recognizer(ctx)
 
 
 @bot.slash_command(name="stop_recording", description='перестать воспринимать команды из микрофона')
@@ -1055,7 +1055,6 @@ async def stop_recording(ctx):
     if author_id in recognizers:
         recognizer = recognizers[author_id]
         if recognizer:
-            await recognizer.stop_recording()
             await recognizer.stop_recording()
             await ctx.respond("Остановка записи.")
         else:
@@ -1108,14 +1107,17 @@ class Recognizer:
         logger.logging("Once done", type(_1), _1, type(_2), _2, Color.GRAY)
 
     async def stop_recording(self):
-        if self.ctx.guild.id in recognizers:
+        if self.ctx.author.id in recognizers:
             del recognizers[self.ctx.author.id]
             logger.logging("RECOGNIZERS LEFT:", recognizers)
             self.alive = False
             if self.vc:
                 self.vc.stop_recording()
             else:
-                logger.logging("Cant stop recording")
+                logger.logging("Cant stop recording: None")
+        else:
+            logger.logging("Cant stop recording: No user")
+
 
     async def recognize(self):
         await self.user.character.load_voice(1)
@@ -1134,8 +1136,6 @@ class Recognizer:
                 # если долго не было файлов (человек перестал говорить)
                 if self.not_speaking > self.delay_record:
                     text = None
-                    # очищаем поток
-                    self.stream_sink.cleanup()
                     self.not_speaking = 0
                     # распознание речи
                     try:
