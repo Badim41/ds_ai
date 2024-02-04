@@ -1087,7 +1087,7 @@ class Recognizer:
     async def initialize(self):
         if not self.audio_player.voice_client:
             await self.audio_player.join_channel()
-            self.vc = self.audio_player.voice_client
+        self.vc = self.audio_player.voice_client
 
         if self.vc is None:
             await self.ctx.respond("Ошибка")
