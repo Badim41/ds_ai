@@ -766,7 +766,10 @@ class Dialog_AI:
             for files_number, text in self.dialog_create.items():
                 audio_path = f"{files_number}{character.name}.mp3"
                 await character.text_to_speech(text=text, audio_path=audio_path, output_name=audio_path)
-                del self.dialog_create[files_number]
+                try:
+                    del self.dialog_create[files_number]
+                except Exception as e:
+                    logger.logging(str(e),color=Color.RED) # TODO FINISH
                 self.dialog_play[files_number] = (character.name, audio_path)
             await asyncio.sleep(0.5)
 

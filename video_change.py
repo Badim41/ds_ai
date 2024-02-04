@@ -12,6 +12,8 @@ from PIL import Image
 from cover_gen import run_ai_cover_gen
 from discord_bot import image_generators
 from function import Character
+from discord_tools.logs import Logs, Color
+logger = Logs(warnings=True)
 
 
 async def image_change(output_folder, prompt, negative_prompt, x, y, steps, seed, strength, strength_prompt,
@@ -25,26 +27,6 @@ async def image_change(output_folder, prompt, negative_prompt, x, y, steps, seed
             await image_generators.generate_image(prompt, negative_prompt, x, y, steps, seed, strength, strength_prompt,
                                                   strength_negative_prompt, filename)
     return
-
-
-async def write_in_discord(ctx, text):
-    if text == "" or text is None:
-        logger.logging("error: ОТПРАВЛЕНО ПУСТОЕ СООБЩЕНИЕ", Color.RED)
-        return
-    if len(text) < 1990:
-        await ctx.send(text)
-    else:
-        # начинает строку с "```" если оно встретилось и убирает, когда "```" опять появится
-        add_format = False
-        lines = text.split("\n")
-        for line in lines:
-            if "```" in line:
-                add_format = not add_format
-            if line.strip():
-                if add_format:
-                    line = line.replace("```", "")
-                    line = "```" + line + "```"
-                await ctx.send(line)
 
 
 async def video_pipeline(video_path, fps_output, video_extension, prompt, voice_name, video_id, cuda_all, strength_negative_prompt, strength_prompt,
