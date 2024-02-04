@@ -1214,16 +1214,18 @@ class AudioPlayerDiscord:
             self.queue = []
             self.isPlaying = False
 
-    async def join_channel(self):
+    async def join_channel(self, ctx=None):
+        if ctx is None:
+            ctx = self.ctx
         try:
             if self.voice_client is None:
-                if self.ctx.author.voice:
-                    await self.ctx.author.voice.channel.connect()
+                if ctx.author.voice:
+                    self.voice_client = await ctx.author.voice.channel.connect()
                     return self.voice_client
-            await self.ctx.send(voiceChannelErrorText)
+            await ctx.send(voiceChannelErrorText)
         except discord.ClientException as e:
             logger.logging("Уже в голосовом канале", e, color=Color.GRAY)
-            await self.ctx.voice_client.move_to(self.voice_channel)
+            self.voice_client = await ctx.voice_client.move_to(self.voice_channel)
             return self.voice_client
 
     async def stop(self):
