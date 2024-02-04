@@ -1035,7 +1035,6 @@ async def stop_recording(ctx):
 
 class Recognizer:
     def __init__(self, ctx, with_gpt=True):
-        try:
             self.alive = True
             self.ctx = ctx
             self.stream_sink = StreamSink(ctx=ctx)
@@ -1051,9 +1050,9 @@ class Recognizer:
             voice = self.ctx.author.voice
             voice_channel = voice.channel
 
-            if self.ctx.voice_client is None:
+            try:
                 self.vc = asyncio.run(voice_channel.connect())
-            else:
+            except:
                 self.vc = self.ctx.voice_client
 
             recognizers[self.ctx.guild.id].append(self)
@@ -1065,8 +1064,6 @@ class Recognizer:
             )
 
             asyncio.run(self.ctx.respond("Внимательно вас слушаю"))
-        except discord.sinks.RecordingException:
-            asyncio.run(self.ctx.respond("Уже слушаю вас"))
 
     async def stop_recording(self):
         if self.ctx.guild.id in recognizers:
