@@ -428,8 +428,8 @@ async def __tts(
     character = user.character
 
     try:
-        audio_path_1 = f"{user.id}-{user.character.name}-tts-row.mp3"
-        audio_path_2 = f"{user.id}-{user.character.name}-tts.mp3"
+        audio_path_1 = f"{user.id}-{user.character.voice_model_eleven}-tts-row.mp3"
+        audio_path_2 = f"{user.id}-{user.character.voice_model_eleven}-tts.mp3"
 
         await ctx.response.send_message('Выполнение...' + voice_name)
         cuda_number = await cuda_manager.use_cuda()
