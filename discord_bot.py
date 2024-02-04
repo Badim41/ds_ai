@@ -775,80 +775,80 @@ class Dialog_AI:
                         break
 
 
-async def run_gpt(self, prompt):
-    result = await self.gpt.run_all_gpt(prompt=prompt, user_id=self.user_id)
-    if "(" in result and ")" in result:
-        result = re.sub(r'\(.*?\)', '', result)
-    return result.replace("[", "").replace("]", "").replace(
-        "Привет, ребята! ", "").replace("Привет, ребята", "").replace("Всем привет, ", "").replace("Эй", "")
+    async def run_gpt(self, prompt):
+        result = await self.gpt.run_all_gpt(prompt=prompt, user_id=self.user_id)
+        if "(" in result and ")" in result:
+            result = re.sub(r'\(.*?\)', '', result)
+        return result.replace("[", "").replace("]", "").replace(
+            "Привет, ребята! ", "").replace("Привет, ребята", "").replace("Всем привет, ", "").replace("Эй", "")
 
 
-async def gpt_dialog(self):
-    prompt = (
-        f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(self.names)}. На тему \"{self.theme}\". "
-        f"персонажи должны соответствовать своему образу насколько это возможно. "
-        f"{'.'.join(self.infos)}. {self.global_prompt}. "
-        f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
-        f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
-    result = await self.run_gpt(prompt)
-    if "*" in result:
-        result = re.sub(r'\*.*?\*', '', result)
+    async def gpt_dialog(self):
+        prompt = (
+            f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(self.names)}. На тему \"{self.theme}\". "
+            f"персонажи должны соответствовать своему образу насколько это возможно. "
+            f"{'.'.join(self.infos)}. {self.global_prompt}. "
+            f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
+            f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
+        result = await self.run_gpt(prompt)
+        if "*" in result:
+            result = re.sub(r'\*.*?\*', '', result)
 
-    await self.save_dialog(result)
+        await self.save_dialog(result)
 
-    theme_last = self.theme
-    while self.alive:
-        try:
-            if "**" in result:
-                result = result[result.rfind("**"):400]
-            elif "\n" in result:
-                result = result[result.rfind("\n"):400]
+        theme_last = self.theme
+        while self.alive:
+            try:
+                if "**" in result:
+                    result = result[result.rfind("**"):400]
+                elif "\n" in result:
+                    result = result[result.rfind("\n"):400]
 
-            spoken_text = self.recognizer.recognized
-            if spoken_text:
-                spoken_text = "Зрители за прошлый диалог написали:\"" + spoken_text + "\""
-                self.recognizer.recognized = ""
+                spoken_text = self.recognizer.recognized
+                if spoken_text:
+                    spoken_text = "Зрители за прошлый диалог написали:\"" + spoken_text + "\""
+                    self.recognizer.recognized = ""
 
-            # Тема добавляется в запрос, если она изменилась
-            new_theme = self.theme
-            if not theme_last == new_theme:
-                theme_last = new_theme
-                theme_temp = " на тему" + new_theme
-                with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
-                    writer.write(f"\n==Новая тема==: {new_theme}\n\n")
-            else:
-                theme_temp = f"Изначальная тема диалога была {new_theme}, не сильно отходи от её"
+                # Тема добавляется в запрос, если она изменилась
+                new_theme = self.theme
+                if not theme_last == new_theme:
+                    theme_last = new_theme
+                    theme_temp = " на тему" + new_theme
+                    with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
+                        writer.write(f"\n==Новая тема==: {new_theme}\n\n")
+                else:
+                    theme_temp = f"Изначальная тема диалога была {new_theme}, не сильно отходи от её"
 
-            prompt = (f"Привет chatGPT, продолжи диалог между {', '.join(self.names)}{theme_temp}. "
-                      f"{'.'.join(self.infos)}. {self.global_prompt} "
-                      f"персонажи должны соответствовать своему образу насколько это возможно. "
-                      f"Никогда не пиши приветствие в начале этого диалога. "
-                      f"Никогда не повторяй то, что было в прошлом диалоге! Вот что было в прошлом диалоге:\"{result}\". {spoken_text}"
-                      f"\nОбязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
-                      f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
+                prompt = (f"Привет chatGPT, продолжи диалог между {', '.join(self.names)}{theme_temp}. "
+                          f"{'.'.join(self.infos)}. {self.global_prompt} "
+                          f"персонажи должны соответствовать своему образу насколько это возможно. "
+                          f"Никогда не пиши приветствие в начале этого диалога. "
+                          f"Никогда не повторяй то, что было в прошлом диалоге! Вот что было в прошлом диалоге:\"{result}\". {spoken_text}"
+                          f"\nОбязательно в конце напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
+                          f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
 
-            result = await self.run_gpt(prompt)
+                result = await self.run_gpt(prompt)
 
-            await self.save_dialog(result)
+                await self.save_dialog(result)
 
-            # слишком большой разрыв
-            while self.files_number - self.play_number > 4:
-                logger.logging("wait, difference > 4", color=Color.YELLOW)
-                await asyncio.sleep(2.5)
-                if not self.alive:
-                    return
+                # слишком большой разрыв
+                while self.files_number - self.play_number > 4:
+                    logger.logging("wait, difference > 4", color=Color.YELLOW)
+                    await asyncio.sleep(2.5)
+                    if not self.alive:
+                        return
 
-            # Слишком много текста
-            while len(self.dialog_create) > 2:
-                logger.logging("wait, too many text > 2", color=Color.YELLOW)
-                await asyncio.sleep(2.5)
-                if not self.alive:
-                    return
+                # Слишком много текста
+                while len(self.dialog_create) > 2:
+                    logger.logging("wait, too many text > 2", color=Color.YELLOW)
+                    await asyncio.sleep(2.5)
+                    if not self.alive:
+                        return
 
-        except Exception as e:
-            traceback_str = traceback.format_exc()
-            logger.logging(str(traceback_str), color=Color.RED)
-            await self.ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
+            except Exception as e:
+                traceback_str = traceback.format_exc()
+                logger.logging(str(traceback_str), color=Color.RED)
+                await self.ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
 
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
