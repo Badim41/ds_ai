@@ -653,15 +653,18 @@ async def __dialog(
 ):
     try:
         await ctx.respond('Выполнение...')
-        user = DiscordUser(ctx)
         names = names.split(";")
         voices = await get_voice_list()
         for name in names:
             if name not in voices:
                 await ctx.respond("Выберите голос для озвучки (или /add_voice):" + ', '.join(voices))
                 return
+
         # остановка записи
         guild_id = ctx.guild.id
+        if guild_id not in recognizers:
+            recognizers[guild_id] = []
+
         if guild_id in recognizers:
             recognizer = next((rec for rec in recognizers[guild_id] if rec.ctx.author.id == ctx.author.id), None)
             if recognizer:
