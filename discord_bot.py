@@ -1087,8 +1087,8 @@ class Recognizer:
             )
 
             asyncio.run(self.ctx.respond("Внимательно вас слушаю"))
-    async def once_done(self):
-        logger.logging("Once done", Color.GRAY)
+    async def once_done(self, _1, _2):
+        logger.logging("Once done", type(_1), _1, type(_2), _2, Color.GRAY)
 
     async def stop_recording(self):
         if self.ctx.guild.id in recognizers:
