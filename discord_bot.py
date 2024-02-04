@@ -159,7 +159,7 @@ async def on_message(message):
             if audio_player.voice_client and user.character:
                 audio_path_1 = f"{user.id}-{user.character.name}-message-row.mp3"
                 audio_path_2 = f"{user.id}-{user.character.name}-message.mp3"
-                await user.character.text_to_speech(answer, audio_path=audio_path_2, output_name=audio_path_1)
+                await user.character.text_to_speech(answer, audio_path=audio_path_1, output_name=audio_path_2)
                 await audio_player.play(audio_path_2)
         except Exception as e:
             traceback_str = traceback.format_exc()
@@ -364,7 +364,7 @@ async def __say(
         if audio_player.voice_client and user.character:
             audio_path_1 = f"{user.id}-{user.character.name}-say-row.mp3"
             audio_path_2 = f"{user.id}-{user.character.name}-say.mp3"
-            await user.character.text_to_speech(answer, audio_path=audio_path_2, output_name=audio_path_1)
+            await user.character.text_to_speech(answer, audio_path=audio_path_1, output_name=audio_path_2)
             await audio_player.play(audio_path_2)
     except Exception as e:
         traceback_str = traceback.format_exc()
@@ -445,7 +445,7 @@ async def __tts(
                 await ctx.respond("Такое точно нельзя произносить!")
                 return
             # запускаем TTS
-            await character.text_to_speech(text, audio_path=audio_path_2, output_name=audio_path_1)
+            await character.text_to_speech(text, audio_path=audio_path_1, output_name=audio_path_2)
             # перестаём использовать видеокарту
 
             await ctx.respond("Потрачено на обработку:" + timer.count_time())
@@ -1126,8 +1126,8 @@ class Recognizer:
                             if not self.user.character.name == "None":
                                 audio_path_1 = f"{self.user.id}-{self.user.character.name}-record-row.mp3"
                                 audio_path_2 = f"{self.user.id}-{self.user.character.name}-record.mp3"
-                                await self.user.character.text_to_speech(answer, audio_path=audio_path_2,
-                                                                         output_name=audio_path_1)
+                                await self.user.character.text_to_speech(answer, audio_path=audio_path_1,
+                                                                         output_name=audio_path_2)
                                 await self.audio_player.play(audio_path_2)
 
                         else:
