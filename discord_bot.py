@@ -722,7 +722,7 @@ class Dialog_AI:
         self.dialog_create = {}
         self.dialog_play = {}
 
-        self.text_file = f"caversAI/history-{self.ctx.guild.id}"
+        self.text_file = f"caversAI/history-{self.ctx.guild.id}.txt"
 
         if not os.path.exists(self.text_file):
             with open(self.text_file, "w", encoding="utf-8"):
