@@ -1055,14 +1055,9 @@ class Recognizer:
             self.with_gpt = with_gpt
             self.recognized = ""
 
-            voice = self.ctx.author.voice
-            voice_channel = voice.channel
-
-            try:
-                self.vc = asyncio.run(voice_channel.connect())
-            except:
-                self.vc = self.ctx.voice_client
-            self.audio_player = AudioPlayerDiscord(ctx, voice_client=self.vc)
+            self.audio_player = AudioPlayerDiscord(ctx)
+            self.audio_player.join_channel()
+            self.vc = self.ctx.voice_client
 
             recognizers[self.ctx.guild.id].append(self)
             self.stream_sink.set_user(self.ctx.author.id)
@@ -1161,14 +1156,12 @@ async def send_file(ctx, file_path, delete_file=False):
 
 
 class AudioPlayerDiscord:
-    def __init__(self, ctx, voice_client=None):
+    def __init__(self, ctx):
         create_new = False
         if ctx.guild.id in audio_players:
             try:
                 existing_player = audio_players[ctx.guild.id]
                 self.__dict__.update(existing_player.__dict__)
-                if voice_client:
-                    self.voice_client = voice_client
             except:
                 create_new = True
         else:
@@ -1191,7 +1184,8 @@ class AudioPlayerDiscord:
             else:
                 await self.ctx.send(voiceChannelErrorText)
         except discord.ClientException:
-            await self.ctx.send("Уже в голосовом канале")
+            # await self.ctx.send("Уже в голосовом канале")
+            logger.logging("Уже в голосовом канале", color=Color.GRAY)
 
     async def stop(self):
         if self.isPlaying:
