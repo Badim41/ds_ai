@@ -310,9 +310,9 @@ async def disconnect(ctx):
     await ctx.defer()
     guild_id = ctx.guild.id
     if guild_id in recognizers:
-        recognizer = next((rec for rec in recognizers[guild_id] if rec.ctx.author.id == ctx.author.id), None)
-        if recognizer:
-            await recognizer.stop_recording()
+        for recognizer_1 in recognizers[guild_id]:
+            if ctx.author.id in recognizer_1:
+                await recognizer_1.stop_recording()
     await AudioPlayerDiscord(ctx).disconnect()
     await ctx.respond("Покидаю войс-чат")
 
@@ -672,12 +672,9 @@ async def __dialog(
             return await ctx.respond(voiceChannelErrorText)
 
         # остановка записи
-        guild_id = ctx.guild.id
-        if guild_id not in recognizers:
-            recognizers[guild_id] = []
-
-        if guild_id in recognizers:
-            recognizer = next((rec for rec in recognizers[guild_id] if rec.ctx.author.id == ctx.author.id), None)
+        author_id = ctx.author.id
+        if author_id in recognizers:
+            recognizer = recognizers[author_id]
             if recognizer:
                 await recognizer.stop_recording()
 
@@ -1038,13 +1035,10 @@ async def themer_set(ctx, *args):
 
 @bot.slash_command(name="record", description='воспринимать команды из микрофона')
 async def record(ctx):
-    guild_id = ctx.guild.id
+    author_id = ctx.author.id
 
-    if guild_id not in recognizers:
-        recognizers[guild_id] = []
-
-    if guild_id in recognizers:
-        recognizer = next((rec for rec in recognizers[guild_id] if rec.ctx.author.id == ctx.author.id), None)
+    if author_id in recognizers:
+        recognizer = recognizers[author_id]
         if recognizer:
             await recognizer.stop_recording()
 
@@ -1058,11 +1052,12 @@ async def record(ctx):
 
 @bot.slash_command(name="stop_recording", description='перестать воспринимать команды из микрофона')
 async def stop_recording(ctx):
-    guild_id = ctx.guild.id
+    author_id = ctx.author.id
 
-    if guild_id in recognizers:
-        recognizer = next((rec for rec in recognizers[guild_id] if rec.ctx.author.id == ctx.author.id), None)
+    if author_id in recognizers:
+        recognizer = recognizers[author_id]
         if recognizer:
+            await recognizer.stop_recording()
             await recognizer.stop_recording()
             await ctx.respond("Остановка записи.")
         else:
@@ -1097,7 +1092,7 @@ class Recognizer:
         if self.vc is None:
             await self.ctx.respond("Ошибка")
 
-        recognizers[self.ctx.guild.id].append(self)
+        recognizers[self.ctx.author.id] = self
         self.stream_sink.set_user(self.ctx.author.id)
         self.vc.start_recording(
             self.stream_sink,
@@ -1110,7 +1105,7 @@ class Recognizer:
 
     async def stop_recording(self):
         if self.ctx.guild.id in recognizers:
-            recognizers[self.ctx.guild.id].remove(self)
+            del recognizers[self.ctx.author.id]
             logger.logging("RECOGNIZERS LEFT:", recognizers)
             self.alive = False
             if self.vc:
