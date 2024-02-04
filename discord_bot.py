@@ -1015,9 +1015,10 @@ async def record(ctx):
     if guild_id not in recognizers:
         recognizers[guild_id] = []
 
-    if any(rec.ctx == ctx for rec in recognizers[guild_id]):
-        await ctx.respond("Уже слушаю вас")
-        return
+    if guild_id in recognizers:
+        recognizer = next((rec for rec in recognizers[guild_id] if rec.ctx.author.id == ctx.author.id), None)
+        if recognizer:
+            await ctx.respond("Уже слушаю вас")
 
     voice = ctx.author.voice
     if not voice:
@@ -1057,6 +1058,9 @@ class Recognizer:
 
             self.audio_player = AudioPlayerDiscord(ctx)
             self.vc = asyncio.run(self.audio_player.join_channel())
+            if self.vc is None:
+                asyncio.run(self.ctx.respond("Уже вас слушаю"))
+                return
 
             recognizers[self.ctx.guild.id].append(self)
             self.stream_sink.set_user(self.ctx.author.id)
@@ -1073,6 +1077,7 @@ class Recognizer:
     async def stop_recording(self):
         if self.ctx.guild.id in recognizers:
             recognizers[self.ctx.guild.id].remove(self)
+            logger.logging("RECOGNIZERS LEFT:", recognizers)
             self.alive = False
             self.vc.stop_recording()
 
