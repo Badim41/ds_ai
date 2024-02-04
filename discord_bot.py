@@ -1054,7 +1054,7 @@ class Recognizer:
 
             self.with_gpt = with_gpt
             self.recognized = ""
-            self.player = AudioPlayerDiscord(ctx)
+            self.audio_player = AudioPlayerDiscord(ctx)
 
             voice = self.ctx.author.voice
             voice_channel = voice.channel
@@ -1133,7 +1133,7 @@ class Recognizer:
                                 audio_path_2 = f"{self.user.id}-{self.user.character.name}-record.mp3"
                                 await self.user.character.text_to_speech(answer, audio_path=audio_path_2,
                                                                          output_name=audio_path_1)
-                                await self.player.play(audio_path_2)
+                                await self.audio_player.play(audio_path_2)
 
                         else:
                             self.recognized += text_out
@@ -1167,6 +1167,7 @@ class AudioPlayerDiscord:
             try:
                 existing_player = audio_players[ctx.guild.id]
                 self.__dict__.update(existing_player.__dict__)
+                self.voice_client = ctx.voice_client
             except:
                 create_new = True
         else:
