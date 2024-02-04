@@ -759,7 +759,6 @@ class Dialog_AI:
                 self.files_number += 1
             await asyncio.sleep(0.5)
 
-
     async def save_dialog(self, result):
         logger.logging(result, color=Color.GRAY)
         with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
@@ -774,14 +773,12 @@ class Dialog_AI:
                         writer.write(f"{name}:{line}\n")
                         break
 
-
     async def run_gpt(self, prompt):
         result = await self.gpt.run_all_gpt(prompt=prompt, user_id=self.user_id)
         if "(" in result and ")" in result:
             result = re.sub(r'\(.*?\)', '', result)
         return result.replace("[", "").replace("]", "").replace(
             "Привет, ребята! ", "").replace("Привет, ребята", "").replace("Всем привет, ", "").replace("Эй", "")
-
 
     async def gpt_dialog(self):
         prompt = (
