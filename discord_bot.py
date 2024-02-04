@@ -1059,11 +1059,13 @@ class Recognizer:
             self.stream_sink.set_user(self.ctx.author.id)
             self.vc.start_recording(
                 self.stream_sink,
-                self.stop_recording,
+                self.once_done,
                 self.ctx.channel
             )
 
             asyncio.run(self.ctx.respond("Внимательно вас слушаю"))
+    async def once_done(self):
+        logger.logging("Once done", Color.GRAY)
 
     async def stop_recording(self):
         if self.ctx.guild.id in recognizers:
