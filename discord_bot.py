@@ -677,7 +677,8 @@ async def __dialog(
                 await recognizer.stop_recording()
 
         Dialog_AI(ctx, names, theme, prompt)
-
+    except discord.ApplicationCommandInvokeError:
+        await ctx.respond(f"Я и так тебя не слушал ._.")
     except Exception as e:
         traceback_str = traceback.format_exc()
         print(str(traceback_str))
@@ -1077,6 +1078,7 @@ class Recognizer:
                 self.vc = asyncio.run(self.audio_player.join_channel())
             else:
                 self.vc = self.audio_player.voice_client
+
             if self.vc is None:
                 asyncio.run(self.ctx.respond("Ошибка"))
                 return
