@@ -451,7 +451,7 @@ async def __tts(
             await ctx.respond("Потрачено на обработку:" + timer.count_time())
             if output:
                 if output.startswith("1"):
-                    await send_file(ctx, audio_path_1)
+                    await send_file(ctx, audio_path_2)
                 elif output.startswith("2"):
                     await send_file(ctx, audio_path_1)
                     await send_file(ctx, audio_path_2)
