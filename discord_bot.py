@@ -321,6 +321,7 @@ async def pause(ctx):
         if dialog:
             await dialog.stop_dialog()
             await ctx.respond("Остановлен диалог")
+            return
     result = await AudioPlayerDiscord(ctx).stop()
     await ctx.respond(result)
 
@@ -1181,6 +1182,8 @@ class AudioPlayerDiscord:
             try:
                 existing_player = audio_players[ctx.guild.id]
                 self.__dict__.update(existing_player.__dict__)
+                self.voice_channel = ctx.author.voice.channel if ctx.author.voice else None
+                self.ctx = ctx
             except:
                 create_new = True
         else:
