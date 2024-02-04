@@ -1073,7 +1073,7 @@ class Recognizer:
         while self.alive:
             speaking = self.stream_sink.buffer.speaking
             audio_file = self.stream_sink.buffer.previous_audio_filename
-            if not speaking and not audio_file:
+            if not speaking and audio_file:
                 logger.logging("Not speaking", color=Color.GRAY)
                 self.not_speaking += 1
 
@@ -1091,7 +1091,7 @@ class Recognizer:
                             text = google_recognizer.recognize_google(audio_data, language="ru-RU")
                     except sr.UnknownValueError:
                         pass
-                    except sr.RequestError:
+                    except Exception:
                         traceback_str = traceback.format_exc()
                         logger.logging(str(traceback_str), color=Color.RED)
 
