@@ -1034,8 +1034,7 @@ async def record(ctx):
     if guild_id in recognizers:
         recognizer = next((rec for rec in recognizers[guild_id] if rec.ctx.author.id == ctx.author.id), None)
         if recognizer:
-            await ctx.respond("Уже слушаю вас")
-            return
+            await recognizer.stop_recording()
 
     voice = ctx.author.voice
     if not voice:
