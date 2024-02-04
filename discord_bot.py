@@ -1183,7 +1183,7 @@ class AudioPlayerDiscord:
                 existing_player = audio_players[ctx.guild.id]
                 self.__dict__.update(existing_player.__dict__)
                 self.voice_channel = ctx.author.voice.channel if ctx.author.voice else None
-                self.ctx = ctx
+                logger.logging("NEW voice client", self.voice_channel, color=Color.GRAY)
             except:
                 create_new = True
         else:
