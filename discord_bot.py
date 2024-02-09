@@ -447,9 +447,9 @@ async def __tts(
         for voice_model in voice_models:
             timer = Time_Count()
             character.voice_model_eleven = voice_model
-            logger.logging("text to speech temp-3", text, color=Color.GRAY)
+            # logger.logging("text to speech temp-3", text, color=Color.GRAY)
             mat_found, text = await moderate_mat_in_sentence(text)
-            logger.logging("text to speech temp-2", text, color=Color.GRAY)
+            # logger.logging("text to speech temp-2", text, color=Color.GRAY)
             if mat_found:
                 await ctx.respond("Такое точно нельзя произносить!")
                 return
