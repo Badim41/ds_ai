@@ -443,7 +443,7 @@ async def __tts(
         await ctx.response.send_message('Выполнение...' + voice_name)
         cuda_number = await cuda_manager.use_cuda()
         await character.load_voice(cuda_number, speed=speed, stability=stability, similarity_boost=similarity_boost,
-                                   style=style, pitch=pitch, algo=palgo)
+                                   style=style, pitch=pitch, algo=palgo, voice_model_eleven=voice_model_eleven)
         for voice_model in voice_models:
             timer = Time_Count()
             character.voice_model_eleven = voice_model

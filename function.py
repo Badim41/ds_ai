@@ -245,39 +245,73 @@ class Character:
                          style=None, max_simbols=None, speaker_boost=None):
         if str(self.name) == "None":
             return
-        has_only_old_params = (index_rate is None and pitch is None and filter_radius is None and
-                      rms_mix_rate is None and protect is None and algo is None and speed is None and
-                      voice_model_eleven is None and stability is None and similarity_boost is None and
-                      style is None and max_simbols is None and speaker_boost is None)
 
         if index_rate is None:
             index_rate = self.index_rate
+        elif self.voice:
+            self.voice.index_rate = index_rate
+
         if pitch is None:
             pitch = self.pitch
+        elif self.voice:
+            self.voice.pitch = pitch
+
         if filter_radius is None:
             filter_radius = self.filter_radius
+        elif self.voice:
+            self.voice.filter_radius = filter_radius
+
         if rms_mix_rate is None:
             rms_mix_rate = self.rms_mix_rate
+        elif self.voice:
+            self.voice.rms_mix_rate = rms_mix_rate
+
         if protect is None:
             protect = self.protect
+        elif self.voice:
+            self.voice.protect = protect
+
         if algo is None:
             algo = self.algo
+        elif self.voice:
+            self.voice.algo = algo
+
         if speed is None:
             speed = self.speed
+        elif self.voice:
+            self.voice.speed = speed
+
         if voice_model_eleven is None:
             voice_model_eleven = self.voice_model_eleven
+        elif self.voice:
+            self.voice.voice_model_eleven = voice_model_eleven
+
         if stability is None:
             stability = self.stability
+        elif self.voice:
+            self.voice.stability = stability
+
         if similarity_boost is None:
             similarity_boost = self.similarity_boost
+        elif self.voice:
+            self.voice.similarity_boost = similarity_boost
+
         if style is None:
             style = self.style
+        elif self.voice:
+            self.voice.style = style
+
         if max_simbols is None:
             max_simbols = self.max_simbols
+        elif self.voice:
+            self.voice.max_simbols = max_simbols
+
         if speaker_boost is None:
             speaker_boost = self.speaker_boost
+        elif self.voice:
+            self.voice.speaker_boost = speaker_boost
 
-        if not self.voice or not has_only_old_params:
+        if not self.voice:
             self.voice = TextToSpeechRVC(cuda_number=cuda_number, voice_name=self.name, index_rate=index_rate,
                                          pitch=pitch, filter_radius=filter_radius,
                                          rms_mix_rate=rms_mix_rate, protect=protect, algo=algo, speed=speed,
