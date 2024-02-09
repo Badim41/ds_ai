@@ -1205,27 +1205,29 @@ async def send_file(ctx, file_path, delete_file=False):
 
 class AudioPlayerDiscord:
     def __init__(self, ctx):
-        create_new = False
-        if ctx.guild.id in audio_players:
-            try:
-                existing_player = audio_players[ctx.guild.id]
-                self.__dict__.update(existing_player.__dict__)
-                self.voice_channel = ctx.author.voice.channel if ctx.author.voice else None
-                self.ctx = ctx
-            except:
+        self.guild = ctx.guild
+        if not self.guild is None:
+            create_new = False
+            if ctx.guild.id in audio_players:
+                try:
+                    existing_player = audio_players[ctx.guild.id]
+                    self.__dict__.update(existing_player.__dict__)
+                    self.voice_channel = ctx.author.voice.channel if ctx.author.voice else None
+                    self.ctx = ctx
+                except:
+                    create_new = True
+            else:
                 create_new = True
-        else:
-            create_new = True
 
-        if create_new:
-            logger.logging("Новый audio_player", color=Color.PURPLE)
-            audio_players[ctx.guild.id] = self
-            self.ctx = ctx
-            self.guild = ctx.guild.id
-            self.voice_channel = ctx.author.voice.channel if ctx.author.voice else None
-            self.voice_client = None
-            self.queue = []
-            self.isPlaying = False
+            if create_new:
+                logger.logging("Новый audio_player", color=Color.PURPLE)
+                audio_players[ctx.guild.id] = self
+                self.ctx = ctx
+                self.guild = ctx.guild.id
+                self.voice_channel = ctx.author.voice.channel if ctx.author.voice else None
+                self.voice_client = None
+                self.queue = []
+                self.isPlaying = False
 
     async def join_channel(self):
         ctx = self.ctx
@@ -1249,6 +1251,9 @@ class AudioPlayerDiscord:
             return "Нет аудио для остановки"
 
     async def play(self, audio_file):
+        if not self.guild:
+            await send_file(self.ctx, audio_file)
+            return
         if not self.isPlaying:
             if not self.voice_client or not self.voice_client.is_connected():
                 await self.join_channel()
