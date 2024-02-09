@@ -81,7 +81,7 @@ class VC(object):
         # Get cuda device
         if torch.cuda.is_available():
             return torch.device(
-                f"cuda:{self.device[self.device.find(':')+1:] % torch.cuda.device_count()}"
+                f"cuda:{int(self.device[self.device.find(':')+1:]) % torch.cuda.device_count()}"
             )  # Very fast
         elif torch.backends.mps.is_available():
             return torch.device("mps")
