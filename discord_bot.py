@@ -62,6 +62,7 @@ class SQL_Keys:
     owner_id = "owner_id"
     delay_record = "delay_record"
     gpt_mode = "gpt_mode"
+    voice_keys = "voice_keys"
 
     # [Default]
     # reload
