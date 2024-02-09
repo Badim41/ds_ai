@@ -12,8 +12,6 @@ from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
 from gtts import gTTS
 from transformers import pipeline
 
-from discord_tools.detect_mat import moderate_mat_in_sentence
-from discord_tools.sql_db import set_get_database_async as set_get_config_all
 from discord_tools.logs import Color, Logs
 from discord_tools.secret import load_secret, SecretKey, create_secret
 from voice_change import Voice_Changer
@@ -23,9 +21,6 @@ try:
     nest_asyncio.apply()
 except:
     pass
-
-class SQL_Keys:
-    voice_keys = "voice_keys"
 
 logger = Logs(warnings=True)
 
@@ -132,7 +127,8 @@ class TextToSpeechRVC:
         pitch = self.pitch
 
         if str(self.elevenlabs_voice_keys) == "None":
-            self.elevenlabs_voice_keys = await set_get_config_all("secret", SQL_Keys.voice_keys)
+            self.elevenlabs_voice_keys = load_secret(SecretKey.voice_keys)
+            print("Updated key:", self.elevenlabs_voice_keys)
 
         if len(text) > max_simbols or str(self.elevenlabs_voice_keys) == "None":
             logger.logging("gtts", text, color=Color.YELLOW)
