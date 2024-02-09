@@ -441,12 +441,12 @@ async def __tts(
         await ctx.response.send_message('Выполнение...' + voice_name)
         cuda_number = await cuda_manager.use_cuda()
         await character.load_voice(cuda_number, speed=speed, stability=stability, similarity_boost=similarity_boost,
-                                   style=style, pitch=pitch, algo=palgo, voice_model_eleven=voice_models[0])
+                                   style=style, pitch=pitch, algo=palgo)
         for voice_model in voice_models:
             audio_path_1 = f"{user.id}-{voice_model}-tts-row.mp3"
             audio_path_2 = f"{user.id}-{voice_model}-tts.mp3"
             timer = Time_Count()
-            character.voice_model_eleven = voice_model
+            character.voice.voice_model_eleven = voice_model
             # logger.logging("text to speech temp-3", text, color=Color.GRAY)
             mat_found, text = await moderate_mat_in_sentence(text)
             # logger.logging("text to speech temp-2", text, color=Color.GRAY)
