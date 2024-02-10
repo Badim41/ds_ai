@@ -867,6 +867,7 @@ class Dialog_AI:
                 elif theme_was_in_row > 1:
                     self.theme = await self.run_gpt(f"Придумай новую тему для этого диалога:\n{result}\n\nВ ответе выведи 2-3 слова в качестве следующей темы для диалога")
                     theme_last = self.theme
+                    theme_temp = self.theme
                     theme_was_in_row = 0
                 else:
                     theme_was_in_row += 1
