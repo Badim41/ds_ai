@@ -1,56 +1,70 @@
-import numpy as np
-from pydub import AudioSegment
+import os
+import subprocess
+from discord_tools.logs import Logs, Color
 
-import nltk
-from bark import SAMPLE_RATE
-from bark.api import semantic_to_waveform
-from bark.generation import (
-    generate_text_semantic,
-    preload_models
-)
-from scipy.io.wavfile import write as write_wav
+logger = Logs(warnings=True)
 
-preload_models()
 
-script = """
-Hey, have you heard about this new text-to-audio model called "Bark"? 
-Apparently, it's the most realistic and natural-sounding text-to-audio model 
-out there right now. People are saying it sounds just like a real person speaking. 
-I think it uses advanced machine learning algorithms to analyze and understand the 
-nuances of human speech, and then replicates those nuances in its own speech output. 
-It's pretty impressive, and I bet it could be used for things like audiobooks or podcasts. 
-In fact, I heard that some publishers are already starting to use Bark to create audiobooks. 
-It would be like having your own personal voiceover artist. I really think Bark is going to 
-be a game-changer in the world of text-to-audio technology.
-""".replace("\n", " ").strip()
+class BarkTTS():
+    def __init__(self):
+        if not os.path.exists("/venv_bark"):
+            os.chdir("/")
+            logger.logging("[bark] Create bark_venv", color=Color.GRAY)
+            subprocess.run(["python3", "-m", "venv", "venv_bark"])
+            activate_venv_cmd = os.path.join("venv_bark", "bin", "activate")
+            logger.logging("[bark] Installing packages", color=Color.GRAY)
+            subprocess.run(
+                [activate_venv_cmd, "&&", "pip", "install", "git+https://github.com/suno-ai/bark.git", "nltk", "pydub"])
+            activate_cmd = f"source {activate_venv_cmd}"
+            subprocess.run(activate_cmd, shell=True)
+        from bark.generation import preload_models
+        logger.logging("[bark] Preload models", color=Color.GRAY)
+        preload_models()
+        logger.logging("[bark] Ready to start", color=Color.GRAY)
+        self.started = True
 
-sentences = nltk.sent_tokenize(script)
+    async def text_to_speech_bark(self, text, speaker="v2/ru_speaker_2", audio_path="2.mp3", gen_temp=0.6):
+        if not self.started:
+            raise "Загружается"
+        import numpy as np
+        from pydub import AudioSegment
+        import nltk
+        from bark import SAMPLE_RATE
+        from bark.api import semantic_to_waveform
+        from bark.generation import generate_text_semantic
+        from scipy.io.wavfile import write as write_wav
 
-GEN_TEMP = 0.6
-SPEAKER = "v2/ru_speaker_2"
-silence = np.zeros(int(0.25 * SAMPLE_RATE))  # quarter second of silence
+        text = text.replace("\n", " ").strip()
 
-pieces = []
-for sentence in sentences:
-    print("Sentence:", sentence)
-    semantic_tokens = generate_text_semantic(
-        sentence,
-        history_prompt=SPEAKER,
-        temp=GEN_TEMP,
-        min_eos_p=0.05,  # this controls how likely the generation is to end
-    )
+        sentences = nltk.sent_tokenize(text)
 
-    audio_array = semantic_to_waveform(semantic_tokens, history_prompt=SPEAKER,)
-    pieces += [audio_array, silence.copy()]
+        silence = np.zeros(int(0.1 * SAMPLE_RATE))
 
-# Concatenate audio pieces
-audio_result = np.concatenate(pieces)
+        pieces = []
+        for sentence in sentences:
+            print("Sentence:", sentence)
+            semantic_tokens = generate_text_semantic(
+                sentence,
+                history_prompt=speaker,
+                temp=gen_temp,
+                min_eos_p=0.05,  # this controls how likely the generation is to end
+            )
 
-# Нормализация аудио до 16-бит
-audio_result = (audio_result / np.max(np.abs(audio_result)) * 32767).astype(np.int16)
-file_name = "result.wav"
-# Сохранение
-write_wav(file_name, SAMPLE_RATE, audio_result)
+            audio_array = semantic_to_waveform(semantic_tokens, history_prompt=speaker, )
+            pieces += [audio_array, silence.copy()]
 
-audio = AudioSegment.from_wav(file_name)
-audio.export("1.mp3", format="mp3")
+        # Concatenate audio pieces
+        audio_result = np.concatenate(pieces)
+
+        # Нормализация аудио до 16-бит
+        audio_result = (audio_result / np.max(np.abs(audio_result)) * 32767).astype(np.int16)
+
+        # Сохранение
+        wav_audio_path = audio_path.replace(".mp3", "wav")
+        write_wav(wav_audio_path, SAMPLE_RATE, audio_result)
+
+        # mp3
+        audio = AudioSegment.from_wav(wav_audio_path)
+        audio.export(audio_path, format="mp3")
+
+        os.remove(wav_audio_path)

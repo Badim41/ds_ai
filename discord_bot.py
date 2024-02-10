@@ -25,6 +25,7 @@ from discord_tools.timer import Time_Count
 from function import Image_Generator, Character, Voice_Changer, get_link_to_file
 from modifed_sinks import StreamSink
 from use_free_cuda import Use_Cuda
+from bark_tts import BarkTTS
 
 try:
     import nest_asyncio
@@ -42,6 +43,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='\\', intents=intents)
 cuda_manager = Use_Cuda()
 image_generators = []
+bark_model = None
 
 logger = Logs(warnings=True)
 
@@ -182,11 +184,12 @@ async def help_command(
         command: Option(str, description='Нужная вам команда', required=True,
                         choices=['say', 'read_messages', 'ai_cover', 'tts', 'add_voice', 'create_dialog',
                                  'change_image', 'change_video', 'join', 'disconnect', 'record', 'stop_recording',
-                                 'pause', 'skip']
+                                 'pause', 'skip', 'bark']
                         ),
 ):
     if command == "say":
-        await ctx.respond("# /say\n(Сделать запрос к GPT)\n**text - запрос для GPT**\ngpt_mode\*:\n- много ответов\n")
+        await ctx.respond(
+            "# /say\n(Сделать запрос к GPT)\n**text - запрос для GPT**\ngpt_mode\*:\n- много ответов / быстрый ответ\n")
         await ctx.send("\* - параметр сохраняется")
     elif command == "read_messages":
         await ctx.respond("# /read_messages\n(Прочитать последние сообщения и что-то с ними сделать)\n**number - "
@@ -200,17 +203,16 @@ async def help_command(
             "размер фильтра (чем больше, тем больше шума)\nmain_vocal, back_vocal, music - громкость каждой "
             "аудиодорожки\nroomsize, wetness, dryness - параметры реверберации\npalgo - rmvpe - лучший, mangio-crepe "
             "- более плавный\nhop - длина для учитывания тональности (mangio-crepe)\ntime - продолжительность (для "
-            "войс-чата)\nstart - время начала (для войс-чата)\noutput - link - сслыка на архив, all_files - все "
+            "войс-чата)\noutput - link - сслыка на архив, all_files - все "
             "файлы, file - только финальный файл\nonly_voice_change - просто заменить голос, без разделения вокала "
             "и музыки\n")
     elif command == "tts":
         await ctx.respond(
             "# /tts\n(Озвучить текст)\n**text - произносимый текст**\nvoice_name - голосовая модель\nspeed - "
             "Ускорение/замедление\nvoice_model - Модель голоса elevenlab\noutput - Отправляет файл в чат\n"
-            "stability - Стабильность голоса (0 - нестабильный, 1 - стабильный)\*\n"
-            "similarity_boost - Повышение сходства (0 - отсутствует)\*\n"
-            "style - Выражение (0 - мало пауз и выражения, 1 - большое количество пауз и выражения)\*\n")
-        await ctx.send("\* - параметр сохраняется")
+            "stability - Стабильность голоса (0 - нестабильный, 1 - стабильный)\n"
+            "similarity_boost - Повышение сходства (0 - отсутствует)\n"
+            "style - Выражение (0 - мало пауз и выражения, 1 - большое количество пауз и выражения)\n")
     elif command == "add_voice":
         await ctx.respond("# /add_voice\n(Добавить голосовую модель)\n**url - ссылка на модель **\n**name - имя модели "
                           "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
@@ -220,7 +222,7 @@ async def help_command(
         await send_file(ctx, "add_voice_args.txt")
     elif command == "create_dialog":
         await ctx.respond(
-            "# /create_dialog\n(Создать диалог в войс-чате, используйте join)\n**names - участники диалога "
+            "# /create_dialog\n(Создать диалог в войс-чате)\n**names - участники диалога "
             "через ';' - список голосовых моделей Например, Участник1;Участник2**\ntheme - Тема разговора "
             "(может измениться)\nprompt - Постоянный запрос (например, что они находятся в определённом месте)\n")
     elif command == "change_image":
@@ -254,6 +256,11 @@ async def help_command(
         await ctx.respond("# /pause\n - пауза / завершение диалога")
     elif command == "skip":
         await ctx.respond("# /skip\n - пропуск аудио")
+    elif command == "bark":
+        await ctx.respond("Используется для создания аудио на основе текста с использованием модели генерации речи.\n"
+                          "**text** - Текст, который будет преобразован в речь.\n"
+                          "speaker - Модель голоса\n"
+                          "gen_temp - Температура генерации")
 
 
 @bot.slash_command(name="config", description='изменить конфиг')
@@ -485,6 +492,31 @@ async def __tts(
         await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
         # перестаём использовать видеокарту
         await cuda_manager.stop_use_cuda(cuda_number)
+
+
+@bot.slash_command(name="bark", description='Тестовая генерация речи с помощью bark')
+async def __bark(
+        ctx,
+        text: Option(str, description='Текст для озвучки', required=True),
+        speaker: Option(int, description='Голосовая модель bark', required=False, default=1, min_value=1,
+                        max_value=8),
+        gen_temp: Option(float, description='Голосовая модель bark', required=False, default=0.6)
+):
+    global bark_model
+    timer = Time_Count()
+    if bark_model is None:
+        await ctx.send('Загрузка модели...')
+        bark_model = BarkTTS()
+    await ctx.send('Выполнение...')
+    await cuda_manager.use_cuda(index=0)
+    try:
+        audio_path = f"{ctx.author.id}-{speaker}-bark.mp3"
+        await bark_model.text_to_speech_bark(text=text, speaker=speaker, gen_temp=gen_temp, audio_path=audio_path)
+        await send_file(ctx, audio_path)
+    except Exception as e:
+        await ctx.send(f'Ошибка при команде bark: {e}')
+    await ctx.respond(timer.count_time())
+    await cuda_manager.stop_use_cuda(0)
 
 
 async def send_output(ctx, audio_path, output, timer):
@@ -869,7 +901,8 @@ class Dialog_AI:
                     with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
                         writer.write(f"\n==Новая тема==: {new_theme}\n\n")
                 elif theme_was_in_row > 1:
-                    self.theme = await self.run_gpt(f"Придумай новую тему для этого диалога:\n{result}\n\nВ ответе выведи 2-3 слова в качестве следующей темы для диалога")
+                    self.theme = await self.run_gpt(
+                        f"Придумай новую тему для этого диалога:\n{result}\n\nВ ответе выведи 2-3 слова в качестве следующей темы для диалога")
                     theme_last = self.theme
                     theme_temp = self.theme
                     theme_was_in_row = 0
@@ -1244,7 +1277,7 @@ class Recognizer:
                                 os.remove(audio_path_2)
 
                         else:
-                            self.recognized +=  text_out + " "
+                            self.recognized += text_out + " "
             else:
                 # logger.logging("Speaking", color=Color.GRAY)
                 self.stream_sink.buffer.speaking = False
