@@ -235,8 +235,8 @@ async def help_command(
         import torch
         cuda_avaible = torch.cuda.device_count()
         if len(image_generators) == 0:
-            await ctx.send(f"Загрузка генератора картинок на {cuda_avaible-1} видеокарте")
-            image_generators.append(Image_Generator(cuda_avaible-1))
+            await ctx.send(f"Загрузка генератора картинок на {cuda_avaible - 1} видеокарте")
+            image_generators.append(Image_Generator(cuda_avaible - 1))
 
     elif command == "change_video":
         await ctx.respond(
@@ -1097,18 +1097,10 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model_eleven
         await ctx.respond("Ошибка при скачивании голоса.")
 
 
-@bot.command(aliases=['cmd'], help="командная строка")
-async def command_line(ctx, *args):
-    owner_id = await set_get_config_all("Default", SQL_Keys.owner_id)
-    if not ctx.author.id == int(owner_id):
-        await ctx.author.send("Доступ запрещён")
-        return
-
-    # Получение объекта пользователя по ID
-    text = " ".join(args)
-    logger.logging("command line:", text)
+async def command_line(ctx, command):
+    logger.logging("command line:", command)
     try:
-        process = subprocess.Popen(text, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         stdout, stderr = process.communicate()
         for line in stdout.decode().split('\n'):
             if line.strip():
@@ -1124,6 +1116,40 @@ async def command_line(ctx, *args):
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
         await ctx.author.send(f"Произошла неизвестная ошибка: {e}")
+
+
+@bot.command(aliases=['cmd'], help="командная строка")
+async def commands(ctx, *args):
+    owner_id = await set_get_config_all("Default", SQL_Keys.owner_id)
+    if not ctx.author.id == int(owner_id):
+        await ctx.author.send("Доступ запрещён")
+        return
+
+    # Получение объекта пользователя по ID
+    command = " ".join(args)
+    asyncio.ensure_future(command_line(ctx=ctx, command=command))
+
+
+@bot.command(aliases=['restart'], help="Перезагрузка")
+async def command_exit(ctx):
+    owner_id = await set_get_config_all("Default", SQL_Keys.owner_id)
+    if not ctx.author.id == int(owner_id):
+        await ctx.author.send("Доступ запрещён")
+        return
+    await ctx.send("Перезагрузка")
+    exit(0)
+
+
+@bot.command(aliases=['exit'], help="Выключиться")
+async def command_exit(ctx, *args):
+    owner_id = await set_get_config_all("Default", SQL_Keys.owner_id)
+    if not ctx.author.id == int(owner_id):
+        await ctx.author.send("Доступ запрещён")
+        return
+    time = ''.join(args).replace(" ", "")
+    await ctx.send(f"Выключение через {time} секунд")
+    await asyncio.sleep(int(time))
+    asyncio.ensure_future(command_line(ctx=ctx, command="pkill -f python"))
 
 
 @bot.command(aliases=['themer'], help="тема для диалога")
