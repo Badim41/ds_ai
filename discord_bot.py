@@ -890,6 +890,7 @@ async def __add_voice(
         return
     await ctx.defer()
     await ctx.respond('Выполнение...')
+
     if txt_file:
         urls, names, genders, infos, speeds, voice_model_elevens, stabilities, similarity_boosts, styles = await agrs_with_txt(
             txt_file)
@@ -993,6 +994,8 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model_eleven
             user = DiscordUser(ctx)
             await user.set_user_config(SQL_Keys.AIname, name)
         await ctx.send(f"Модель {name} успешно установлена!")
+        if name in characters_all:
+            del characters_all[name]
     except subprocess.CalledProcessError as e:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
