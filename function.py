@@ -136,7 +136,11 @@ class TextToSpeechRVC:
             pitch -= 12
         else:
             # получаем ключ для elevenlab
-            key = self.elevenlabs_voice_keys[0]
+            if isinstance(self.elevenlabs_voice_keys, list):
+                key = self.elevenlabs_voice_keys[0]
+            else:
+                key = self.elevenlabs_voice_keys
+
             if not key == "Free":
                 set_api_key(key)
 
@@ -159,7 +163,7 @@ class TextToSpeechRVC:
                 logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
                 if "Please play" in str(e):
                     create_secret(SecretKey.voice_keys, "None")
-                if len(self.elevenlabs_voice_keys) > 1 and isinstance(self.elevenlabs_voice_keys, list):
+                if len(self.elevenlabs_voice_keys):
                     self.elevenlabs_voice_keys = self.elevenlabs_voice_keys[1:]
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys))
                 else:
