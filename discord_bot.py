@@ -165,6 +165,9 @@ async def on_message(message):
                 audio_path_2 = f"{user.id}-{user.character.name}-message.mp3"
                 await user.character.text_to_speech(answer, audio_path=audio_path_1, output_name=audio_path_2)
                 await audio_player.play(audio_path_2)
+
+                os.remove(audio_path_1)
+                os.remove(audio_path_2)
         except Exception as e:
             traceback_str = traceback.format_exc()
             logger.logging(str(traceback_str), color=Color.RED)
@@ -379,6 +382,9 @@ async def __say(
             audio_path_2 = f"{user.id}-{user.character.name}-say.mp3"
             await user.character.text_to_speech(answer, audio_path=audio_path_1, output_name=audio_path_2)
             await audio_player.play(audio_path_2)
+
+            os.remove(audio_path_1)
+            os.remove(audio_path_2)
     except Exception as e:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
@@ -468,6 +474,9 @@ async def __tts(
                 elif output.startswith("2"):
                     await send_file(ctx, audio_path_1)
                     await send_file(ctx, audio_path_2)
+
+            os.remove(audio_path_1)
+            os.remove(audio_path_2)
         await cuda_manager.stop_use_cuda(cuda_number)
     except Exception as e:
         traceback_str = traceback.format_exc()
@@ -1196,6 +1205,9 @@ class Recognizer:
                                 await self.user.character.text_to_speech(answer, audio_path=audio_path_1,
                                                                          output_name=audio_path_2)
                                 await self.audio_player.play(audio_path_2)
+
+                                os.remove(audio_path_1)
+                                os.remove(audio_path_2)
 
                         else:
                             self.recognized += text_out
