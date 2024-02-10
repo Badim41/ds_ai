@@ -782,7 +782,9 @@ class Dialog_AI:
                 for files_number, (name, text) in self.dialog_create.items():
                     if files_number - self.play_number > 2:
                         continue
+
                     if name == character.name:
+                        logger.logging(f"Found file: ({files_number}, {self.play_number}). Voice:{character.name}")
 
                         while not len(self.dialog_play) == 0 and not self.audio_player.isPlaying:
                             logger.logging("wait for play smth", color=Color.GRAY)
