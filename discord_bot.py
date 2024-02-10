@@ -724,7 +724,7 @@ class Dialog_AI:
             asyncio.run(character.load_voice(i % 2, max_simbols=500))
             self.characters.append(character)
             self.names.append(character.name)
-            self.infos.append(character.info)
+            self.infos.append(character.info.replace("Вот информация о тебе:", f"Информация о {character.name}:"))
 
         self.theme = theme
         self.global_prompt = global_prompt
