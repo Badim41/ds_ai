@@ -780,7 +780,8 @@ class Dialog_AI:
         while self.alive:
             try:
                 for files_number, (name, text) in self.dialog_create.items():
-
+                    if files_number - self.play_number > 2:
+                        continue
                     if name == character.name:
 
                         while not len(self.dialog_play) == 0 and not self.audio_player.isPlaying:
@@ -878,10 +879,17 @@ class Dialog_AI:
 
                 dialog_next = await self.save_dialog(result)
 
+                # Слишком большой разрыв
+                while self.files_number - self.play_number > 4:
+                    logger.logging("wait, difference > 4", color=Color.YELLOW)
+                    await asyncio.sleep(5)
+                    if not self.alive:
+                        return
+
                 # Слишком много текста
                 while len(self.dialog_create) > 2:
                     logger.logging("wait, too many text > 2", color=Color.YELLOW)
-                    await asyncio.sleep(2.5)
+                    await asyncio.sleep(5)
                     if not self.alive:
                         return
 
