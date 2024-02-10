@@ -864,7 +864,7 @@ class Dialog_AI:
                     theme_temp = f"Тема диалога: \"{new_theme}\""
                     with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
                         writer.write(f"\n==Новая тема==: {new_theme}\n\n")
-                elif theme_was_in_row > 4:
+                elif theme_was_in_row > 1:
                     self.theme = await self.run_gpt(f"Придумай новую тему для этого диалога:\n{result}\n\nВ ответе выведи 2-3 слова в качестве следующей темы для диалога")
                     theme_last = self.theme
                     theme_was_in_row = 0
@@ -890,7 +890,7 @@ class Dialog_AI:
                 dialog_next = await self.save_dialog(result)
 
                 # Слишком большой разрыв
-                while self.files_number - self.play_number > 4:
+                while self.files_number - self.play_number > 2:
                     # logger.logging(f"wait, difference > 4 ({self.files_number},{self.play_number})", color=Color.YELLOW)
                     await asyncio.sleep(5)
                     if not self.alive:
