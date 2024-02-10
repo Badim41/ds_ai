@@ -864,8 +864,10 @@ class Dialog_AI:
                     theme_temp = f"Тема диалога: \"{new_theme}\""
                     with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
                         writer.write(f"\n==Новая тема==: {new_theme}\n\n")
-                elif theme_was_in_row > 5:
-                    theme_temp = "Тема диалога: Свободная тема"
+                elif theme_was_in_row > 4:
+                    self.theme = await self.run_gpt(f"Придумай новую тему для этого диалога:\n{result}\n\nВ ответе выведи 2-3 слова в качестве следующей темы для диалога")
+                    theme_last = self.theme
+                    theme_was_in_row = 0
                 else:
                     theme_was_in_row += 1
                     theme_temp = f"Изначальная тема диалога: \"{new_theme}\""
