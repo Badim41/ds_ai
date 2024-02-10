@@ -770,7 +770,6 @@ class Dialog_AI:
 
                 await self.ctx.send("говорит " + name)
                 await self.audio_player.play(audio_path)
-                os.remove(audio_path)
             else:
                 logger.logging("warn: Нет аудио для диалога!", color=Color.RED)
                 await asyncio.sleep(0.75)
@@ -1283,7 +1282,7 @@ class AudioPlayerDiscord:
         else:
             return "Вы не на сервере"
 
-    async def play(self, audio_file):
+    async def play(self, audio_file, delete_file=False):
         if not self.guild:
             await send_file(self.ctx, audio_file)
             return
@@ -1293,16 +1292,17 @@ class AudioPlayerDiscord:
 
             audio_source = discord.FFmpegPCMAudio(audio_file)
             self.isPlaying = True
-            self.voice_client.play(audio_source, after=lambda e: self.play_next() if e else None)
+            self.voice_client.play(audio_source, after=lambda e: self.play_next(delete_file) if e else None)
+            self.isPlaying = False
         else:
             self.queue.append(audio_file)
             # await self.ctx.send(f"{audio_file} добавлен в очередь.")
 
-    def play_next(self):
+    def play_next(self, delete_file:bool):
         if self.queue:
             next_audio = self.queue.pop(0)
             audio_source = discord.FFmpegPCMAudio(next_audio)
-            self.voice_client.play(audio_source, after=lambda e: self.play_next() if e else None)
+            self.voice_client.play(audio_source, after=lambda e: self.play_next(delete_file) if e else None)
             self.isPlaying = True
         else:
             self.isPlaying = False
