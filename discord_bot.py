@@ -770,6 +770,7 @@ class Dialog_AI:
             try:
                 for files_number, (name, text) in self.dialog_create.items():
                     if name == character.name:
+                        print(f"Run TTS with {character.name}: {text}")
                         del self.dialog_create[files_number]
                         audio_path = f"{files_number}{character.name}.mp3"
                         await character.text_to_speech(text=text, audio_path=audio_path, output_name=audio_path)
@@ -817,6 +818,8 @@ class Dialog_AI:
         result = await self.run_gpt(prompt)
 
         dialog_next = await self.save_dialog(result)
+
+        logger.logging("DIALOG NEXT:", dialog_next, color=Color.GRAY)
 
         theme_last = self.theme
         while self.alive:
