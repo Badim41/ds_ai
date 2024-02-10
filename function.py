@@ -130,10 +130,7 @@ class TextToSpeechRVC:
             pitch -= 12
         else:
             # получаем ключ для elevenlab
-            if isinstance(self.elevenlabs_voice_keys, list) and len(self.elevenlabs_voice_keys) > 1:
-                key = self.elevenlabs_voice_keys[0]
-            else:
-                key = "None"
+            key = self.elevenlabs_voice_keys[0]
 
             if not key == "Free":
                 set_api_key(key)
