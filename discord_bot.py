@@ -857,12 +857,16 @@ class Dialog_AI:
 
                 # Тема добавляется в запрос, если она изменилась
                 new_theme = self.theme
+                theme_was_in_row = 0
                 if not theme_last == new_theme:
                     theme_last = new_theme
                     theme_temp = f"Тема диалога: \"{new_theme}\""
                     with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
                         writer.write(f"\n==Новая тема==: {new_theme}\n\n")
+                elif theme_was_in_row > 5:
+                    theme_temp = "Тема диалога: Свободная тема"
                 else:
+                    theme_was_in_row += 1
                     theme_temp = f"Изначальная тема диалога: \"{new_theme}\""
                 prompt = (
                     f"# Задача\nПродолжите диалог между {', '.join(self.names)}.\n"
@@ -873,7 +877,7 @@ class Dialog_AI:
                     f"{spoken_text}"
                     f"1. Персонажи должны действовать согласно своему характеру.\n"
                     f"2. Не используйте приветствия в начале диалога.\n"
-                    f"3. Не повторяйте предыдущие фразы. Предыдущий диалог закончился на: \"{dialog_next}\".\n"
+                    f"3. Не повторяйте предыдущий диалог. Описание предыдущего диалога: \"{dialog_next}\".\n"
                     f"4. В конце диалога кратко укажите, что произошло в этом диалоге и что должно произойти дальше.\n"
                     f"5. Представьте диалог в формате:\n[Говорящий]: [Произнесенный текст]."
                 )
