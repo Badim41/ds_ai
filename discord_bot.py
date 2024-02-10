@@ -1288,30 +1288,23 @@ class AudioPlayerDiscord:
             await send_file(self.ctx, audio_file)
             return
 
+        self.queue.append(audio_file)
+
         if not self.isPlaying:
-            if not self.voice_client or not self.voice_client.is_connected():
-                await self.join_channel()
+            while self.queue:
+                if not self.voice_client or not self.voice_client.is_connected():
+                    await self.join_channel()
 
-            audio_source = discord.FFmpegPCMAudio(audio_file)
-            self.isPlaying = True
-            self.play_event.clear()
-            self.voice_client.play(audio_source, after=lambda e: self.play_next(delete_file) if e else None)
-        else:
-            if audio_file not in self.queue:
-                self.queue.append(audio_file)
-
-        # Ожидание
-        await self.play_event.wait()
-
-    def play_next(self, delete_file: bool):
-        if self.queue:
-            next_audio = self.queue.pop(0)
-            audio_source = discord.FFmpegPCMAudio(next_audio)
-            self.voice_client.play(audio_source, after=lambda e: self.play_next(delete_file) if e else None)
-            self.isPlaying = True
-        else:
+                self.isPlaying = True
+                audio_path = self.queue.pop()
+                audio_source = discord.FFmpegPCMAudio(audio_file)
+                self.voice_client.play(audio_source, wait_finish=True)
+                if delete_file:
+                    os.remove(audio_path)
             self.isPlaying = False
-            self.play_event.set()
+        else:
+            while self.queue:
+                await asyncio.sleep(0.25)
 
     async def skip(self):
         if self.isPlaying:
