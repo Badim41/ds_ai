@@ -771,6 +771,7 @@ class Dialog_AI:
 
                 await self.ctx.send("говорит " + name)
                 await self.audio_player.play(audio_path)
+                await self.ctx.send("end")
             else:
                 logger.logging("warn: Нет аудио для диалога!", color=Color.RED)
                 await asyncio.sleep(0.75)
@@ -815,7 +816,9 @@ class Dialog_AI:
         return lines[found_max_line + 1:]
 
     async def run_gpt(self, prompt):
+        print("RUN GPT")
         result = await self.gpt.run_all_gpt(prompt=prompt, user_id=self.user_id)
+        print("END GPT")
         if "(" in result and ")" in result:
             result = re.sub(r'\(.*?\)', '', result)
         if "*" in result:
@@ -1311,7 +1314,9 @@ class AudioPlayerDiscord:
                 await self.join_channel()
             try:
                 audio_source = discord.FFmpegPCMAudio(audio_file)
-                self.voice_client.play(audio_source, wait_finish=True)
+                audio_duration = AudioSegment.from_file(audio_file).duration_seconds
+                self.voice_client.play(audio_source)
+                await asyncio.sleep(audio_duration)
                 if delete_file:
                     os.remove(audio_file)
                 self.isPlaying = False
