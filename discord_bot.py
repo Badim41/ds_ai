@@ -770,6 +770,10 @@ class Dialog_AI:
                 self.play_number += 1
 
                 await self.ctx.send("говорит " + name)
+
+                last_removed_key = self.characters[0].voice.elevenlabs_removed_key
+                if last_removed_key:
+                    await self.ctx.send("Last key:" + last_removed_key)
                 await self.audio_player.play(audio_path)
                 await self.ctx.send("end")
             else:

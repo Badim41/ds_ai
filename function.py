@@ -99,6 +99,7 @@ class TextToSpeechRVC:
         self.max_simbols = max_simbols
         self.speaker_boost = speaker_boost
         self.elevenlabs_voice_keys = str(load_secret(SecretKey.voice_keys)).split(";")
+        self.elevenlabs_removed_key = None
 
     async def text_to_speech(self, text, audio_path="1.mp3", output_name=None):
         if text is None or text.replace("\n", "").replace(" ", "") == "":
@@ -154,6 +155,7 @@ class TextToSpeechRVC:
                 logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
                 logger.logging("(error) Remove key:", self.elevenlabs_voice_keys[0], color=Color.BLUE)
                 if "Please play" in str(e):
+                    self.elevenlabs_removed_key = self.elevenlabs_voice_keys[0]
                     logger.logging("(error) LAST KEYS WAS IN ELEVENLABS:", self.elevenlabs_voice_keys[0], color=Color.RED)
                     create_secret(SecretKey.voice_keys, "None")
                 elif len(self.elevenlabs_voice_keys) > 1:
