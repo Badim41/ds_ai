@@ -1212,6 +1212,7 @@ async def send_file(ctx, file_path, delete_file=False):
 class AudioPlayerDiscord:
     def __init__(self, ctx):
         self.guild = ctx.guild
+        self.ctx = ctx
         if self.guild:
             create_new = False
             if ctx.guild.id in audio_players:
@@ -1219,7 +1220,6 @@ class AudioPlayerDiscord:
                     existing_player = audio_players[ctx.guild.id]
                     self.__dict__.update(existing_player.__dict__)
                     self.voice_channel = ctx.author.voice.channel if ctx.author.voice else None
-                    self.ctx = ctx
                 except:
                     create_new = True
             else:
