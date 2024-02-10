@@ -152,11 +152,11 @@ class TextToSpeechRVC:
                 save(audio, audio_file)
             except Exception as e:
                 logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
+                logger.logging("Remove key:", self.elevenlabs_voice_keys[0], color=Color.BLUE)
                 if "Please play" in str(e):
                     logger.logging("LAST KEYS WAS IN ELEVENLABS:", self.elevenlabs_voice_keys[0], color=Color.RED)
                     create_secret(SecretKey.voice_keys, "None")
                 elif len(self.elevenlabs_voice_keys) > 1:
-                    logger.logging("Remove key:", self.elevenlabs_voice_keys[0], color=Color.BLUE)
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys[1:]))
                 else:
                     create_secret(SecretKey.voice_keys, "None")
