@@ -769,13 +769,7 @@ class Dialog_AI:
                 self.play_number += 1
 
                 await self.ctx.send("говорит " + name)
-                for i in range(10):
-                    if os.path.exists(audio_path):
-                        await self.audio_player.play(audio_path)
-                        break
-                    else:
-                        await asyncio.sleep(0.5)
-                        logger.logging(f"Path not exists: {audio_path}")
+                await self.audio_player.play(audio_path)
                 os.remove(audio_path)
             else:
                 logger.logging("warn: Нет аудио для диалога!", color=Color.RED)
@@ -788,9 +782,11 @@ class Dialog_AI:
                     if name == character.name:
                         print(f"Run TTS with {character.name}: {text}")
                         del self.dialog_create[files_number]
-                        audio_path = f"{files_number}{character.name}.mp3"
-                        await character.text_to_speech(text=text, audio_path=audio_path, output_name=audio_path)
-                        self.dialog_play[files_number] = (character.name, audio_path)
+                        audio_path_1 = f"{files_number}{character.name}-row.mp3"
+                        audio_path_2 = f"{files_number}{character.name}.mp3"
+                        await character.text_to_speech(text=text, audio_path=audio_path_1, output_name=audio_path_2)
+                        self.dialog_play[files_number] = (character.name, audio_path_2)
+                        os.remove(audio_path_1)
                         break
                 await asyncio.sleep(0.5)
             except Exception as e:
