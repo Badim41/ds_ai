@@ -877,13 +877,6 @@ class Dialog_AI:
 
                 dialog_next = await self.save_dialog(result)
 
-                # слишком большой разрыв
-                while self.files_number - self.play_number > 4:
-                    logger.logging(f"wait, difference: created:{self.files_number}, played: {self.play_number}", color=Color.YELLOW)
-                    await asyncio.sleep(2.5)
-                    if not self.alive:
-                        return
-
                 # Слишком много текста
                 while len(self.dialog_create) > 2:
                     logger.logging("wait, too many text > 2", color=Color.YELLOW)
