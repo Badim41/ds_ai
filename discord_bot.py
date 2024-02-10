@@ -1291,13 +1291,13 @@ class AudioPlayerDiscord:
         self.queue.append(audio_file)
 
         if not self.isPlaying:
+            self.isPlaying = True
             if not self.voice_client or not self.voice_client.is_connected():
                 await self.join_channel()
             while self.queue:
                 if not self.voice_client or not self.voice_client.is_connected():
                     await self.join_channel()
 
-                self.isPlaying = True
                 audio_path = self.queue.pop()
                 audio_source = discord.FFmpegPCMAudio(audio_file)
                 self.voice_client.play(audio_source, wait_finish=True)
