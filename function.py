@@ -130,7 +130,7 @@ class TextToSpeechRVC:
             self.elevenlabs_voice_keys = load_secret(SecretKey.voice_keys).split(";")
             logger.logging("Updated key:", self.elevenlabs_voice_keys, color=Color.PURPLE)
 
-        if len(text) > max_simbols or str(self.elevenlabs_voice_keys[0]) == "None":
+        if len(text) > max_simbols or str(''.join(self.elevenlabs_voice_keys)) == "None":
             logger.logging("gtts", text, color=Color.YELLOW)
             await self.gtts(text, audio_file, language="ru")
             pitch -= 12
@@ -163,12 +163,14 @@ class TextToSpeechRVC:
                 logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
                 if "Please play" in str(e):
                     logger.logging("LAST KEYS WAS IN ELEVENLABS:", self.elevenlabs_voice_keys[0], color=Color.RED)
+                    self.elevenlabs_voice_keys = ["None"]
                     create_secret(SecretKey.voice_keys, "None")
                 elif len(self.elevenlabs_voice_keys) > 1:
+                    logger.logging("Remove key:", self.elevenlabs_voice_keys[0], color=Color.BLUE)
                     self.elevenlabs_voice_keys = self.elevenlabs_voice_keys[1:]
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys))
                 else:
-                    self.elevenlabs_voice_keys = "None"
+                    self.elevenlabs_voice_keys = ["None"]
                     create_secret(SecretKey.voice_keys, "None")
                 pitch = await self.elevenlabs_text_to_speech(text, audio_file)
         return pitch
