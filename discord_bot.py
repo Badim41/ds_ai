@@ -780,7 +780,7 @@ class Dialog_AI:
                 for files_number, (name, text) in self.dialog_create.items():
                     if name == character.name:
 
-                        while len(self.dialog_play) > 2 and not self.audio_player.isPlaying:
+                        while len(self.dialog_play) > 3 and not self.audio_player.isPlaying:
                             logger.logging("wait for play smth", color=Color.GRAY)
                             await asyncio.sleep(0.25)
                         del self.dialog_create[files_number]
@@ -1298,7 +1298,7 @@ class AudioPlayerDiscord:
             if not self.voice_client or not self.voice_client.is_connected():
                 await self.join_channel()
             try:
-                while self.queue:
+                while not len(self.queue) == 0:
                     if not self.voice_client or not self.voice_client.is_connected():
                         await self.join_channel()
 
@@ -1310,10 +1310,10 @@ class AudioPlayerDiscord:
                 self.isPlaying = False
             except discord.ClientException:
                 logger.logging("already playing smth, wait(1)", color=Color.GRAY)
-                while self.queue:
+                while self.isPlaying:
                     await asyncio.sleep(0.25)
         else:
-            while self.queue:
+            while self.isPlaying:
                 logger.logging("already playing smth, wait(2)", color=Color.GRAY)
                 await asyncio.sleep(0.25)
 
