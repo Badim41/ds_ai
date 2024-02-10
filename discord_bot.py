@@ -110,7 +110,6 @@ async def on_ready():
 @bot.event
 async def on_message(message):
     ctx = await bot.get_context(message)
-
     if message.author.id == 1165023027847757836:  # minecraft chat bot
         text = message.content
         if text.startswith("\\themer "):
@@ -132,6 +131,10 @@ async def on_message(message):
         chatGPT = ChatGPT()
         answer = await chatGPT.run_all_gpt(f"{user}:{text}", user_id=user)
         await ctx.send(answer)
+        return
+
+    # TEMP WHITELIST
+    if not message.author.id == await set_get_config_all("Default", SQL_Keys.owner_id):
         return
 
     # other users
