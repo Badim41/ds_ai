@@ -782,7 +782,7 @@ class Dialog_AI:
                 for files_number, (name, text) in self.dialog_create.items():
                     if name == character.name:
 
-                        while len(self.dialog_play) > 3 and not self.audio_player.isPlaying:
+                        while not len(self.dialog_play) == 0 and not self.audio_player.isPlaying:
                             logger.logging("wait for play smth", color=Color.GRAY)
                             await asyncio.sleep(0.25)
                         del self.dialog_create[files_number]
