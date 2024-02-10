@@ -1131,7 +1131,7 @@ async def commands(ctx, *args):
 
 
 @bot.command(aliases=['restart'], help="Перезагрузка")
-async def command_exit(ctx):
+async def command_restart(ctx):
     owner_id = await set_get_config_all("Default", SQL_Keys.owner_id)
     if not ctx.author.id == int(owner_id):
         await ctx.author.send("Доступ запрещён")
