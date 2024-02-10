@@ -772,6 +772,7 @@ class Dialog_AI:
                 await character.text_to_speech(text=text, audio_path=audio_path, output_name=audio_path)
                 try:
                     del self.dialog_create[files_number]
+                    break
                 except Exception as e:
                     logger.logging(str(e),color=Color.RED) # TODO FINISH
                 self.dialog_play[files_number] = (character.name, audio_path)
