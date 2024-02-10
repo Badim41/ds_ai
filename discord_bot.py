@@ -1293,10 +1293,9 @@ class AudioPlayerDiscord:
             audio_source = discord.FFmpegPCMAudio(audio_file)
             self.isPlaying = True
             self.voice_client.play(audio_source, after=lambda e: self.play_next(delete_file) if e else None)
-            self.isPlaying = False
         else:
-            self.queue.append(audio_file)
-            # await self.ctx.send(f"{audio_file} добавлен в очередь.")
+            if audio_file not in self.queue:
+                self.queue.append(audio_file)
 
     def play_next(self, delete_file:bool):
         if self.queue:
