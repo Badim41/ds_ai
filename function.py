@@ -162,6 +162,7 @@ class TextToSpeechRVC:
             except Exception as e:
                 logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
                 if "Please play" in str(e):
+                    logger.logging("LAST KEYS WAS IN ELEVENLABS:", self.elevenlabs_voice_keys[0], color=Color.RED)
                     create_secret(SecretKey.voice_keys, "None")
                 if len(self.elevenlabs_voice_keys):
                     self.elevenlabs_voice_keys = self.elevenlabs_voice_keys[1:]
