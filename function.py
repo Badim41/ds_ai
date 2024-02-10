@@ -130,7 +130,7 @@ class TextToSpeechRVC:
             self.elevenlabs_voice_keys = load_secret(SecretKey.voice_keys).split(";")
             logger.logging("Updated key:", self.elevenlabs_voice_keys, color=Color.PURPLE)
 
-        if len(text) > max_simbols or str(self.elevenlabs_voice_keys) == "None":
+        if len(text) > max_simbols or str(self.elevenlabs_voice_keys[0]) == "None":
             logger.logging("gtts", text, color=Color.YELLOW)
             await self.gtts(text, audio_file, language="ru")
             pitch -= 12
