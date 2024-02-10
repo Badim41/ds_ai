@@ -879,7 +879,7 @@ class Dialog_AI:
 
                 # слишком большой разрыв
                 while self.files_number - self.play_number > 4:
-                    logger.logging("wait, difference > 4", color=Color.YELLOW)
+                    logger.logging(f"wait, difference: created:{self.files_number}, played: {self.play_number}", color=Color.YELLOW)
                     await asyncio.sleep(2.5)
                     if not self.alive:
                         return
