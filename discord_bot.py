@@ -134,7 +134,7 @@ async def on_message(message):
         return
 
     # TEMP WHITELIST
-    if not message.author.id == await set_get_config_all("Default", SQL_Keys.owner_id):
+    if not str(message.author.id) == await set_get_config_all("Default", SQL_Keys.owner_id):
         return
 
     # other users
