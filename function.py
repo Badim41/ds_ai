@@ -128,7 +128,7 @@ class TextToSpeechRVC:
 
         if str(self.elevenlabs_voice_keys) == "None":
             self.elevenlabs_voice_keys = load_secret(SecretKey.voice_keys)
-            print("Updated key:", self.elevenlabs_voice_keys)
+            logger.logging("Updated key:", self.elevenlabs_voice_keys, color=Color.PURPLE)
 
         if len(text) > max_simbols or str(self.elevenlabs_voice_keys) == "None":
             logger.logging("gtts", text, color=Color.YELLOW)
