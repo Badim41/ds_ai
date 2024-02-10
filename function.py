@@ -164,7 +164,7 @@ class TextToSpeechRVC:
                 if "Please play" in str(e):
                     logger.logging("LAST KEYS WAS IN ELEVENLABS:", self.elevenlabs_voice_keys[0], color=Color.RED)
                     create_secret(SecretKey.voice_keys, "None")
-                if len(self.elevenlabs_voice_keys) > 1:
+                elif len(self.elevenlabs_voice_keys) > 1:
                     self.elevenlabs_voice_keys = self.elevenlabs_voice_keys[1:]
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys))
                 else:
