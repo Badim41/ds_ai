@@ -1291,6 +1291,8 @@ class AudioPlayerDiscord:
         self.queue.append(audio_file)
 
         if not self.isPlaying:
+            if not self.voice_client or not self.voice_client.is_connected():
+                await self.join_channel()
             while self.queue:
                 if not self.voice_client or not self.voice_client.is_connected():
                     await self.join_channel()
