@@ -994,8 +994,11 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model_eleven
             user = DiscordUser(ctx)
             await user.set_user_config(SQL_Keys.AIname, name)
         await ctx.send(f"Модель {name} успешно установлена!")
+
+        # Удаляем модель, если она существует
         if name in characters_all:
             del characters_all[name]
+
     except subprocess.CalledProcessError as e:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
