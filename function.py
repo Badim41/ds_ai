@@ -127,7 +127,7 @@ class TextToSpeechRVC:
         pitch = self.pitch
 
         if str(self.elevenlabs_voice_keys) == "None":
-            self.elevenlabs_voice_keys = load_secret(SecretKey.voice_keys)
+            self.elevenlabs_voice_keys = load_secret(SecretKey.voice_keys).split(";")
             logger.logging("Updated key:", self.elevenlabs_voice_keys, color=Color.PURPLE)
 
         if len(text) > max_simbols or str(self.elevenlabs_voice_keys) == "None":
