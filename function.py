@@ -139,7 +139,7 @@ class TextToSpeechRVC:
             if isinstance(self.elevenlabs_voice_keys, list) and len(self.elevenlabs_voice_keys) > 1:
                 key = self.elevenlabs_voice_keys[0]
             else:
-                key = self.elevenlabs_voice_keys
+                key = "None"
 
             if not key == "Free":
                 set_api_key(key)
@@ -164,7 +164,7 @@ class TextToSpeechRVC:
                 if "Please play" in str(e):
                     logger.logging("LAST KEYS WAS IN ELEVENLABS:", self.elevenlabs_voice_keys[0], color=Color.RED)
                     create_secret(SecretKey.voice_keys, "None")
-                if len(self.elevenlabs_voice_keys):
+                if len(self.elevenlabs_voice_keys) > 1:
                     self.elevenlabs_voice_keys = self.elevenlabs_voice_keys[1:]
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys))
                 else:
