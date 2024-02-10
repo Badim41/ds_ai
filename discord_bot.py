@@ -751,9 +751,9 @@ class Dialog_AI:
 
         asyncio.ensure_future(self.gpt_dialog())
         asyncio.ensure_future(self.play_dialog())
-        functions = [self.create_audio_dialog(character) for character in self.characters]
-        for function in functions:
-            asyncio.ensure_future(function)
+        # functions = [self.create_audio_dialog(character) for character in self.characters]
+        # for function in functions:
+        asyncio.ensure_future(self.create_audio_dialog())
 
     async def stop_dialog(self):
         if self.ctx.guild.id in dialogs:
@@ -776,22 +776,23 @@ class Dialog_AI:
                 logger.logging("warn: Нет аудио для диалога!", color=Color.RED)
                 await asyncio.sleep(0.75)
 
-    async def create_audio_dialog(self, character):
+    async def create_audio_dialog(self):
+        characters = self.characters
         while self.alive:
             try:
                 for files_number, (name, text) in self.dialog_create.items():
-                    if name == character.name:
-
-                        while not len(self.dialog_play) == 0 and not self.audio_player.isPlaying:
-                            logger.logging("wait for play smth", color=Color.GRAY)
-                            await asyncio.sleep(0.25)
-                        del self.dialog_create[files_number]
-                        audio_path_1 = f"{files_number}{character.name}-row.mp3"
-                        audio_path_2 = f"{files_number}{character.name}.mp3"
-                        await character.text_to_speech(text=text, audio_path=audio_path_1, output_name=audio_path_2)
-                        self.dialog_play[files_number] = (character.name, audio_path_2)
-                        os.remove(audio_path_1)
-                        break
+                    for character in characters:
+                        if character.name == name:
+                            while not len(self.dialog_play) == 0 and not self.audio_player.isPlaying:
+                                logger.logging("wait for play smth", color=Color.GRAY)
+                                await asyncio.sleep(0.25)
+                            del self.dialog_create[files_number]
+                            audio_path_1 = f"{files_number}{character.name}-row.mp3"
+                            audio_path_2 = f"{files_number}{character.name}.mp3"
+                            await character.text_to_speech(text=text, audio_path=audio_path_1, output_name=audio_path_2)
+                            self.dialog_play[files_number] = (character.name, audio_path_2)
+                            os.remove(audio_path_1)
+                            break
                 await asyncio.sleep(0.5)
             except Exception as e:
                 logger.logging(str(e), color=Color.RED)
