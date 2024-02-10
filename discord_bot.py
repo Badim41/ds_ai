@@ -847,24 +847,25 @@ class Dialog_AI:
 
                 spoken_text = self.recognizer.recognized
                 if spoken_text:
-                    spoken_text = "\n##Отвечай зрителям! Зрители за прошлый диалог написали:\"" + spoken_text + "\"\n"
+                    spoken_text = "\n0. Отвечай зрителям! Зрители за прошлый диалог написали:\"" + spoken_text + "\"\n"
                     self.recognizer.recognized = ""
 
                 # Тема добавляется в запрос, если она изменилась
                 new_theme = self.theme
                 if not theme_last == new_theme:
                     theme_last = new_theme
-                    theme_temp = " на тему" + new_theme
+                    theme_temp = f"Тема диалога: \"{new_theme}\""
                     with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
                         writer.write(f"\n==Новая тема==: {new_theme}\n\n")
                 else:
-                    theme_temp = f"Изначальная тема диалога была {new_theme}, не сильно отходи от её"
+                    theme_temp = f"Изначальная тема диалога: \"{new_theme}\""
                 prompt = (
                     f"# Задача\nПродолжите диалог между {', '.join(self.names)}.\n"
-                    f"# Тема диалога\n{theme_temp}.\n"
+                    f"# \n{theme_temp}.\n"
                     f"# Информация\n{'.'.join(self.infos)}.\n"
                     f"# {self.global_prompt}.\n\n"
                     f"# Требования\n"
+                    f"{spoken_text}"
                     f"1. Персонажи должны действовать согласно своему характеру.\n"
                     f"2. Не используйте приветствия в начале диалога.\n"
                     f"3. Не повторяйте предыдущие фразы. Предыдущий диалог закончился на: \"{dialog_next}\".\n"
