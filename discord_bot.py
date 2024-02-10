@@ -724,7 +724,7 @@ class Dialog_AI:
             asyncio.run(character.load_voice(i % 2, max_simbols=500))
             self.characters.append(character)
             self.names.append(character.name)
-            self.infos.append(character.info.replace("Вот информация о тебе:", f"Информация о {character.name}:"))
+            self.infos.append(character.info.replace("Вот информация о тебе:", f"Вот информация о {character.name}:"))
 
         self.theme = theme
         self.global_prompt = global_prompt
@@ -773,7 +773,7 @@ class Dialog_AI:
                 await self.audio_player.play(audio_path)
                 await self.ctx.send("end")
             else:
-                logger.logging("warn: Нет аудио для диалога!", color=Color.RED)
+                # logger.logging("warn: Нет аудио для диалога!", color=Color.RED)
                 await asyncio.sleep(0.75)
 
     async def create_audio_dialog(self, character):
@@ -784,10 +784,10 @@ class Dialog_AI:
                         continue
 
                     if name == character.name:
-                        logger.logging(f"Found file: ({files_number}, {self.play_number}). Voice:{character.name}")
+                        # logger.logging(f"Found file: ({files_number}, {self.play_number}). Voice:{character.name}")
 
                         while not len(self.dialog_play) == 0 and not self.audio_player.isPlaying:
-                            logger.logging("wait for play smth", color=Color.GRAY)
+                            # logger.logging("wait for play smth", color=Color.GRAY)
                             await asyncio.sleep(0.25)
                         del self.dialog_create[files_number]
                         audio_path_1 = f"{files_number}{character.name}-row.mp3"
@@ -801,7 +801,7 @@ class Dialog_AI:
                 logger.logging(str(e), color=Color.RED)
 
     async def save_dialog(self, result):
-        logger.logging(result, color=Color.GRAY)
+        # logger.logging(result, color=Color.GRAY)
         lines = result.split("\n")
         with open(self.text_file, "a", encoding="utf-8") as writer:
             found_max_line = 0
@@ -829,10 +829,11 @@ class Dialog_AI:
             "Привет, ребята! ", "").replace("Привет, ребята", "").replace("Всем привет, ", "").replace("Эй", "")
 
     async def gpt_dialog(self):
+        infos = '.\n'.join(self.infos)
         prompt = (
             f"# Задача\nСоздать диалог между {', '.join(self.names)}.\n"
             f"# Тема диалога\n{self.theme}.\n"
-            f"# Информация\n{'.'.join(self.infos)}.\n"
+            f"# Информация\n{infos}.\n"
             f"# {self.global_prompt}.\n\n"
             f"# Требования\n"
             f"1. Персонажи должны быть правдоподобными и действовать согласно своему характеру.\n"
@@ -843,7 +844,7 @@ class Dialog_AI:
 
         dialog_next = await self.save_dialog(result)
 
-        logger.logging("DIALOG NEXT:", dialog_next, color=Color.GRAY)
+        # logger.logging("DIALOG NEXT:", dialog_next, color=Color.GRAY)
 
         theme_last = self.theme
         while self.alive:
@@ -883,14 +884,14 @@ class Dialog_AI:
 
                 # Слишком большой разрыв
                 while self.files_number - self.play_number > 4:
-                    logger.logging(f"wait, difference > 4 ({self.files_number},{self.play_number})", color=Color.YELLOW)
+                    # logger.logging(f"wait, difference > 4 ({self.files_number},{self.play_number})", color=Color.YELLOW)
                     await asyncio.sleep(5)
                     if not self.alive:
                         return
 
                 # Слишком много текста
                 while len(self.dialog_create) > 2:
-                    logger.logging("wait, too many text > 2", color=Color.YELLOW)
+                    # logger.logging("wait, too many text > 2", color=Color.YELLOW)
                     await asyncio.sleep(5)
                     if not self.alive:
                         return

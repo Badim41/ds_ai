@@ -22,7 +22,7 @@ try:
 except:
     pass
 
-logger = Logs(warnings=True)
+logger = Logs(warnings=False)
 
 
 async def execute_command(command, ctx):
@@ -152,9 +152,9 @@ class TextToSpeechRVC:
                 save(audio, audio_file)
             except Exception as e:
                 logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
-                logger.logging("Remove key:", self.elevenlabs_voice_keys[0], color=Color.BLUE)
+                logger.logging("(error) Remove key:", self.elevenlabs_voice_keys[0], color=Color.BLUE)
                 if "Please play" in str(e):
-                    logger.logging("LAST KEYS WAS IN ELEVENLABS:", self.elevenlabs_voice_keys[0], color=Color.RED)
+                    logger.logging("(error) LAST KEYS WAS IN ELEVENLABS:", self.elevenlabs_voice_keys[0], color=Color.RED)
                     create_secret(SecretKey.voice_keys, "None")
                 elif len(self.elevenlabs_voice_keys) > 1:
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys[1:]))
