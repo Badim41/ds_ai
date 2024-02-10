@@ -779,7 +779,10 @@ class Dialog_AI:
             try:
                 for files_number, (name, text) in self.dialog_create.items():
                     if name == character.name:
-                        print(f"Run TTS with {character.name}: {text}")
+                        has_at_least_2_files = self.files_number - self.play_number > 2
+                        while has_at_least_2_files and not self.audio_player.isPlaying:
+                            logger.logging("wait for play smth", color=Color.GRAY)
+                            await asyncio.sleep(0.25)
                         del self.dialog_create[files_number]
                         audio_path_1 = f"{files_number}{character.name}-row.mp3"
                         audio_path_2 = f"{files_number}{character.name}.mp3"
