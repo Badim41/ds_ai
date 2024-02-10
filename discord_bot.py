@@ -1236,25 +1236,29 @@ class AudioPlayerDiscord:
                 self.isPlaying = False
 
     async def join_channel(self):
-        ctx = self.ctx
-        try:
-            if self.voice_client is None:
-                if ctx.author.voice:
-                    self.voice_client = await ctx.author.voice.channel.connect()
-                    return self.voice_client
-            await ctx.send(voiceChannelErrorText)
-        except discord.ClientException as e:
-            logger.logging("Уже в голосовом канале", e, color=Color.GRAY)
-            self.voice_client = await ctx.voice_client.move_to(self.voice_channel)
-            return self.voice_client
+        if self.guild:
+            ctx = self.ctx
+            try:
+                if self.voice_client is None:
+                    if ctx.author.voice:
+                        self.voice_client = await ctx.author.voice.channel.connect()
+                        return self.voice_client
+                await ctx.send(voiceChannelErrorText)
+            except discord.ClientException as e:
+                logger.logging("Уже в голосовом канале", e, color=Color.GRAY)
+                self.voice_client = await ctx.voice_client.move_to(self.voice_channel)
+                return self.voice_client
 
     async def stop(self):
-        if self.isPlaying:
-            self.voice_client.stop()
-            self.isPlaying = False
-            return "Остановлено"
+        if self.guild:
+            if self.isPlaying:
+                self.voice_client.stop()
+                self.isPlaying = False
+                return "Остановлено"
+            else:
+                return "Нет аудио для остановки"
         else:
-            return "Нет аудио для остановки"
+            return "Вы не на сервере"
 
     async def play(self, audio_file):
         if not self.guild:
