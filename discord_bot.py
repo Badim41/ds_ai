@@ -1387,9 +1387,12 @@ class AudioPlayerDiscord:
                 audio_duration = AudioSegment.from_file(audio_file).duration_seconds
                 self.voice_client.play(audio_source)
                 await asyncio.sleep(audio_duration)
+
+                # Пауза
                 while self.paused:
                     logger.logging("На паузе", color=Color.GRAY)
                     await asyncio.sleep(0.25)
+
                 if delete_file:
                     os.remove(audio_file)
                 self.isPlaying = False
