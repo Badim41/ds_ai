@@ -1233,6 +1233,11 @@ async def send_file(ctx, file_path, delete_file=False):
         logger.logging(str(traceback_str), color=Color.RED)
         await ctx.send(f'Произошла ошибка при отправке файла: {e}.')
 
+@asynccontextmanager
+async def audio_play_lock():
+    lock = asyncio.Lock()
+    async with lock:
+        yield lock
 
 class AudioPlayerDiscord:
     def __init__(self, ctx):
@@ -1291,31 +1296,19 @@ class AudioPlayerDiscord:
             await send_file(self.ctx, audio_file)
             return
 
-        self.queue.append(audio_file)
-
-        if not self.isPlaying:
+        async with audio_play_lock():
             self.isPlaying = True
             if not self.voice_client or not self.voice_client.is_connected():
                 await self.join_channel()
             try:
-                while not len(self.queue) == 0:
-                    if not self.voice_client or not self.voice_client.is_connected():
-                        await self.join_channel()
-
-                    audio_path = self.queue.pop()
-                    audio_source = discord.FFmpegPCMAudio(audio_file)
-                    self.voice_client.play(audio_source, wait_finish=True)
-                    if delete_file:
-                        os.remove(audio_path)
+                audio_source = discord.FFmpegPCMAudio(audio_file)
+                self.voice_client.play(audio_source, wait_finish=True)
+                if delete_file:
+                    os.remove(audio_file)
                 self.isPlaying = False
+                logger.logging("Finished play", color=Color.GRAY)
             except discord.ClientException:
-                logger.logging("already playing smth, wait(1)", color=Color.GRAY)
-                while self.isPlaying:
-                    await asyncio.sleep(0.25)
-        else:
-            while self.isPlaying:
-                logger.logging("already playing smth, wait(2)", color=Color.GRAY)
-                await asyncio.sleep(0.25)
+                logger.logging("already playing smth, not wait", color=Color.RED)
 
     async def skip(self):
         if self.isPlaying:
