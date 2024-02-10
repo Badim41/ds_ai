@@ -871,7 +871,7 @@ class Dialog_AI:
                     theme_temp = f"Изначальная тема диалога: \"{new_theme}\""
                 prompt = (
                     f"# Задача\nПродолжите диалог между {', '.join(self.names)}.\n"
-                    f"# \n{theme_temp}.\n"
+                    f"# {theme_temp}.\n"
                     f"# Информация\n{'.'.join(self.infos)}.\n"
                     f"# {self.global_prompt}.\n\n"
                     f"# Требования\n"
