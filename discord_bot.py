@@ -763,6 +763,7 @@ class Dialog_AI:
         while self.alive:
             if self.play_number in self.dialog_play:
                 name, audio_path = self.dialog_play[self.play_number]
+                audio_path = os.path.abspath(audio_path)
                 del self.dialog_play[self.play_number]
 
                 self.play_number += 1
@@ -774,7 +775,7 @@ class Dialog_AI:
                         break
                     else:
                         await asyncio.sleep(0.5)
-                        logger.logging(f"Path not exists: {os.path.abspath(audio_path)}")
+                        logger.logging(f"Path not exists: {audio_path}")
                 os.remove(audio_path)
             else:
                 logger.logging("warn: Нет аудио для диалога!", color=Color.RED)
