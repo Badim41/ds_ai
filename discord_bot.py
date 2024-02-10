@@ -371,7 +371,7 @@ async def __say(
         answer = await chatGPT.run_all_gpt(f"{user.name}:{text}", user_id=user.id, gpt_role=gpt_role, mode=gpt_mode)
         await ctx.send(answer)
         audio_player = AudioPlayerDiscord(ctx)
-        if audio_player.voice_client and user.character:
+        if user.character:
             audio_path_1 = f"{user.id}-{user.character.name}-say-row.mp3"
             audio_path_2 = f"{user.id}-{user.character.name}-say.mp3"
             await user.character.text_to_speech(answer, audio_path=audio_path_1, output_name=audio_path_2)
@@ -1212,7 +1212,7 @@ async def send_file(ctx, file_path, delete_file=False):
 class AudioPlayerDiscord:
     def __init__(self, ctx):
         self.guild = ctx.guild
-        if not self.guild is None:
+        if self.guild:
             create_new = False
             if ctx.guild.id in audio_players:
                 try:
