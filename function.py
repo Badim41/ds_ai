@@ -98,11 +98,7 @@ class TextToSpeechRVC:
         self.style = style
         self.max_simbols = max_simbols
         self.speaker_boost = speaker_boost
-        secret_keys = load_secret(SecretKey.voice_keys)
-        if secret_keys:
-            self.elevenlabs_voice_keys = secret_keys.split(";")
-        else:
-            self.elevenlabs_voice_keys = ["Free"]
+        self.elevenlabs_voice_keys = str(load_secret(SecretKey.voice_keys)).split(";")
 
     async def text_to_speech(self, text, audio_path="1.mp3", output_name=None):
         if text is None or text.replace("\n", "").replace(" ", "") == "":
@@ -126,9 +122,7 @@ class TextToSpeechRVC:
         max_simbols = self.max_simbols
         pitch = self.pitch
 
-        if str(self.elevenlabs_voice_keys) == "None":
-            self.elevenlabs_voice_keys = load_secret(SecretKey.voice_keys).split(";")
-            logger.logging("Updated key:", self.elevenlabs_voice_keys, color=Color.PURPLE)
+        self.elevenlabs_voice_keys = str(load_secret(SecretKey.voice_keys)).split(";")
 
         if len(text) > max_simbols or str(''.join(self.elevenlabs_voice_keys)) == "None":
             logger.logging("gtts", text, color=Color.YELLOW)
