@@ -735,7 +735,7 @@ class Dialog_AI:
 
         self.play_number = 0
         self.files_number = 0
-        self.gpt = ChatGPT(openAI_keys=False)
+        self.gpt = ChatGPT(openAI_keys=False, warnings=True)
         self.user_id = ctx.author.id * 10
 
         self.dialog_create = {}
