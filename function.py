@@ -159,7 +159,7 @@ class TextToSpeechRVC:
                 logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
                 if "Please play" in str(e):
                     create_secret(SecretKey.voice_keys, "None")
-                if len(self.elevenlabs_voice_keys) > 1:
+                if len(self.elevenlabs_voice_keys) > 1 and isinstance(self.elevenlabs_voice_keys, list):
                     self.elevenlabs_voice_keys = self.elevenlabs_voice_keys[1:]
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys))
                 else:
