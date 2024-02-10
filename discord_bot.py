@@ -847,6 +847,7 @@ class Dialog_AI:
         # logger.logging("DIALOG NEXT:", dialog_next, color=Color.GRAY)
 
         theme_last = self.theme
+        theme_was_in_row = 0
         while self.alive:
             try:
 
@@ -857,8 +858,8 @@ class Dialog_AI:
 
                 # Тема добавляется в запрос, если она изменилась
                 new_theme = self.theme
-                theme_was_in_row = 0
                 if not theme_last == new_theme:
+                    theme_was_in_row = 0
                     theme_last = new_theme
                     theme_temp = f"Тема диалога: \"{new_theme}\""
                     with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
