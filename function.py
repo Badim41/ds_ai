@@ -325,7 +325,7 @@ class Character:
 
     async def text_to_speech(self, text, audio_path="1.mp3", output_name="2.mp3"):
         if not self.voice:
-            self.voice = await self.load_voice(0)
+            await self.load_voice(0)
         await self.voice.text_to_speech(text, audio_path=audio_path, output_name=output_name)
 
 
