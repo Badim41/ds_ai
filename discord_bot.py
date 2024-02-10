@@ -773,6 +773,7 @@ class Dialog_AI:
                         await self.audio_player.play(audio_path)
                         break
                     else:
+                        await asyncio.sleep(0.5)
                         logger.logging(f"Path not exists: {os.path.abspath(audio_path)}")
                 os.remove(audio_path)
             else:
