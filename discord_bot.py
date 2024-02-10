@@ -230,8 +230,14 @@ async def help_command(
                           "**prompt - Запрос **\nnegative_prompt - Негативный запрос\nsteps - Количество шагов (больше - "
                           "лучше, но медленнее)\nseed - сид (если одинаковый сид и файл, то получится то же самое изображение)"
                           "\nx - расширение по X\ny - расширение по Y\nstrength - сила изменения\nstrength_prompt - сила для "
-                          "запроса\nstrength_negative_prompt - сила для негативного запроса\nrepeats - количество изображений "
-                          "(сид случайный!)\n")
+                          "запроса\nstrength_negative_prompt - сила для негативного запроса\nrepeats - количество изображений")
+        import discord_bot_images
+        import torch
+        cuda_avaible = torch.cuda.device_count()
+        if len(image_generators) == 0:
+            await ctx.send(f"Загрузка генератора картинок на {cuda_avaible-1} видеокарте")
+            image_generators.append(Image_Generator(cuda_avaible-1))
+
     elif command == "change_video":
         await ctx.respond(
             "# /change_video \n(Изменить видео **ПОКАДРОВО**)\n**video_path - видеофайл**\n**fps - Количество "
@@ -239,11 +245,14 @@ async def help_command(
             "Негативный запрос\nsteps - Количество шагов (больше - лучше, но медленнее)\nseed - сид (если "
             "одинаковый сид и файл, то получится то же самое изображение)\nstrength - сила изменения\n"
             "strength_prompt - сила для запроса\nstrength_negative_prompt - сила для негативного запроса\n"
-            "voice - голосовая модель\npitch - тональность (12 из мужского в женский, -12 из женского в "
-            "мужской)\nindexrate - индекс голоса (чем больше, тем больше черт черт голоса говорящего)\n"
-            "rms_mix_rate - количество шума (чем больше, тем больше шума)\nfilter_radius - размер фильтра (чем "
-            "больше, тем больше шума)\nmain_vocal, back_vocal, music - громкость каждой аудиодорожки\n"
-            "roomsize, wetness, dryness - параметры реверберации\n")
+            "voice - голосовая модель\n")
+        import discord_bot_images
+        import torch
+        cuda_avaible = torch.cuda.device_count()
+        if len(image_generators) == 0:
+            for i in range(cuda_avaible):
+                await ctx.send(f"Загрузка генератора картинок на {i} видеокарте")
+                image_generators.append(Image_Generator(i))
     elif command == "join":
         await ctx.respond("# /join\n - присоединиться к вам в войс-чате")
     elif command == "disconnect":
@@ -1334,6 +1343,7 @@ class AudioPlayerDiscord:
                 self.queue = []
                 self.play_event = asyncio.Event()
                 self.isPlaying = False
+                self.paused = False
 
     async def join_channel(self):
         if self.guild:
@@ -1351,9 +1361,12 @@ class AudioPlayerDiscord:
 
     async def stop(self):
         if self.guild:
+            if self.paused:
+                self.paused = False
+                return "Воспроизведение"
             if self.isPlaying:
+                self.paused = True
                 self.voice_client.stop()
-                self.isPlaying = False
                 return "Остановлено"
             else:
                 return "Нет аудио для остановки"
@@ -1374,6 +1387,9 @@ class AudioPlayerDiscord:
                 audio_duration = AudioSegment.from_file(audio_file).duration_seconds
                 self.voice_client.play(audio_source)
                 await asyncio.sleep(audio_duration)
+                while self.paused:
+                    logger.logging("На паузе", color=Color.GRAY)
+                    await asyncio.sleep(0.25)
                 if delete_file:
                     os.remove(audio_file)
                 self.isPlaying = False
