@@ -1237,7 +1237,7 @@ class Recognizer:
                                 os.remove(audio_path_2)
 
                         else:
-                            self.recognized += text_out
+                            self.recognized +=  text_out + " "
             else:
                 # logger.logging("Speaking", color=Color.GRAY)
                 self.stream_sink.buffer.speaking = False
