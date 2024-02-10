@@ -793,7 +793,7 @@ class Dialog_AI:
                         break
                 await asyncio.sleep(0.5)
             except Exception as e:
-                logger.logging(str(e),color=Color.RED)
+                logger.logging(str(e), color=Color.RED)
 
     async def save_dialog(self, result):
         logger.logging(result, color=Color.GRAY)
@@ -812,7 +812,7 @@ class Dialog_AI:
                         writer.write(f"{name}:{line}\n")
                         found_max_line = i
                         break
-        return lines[found_max_line+1:]
+        return lines[found_max_line + 1:]
 
     async def run_gpt(self, prompt):
         result = await self.gpt.run_all_gpt(prompt=prompt, user_id=self.user_id)
@@ -1070,6 +1070,7 @@ async def themer_set(ctx, *args):
 
 @bot.slash_command(name="record", description='воспринимать команды из микрофона')
 async def record(ctx):
+    global recognizers
     author_id = ctx.author.id
 
     if author_id in recognizers:
@@ -1080,7 +1081,11 @@ async def record(ctx):
     voice = ctx.author.voice
     if not voice:
         return await ctx.respond(voiceChannelErrorText)
-    Recognizer(ctx)
+    try:
+        Recognizer(ctx)
+    except:
+        recognizers = {}
+        Recognizer(ctx)
 
 
 @bot.slash_command(name="stop_recording", description='перестать воспринимать команды из микрофона')
@@ -1154,7 +1159,6 @@ class Recognizer:
                 logger.logging("Cant stop recording: None")
         else:
             logger.logging("Cant stop recording: No user")
-
 
     async def recognize(self):
         await self.user.character.load_voice(1)
@@ -1234,11 +1238,13 @@ async def send_file(ctx, file_path, delete_file=False):
         logger.logging(str(traceback_str), color=Color.RED)
         await ctx.send(f'Произошла ошибка при отправке файла: {e}.')
 
+
 @asynccontextmanager
 async def audio_play_lock():
     lock = asyncio.Lock()
     async with lock:
         yield lock
+
 
 class AudioPlayerDiscord:
     def __init__(self, ctx):
