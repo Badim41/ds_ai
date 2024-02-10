@@ -1070,7 +1070,7 @@ async def themer_set(ctx, *args):
 
 @bot.slash_command(name="record", description='воспринимать команды из микрофона')
 async def record(ctx):
-    global recognizers
+    global recognizers, audio_players, dialogs
     author_id = ctx.author.id
 
     if author_id in recognizers:
@@ -1085,6 +1085,8 @@ async def record(ctx):
         Recognizer(ctx)
     except:
         recognizers = {}
+        audio_players = {}
+        dialogs = {}
         Recognizer(ctx)
 
 
