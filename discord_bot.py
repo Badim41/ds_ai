@@ -759,7 +759,12 @@ class Dialog_AI:
                 self.play_number += 1
 
                 await self.ctx.send("говорит " + name)
-                await self.audio_player.play(audio_path)
+                for i in range(10):
+                    if os.path.exists(audio_path):
+                        await self.audio_player.play(audio_path)
+                        break
+                    else:
+                        logger.logging(f"Path not exists: {os.path.abspath(audio_path)}")
                 os.remove(audio_path)
             else:
                 logger.logging("warn: Нет аудио для диалога!", color=Color.RED)
