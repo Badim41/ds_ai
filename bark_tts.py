@@ -32,6 +32,7 @@ silence = np.zeros(int(0.25 * SAMPLE_RATE))  # quarter second of silence
 
 pieces = []
 for sentence in sentences:
+    print("Sentence:", sentence)
     semantic_tokens = generate_text_semantic(
         sentence,
         history_prompt=SPEAKER,
