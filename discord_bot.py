@@ -1297,18 +1297,24 @@ class AudioPlayerDiscord:
             self.isPlaying = True
             if not self.voice_client or not self.voice_client.is_connected():
                 await self.join_channel()
-            while self.queue:
-                if not self.voice_client or not self.voice_client.is_connected():
-                    await self.join_channel()
+            try:
+                while self.queue:
+                    if not self.voice_client or not self.voice_client.is_connected():
+                        await self.join_channel()
 
-                audio_path = self.queue.pop()
-                audio_source = discord.FFmpegPCMAudio(audio_file)
-                self.voice_client.play(audio_source, wait_finish=True)
-                if delete_file:
-                    os.remove(audio_path)
-            self.isPlaying = False
+                    audio_path = self.queue.pop()
+                    audio_source = discord.FFmpegPCMAudio(audio_file)
+                    self.voice_client.play(audio_source, wait_finish=True)
+                    if delete_file:
+                        os.remove(audio_path)
+                self.isPlaying = False
+            except discord.ClientException:
+                logger.logging("already playing smth, wait(1)", color=Color.GRAY)
+                while self.queue:
+                    await asyncio.sleep(0.25)
         else:
             while self.queue:
+                logger.logging("already playing smth, wait(2)", color=Color.GRAY)
                 await asyncio.sleep(0.25)
 
     async def skip(self):
