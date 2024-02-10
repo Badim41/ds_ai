@@ -721,7 +721,7 @@ class Dialog_AI:
 
         for i, name in enumerate(characters):
             character = Character(name=name)
-            asyncio.run(character.load_voice(i % 2))
+            asyncio.run(character.load_voice(i % 2, max_simbols=500))
             self.characters.append(character)
             self.names.append(character.name)
             self.infos.append(character.info)
@@ -735,7 +735,7 @@ class Dialog_AI:
 
         self.play_number = 0
         self.files_number = 0
-        self.gpt = ChatGPT(warnings=True)
+        self.gpt = ChatGPT(warnings=True, save_history=False)
         self.user_id = ctx.author.id * 10
 
         self.dialog_create = {}
@@ -816,9 +816,7 @@ class Dialog_AI:
         return lines[found_max_line + 1:]
 
     async def run_gpt(self, prompt):
-        print("RUN GPT")
         result = await self.gpt.run_all_gpt(prompt=prompt, user_id=self.user_id)
-        print("END GPT")
         if "(" in result and ")" in result:
             result = re.sub(r'\(.*?\)', '', result)
         if "*" in result:
@@ -828,11 +826,11 @@ class Dialog_AI:
 
     async def gpt_dialog(self):
         prompt = (
-            f"Привет, chatGPT. Вы собираетесь сделать диалог между {', '.join(self.names)}. На тему \"{self.theme}\". "
-            f"персонажи должны соответствовать своему образу насколько это возможно. "
-            f"{'.'.join(self.infos)}. {self.global_prompt}. "
-            f"Обязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше. "
-            f"Выведи диалог в таком формате:[Говорящий]: [текст, который он произносит]")
+            f"#Задача\nВы собираетесь сделать диалог между {', '.join(self.names)}.\n #Тема диалога\n {self.theme}.\n"
+            f"Персонажи должны соответствовать своему образу насколько это возможно.\n"
+            f"#Информация о персонажах\n{'.'.join(self.infos)}.\n#{self.global_prompt}. \n\n"
+            f"#Требования \nОбязательно в конце диалога напиши очень кратко что произошло в этом диалоги и что должно произойти дальше.\n"
+            f"Выведи диалог в таком формате:\n[Говорящий]: [текст, который он произносит]")
         result = await self.run_gpt(prompt)
 
         dialog_next = await self.save_dialog(result)
