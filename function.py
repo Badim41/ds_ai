@@ -169,6 +169,7 @@ class TextToSpeechRVC:
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys))
                 else:
                     self.elevenlabs_voice_keys = "None"
+                    create_secret(SecretKey.voice_keys, "None")
                 pitch = await self.elevenlabs_text_to_speech(text, audio_file)
         return pitch
 
