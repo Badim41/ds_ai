@@ -23,7 +23,7 @@ class BarkTTS():
         logger.logging("[bark] Ready to start", color=Color.GRAY)
         self.started = True
 
-    async def text_to_speech_bark(self, text, speaker="v2/ru_speaker_2", audio_path="2.mp3", gen_temp=0.6):
+    async def text_to_speech_bark(self, text, speaker, audio_path="2.mp3", gen_temp=0.6):
         if not self.started:
             raise "Загружается"
         import numpy as np
@@ -45,7 +45,7 @@ class BarkTTS():
             print("Sentence:", sentence)
             semantic_tokens = generate_text_semantic(
                 sentence,
-                history_prompt=speaker,
+                history_prompt=f"v2/ru_speaker_{speaker}",
                 temp=gen_temp,
                 min_eos_p=0.05,  # this controls how likely the generation is to end
             )

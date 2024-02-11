@@ -510,9 +510,9 @@ async def __bark(
     global bark_model
     timer = Time_Count()
     if bark_model is None:
-        await ctx.send('Загрузка модели...')
+        await ctx.respond('Загрузка модели...')
         bark_model = BarkTTS()
-    await ctx.send('Выполнение...')
+    await ctx.respond('Выполнение...')
     await cuda_manager.use_cuda(index=0)
     try:
         audio_path = f"{ctx.author.id}-{speaker}-bark.mp3"
