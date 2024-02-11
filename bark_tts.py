@@ -49,7 +49,7 @@ from scipy.io.wavfile import write as write_wav
     async def text_to_speech_bark(self, text, speaker, audio_path="2.mp3", gen_temp=0.6):
         if not self.started:
             raise Exception("Загружается")
-
+        self.load_imports()
         # Импорт необходимых модулей
         nltk_module = __import__('nltk', globals(), locals(), [], 0)
         np_module = __import__('numpy', globals(), locals(), [], 0)
