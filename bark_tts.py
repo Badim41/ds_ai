@@ -7,16 +7,15 @@ logger = Logs(warnings=True)
 
 class BarkTTS():
     def __init__(self):
-        if not os.path.exists("/venv_bark"):
-            os.chdir("/")
+        activate_venv_cmd = "venv_bark/bin/activate"
+        if not os.path.exists("venv_bark/lib/python3.9/site-packages/torch"):
             logger.logging("[bark] Create bark_venv", color=Color.GRAY)
             subprocess.run(["python3 -m venv venv_bark"], shell=True)
-            activate_venv_cmd = os.path.join("venv_bark", "bin", "activate")
             logger.logging("[bark] Installing packages", color=Color.GRAY)
             subprocess.run(
-                [f"{activate_venv_cmd} && pip install git+https://github.com/suno-ai/bark.git nltk pydub"], shell=True)
-            activate_cmd = f"source {activate_venv_cmd}"
-            subprocess.run(activate_cmd, shell=True)
+                [f". {activate_venv_cmd} && pip install git+https://github.com/suno-ai/bark.git nltk pydub"], shell=True)
+        activate_cmd = f". {activate_venv_cmd}"
+        subprocess.run(activate_cmd, shell=True)
         from bark.generation import preload_models
         logger.logging("[bark] Preload models", color=Color.GRAY)
         preload_models()
