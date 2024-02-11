@@ -59,6 +59,7 @@ brotli
 beautifulsoup4
 setuptools
 aiohttp_socks
+nltk
 pydub==0.25.1
 py-cord[speed]
 py-cord[voice]
