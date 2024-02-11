@@ -13,7 +13,7 @@ class BarkTTS():
         self.activate_venv_cmd = f"{BASE_DIR}/venv_bark/bin/activate"
 
         # Проверяем, установлены ли пакеты в виртуальное окружение, и если нет - устанавливаем их
-        if not os.path.exists(f"{BASE_DIR}/venv_bark/lib/python3.9/site-packages/torch"):
+        if not os.path.exists(f"{BASE_DIR}/venv_bark/bin/activate"):
             logger.logging("[bark] Create bark_venv", color=Color.GRAY)
             subprocess.run(["python3 -m venv venv_bark"], check=True)
             logger.logging("[bark] Installing packages", color=Color.GRAY)
