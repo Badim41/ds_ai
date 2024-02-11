@@ -10,11 +10,11 @@ class BarkTTS():
         if not os.path.exists("/venv_bark"):
             os.chdir("/")
             logger.logging("[bark] Create bark_venv", color=Color.GRAY)
-            subprocess.run(["python3", "-m", "venv", "venv_bark"])
+            subprocess.run(["python3", "-m", "venv", "venv_bark"], shell=True)
             activate_venv_cmd = os.path.join("venv_bark", "bin", "activate")
             logger.logging("[bark] Installing packages", color=Color.GRAY)
             subprocess.run(
-                [activate_venv_cmd, "&&", "pip", "install", "git+https://github.com/suno-ai/bark.git", "nltk", "pydub"])
+                [activate_venv_cmd, "&&", "pip", "install", "git+https://github.com/suno-ai/bark.git", "nltk", "pydub"], shell=True)
             activate_cmd = f"source {activate_venv_cmd}"
             subprocess.run(activate_cmd, shell=True)
         from bark.generation import preload_models
