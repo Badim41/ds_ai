@@ -231,7 +231,7 @@ async def help_command(
         import torch
         cuda_avaible = torch.cuda.device_count()
         if len(image_generators) == 0:
-            await ctx.send(f"Загрузка генератора картинок на {cuda_avaible - 1} видеокарте")
+            await ctx.send(f"Загрузка генератора картинок на {cuda_avaible}-ой видеокарте")
             image_generators.append(Image_Generator(cuda_avaible - 1))
 
     elif command == "change_video":
@@ -247,7 +247,7 @@ async def help_command(
         cuda_avaible = torch.cuda.device_count()
         if len(image_generators) == 0:
             for i in range(cuda_avaible):
-                await ctx.send(f"Загрузка генератора картинок на {i} видеокарте")
+                await ctx.send(f"Загрузка генератора картинок на {i+1}-ой видеокарте")
                 image_generators.append(Image_Generator(i))
     elif command == "join":
         await ctx.respond("# /join\n - присоединиться к вам в войс-чате")
