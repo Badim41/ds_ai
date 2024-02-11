@@ -26,6 +26,7 @@ from function import Image_Generator, Character, Voice_Changer, get_link_to_file
 from modifed_sinks import StreamSink
 from use_free_cuda import Use_Cuda
 from bark_tts import BarkTTS
+from download_voice_model import download_online_model
 
 try:
     import nest_asyncio
@@ -1055,33 +1056,28 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model_eleven
                          similarity_boost="0.25", style="0.4"):
     if name == "None" or ";" in name or "/" in name or "\\" in name:
         await ctx.respond('Имя не должно содержать \";\" \"/\" \"\\\" или быть None')
-    # !python download_voice_model.py {url} {dir_name} {gender} {info}
+
     name = name.replace(" ", "_")
     if gender == "женщина":
         gender = "female"
     elif gender == "мужчина":
         gender = "male"
-    else:
-        gender = "male"
     try:
-        command = [
-            "python",
-            "download_voice_model.py",
-            url,
-            name,
-            gender,
-            f"{info}",
-            voice_model_eleven,
-            str(speed),
-            stability,
-            similarity_boost,
-            style
-        ]
-        subprocess.run(command, check=True)
-        if change_voice:
+        parameters = {
+            "info": info,
+            "gender": gender.replace(" ", ""),
+            "speed": str(speed).replace(" ", ""),
+            "voice_model_eleven": voice_model_eleven,
+            "stability": stability.replace(" ", ""),
+            "similarity_boost": similarity_boost.replace(" ", ""),
+            "style": style.replace(" ", ""),
+        }
+        result = await download_online_model(url=url, dir_name=name, parameters=parameters)
+
+        if change_voice and "успешно установлена" in result:
             user = DiscordUser(ctx)
             await user.set_user_config(SQL_Keys.AIname, name)
-        await ctx.send(f"Модель {name} успешно установлена!")
+        await ctx.send(result)
 
         # Удаляем модель, если она существует
         if name in characters_all:
