@@ -14,8 +14,8 @@ class BarkTTS():
             logger.logging("[bark] Installing packages", color=Color.GRAY)
             subprocess.run(
                 [f". {activate_venv_cmd} && pip install git+https://github.com/suno-ai/bark.git nltk pydub"], shell=True)
-        activate_cmd = f". {activate_venv_cmd}"
-        subprocess.run(activate_cmd, shell=True)
+        activate_command = f'. {activate_venv_cmd}' if os.name == 'posix' else f'call {activate_venv_cmd}'
+        subprocess.run(activate_command, shell=True)
         from bark.generation import preload_models
         logger.logging("[bark] Preload models", color=Color.GRAY)
         preload_models()
