@@ -2,7 +2,7 @@ import os
 import subprocess
 from discord_tools.logs import Logs, Color
 
-BASE_DIR = os.path.basename(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 logger = Logs(warnings=True)
 
