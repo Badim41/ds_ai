@@ -1072,9 +1072,9 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model_eleven
             "similarity_boost": similarity_boost.replace(" ", ""),
             "style": style.replace(" ", ""),
         }
-        result = await download_online_model(url=url, dir_name=name, parameters=parameters)
+        success, result = await download_online_model(url=url, dir_name=name, parameters=parameters)
 
-        if change_voice and "успешно установлена" in result:
+        if change_voice and success:
             user = DiscordUser(ctx)
             await user.set_user_config(SQL_Keys.AIname, name)
         await ctx.send(result)

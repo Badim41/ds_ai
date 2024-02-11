@@ -54,7 +54,7 @@ async def download_online_model(url, dir_name, parameters):
             json_file_path = os.path.join(extraction_folder, "params.json")
             with open(json_file_path, 'w') as json_writer:
                 json.dump(parameters, json_writer, indent=4)
-            return f'Модель {dir_name} уже существует, но её информация/скорость были изменены'
+            return True,  f'Модель {dir_name} уже существует, но её информация/скорость были изменены'
 
         if 'pixeldrain.com' in url:
             url = f'https://pixeldrain.com/api/file/{zip_name}'
@@ -67,13 +67,13 @@ async def download_online_model(url, dir_name, parameters):
         print('[~] Разархивация...')
         error = await extract_zip(extraction_folder, zip_name, parameters)
         if error:
-            return error
+            return False, error
         print(f'[+] {dir_name} модель успешно установлена!')
-        return f"Модель {dir_name} успешно установлена!"
+        return True, f"Модель {dir_name} успешно установлена!"
 
     except Exception as e:
         print(e)
-        return f"Ошибка: {e}"
+        return False, f"Ошибка: {e}"
 
 
 if __name__ == "__main__":
