@@ -7,7 +7,7 @@ logger = Logs(warnings=True)
 
 class BarkTTS():
     def __init__(self):
-        self.activate_venv_cmd = "./venv_bark/bin/activate"
+        self.activate_venv_cmd = "venv_bark/bin/activate"
 
         # Проверяем, установлены ли пакеты в виртуальное окружение, и если нет - устанавливаем их
         if not os.path.exists("venv_bark/lib/python3.9/site-packages/torch"):
