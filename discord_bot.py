@@ -85,7 +85,7 @@ class DiscordUser:
         character_name = asyncio.run(set_get_config_all(self.id, SQL_Keys.AIname))
         self.character = Character(character_name)
         self.gpt_mode = asyncio.run(set_get_config_all(self.id, SQL_Keys.gpt_mode))
-        self.owner = asyncio.run(set_get_config_all("Default", SQL_Keys.owner_id)) == str(self.id)
+        self.owner = str(self.id) in asyncio.run(set_get_config_all("Default", SQL_Keys.owner_id)).split(";")
 
     async def set_user_config(self, key, value=None):
         await set_get_config_all(self.id, key, value)
@@ -103,7 +103,7 @@ async def on_ready():
     logger.logging('Status: online', "\ncuda:", torch.cuda.device_count(), color=Color.GREEN)
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
-    id = await set_get_config_all("Default", SQL_Keys.owner_id)
+    id = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")[0]
     logger.logging("ID:", id, color=Color.GRAY)
     if not id == "True":
         user = await bot.fetch_user(int(id))
@@ -134,10 +134,6 @@ async def on_message(message):
         chatGPT = ChatGPT()
         answer = await chatGPT.run_all_gpt(f"{user}:{text}", user_id=user)
         await ctx.send(answer)
-        return
-
-    # TEMP WHITELIST
-    if not str(message.author.id) == await set_get_config_all("Default", SQL_Keys.owner_id):
         return
 
     # other users
@@ -281,8 +277,8 @@ async def __config(
 ):
     try:
         await ctx.defer()
-        owner_id = await set_get_config_all("Default", SQL_Keys.owner_id)
-        if not ctx.author.id == int(owner_id):
+        owner_ids = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")
+        if str(ctx.author.id) not in owner_ids:
             await ctx.author.send("Доступ запрещён")
             return
         result = await set_get_config_all(section, key, value)
@@ -1120,8 +1116,8 @@ async def command_line(ctx, command):
 
 @bot.command(aliases=['cmd'], help="командная строка")
 async def commands(ctx, *args):
-    owner_id = await set_get_config_all("Default", SQL_Keys.owner_id)
-    if not ctx.author.id == int(owner_id):
+    owner_ids = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")
+    if str(ctx.author.id) not in owner_ids:
         await ctx.author.send("Доступ запрещён")
         return
 
@@ -1132,24 +1128,30 @@ async def commands(ctx, *args):
 
 @bot.command(aliases=['restart'], help="Перезагрузка")
 async def command_restart(ctx):
-    owner_id = await set_get_config_all("Default", SQL_Keys.owner_id)
-    if not ctx.author.id == int(owner_id):
+    owner_ids = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")
+    if str(ctx.author.id) not in owner_ids:
         await ctx.author.send("Доступ запрещён")
         return
     await ctx.send("Перезагрузка")
+    await set_get_config_all("Default", SQL_Keys.reload, ctx.author.id)
     exit(0)
 
 
 @bot.command(aliases=['exit'], help="Выключиться")
 async def command_exit(ctx, *args):
-    owner_id = await set_get_config_all("Default", SQL_Keys.owner_id)
-    if not ctx.author.id == int(owner_id):
+    owner_ids = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")
+    if str(ctx.author.id) not in owner_ids:
         await ctx.author.send("Доступ запрещён")
         return
     time = ''.join(args).replace(" ", "")
-    await ctx.send(f"Выключение через {time} секунд")
-    await asyncio.sleep(int(time))
-    asyncio.ensure_future(command_line(ctx=ctx, command="pkill -f python"))
+    if time:
+        await ctx.send(f"Выключение через {time} секунд")
+        await asyncio.sleep(int(time))
+    else:
+        await ctx.send(f"Выключение")
+    await set_get_config_all("Default", SQL_Keys.reload, "False")
+    exit(0)
+    # asyncio.ensure_future(command_line(ctx=ctx, command="pkill -f python"))
 
 
 @bot.command(aliases=['themer'], help="тема для диалога")
