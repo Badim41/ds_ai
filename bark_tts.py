@@ -15,7 +15,7 @@ class BarkTTS():
         # Проверяем, установлены ли пакеты в виртуальное окружение, и если нет - устанавливаем их
         if not os.path.exists(f"{BASE_DIR}/venv_bark/bin/activate"):
             logger.logging("[bark] Create bark_venv", color=Color.GRAY)
-            subprocess.run("python -m venv venv_bark --clear", check=True)
+            subprocess.run("python -m venv venv_bark", check=True)
             logger.logging("[bark] Installing packages", color=Color.GRAY)
             subprocess.run(
                 [f". {self.activate_venv_cmd} && pip install git+https://github.com/suno-ai/bark.git nltk pydub"],
