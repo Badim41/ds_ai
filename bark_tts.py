@@ -7,16 +7,24 @@ logger = Logs(warnings=True)
 
 class BarkTTS():
     def __init__(self):
-        self.activate_venv_cmd = "venv_bark/bin/activate"
+        self.activate_venv_cmd = "./venv_bark/bin/activate"
+
+        # Проверяем, установлены ли пакеты в виртуальное окружение, и если нет - устанавливаем их
         if not os.path.exists("venv_bark/lib/python3.9/site-packages/torch"):
             logger.logging("[bark] Create bark_venv", color=Color.GRAY)
-            subprocess.run(["python3 -m venv venv_bark"], shell=True)
+            subprocess.run(["python3", "-m", "venv", "venv_bark"], check=True)
             logger.logging("[bark] Installing packages", color=Color.GRAY)
             subprocess.run(
-                [f". {self.activate_venv_cmd} && pip install git+https://github.com/suno-ai/bark.git nltk pydub"], shell=True)
-        activate_command = f'. {self.activate_venv_cmd}' if os.name == 'posix' else f'call {self.activate_venv_cmd}'
-        subprocess.run(activate_command, shell=True)
+                [f"source {self.activate_venv_cmd} && pip install git+https://github.com/suno-ai/bark.git nltk pydub"],
+                shell=True, check=True)
+
+        # Активируем виртуальное окружение
+        activate_command = f'source {self.activate_venv_cmd}' if os.name == 'posix' else f'call {self.activate_venv_cmd}'
+        subprocess.run(activate_command, shell=True, check=True)
+
+        # Импортируем модуль после активации виртуального окружения
         from bark.generation import preload_models
+
         logger.logging("[bark] Preload models", color=Color.GRAY)
         preload_models()
         logger.logging("[bark] Ready to start", color=Color.GRAY)
