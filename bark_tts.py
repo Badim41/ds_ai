@@ -2,7 +2,6 @@ import os
 import subprocess
 from discord_tools.logs import Logs, Color
 
-
 BASE_DIR = os.getcwd()
 
 logger = Logs(warnings=True)
@@ -20,31 +19,36 @@ class BarkTTS():
             subprocess.run(
                 [f". {self.activate_venv_cmd} && pip install git+https://github.com/suno-ai/bark.git nltk pydub"],
                 shell=True, check=True)
-
-        # Активируем виртуальное окружение
-        activate_command = f'. {self.activate_venv_cmd}' if os.name == 'posix' else f'call {self.activate_venv_cmd}'
-        subprocess.run(activate_command, shell=True, check=True)
-
-        # Импортируем модуль после активации виртуального окружения
-        from bark.generation import preload_models
-
+        self.load_imports()
         logger.logging("[bark] Preload models", color=Color.GRAY)
         preload_models()
         logger.logging("[bark] Ready to start", color=Color.GRAY)
         self.started = True
 
+    def load_imports(self):
+        # Активируем виртуальное окружение
+        activate_command = f'. {self.activate_venv_cmd}'
+        activate_process = subprocess.Popen(activate_command, shell=True, stdin=subprocess.PIPE)
+
+        # Импортируем модуль после активации виртуального окружения
+        imports = """
+                from bark.generation import preload_models
+                import numpy as np
+                from pydub import AudioSegment
+                import nltk
+                from bark import SAMPLE_RATE
+                from bark.api import semantic_to_waveform
+                from bark.generation import generate_text_semantic
+                from scipy.io.wavfile import write as write_wav
+                """
+        activate_process.stdin.write(imports.encode())
+        activate_process.stdin.close()
+        activate_process.wait()
+
     async def text_to_speech_bark(self, text, speaker, audio_path="2.mp3", gen_temp=0.6):
         if not self.started:
             raise "Загружается"
-        activate_command = f'. {self.activate_venv_cmd}' if os.name == 'posix' else f'call {self.activate_venv_cmd}'
-        subprocess.run(activate_command, shell=True)
-        import numpy as np
-        from pydub import AudioSegment
-        import nltk
-        from bark import SAMPLE_RATE
-        from bark.api import semantic_to_waveform
-        from bark.generation import generate_text_semantic
-        from scipy.io.wavfile import write as write_wav
+        self.load_imports()
 
         text = text.replace("\n", " ").strip()
 
