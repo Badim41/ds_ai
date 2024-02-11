@@ -21,7 +21,8 @@ class BarkTTS():
                 shell=True, check=True)
         self.load_imports()
         logger.logging("[bark] Preload models", color=Color.GRAY)
-        preload_models()
+        bark_generation = __import__('bark.generation', globals(), locals(), ['preload_models'], 0)
+        bark_generation.preload_models()
         logger.logging("[bark] Ready to start", color=Color.GRAY)
         self.started = True
 
@@ -32,15 +33,15 @@ class BarkTTS():
 
         # Импортируем модуль после активации виртуального окружения
         imports = """
-                from bark.generation import preload_models
-                import numpy as np
-                from pydub import AudioSegment
-                import nltk
-                from bark import SAMPLE_RATE
-                from bark.api import semantic_to_waveform
-                from bark.generation import generate_text_semantic
-                from scipy.io.wavfile import write as write_wav
-                """
+from bark.generation import preload_models
+import numpy as np
+from pydub import AudioSegment
+import nltk
+from bark import SAMPLE_RATE
+from bark.api import semantic_to_waveform
+from bark.generation import generate_text_semantic
+from scipy.io.wavfile import write as write_wav
+"""
         activate_process.stdin.write(imports.encode())
         activate_process.stdin.close()
         activate_process.wait()
