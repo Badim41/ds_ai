@@ -47,9 +47,8 @@ class BarkTTS():
         pieces = []
         for sentence in sentences:
             # Создание аудиофайла из предложения
-            subprocess.run([
-                f"{self.activate_venv_cmd}python -m bark --text \"{sentence}\" --output_filename \"temp.wav\" --history_prompt {speaker} --text_temp {gen_temp}"
-            ], shell=True, check=True)
+            subprocess.run(
+                f"{self.activate_venv_cmd}python -m bark --text \"{sentence}\" --output_filename \"temp.wav\" --history_prompt {speaker} --text_temp {gen_temp}", shell=True, check=True)
 
             # Преобразование аудиофайла в массив numpy
             audio_piece, _ = read_wav("temp.wav")
