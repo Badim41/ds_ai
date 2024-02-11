@@ -7,14 +7,14 @@ logger = Logs(warnings=True)
 
 class BarkTTS():
     def __init__(self):
-        activate_venv_cmd = "venv_bark/bin/activate"
+        self.activate_venv_cmd = "venv_bark/bin/activate"
         if not os.path.exists("venv_bark/lib/python3.9/site-packages/torch"):
             logger.logging("[bark] Create bark_venv", color=Color.GRAY)
             subprocess.run(["python3 -m venv venv_bark"], shell=True)
             logger.logging("[bark] Installing packages", color=Color.GRAY)
             subprocess.run(
-                [f". {activate_venv_cmd} && pip install git+https://github.com/suno-ai/bark.git nltk pydub"], shell=True)
-        activate_command = f'. {activate_venv_cmd}' if os.name == 'posix' else f'call {activate_venv_cmd}'
+                [f". {self.activate_venv_cmd} && pip install git+https://github.com/suno-ai/bark.git nltk pydub"], shell=True)
+        activate_command = f'. {self.activate_venv_cmd}' if os.name == 'posix' else f'call {self.activate_venv_cmd}'
         subprocess.run(activate_command, shell=True)
         from bark.generation import preload_models
         logger.logging("[bark] Preload models", color=Color.GRAY)
@@ -25,6 +25,8 @@ class BarkTTS():
     async def text_to_speech_bark(self, text, speaker, audio_path="2.mp3", gen_temp=0.6):
         if not self.started:
             raise "Загружается"
+        activate_command = f'. {self.activate_venv_cmd}' if os.name == 'posix' else f'call {self.activate_venv_cmd}'
+        subprocess.run(activate_command, shell=True)
         import numpy as np
         from pydub import AudioSegment
         import nltk
