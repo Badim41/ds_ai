@@ -335,11 +335,11 @@ class Image_Generator:
         self.cuda_number = str(cuda_number)
         self.pipe_prior = None
         self.pipe = None
-        self.load_models()
         self.loaded = False
         self.busy = False
+        asyncio.ensure_future(self.load_models())
 
-    def load_models(self):
+    async def load_models(self):
         try:
             logger.logging(f"image model loading... GPU:{self.cuda_number}", color=Color.GRAY)
             self.pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
