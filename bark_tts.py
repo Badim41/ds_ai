@@ -48,14 +48,22 @@ from scipy.io.wavfile import write as write_wav
 
     async def text_to_speech_bark(self, text, speaker, audio_path="2.mp3", gen_temp=0.6):
         if not self.started:
-            raise "Загружается"
-        self.load_imports()
+            raise Exception("Загружается")
 
+        # Импорт необходимых модулей
+        nltk_module = __import__('nltk', globals(), locals(), [], 0)
+        np_module = __import__('numpy', globals(), locals(), [], 0)
+        bark_module = __import__('bark', globals(), locals(), ['SAMPLE_RATE'], 0)
+        generate_text_semantic = __import__('bark.generation', globals(), locals(), ['generate_text_semantic'],
+                                            0).generate_text_semantic
+        write_wav = __import__('scipy.io.wavfile', globals(), locals(), ['write'], 0).write
+        AudioSegment = __import__('pydub', globals(), locals(), ['AudioSegment'], 0).AudioSegment
+
+        # Загрузка текста
         text = text.replace("\n", " ").strip()
+        sentences = nltk_module.sent_tokenize(text)
 
-        sentences = nltk.sent_tokenize(text)
-
-        silence = np.zeros(int(0.1 * SAMPLE_RATE))
+        silence = np_module.zeros(int(0.1 * bark_module.SAMPLE_RATE))
 
         pieces = []
         for sentence in sentences:
@@ -67,21 +75,22 @@ from scipy.io.wavfile import write as write_wav
                 min_eos_p=0.05,  # this controls how likely the generation is to end
             )
 
-            audio_array = semantic_to_waveform(semantic_tokens, history_prompt=speaker, )
+            audio_array = bark_module.semantic_to_waveform(semantic_tokens, history_prompt=speaker)
             pieces += [audio_array, silence.copy()]
 
-        # Concatenate audio pieces
-        audio_result = np.concatenate(pieces)
+        # Объединение аудиофрагментов
+        audio_result = np_module.concatenate(pieces)
 
         # Нормализация аудио до 16-бит
-        audio_result = (audio_result / np.max(np.abs(audio_result)) * 32767).astype(np.int16)
+        audio_result = (audio_result / np_module.max(np_module.abs(audio_result)) * 32767).astype(np_module.int16)
 
-        # Сохранение
+        # Сохранение в WAV
         wav_audio_path = audio_path.replace(".mp3", "wav")
-        write_wav(wav_audio_path, SAMPLE_RATE, audio_result)
+        write_wav(wav_audio_path, bark_module.SAMPLE_RATE, audio_result)
 
-        # mp3
+        # Преобразование в MP3
         audio = AudioSegment.from_wav(wav_audio_path)
         audio.export(audio_path, format="mp3")
 
+        # Удаление временного WAV файла
         os.remove(wav_audio_path)
