@@ -372,7 +372,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
         return ai_cover_path
 
     except Exception as e:
-        print(str(e), is_webui)
+        raise e
 
 
 # def path_exist(song_dir):

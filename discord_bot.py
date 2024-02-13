@@ -1649,8 +1649,9 @@ class AudioPlayerDiscord:
             return "Вы не на сервере"
 
     async def play(self, audio_file, delete_file=False, is_send_file=True):
-        if not self.guild and is_send_file:
-            await send_file(self.ctx, audio_file)
+        if not self.guild:
+            if is_send_file:
+                await send_file(self.ctx, audio_file)
             return
 
         async with audio_play_lock():
