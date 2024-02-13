@@ -47,7 +47,7 @@ class BarkTTS():
         pieces = []
         for sentence in sentences:
             # Создание аудиофайла из предложения
-            process = subprocess.Popen(f"{self.activate_venv_cmd}python -m bark --text \"{sentence}\" --output_filename \"temp.wav\" --history_prompt {speaker} --text_temp {gen_temp}", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = subprocess.Popen(f". {self.activate_venv_cmd} && python -m bark --text \"{sentence}\" --output_filename \"temp.wav\" --history_prompt {speaker} --text_temp {gen_temp}", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process_output, process_error = process.communicate()
             if process.returncode != 0:
                 raise Exception(f"Ошибка при bark TTS: {process_error.decode()}")
