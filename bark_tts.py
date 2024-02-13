@@ -75,9 +75,6 @@ class BarkTTS():
 
         audio_result = await merge_audio_files(input_paths=pieces, output_path=audio_path)
 
-        # Нормализация аудио до 16-бит
-        audio_result = (audio_result / np.max(np.abs(audio_result)) * 32767).astype(np.int16)
-
         # Сохранение в WAV
         wav_audio_path = audio_path.replace(".mp3", ".wav")
         write_wav(wav_audio_path, SAMPLE_RATE, audio_result)
