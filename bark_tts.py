@@ -17,7 +17,7 @@ logger = Logs(warnings=True)
 
 class BarkTTS():
     def __init__(self):
-        self.activate_venv_cmd = f". {BASE_DIR}/venv_bark/bin/activate && "
+        self.activate_venv_cmd = f"{BASE_DIR}/venv_bark/bin/activate"
         self.started = False
 
         # Проверяем, установлены ли пакеты в виртуальное окружение, и если нет - устанавливаем их
@@ -25,15 +25,10 @@ class BarkTTS():
             logger.logging("[bark] Create bark_venv", color=Color.GRAY)
             subprocess.run(["python", "-m", "venv", "venv_bark"], check=True)
             logger.logging("[bark] Installing packages", color=Color.GRAY)
-            install_process = subprocess.Popen(
-                [self.activate_venv_cmd, "pip", "install", "git+https://github.com/suno-ai/bark.git", "nltk", "pydub"],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            install_process = subprocess.Popen(f". {self.activate_venv_cmd} && pip install git+https://github.com/suno-ai/bark.git nltk pydub", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             install_output, install_error = install_process.communicate()
             if install_process.returncode != 0:
                 raise Exception(f"Ошибка при установке пакетов: {install_error.decode()}")
-        logger.logging("[bark] Preload models", color=Color.GRAY)
-        subprocess.run(f"{self.activate_venv_cmd}python -m bark --text \"test\" --output_filename \"test.wav\"",
-                       check=True)
         logger.logging("[bark] Ready to start", color=Color.GRAY)
         self.started = True
 
@@ -52,13 +47,10 @@ class BarkTTS():
         pieces = []
         for sentence in sentences:
             # Создание аудиофайла из предложения
-            cmd = f"{self.activate_venv_cmd}python -m bark --text \"{sentence}\" --output_filename \"temp.wav\" --history_prompt {speaker} --text_temp {gen_temp}"
-            process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            stdout, stderr = process.communicate()
+            process = subprocess.Popen(f"{self.activate_venv_cmd}python -m bark --text \"{sentence}\" --output_filename \"temp.wav\" --history_prompt {speaker} --text_temp {gen_temp}", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process_output, process_error = process.communicate()
             if process.returncode != 0:
-                raise Exception(
-                    f"Произошла ошибка при выполнении команды: {cmd}\nСтандартный вывод: {stdout.decode('utf-8')}\nСтандартная ошибка: {stderr.decode('utf-8')}")
-
+                raise Exception(f"Ошибка при bark TTS: {process_error.decode()}")
             # Преобразование аудиофайла в массив numpy
             audio_piece, _ = read_wav("temp.wav")
             pieces.append(audio_piece)
