@@ -1,1 +1,4 @@
-print("Я злой" if a**2 + b**2 == c**2 else "Я добри")
+sentences = [1, 2, 3, 4, 5]
+for i, sentence in enumerate(sentences):
+    if i == len(sentences) - 1:
+        print("last", i)

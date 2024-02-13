@@ -17,6 +17,18 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 logger = Logs(warnings=True)
 
 
+async def merge_audio_files(input_paths, output_path):
+    # Создаем список объектов AudioSegment для каждого входного аудиофайла
+    audio_segments = [AudioSegment.from_file(path) for path in input_paths]
+
+    # Соединяем все аудиофайлы
+    merged_audio = sum(audio_segments)
+
+    # Сохраняем результирующий аудиофайл
+    merged_audio.export(output_path, format="wav")
+    return output_path
+
+
 class BarkTTS():
     def __init__(self):
         self.activate_venv_cmd = f"venv_bark/bin/activate"
@@ -32,7 +44,7 @@ class BarkTTS():
 
         try:
             self.started = True
-            asyncio.run(self.text_to_speech_bark("test", audio_path="temp.mp3"))
+            asyncio.run(self.text_to_speech_bark("а", audio_path="temp.mp3"))
         except Exception as e:
             self.started = False
             raise e
@@ -42,6 +54,7 @@ class BarkTTS():
     async def text_to_speech_bark(self, text, speaker=1, audio_path="2.mp3", gen_temp=0.6):
         if not self.started:
             raise Exception("Загружается")
+        file_name = audio_path[:audio_path.find(".mp3")]
 
         # Загрузка текста
         text = text.replace("\n", " ").strip()
@@ -52,16 +65,15 @@ class BarkTTS():
         speaker = f"v2/ru_speaker_{speaker}"
 
         pieces = []
-        for sentence in sentences:
-            # Создание аудиофайла из предложения
-            command = f". venv_bark/bin/activate && python -m bark --text \"{sentence}\" --output_filename \"temp.wav\" --history_prompt {speaker} --text_temp {gen_temp}"
-            subprocess.run(command, shell=True, check=True)
-            # Преобразование аудиофайла в массив numpy
-            audio_piece, _ = read_wav("temp.wav")
-            pieces.append(audio_piece)
+        for i, sentence in enumerate(sentences):
+            temp_audio_file = f"{file_name}-temp{i}.wav"
 
-        # Объединение аудиофрагментов
-        audio_result = np.vstack(pieces)
+            command = f". venv_bark/bin/activate && python -m bark --text \"{sentence}\" --output_filename \"{temp_audio_file}\" --history_prompt {speaker} --text_temp {gen_temp}"
+            subprocess.run(command, shell=True, check=True)
+
+            pieces.append(temp_audio_file)
+
+        audio_result = await merge_audio_files(input_paths=pieces, output_path=audio_path)
 
         # Нормализация аудио до 16-бит
         audio_result = (audio_result / np.max(np.abs(audio_result)) * 32767).astype(np.int16)
@@ -73,6 +85,3 @@ class BarkTTS():
         # Преобразование в MP3
         audio = AudioSegment.from_wav(wav_audio_path)
         audio.export(audio_path, format="mp3")
-
-        # Удаление временного WAV файла
-        # os.remove(wav_audio_path)
