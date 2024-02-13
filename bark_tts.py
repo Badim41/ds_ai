@@ -17,7 +17,7 @@ logger = Logs(warnings=True)
 
 class BarkTTS():
     def __init__(self):
-        self.activate_venv_cmd = f"{BASE_DIR}/venv_bark/bin/activate"
+        self.activate_venv_cmd = f"venv_bark/bin/activate"
         self.started = False
 
         # Проверяем, установлены ли пакеты в виртуальное окружение, и если нет - устанавливаем их
