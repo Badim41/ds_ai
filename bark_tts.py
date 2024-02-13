@@ -30,7 +30,12 @@ class BarkTTS():
             command = ". venv_bark/bin/activate && pip install git+https://github.com/suno-ai/bark.git nltk pydub"
             subprocess.run(command, shell=True, check=True)
 
-        asyncio.run(self.text_to_speech_bark("test", audio_path="temp.mp3"))
+        try:
+            self.started = True
+            asyncio.run(self.text_to_speech_bark("test", audio_path="temp.mp3"))
+        except Exception as e:
+            self.started = False
+            raise e
         logger.logging("[bark] Ready to start", color=Color.GRAY)
         self.started = True
 
@@ -50,7 +55,7 @@ class BarkTTS():
         for sentence in sentences:
             # Создание аудиофайла из предложения
             command = f". venv_bark/bin/activate && python -m bark --text \"{sentence}\" --output_filename \"temp.wav\" --history_prompt {speaker} --text_temp {gen_temp}"
-            process = subprocess.run(command, shell=True, check=True)
+            subprocess.run(command, shell=True, check=True)
             # Преобразование аудиофайла в массив numpy
             audio_piece, _ = read_wav("temp.wav")
             pieces.append(audio_piece)
