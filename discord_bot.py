@@ -509,6 +509,12 @@ async def __bark(
         gen_temp: Option(float, description='Голосовая модель bark', required=False, default=0.6)
 ):
     global bark_model
+
+    mat_found, text = await moderate_mat_in_sentence(text)
+    if mat_found:
+        await ctx.respond("Такое точно нельзя произносить!")
+        return
+
     timer = Time_Count()
     if bark_model is None:
         await ctx.respond('Загрузка модели...')
