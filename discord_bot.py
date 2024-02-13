@@ -513,6 +513,7 @@ async def __bark(
     if bark_model is None:
         await ctx.respond('Загрузка модели...')
         bark_model = BarkTTS()
+        await ctx.respond('Модель загружена!')
     await ctx.respond('Выполнение...')
     await cuda_manager.use_cuda(index=0)
     try:
