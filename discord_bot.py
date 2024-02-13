@@ -463,8 +463,8 @@ async def __tts(
     try:
 
         await ctx.response.send_message('Выполнение...' + voice_name)
-        cuda_number = await cuda_manager.use_cuda()
-        await character.load_voice(cuda_number, speed=speed, stability=stability, similarity_boost=similarity_boost,
+        # cuda_number = await cuda_manager.use_cuda()
+        await character.load_voice(0, speed=speed, stability=stability, similarity_boost=similarity_boost,
                                    style=style, pitch=pitch, algo=palgo)
         for voice_model in voice_models:
             audio_path_1 = f"{user.id}-{voice_model}-tts-row.mp3"
@@ -491,13 +491,13 @@ async def __tts(
 
             os.remove(audio_path_1)
             os.remove(audio_path_2)
-        await cuda_manager.stop_use_cuda(cuda_number)
+        # await cuda_manager.stop_use_cuda(cuda_number)
     except Exception as e:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
         await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
         # перестаём использовать видеокарту
-        await cuda_manager.stop_use_cuda(cuda_number)
+        # await cuda_manager.stop_use_cuda(cuda_number)
 
 
 @bot.slash_command(name="bark", description='Тестовая генерация речи с помощью bark')
@@ -1128,6 +1128,14 @@ async def commands(ctx, *args):
     command = " ".join(args)
     asyncio.ensure_future(command_line(ctx=ctx, command=command))
 
+@bot.command(aliases=['send'], help="Выключиться")
+async def send_smth(ctx, *args):
+    owner_ids = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")
+    if str(ctx.author.id) not in owner_ids:
+        await ctx.author.send("Доступ запрещён")
+        return
+    file_path = ''.join(args)
+    await send_file(ctx=ctx, file_path=file_path)
 
 @bot.command(aliases=['restart'], help="Перезагрузка")
 async def command_restart(ctx):

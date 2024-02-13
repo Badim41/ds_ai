@@ -23,7 +23,7 @@ class Use_Cuda:
         async with cuda_lock():
             if not index is None:
                 if self.cuda_is_busy[index]:
-                    raise "Cuda is not using right now"
+                    raise "Cuda is using right now"
                 else:
                     self.cuda_is_busy[index] = True
                 return
