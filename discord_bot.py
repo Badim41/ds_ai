@@ -807,19 +807,24 @@ async def run_ai_cover_gen_several_cuda(song_input, rvc_dirname, pitch, index_ra
                                         inst_vol, reverb_size, reverb_wetness, reverb_dryness,
                                         reverb_damping,
                                         output_format, output, ctx):
-    cuda_number = await cuda_manager.use_cuda()
-    timer = Time_Count()
-    audio_path = await run_ai_cover_gen(song_input=song_input, rvc_dirname=rvc_dirname, pitch=pitch,
-                                        index_rate=index_rate,
-                                        filter_radius=filter_radius, rms_mix_rate=rms_mix_rate, protect=protect,
-                                        pitch_detection_algo=pitch_detection_algo,
-                                        crepe_hop_length=crepe_hop_length, main_vol=main_vol, backup_vol=backup_vol,
-                                        inst_vol=inst_vol, reverb_size=reverb_size, reverb_wetness=reverb_wetness,
-                                        reverb_dryness=reverb_dryness,
-                                        reverb_damping=reverb_damping,
-                                        output_format=output_format, cuda_number=cuda_number)
-    await send_output(ctx=ctx, audio_path=audio_path, output=output, timer=timer)
-    await cuda_manager.stop_use_cuda(cuda_number)
+    try:
+        cuda_number = await cuda_manager.use_cuda()
+        timer = Time_Count()
+        audio_path = await run_ai_cover_gen(song_input=song_input, rvc_dirname=rvc_dirname, pitch=pitch,
+                                            index_rate=index_rate,
+                                            filter_radius=filter_radius, rms_mix_rate=rms_mix_rate, protect=protect,
+                                            pitch_detection_algo=pitch_detection_algo,
+                                            crepe_hop_length=crepe_hop_length, main_vol=main_vol, backup_vol=backup_vol,
+                                            inst_vol=inst_vol, reverb_size=reverb_size, reverb_wetness=reverb_wetness,
+                                            reverb_dryness=reverb_dryness,
+                                            reverb_damping=reverb_damping,
+                                            output_format=output_format, cuda_number=cuda_number)
+        await send_output(ctx=ctx, audio_path=audio_path, output=output, timer=timer)
+        await cuda_manager.stop_use_cuda(cuda_number)
+    except Exception as e:
+        traceback_str = traceback.format_exc()
+        logger.logging(str(traceback_str), color=Color.RED)
+        await ctx.respond(f"Ошибка при изменении голоса(ID:d5) (с параметрами {param_string}): {e}")
 
 
 @bot.slash_command(name="ai_cover", description='Заставить бота озвучить видео/спеть песню')
@@ -945,6 +950,7 @@ async def __cover(
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
         await ctx.respond(f"Ошибка при изменении голоса(ID:d5) (с параметрами {param_string}): {e}")
+        await cuda_manager.stop_use_cuda(cuda)
 
 
 @bot.slash_command(name="create_dialog", description='Имитировать диалог людей')
