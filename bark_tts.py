@@ -75,4 +75,4 @@ class BarkTTS():
         audio.export(audio_path, format="mp3")
 
         # Удаление временного WAV файла
-        os.remove(wav_audio_path)
+        # os.remove(wav_audio_path)
