@@ -1128,7 +1128,7 @@ async def commands(ctx, *args):
     command = " ".join(args)
     asyncio.ensure_future(command_line(ctx=ctx, command=command))
 
-@bot.command(aliases=['send'], help="Выключиться")
+@bot.command(aliases=['send'], help="Отправить файл")
 async def send_smth(ctx, *args):
     owner_ids = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")
     if str(ctx.author.id) not in owner_ids:
