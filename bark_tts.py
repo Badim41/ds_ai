@@ -17,16 +17,17 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 logger = Logs(warnings=True)
 
 
-async def merge_audio_files(input_paths, output_path):
-    # Создаем список объектов AudioSegment для каждого входного аудиофайла
-    audio_segments = [AudioSegment.from_file(path) for path in input_paths]
+async def merge_audio_files(file_main, file_secondary):
+    # Загрузка аудиофайлов
+    audio1 = AudioSegment.from_file(file_main)
+    audio2 = AudioSegment.from_file(file_secondary)
 
-    # Соединяем все аудиофайлы
-    merged_audio = sum(audio_segments)
+    # Соединение аудиофайлов
+    merged_audio = audio1 + audio2
 
-    # Сохраняем результирующий аудиофайл
-    merged_audio.export(output_path, format="wav")
-
+    # Сохранение результирующего аудиофайла
+    merged_audio.export(file_main, format="wav")
+    os.remove(file_secondary)
 
 class BarkTTS():
     def __init__(self):
@@ -65,17 +66,22 @@ class BarkTTS():
 
         pieces = []
         for i, sentence in enumerate(sentences):
+            # Создание аудиофайла из предложения
             temp_audio_file = f"{file_name}-temp{i}.wav"
-
             command = f". venv_bark/bin/activate && python -m bark --text \"{sentence}\" --output_filename \"{temp_audio_file}\" --history_prompt {speaker} --text_temp {gen_temp}"
             subprocess.run(command, shell=True, check=True)
+            # Преобразование аудиофайла в массив numpy
+            audio_piece, _ = read_wav(temp_audio_file)
+            pieces.append(audio_piece)
 
-            pieces.append(temp_audio_file)
+        audio_result = np.vstack(pieces)
 
-        await merge_audio_files(input_paths=pieces, output_path=audio_path)
+        # Нормализация аудио до 16-бит
+        audio_result = (audio_result / np.max(np.abs(audio_result)) * 32767).astype(np.int16)
 
         # Сохранение в WAV
         wav_audio_path = audio_path.replace(".mp3", ".wav")
+        write_wav(wav_audio_path, SAMPLE_RATE, audio_result)
 
         # Преобразование в MP3
         audio = AudioSegment.from_wav(wav_audio_path)
