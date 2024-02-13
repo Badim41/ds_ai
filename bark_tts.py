@@ -26,7 +26,6 @@ async def merge_audio_files(input_paths, output_path):
 
     # Сохраняем результирующий аудиофайл
     merged_audio.export(output_path, format="wav")
-    return output_path
 
 
 class BarkTTS():
@@ -73,11 +72,10 @@ class BarkTTS():
 
             pieces.append(temp_audio_file)
 
-        audio_result = await merge_audio_files(input_paths=pieces, output_path=audio_path)
+        await merge_audio_files(input_paths=pieces, output_path=audio_path)
 
         # Сохранение в WAV
         wav_audio_path = audio_path.replace(".mp3", ".wav")
-        write_wav(wav_audio_path, SAMPLE_RATE, audio_result)
 
         # Преобразование в MP3
         audio = AudioSegment.from_wav(wav_audio_path)
