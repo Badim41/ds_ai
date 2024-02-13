@@ -33,19 +33,16 @@ class BarkTTS():
         self.started = False
 
         # Проверяем, установлены ли пакеты в виртуальное окружение, и если нет - устанавливаем их
-        if not os.path.exists(f"venv_bark/bin/activate"):
+        try:
+            command = ". venv_bark/bin/activate && python -m bark -h"
+            subprocess.run(command, shell=True, check=True)
+        except:
             logger.logging("[bark] Create bark_venv", color=Color.GRAY)
             subprocess.run(["python", "-m", "venv", "venv_bark"], check=True)
             logger.logging("[bark] Installing packages", color=Color.GRAY)
             command = ". venv_bark/bin/activate && pip install git+https://github.com/suno-ai/bark.git nltk pydub"
             subprocess.run(command, shell=True, check=True)
 
-        try:
-            self.started = True
-            asyncio.run(self.text_to_speech_bark("а", audio_path="temp.mp3"))
-        except Exception as e:
-            self.started = False
-            raise e
         logger.logging("[bark] Ready to start", color=Color.GRAY)
         self.started = True
 
