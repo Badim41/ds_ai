@@ -52,7 +52,7 @@ class BarkTTS():
         file_name = audio_path[:audio_path.find(".mp3")]
 
         # Загрузка текста
-        text = text.replace("\n", " ").strip()
+        text = text.replace("\n", " ").replace("\"", "").replace("\'", "").strip()
         sentences = nltk.sent_tokenize(text)
 
         SAMPLE_RATE = 44000
