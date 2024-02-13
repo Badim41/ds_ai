@@ -29,7 +29,6 @@ from download_voice_model import download_online_model
 from function import Image_Generator, Character, Voice_Changer, get_link_to_file
 from modifed_sinks import StreamSink
 from use_free_cuda import Use_Cuda
-from video_change import video_pipeline
 
 try:
     import nest_asyncio
@@ -373,6 +372,7 @@ async def __change_video(
         await ctx.send(f"Видео будет обрабатываться ~{time_spend}")
         print("params suc")
         # wait for answer
+        from video_change import video_pipeline
         video_path = await video_pipeline(video_path=filename, fps_output=fps, video_extension=extension, prompt=prompt,
                                           voice_name=voice_name, video_id=ctx.author.id, cuda_all=cuda_all,
                                           strength_negative_prompt=strength_negative_prompt,
