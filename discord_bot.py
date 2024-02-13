@@ -778,7 +778,7 @@ async def send_output(ctx, audio_path, output, timer):
     elif output == "all_files":
         for filename in os.listdir(os.path.dirname(audio_path)):
             file_path = os.path.join(os.path.dirname(audio_path), filename)
-            await send_file(ctx, file_path, delete_file=True)
+            await send_file(ctx, file_path)
     # zip файл по ссылке
     elif output == "link":
         zip_name = os.path.dirname(audio_path) + f"/all_files.zip"
@@ -792,7 +792,7 @@ async def send_output(ctx, audio_path, output, timer):
         await ctx.send(f"Ссылка на скачку:{link}")
     logger.logging("Играет " + os.path.basename(audio_path)[:-4], color=Color.GREEN)
     audio_player = AudioPlayerDiscord(ctx)
-    await audio_player.play(audio_path)
+    await audio_player.play(audio_path, is_send_file=False)
 
     if not output == "None":
         await ctx.send(timer.count_time())
@@ -1648,8 +1648,8 @@ class AudioPlayerDiscord:
         else:
             return "Вы не на сервере"
 
-    async def play(self, audio_file, delete_file=False):
-        if not self.guild:
+    async def play(self, audio_file, delete_file=False, is_send_file=True):
+        if not self.guild and is_send_file:
             await send_file(self.ctx, audio_file)
             return
 
