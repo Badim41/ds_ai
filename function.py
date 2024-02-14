@@ -380,12 +380,12 @@ class Image_Generator:
         try:
 
             # create generator
-            generator = self.torch.Generator(device="cuda").manual_seed(seed)
+            generator = self.torch.Generator(device="cuda").half().manual_seed(seed)
 
             # make hint
             img = load_image(image_name).resize((x, y))
             depth_estimator = pipeline("depth-estimation")
-            hint = make_hint(img, depth_estimator, self.torch).unsqueeze(0).to(f"cuda:{self.cuda_number}")
+            hint = make_hint(img, depth_estimator, self.torch).unsqueeze(0).half().to(f"cuda:{self.cuda_number}")
 
             # run prior pipeline
             img_emb = self.pipe_prior(prompt=prompt, image=img, strength=strength_prompt,
