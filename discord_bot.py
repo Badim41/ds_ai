@@ -436,6 +436,7 @@ async def __image(ctx,
                                   default=1, min_value=1,
                                   max_value=16)
                   ):
+    global image_generators
     async def get_image_dimensions(file_path):
         with Image.open(file_path) as img:
             sizes = img.size
