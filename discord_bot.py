@@ -367,7 +367,7 @@ async def __change_video(
         else:
             time_spend = f"{seconds} секунд"
         await ctx.send(f"Видео будет обрабатываться ~{time_spend}")
-        print("params suc")
+        logger.logging("params suc", color=Color.CYAN)
         # wait for answer
         from video_change import video_pipeline
         video_path = await video_pipeline(video_path=filename, fps_output=fps, video_extension=extension, prompt=prompt,
@@ -451,7 +451,7 @@ async def __image(ctx,
             await ctx.send(f"Загрузка модели для картинок на {cuda_avaible}-ую видеокарту")
             image_generator = Image_Generator(cuda_avaible - 1)
             image_generators.append(image_generator)
-            print("loaded model")
+            logger.logging("loaded model")
 
     for i in range(repeats):
         cuda_number = None
@@ -462,11 +462,11 @@ async def __image(ctx,
                 await ctx.respond("Нет свободных видеокарт")
                 return
 
-            print("Using GPU:", cuda_number)
+            logger.logging("Using GPU:", cuda_number)
 
             timer = Time_Count()
             input_image = "images/image" + str(ctx.author.id) + ".png"
-            print("Saved image:", input_image)
+            logger.logging("Saved image:", input_image)
             await image.save(input_image)
             # get image size and round to 64
             if x is None or y is None:
@@ -481,7 +481,7 @@ async def __image(ctx,
                 x = ((x // 64) + 1) * 64
             if not y % 64 == 0:
                 y = ((y // 64) + 1) * 64
-            print("X:", x, "Y:", y)
+            logger.logging("X:", x, "Y:", y)
             # loading params
             if seed is None or repeats > 1:
                 seed_current = random.randint(1, 9007199254740991)
@@ -993,7 +993,7 @@ async def __dialog(
         await ctx.respond(f"Я и так тебя не слушал ._.")
     except Exception as e:
         traceback_str = traceback.format_exc()
-        print(str(traceback_str))
+        logger.logging(str(traceback_str), color=Color.RED)
         await ctx.respond(f"Ошибка при диалоге: {e}")
 
 
