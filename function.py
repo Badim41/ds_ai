@@ -412,4 +412,4 @@ class Image_Generator:
         except Exception as e:
             self.busy = False
             error_message = f"Произошла ошибка: {e}"
-            return error_message
+            raise error_message
