@@ -385,7 +385,7 @@ class Image_Generator:
             # make hint
             img = load_image(image_name).resize((x, y))
             depth_estimator = pipeline("depth-estimation")
-            hint = make_hint(img, depth_estimator, self.torch).unsqueeze(0).float().to(f"cuda:{self.cuda_number}")
+            hint = make_hint(img, depth_estimator, self.torch).unsqueeze(0).to(f"cuda:{self.cuda_number}")
 
             # run prior pipeline
             img_emb = self.pipe_prior(prompt=prompt, image=img, strength=strength_prompt,
