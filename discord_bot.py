@@ -456,6 +456,7 @@ async def __image(ctx,
     for i in range(repeats):
         cuda_number = None
         try:
+            timer = Time_Count()
             try:
                 cuda_number, image_generator = await cuda_manager.use_cuda_images(image_generators)
             except Exception:
@@ -464,7 +465,7 @@ async def __image(ctx,
 
             logger.logging("Using GPU:", cuda_number)
 
-            timer = Time_Count()
+
             input_image = "images/image" + str(ctx.author.id) + ".png"
             logger.logging("Saved image:", input_image)
             await image.save(input_image)
