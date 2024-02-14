@@ -341,35 +341,17 @@ class Character:
 
 class Image_Generator:
     def __init__(self, cuda_number):
-        # os.environ["CUDA_VISIBLE_DEVICES"] = cuda_number
+        from kandinsky3 import get_T2I_pipeline
         import torch
         self.torch = torch
-        self.cuda_number = str(cuda_number)
-        self.pipe_prior = None
-        self.pipe = None
         self.loaded = False
+        self.cuda_number = str(cuda_number)
+        self.t2i_pipe = get_T2I_pipeline(f'cuda:{cuda_number}', fp16=True)
         self.busy = False
-        self.load_models()
+        self.loaded = True
         logger.logging("Loaded class!", color=Color.GRAY)
 
-    def load_models(self):
-        try:
-            logger.logging(f"image model loading... GPU:{self.cuda_number}", color=Color.GRAY)
-            self.pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
-                "kandinsky-community/kandinsky-2-2-prior", torch_dtype=self.torch.float16
-            )
-
-            self.pipe = KandinskyV22ControlnetImg2ImgPipeline.from_pretrained(
-                "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=self.torch.float16
-            )
-
-            logger.logging(f"==========Images Model Loaded{self.cuda_number}!==========", color=Color.GRAY)
-            self.loaded = True
-        except Exception as e:
-            logger.logging(f"Error while loading models: {e}", color=Color.RED)
-
-    async def generate_image(self, prompt, negative_prompt, x, y, steps, seed, strength, strength_prompt,
-                             strength_negative_prompt, image_name):
+    async def generate_image(self, prompt):
         if not self.loaded:
             raise Exception("Модель не загружена")
         if self.busy:
@@ -378,39 +360,11 @@ class Image_Generator:
         self.busy = True
         print("Processing image...")
         try:
-
-            # create generator
-            generator = self.torch.Generator(device="cuda").half().manual_seed(seed)
-
-            # make hint
-            img = load_image(image_name).resize((x, y))
-            depth_estimator = pipeline("depth-estimation")
-            hint = make_hint(img, depth_estimator, self.torch).unsqueeze(0).half().to(f"cuda:{self.cuda_number}")
-
-            # run prior pipeline
-            img_emb = self.pipe_prior(prompt=prompt, image=img, strength=strength_prompt,
-                                      generator=generator)
-            negative_emb = self.pipe_prior(prompt=negative_prompt, image=img,
-                                           strength=strength_negative_prompt,
-                                           generator=generator)
-
-            # run controlnet img2img pipeline
-            images = self.pipe(
-                image=img,
-                strength=strength,
-                image_embeds=img_emb.image_embeds,
-                negative_image_embeds=negative_emb.image_embeds,
-                hint=hint,
-                num_inference_steps=steps,
-                generator=generator,
-                height=y,
-                width=x,
-            ).images
-
-            images[0].save(image_name)
+            image_name = self.t2i_pipe(prompt)
             self.busy = False
             return image_name
         except Exception as e:
             self.busy = False
             error_message = f"Произошла ошибка: {e}"
             raise Exception(error_message)
+    async def change_image(self, image_input, prompt):
