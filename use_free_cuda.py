@@ -27,12 +27,13 @@ class Use_Cuda:
                 else:
                     self.cuda_is_busy[index] = True
                 return
-            while True:
+            for _ in range(14400):
                 for i in range(len(self.cuda_is_busy)):
                     if not self.cuda_is_busy[i]:
                         self.cuda_is_busy[i] = True
                         return i
                 await asyncio.sleep(0.25)
+            raise "No avaible cuda"
 
     async def stop_use_cuda(self, index):
         if not self.cuda_is_busy[index]:
@@ -50,13 +51,15 @@ class Use_Cuda:
                     self.cuda_is_busy_images[index] = True
                     self.cuda_is_busy[index] = True
                 return
-            while True:
-                for i in range(len(image_generators)):
-                    if not self.cuda_is_busy_images[i]:
-                        self.cuda_is_busy_images[i] = True
-                        self.cuda_is_busy[i] = True
-                        return i
+            for i in range(240):
+                for generator in image_generators:
+                    number = int(generator.cuda_number)
+                    if not self.cuda_is_busy_images[number]:
+                        self.cuda_is_busy_images[number] = True
+                        self.cuda_is_busy[number] = True
+                        return number
                 await asyncio.sleep(0.25)
+            raise "No avaible cuda"
 
     async def stop_use_cuda_images(self, index):
         if not self.cuda_is_busy_images[index]:
