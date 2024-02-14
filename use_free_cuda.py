@@ -41,8 +41,7 @@ class Use_Cuda:
         else:
             self.cuda_is_busy[index] = False
 
-    async def use_cuda_images(self, index=None):
-        from discord_bot import image_generators
+    async def use_cuda_images(self, image_generators, index=None):
         async with cuda_lock():
             if not index is None:
                 if self.cuda_is_busy_images[index]:

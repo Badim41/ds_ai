@@ -293,6 +293,7 @@ async def __change_video(
         voice_name: Option(str, description='Голос для видео', required=False, default="None")
 ):
     cuda_all = None
+    global image_generators
     try:
         await ctx.defer()
 
@@ -310,7 +311,6 @@ async def __change_video(
                     await ctx.send(f"Загрузка модели для картинок на {i + 1}-ую видеокарту")
                     image_generators.append(Image_Generator(i))
             return
-
         filename = f"{ctx.author.id}.mp4"
         await video_path.save(filename)
         # сколько кадров будет в результате
@@ -333,7 +333,7 @@ async def __change_video(
         cuda_all = []
         generators_all = []
         for i in range(cuda_avaible):
-            cuda_number, generator = await cuda_manager.use_cuda_images()
+            cuda_number, generator = await cuda_manager.use_cuda_images(image_generators)
             cuda_all.append(cuda_number)
             generators_all.append(generator)
 
@@ -455,7 +455,7 @@ async def __image(ctx,
         cuda_number = None
         try:
             try:
-                cuda_number, image_generator = await cuda_manager.use_cuda_images()
+                cuda_number, image_generator = await cuda_manager.use_cuda_images(image_generators)
             except Exception:
                 await ctx.respond("Нет свободных видеокарт")
                 return
