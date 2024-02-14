@@ -487,7 +487,7 @@ async def __image(ctx,
                 seed_current = random.randint(1, 9007199254740991)
             else:
                 seed_current = seed
-            image_path = image_generator.generate_image(prompt, negative_prompt, x, y, steps, seed,
+            image_path = await image_generator.generate_image(prompt, negative_prompt, x, y, steps, seed,
                                                                       strength,
                                                                       strength_prompt,
                                                                       strength_negative_prompt, input_image)
@@ -504,7 +504,7 @@ async def __image(ctx,
             await cuda_manager.stop_use_cuda_images(cuda_number)
         except Exception as e:
             traceback_str = traceback.format_exc()
-            await logger.logging(str(traceback_str), Color.RED)
+            logger.logging(str(traceback_str), Color.RED)
             await ctx.send(f"Ошибка при изменении картинки (с параметрами\
                               {prompt, negative_prompt, steps, x, y, strength, strength_prompt, strength_negative_prompt}): {e}")
             # перестаём использовать видеокарту
