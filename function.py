@@ -185,6 +185,15 @@ class TextToSpeechRVC:
         return voice["voice_id"] if voice else None
 
 
+def make_hint(image, depth_estimator, torch):
+    image = depth_estimator(image)["depth"]
+    image = np.array(image)
+    image = image[:, :, None]
+    image = np.concatenate([image, image, image], axis=2)
+    detected_map = torch.from_numpy(image).float() / 255.0
+    hint = detected_map.permute(2, 0, 1)
+    return hint
+
 class Character:
     def __init__(self, name, max_simbols=300, algo="rmvpe", protect=0.2, rms_mix_rate=0.3, index_rate=0.5,
                  filter_radius=3, speaker_boost=True):
@@ -347,11 +356,11 @@ class Image_Generator:
         try:
             logger.logging(f"image model loading... GPU:{self.cuda_number}", color=Color.GRAY)
             self.pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
-                "kandinsky-community/kandinsky-2-2-prior", torch_dtype=self.torch.float32
+                "kandinsky-community/kandinsky-2-2-prior", torch_dtype=self.torch.float16
             )
 
             self.pipe = KandinskyV22ControlnetImg2ImgPipeline.from_pretrained(
-                "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=self.torch.float32
+                "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=self.torch.float16
             )
 
             logger.logging(f"==========Images Model Loaded{self.cuda_number}!==========", color=Color.GRAY)
@@ -369,14 +378,6 @@ class Image_Generator:
         self.busy = True
         print("Processing image...")
         try:
-            def make_hint(image, depth_estimator):
-                image = depth_estimator(image)["depth"]
-                image = np.array(image)
-                image = image[:, :, None]
-                image = np.concatenate([image, image, image], axis=2)
-                detected_map = self.torch.from_numpy(image).float() / 255.0
-                hint = detected_map.permute(2, 0, 1)
-                return hint
 
             # create generator
             generator = self.torch.Generator(device="cuda").manual_seed(seed)
@@ -384,7 +385,7 @@ class Image_Generator:
             # make hint
             img = load_image(image_name).resize((x, y))
             depth_estimator = pipeline("depth-estimation")
-            hint = make_hint(img, depth_estimator).unsqueeze(0).half().to(f"cuda:{self.cuda_number}")
+            hint = make_hint(img, depth_estimator, self.torch).unsqueeze(0).half().to(f"cuda:{self.cuda_number}")
 
 
             # run prior pipeline
