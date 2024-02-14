@@ -340,16 +340,9 @@ class Image_Generator:
         self.pipe = None
         self.loaded = False
         self.busy = False
-        asyncio.ensure_future(self.load_models())
-        self.wait_loading()
+        self.load_models()
 
-    def wait_loading(self):
-        while not self.loaded:
-            logger.logging("Wait.")
-            time.sleep(0.5)
-        print("stop wait")
-
-    async def load_models(self):
+    def load_models(self):
         try:
             logger.logging(f"image model loading... GPU:{self.cuda_number}", color=Color.GRAY)
             self.pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
