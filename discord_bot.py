@@ -371,7 +371,8 @@ async def __change_video(
         # wait for answer
         from video_change import video_pipeline
         video_path = await video_pipeline(video_path=filename, fps_output=fps, video_extension=extension, prompt=prompt,
-                                          voice_name=voice_name, video_id=ctx.author.id, cuda_all=cuda_all, image_generators=generators_all,
+                                          voice_name=voice_name, video_id=ctx.author.id, cuda_all=cuda_all,
+                                          image_generators=generators_all,
                                           strength_negative_prompt=strength_negative_prompt,
                                           strength_prompt=strength_prompt,
                                           strength=strength, seed=seed, steps=steps, negative_prompt=negative_prompt)
@@ -438,6 +439,7 @@ async def __image(ctx,
                                   max_value=16)
                   ):
     global image_generators
+
     async def get_image_dimensions(file_path):
         with Image.open(file_path) as img:
             sizes = img.size
@@ -465,7 +467,6 @@ async def __image(ctx,
 
             logger.logging("Using GPU:", cuda_number)
 
-
             input_image = "images/image" + str(ctx.author.id) + ".png"
             logger.logging("Saved image:", input_image)
             await image.save(input_image)
@@ -488,10 +489,12 @@ async def __image(ctx,
                 seed_current = random.randint(1, 9007199254740991)
             else:
                 seed_current = seed
-            image_path = await image_generator.generate_image(prompt, negative_prompt, x, y, steps, seed,
-                                                                      strength,
-                                                                      strength_prompt,
-                                                                      strength_negative_prompt, input_image)
+            image_path = await image_generator.generate_image(prompt=prompt, negative_prompt=negative_prompt, x=x, y=y,
+                                                              steps=steps, seed=seed_current,
+                                                              strength=strength,
+                                                              strength_prompt=strength_prompt,
+                                                              strength_negative_prompt=strength_negative_prompt,
+                                                              image_name=input_image)
 
             # отправляем
             text = "Вот как я изменил ваше изображение🖌.\nПотрачено " + timer.count_time() + f" сид:{seed_current}"
@@ -511,6 +514,7 @@ async def __image(ctx,
             # перестаём использовать видеокарту
             if not cuda_number is None:
                 await cuda_manager.stop_use_cuda_images(cuda_number)
+
 
 @bot.slash_command(name="config", description='изменить конфиг')
 async def __config(
@@ -1377,6 +1381,7 @@ async def commands(ctx, *args):
     command = " ".join(args)
     asyncio.ensure_future(command_line(ctx=ctx, command=command))
 
+
 @bot.command(aliases=['send'], help="Отправить файл")
 async def send_smth(ctx, *args):
     owner_ids = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")
@@ -1385,6 +1390,7 @@ async def send_smth(ctx, *args):
         return
     file_path = ''.join(args)
     await send_file(ctx=ctx, file_path=file_path)
+
 
 @bot.command(aliases=['restart'], help="Перезагрузка")
 async def command_restart(ctx):
@@ -1412,6 +1418,7 @@ async def command_exit(ctx, *args):
     await set_get_config_all("Default", SQL_Keys.reload, "False")
     exit(0)
     # asyncio.ensure_future(command_line(ctx=ctx, command="pkill -f python"))
+
 
 @bot.command(aliases=['log'], help="логи")
 async def command_log(ctx):
