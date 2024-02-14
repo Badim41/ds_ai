@@ -491,7 +491,7 @@ async def __image(ctx,
                                                                       strength_negative_prompt, input_image)
 
             # отправляем
-            text = "Вот как я изменил ваше изображение🖌. Потрачено " + timer.count_time() + f"сид:{seed_current}"
+            text = "Вот как я изменил ваше изображение🖌.\nПотрачено " + timer.count_time() + f" сид:{seed_current}"
             if repeats == 1:
                 await ctx.respond(text)
             else:
