@@ -1404,7 +1404,7 @@ async def command_exit(ctx, *args):
     # asyncio.ensure_future(command_line(ctx=ctx, command="pkill -f python"))
 
 @bot.command(aliases=['log'], help="логи")
-async def command_exit(ctx):
+async def command_log(ctx):
     owner_ids = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")
     if str(ctx.author.id) not in owner_ids:
         await ctx.author.send("Доступ запрещён")
@@ -1415,6 +1415,8 @@ async def command_exit(ctx):
         with open(logs_path, "r", encoding="utf-8") as file:
             content = file.read()[-3800:]
             await ctx.send(content)
+    else:
+        await ctx.send("Логов нет. Странно, не правда?")
 
 
 @bot.command(aliases=['themer'], help="тема для диалога")
