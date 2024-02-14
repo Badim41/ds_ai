@@ -34,12 +34,7 @@ nltk
 pydub==0.25.1
 py-cord[speed]
 py-cord[voice]
-py-cord==2.3.3
---find-links https://download.pytorch.org/whl/torch_stable.html
-torch==2.0.1+cu118
-torchcrepe==0.0.20
-
-timm
+py-cord==2.3.3timm
 pytorch_lightning==1.7.5
 transformers
 accelerate
@@ -59,3 +54,6 @@ albumentations
 bezier
 tqdm
 huggingface_hub
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==2.0.1+cu118
+torchcrepe==0.0.20
