@@ -18,11 +18,12 @@ from voice_change import Voice_Changer
 
 try:
     import nest_asyncio
+
     nest_asyncio.apply()
 except:
     pass
 
-logger = Logs(warnings=False)
+logger = Logs(warnings=True)
 
 
 async def execute_command(command, ctx):
@@ -58,7 +59,7 @@ async def get_link_to_file(zip_name, ctx):
 
         for line in stdout.decode().split('\n'):
             if line.strip():
-                logger.logging(line,color=Color.CYAN)
+                logger.logging(line, color=Color.CYAN)
                 # {"id":"123"}
                 if "id" in line:
                     line = line[line.find(":") + 2:]
@@ -156,7 +157,8 @@ class TextToSpeechRVC:
                 logger.logging("(error) Remove key:", self.elevenlabs_voice_keys[0], color=Color.BLUE)
                 if "Please play" in str(e):
                     self.elevenlabs_removed_key = self.elevenlabs_voice_keys[0]
-                    logger.logging("(error) LAST KEYS WAS IN ELEVENLABS:", self.elevenlabs_voice_keys[0], color=Color.RED)
+                    logger.logging("(error) LAST KEYS WAS IN ELEVENLABS:", self.elevenlabs_voice_keys[0],
+                                   color=Color.RED)
                     create_secret(SecretKey.voice_keys, "None")
                 elif len(self.elevenlabs_voice_keys) > 1:
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys[1:]))
@@ -337,9 +339,14 @@ class Image_Generator:
         self.pipe = None
         self.loaded = False
         self.busy = False
-        self.load_models()
+        asyncio.ensure_future(self.load_models())
 
-    def load_models(self):
+    async def wait_loading(self):
+        while not self.loaded:
+            logger.logging("Wait.")
+            await asyncio.sleep(0.5)
+
+    async def load_models(self):
         try:
             logger.logging(f"image model loading... GPU:{self.cuda_number}", color=Color.GRAY)
             self.pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
@@ -409,4 +416,3 @@ class Image_Generator:
             self.busy = False
             error_message = f"Произошла ошибка: {e}"
             return error_message
-
