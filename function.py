@@ -341,6 +341,7 @@ class Image_Generator:
         self.loaded = False
         self.busy = False
         self.load_models()
+        logger.logging("Loaded class!", color=Color.GRAY)
 
     def load_models(self):
         try:
