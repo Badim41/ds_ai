@@ -347,11 +347,11 @@ class Image_Generator:
         try:
             logger.logging(f"image model loading... GPU:{self.cuda_number}", color=Color.GRAY)
             self.pipe_prior = KandinskyV22PriorEmb2EmbPipeline.from_pretrained(
-                "kandinsky-community/kandinsky-2-2-prior", torch_dtype=self.torch.float16
+                "kandinsky-community/kandinsky-2-2-prior", torch_dtype=self.torch.float32
             )
 
             self.pipe = KandinskyV22ControlnetImg2ImgPipeline.from_pretrained(
-                "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=self.torch.float16
+                "kandinsky-community/kandinsky-2-2-controlnet-depth", torch_dtype=self.torch.float32
             )
 
             logger.logging(f"==========Images Model Loaded{self.cuda_number}!==========", color=Color.GRAY)
@@ -384,7 +384,7 @@ class Image_Generator:
             # make hint
             img = load_image(image_name).resize((x, y))
             depth_estimator = pipeline("depth-estimation")
-            hint = make_hint(img, depth_estimator).unsqueeze(0).float().to(f"cuda:{self.cuda_number}")
+            hint = make_hint(img, depth_estimator).unsqueeze(0).half().to(f"cuda:{self.cuda_number}")
 
 
             # run prior pipeline
