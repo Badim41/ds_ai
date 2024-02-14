@@ -309,7 +309,8 @@ async def __change_video(
             if len(image_generators) == 0:
                 for i in range(cuda_avaible):
                     await ctx.send(f"Загрузка модели для картинок на {i + 1}-ую видеокарту")
-                    image_generators.append(Image_Generator(i))
+                    image_generator = Image_Generator(i)
+                    image_generators.append(image_generator)
             return
         filename = f"{ctx.author.id}.mp4"
         await video_path.save(filename)
@@ -448,7 +449,8 @@ async def __image(ctx,
         cuda_avaible = torch.cuda.device_count()
         if len(image_generators) == 0:
             await ctx.send(f"Загрузка модели для картинок на {cuda_avaible}-ую видеокарту")
-            image_generators.append(Image_Generator(cuda_avaible - 1))
+            image_generator = Image_Generator(cuda_avaible - 1)
+            image_generators.append(image_generator)
             print("loaded model")
 
     for i in range(repeats):
