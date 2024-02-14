@@ -10,26 +10,25 @@ from moviepy.editor import VideoFileClip, AudioFileClip
 from PIL import Image
 
 from cover_gen import run_ai_cover_gen
-from discord_bot import image_generators
 from function import Character
 from discord_tools.logs import Logs, Color
 logger = Logs(warnings=True)
 
 
 async def image_change(output_folder, prompt, negative_prompt, x, y, steps, seed, strength, strength_prompt,
-                       strength_negative_prompt, cuda_all: int, cuda_index: int):
+                       strength_negative_prompt, cuda_all: int, cuda_index: int, image_generator):
     print("image changing...", cuda_index)
     # several GPU
     for i, filename in enumerate(sorted(os.listdir(output_folder))):
         if i % cuda_all == cuda_index:
             continue
         if filename.endswith('.png'):
-            await image_generators.generate_image(prompt, negative_prompt, x, y, steps, seed, strength, strength_prompt,
+            await image_generator.generate_image(prompt, negative_prompt, x, y, steps, seed, strength, strength_prompt,
                                                   strength_negative_prompt, filename)
     return
 
 
-async def video_pipeline(video_path, fps_output, video_extension, prompt, voice_name, video_id, cuda_all, strength_negative_prompt, strength_prompt,
+async def video_pipeline(video_path, fps_output, video_extension, prompt, voice_name, video_id, cuda_all, image_generators, strength_negative_prompt, strength_prompt,
                          strength, seed, steps, negative_prompt):
     try:
 
@@ -103,8 +102,8 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice_
         # === обработка изображений ===
         functions = [image_change(output_folder=output_folder, prompt=prompt, negative_prompt=negative_prompt, x=x, y=y,
                                   steps=steps, seed=seed, strength=strength, strength_prompt=strength_prompt,
-                                  strength_negative_prompt=strength_negative_prompt, cuda_all=cuda_all, cuda_index=i)
-                     for i in cuda_all]
+                                  strength_negative_prompt=strength_negative_prompt, cuda_all=cuda_all, image_generator=image_generator)
+                     for image_generator in image_generators]
         await asyncio.gather(*functions)  # результаты всех функций
 
         character = Character(voice_name)

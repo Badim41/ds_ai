@@ -57,7 +57,7 @@ class Use_Cuda:
                     if not self.cuda_is_busy_images[number]:
                         self.cuda_is_busy_images[number] = True
                         self.cuda_is_busy[number] = True
-                        return number
+                        return number, generator
                 await asyncio.sleep(0.25)
             raise "No avaible cuda"
 

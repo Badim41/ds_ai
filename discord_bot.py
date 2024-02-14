@@ -331,8 +331,11 @@ async def __change_video(
             await ctx.respond(f"Используется {cuda_avaible} видеокарт для обработки видео")
 
         cuda_all = []
+        generators_all = []
         for i in range(cuda_avaible):
-            cuda_all.append(await cuda_manager.use_cuda_images())
+            cuda_number, generator = await cuda_manager.use_cuda_images()
+            cuda_all.append(cuda_number)
+            generators_all.append(generator)
 
         # run timer
         timer = Time_Count()
@@ -367,7 +370,7 @@ async def __change_video(
         # wait for answer
         from video_change import video_pipeline
         video_path = await video_pipeline(video_path=filename, fps_output=fps, video_extension=extension, prompt=prompt,
-                                          voice_name=voice_name, video_id=ctx.author.id, cuda_all=cuda_all,
+                                          voice_name=voice_name, video_id=ctx.author.id, cuda_all=cuda_all, image_generators=generators_all,
                                           strength_negative_prompt=strength_negative_prompt,
                                           strength_prompt=strength_prompt,
                                           strength=strength, seed=seed, steps=steps, negative_prompt=negative_prompt)
@@ -445,19 +448,22 @@ async def __image(ctx,
         if len(image_generators) == 0:
             await ctx.send(f"Загрузка модели для картинок на {cuda_avaible}-ую видеокарту")
             image_generators.append(Image_Generator(cuda_avaible - 1))
-        return
+            print("loaded model")
 
     for i in range(repeats):
         cuda_number = None
         try:
             try:
-                cuda_number = await cuda_manager.use_cuda_images()
+                cuda_number, image_generator = await cuda_manager.use_cuda_images()
             except Exception:
                 await ctx.respond("Нет свободных видеокарт")
                 return
 
+            print("Using GPU:", cuda_number)
+
             timer = Time_Count()
             input_image = "images/image" + str(ctx.author.id) + ".png"
+            print("Saved image:", input_image)
             await image.save(input_image)
             # get image size and round to 64
             if x is None or y is None:
@@ -478,7 +484,7 @@ async def __image(ctx,
                 seed_current = random.randint(1, 9007199254740991)
             else:
                 seed_current = seed
-            image_path = image_generators[cuda_number].generate_image(prompt, negative_prompt, x, y, steps, seed,
+            image_path = image_generator.generate_image(prompt, negative_prompt, x, y, steps, seed,
                                                                       strength,
                                                                       strength_prompt,
                                                                       strength_negative_prompt, input_image)
