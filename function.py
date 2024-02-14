@@ -363,6 +363,7 @@ class Image_Generator:
             logger.logging("warn: Модель занята", color=Color.YELLOW)
             await asyncio.sleep(0.25)
         self.busy = True
+        print("Processing image...")
         try:
             def make_hint(image, depth_estimator):
                 image = depth_estimator(image)["depth"]
