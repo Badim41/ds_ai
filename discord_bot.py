@@ -310,7 +310,6 @@ async def __change_video(
                 for i in range(cuda_avaible):
                     await ctx.send(f"Загрузка модели для картинок на {i + 1}-ую видеокарту")
                     image_generator = Image_Generator(i)
-                    await image_generator.wait_loading()
                     image_generators.append(image_generator)
             return
         filename = f"{ctx.author.id}.mp4"
@@ -451,7 +450,6 @@ async def __image(ctx,
         if len(image_generators) == 0:
             await ctx.send(f"Загрузка модели для картинок на {cuda_avaible}-ую видеокарту")
             image_generator = Image_Generator(cuda_avaible - 1)
-            await image_generator.wait_loading()
             image_generators.append(image_generator)
             logger.logging("loaded model")
 

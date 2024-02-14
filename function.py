@@ -4,6 +4,7 @@ import numpy as np
 import os
 import re
 import subprocess
+import time
 from pydub import AudioSegment
 
 from diffusers import KandinskyV22PriorEmb2EmbPipeline, KandinskyV22ControlnetImg2ImgPipeline
@@ -340,11 +341,13 @@ class Image_Generator:
         self.loaded = False
         self.busy = False
         asyncio.ensure_future(self.load_models())
+        self.wait_loading()
 
-    async def wait_loading(self):
+    def wait_loading(self):
         while not self.loaded:
             logger.logging("Wait.")
-            await asyncio.sleep(0.5)
+            time.sleep(0.5)
+        print("stop wait")
 
     async def load_models(self):
         try:
