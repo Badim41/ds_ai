@@ -52,12 +52,15 @@ class Use_Cuda:
                     self.cuda_is_busy[index] = True
                 return
             for i in range(240):
+                print("image generators:", image_generators, len(image_generators))
                 for generator in image_generators:
                     number = int(generator.cuda_number)
+                    print("image generator cuda number:", number)
                     if not self.cuda_is_busy_images[number]:
                         self.cuda_is_busy_images[number] = True
                         self.cuda_is_busy[number] = True
                         return number, generator
+                    print("image generator busy:", number)
                 await asyncio.sleep(0.25)
             raise "No avaible cuda"
 

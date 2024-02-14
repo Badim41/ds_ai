@@ -1419,7 +1419,7 @@ async def command_log(ctx):
     logs_path = "__logs__"
     if os.path.exists(logs_path):
         with open(logs_path, "r", encoding="utf-8") as file:
-            content = file.read()[-3800:]
+            content = file.read()[-1990:]
             await ctx.send(content)
     else:
         await ctx.send("Логов нет. Странно, не правда?")
