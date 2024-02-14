@@ -230,12 +230,6 @@ async def help_command(
                           "лучше, но медленнее)\nseed - сид (если одинаковый сид и файл, то получится то же самое изображение)"
                           "\nx - расширение по X\ny - расширение по Y\nstrength - сила изменения\nstrength_prompt - сила для "
                           "запроса\nstrength_negative_prompt - сила для негативного запроса\nrepeats - количество изображений")
-        import torch
-        cuda_avaible = torch.cuda.device_count()
-        if len(image_generators) == 0:
-            await ctx.send(f"Загрузка генератора картинок на {cuda_avaible}-ой видеокарте")
-            image_generators.append(Image_Generator(cuda_avaible - 1))
-
     elif command == "change_video":
         await ctx.respond(
             "# /change_video \n(Изменить видео **ПОКАДРОВО**)\n**video_path - видеофайл**\n**fps - Количество "
@@ -244,12 +238,6 @@ async def help_command(
             "одинаковый сид и файл, то получится то же самое изображение)\nstrength - сила изменения\n"
             "strength_prompt - сила для запроса\nstrength_negative_prompt - сила для негативного запроса\n"
             "voice - голосовая модель\n")
-        import torch
-        cuda_avaible = torch.cuda.device_count()
-        if len(image_generators) == 0:
-            for i in range(cuda_avaible):
-                await ctx.send(f"Загрузка генератора картинок на {i+1}-ой видеокарте")
-                image_generators.append(Image_Generator(i))
     elif command == "join":
         await ctx.respond("# /join\n - присоединиться к вам в войс-чате")
     elif command == "disconnect":
@@ -315,7 +303,12 @@ async def __change_video(
             return
 
         if not image_generators:
-            await ctx.respond("модель для картинок не загружена")
+            import torch
+            cuda_avaible = torch.cuda.device_count()
+            if len(image_generators) == 0:
+                for i in range(cuda_avaible):
+                    await ctx.send(f"Загрузка модели для картинок на {i + 1}-ую видеокарту")
+                    image_generators.append(Image_Generator(i))
             return
 
         filename = f"{ctx.author.id}.mp4"
@@ -447,7 +440,11 @@ async def __image(ctx,
 
     await ctx.defer()
     if not image_generators:
-        await ctx.respond("модель для картинок не загружена")
+        import torch
+        cuda_avaible = torch.cuda.device_count()
+        if len(image_generators) == 0:
+            await ctx.send(f"Загрузка модели для картинок на {cuda_avaible}-ую видеокарту")
+            image_generators.append(Image_Generator(cuda_avaible - 1))
         return
 
     for i in range(repeats):
@@ -1405,6 +1402,19 @@ async def command_exit(ctx, *args):
     await set_get_config_all("Default", SQL_Keys.reload, "False")
     exit(0)
     # asyncio.ensure_future(command_line(ctx=ctx, command="pkill -f python"))
+
+@bot.command(aliases=['log'], help="логи")
+async def command_exit(ctx):
+    owner_ids = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")
+    if str(ctx.author.id) not in owner_ids:
+        await ctx.author.send("Доступ запрещён")
+        return
+
+    logs_path = "__logs__"
+    if os.path.exists(logs_path):
+        with open(logs_path, "r", encoding="utf-8") as file:
+            content = file.read()[-3800:]
+            await ctx.send(content)
 
 
 @bot.command(aliases=['themer'], help="тема для диалога")
