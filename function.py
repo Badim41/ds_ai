@@ -337,7 +337,10 @@ class Image_Generator:
         self.pipe = None
         self.loaded = False
         self.busy = False
-        asyncio.run(self.load_models())
+        asyncio.ensure_future(self.load_models())
+        while not self.loaded:
+            asyncio.run(asyncio.sleep(0.25))
+            print("wait")
 
     async def load_models(self):
         try:
