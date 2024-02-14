@@ -106,7 +106,7 @@ class TextToSpeechRVC:
     async def text_to_speech(self, text, audio_path="1.mp3", output_name=None):
         if text is None or text.replace("\n", "").replace(" ", "") == "":
             logger.logging(f"Пустой текст \"{text}\"", color=Color.RED)
-            raise "No text"
+            raise Exception("No text")
 
         # убираем текст до коментария
         if "||" in text:
@@ -234,7 +234,7 @@ class Character:
                 self.max_simbols = max_simbols
 
                 if algo.lower() not in ["mangio-crepe", "rmvpe"]:
-                    raise "Not found algo"
+                    raise Exception("Not found algo")
                 self.algo = algo
                 self.protect = protect
                 self.rms_mix_rate = rms_mix_rate
@@ -362,7 +362,7 @@ class Image_Generator:
     async def generate_image(self, prompt, negative_prompt, x, y, steps, seed, strength, strength_prompt,
                              strength_negative_prompt, image_name):
         if not self.loaded:
-            raise "Модель не загружена"
+            raise Exception("Модель не загружена")
         if self.busy:
             logger.logging("warn: Модель занята", color=Color.YELLOW)
             await asyncio.sleep(0.25)
@@ -412,4 +412,4 @@ class Image_Generator:
         except Exception as e:
             self.busy = False
             error_message = f"Произошла ошибка: {e}"
-            raise error_message
+            raise Exception(error_message)

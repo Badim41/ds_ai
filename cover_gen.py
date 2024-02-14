@@ -217,7 +217,7 @@ def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_ty
                                                                              denoise=True, cuda_number=cuda_number)
         return orig_song_path, vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path
     except Exception as e:
-        raise e
+        raise Exception(e)
 
 
 def download_video_or_use_file(song_input, input_type):
@@ -372,7 +372,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
         return ai_cover_path
 
     except Exception as e:
-        raise e
+        raise Exception(e)
 
 
 # def path_exist(song_dir):

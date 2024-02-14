@@ -23,7 +23,7 @@ class Use_Cuda:
         async with cuda_lock():
             if not index is None:
                 if self.cuda_is_busy[index]:
-                    raise "Cuda is using right now"
+                    raise Exception("Cuda is using right now")
                 else:
                     self.cuda_is_busy[index] = True
                 return
@@ -33,11 +33,11 @@ class Use_Cuda:
                         self.cuda_is_busy[i] = True
                         return i
                 await asyncio.sleep(0.25)
-            raise "No avaible cuda"
+            raise Exception("No avaible cuda")
 
     async def stop_use_cuda(self, index):
         if not self.cuda_is_busy[index]:
-            raise "Cuda is not using right now"
+            raise Exception("Cuda is not using right now")
         else:
             self.cuda_is_busy[index] = False
 
@@ -45,7 +45,7 @@ class Use_Cuda:
         async with cuda_lock():
             if not index is None:
                 if self.cuda_is_busy_images[index]:
-                    raise "Cuda is not using right now"
+                    raise Exception("Cuda is not using right now")
                 else:
                     self.cuda_is_busy_images[index] = True
                     self.cuda_is_busy[index] = True
@@ -61,11 +61,11 @@ class Use_Cuda:
                         return number, generator
                     print("image generator busy:", number)
                 await asyncio.sleep(0.25)
-            raise "No avaible cuda"
+            raise Exception("No avaible cuda")
 
     async def stop_use_cuda_images(self, index):
         if not self.cuda_is_busy_images[index]:
-            raise "Cuda is not using right now"
+            raise Exception("Cuda is not using right now")
         else:
             self.cuda_is_busy_images[index] = False
             self.cuda_is_busy[index] = False
