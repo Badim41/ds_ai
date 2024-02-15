@@ -34,7 +34,8 @@ nltk
 pydub==0.25.1
 py-cord[speed]
 py-cord[voice]
-py-cord==2.3.3timm
+py-cord==2.3.3
+timm
 pytorch_lightning==1.7.5
 transformers
 accelerate

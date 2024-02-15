@@ -367,4 +367,4 @@ class Image_Generator:
             self.busy = False
             error_message = f"Произошла ошибка: {e}"
             raise Exception(error_message)
-    async def change_image(self, image_input, prompt):
+    async def change_image(self, image_input, prompt): #TODO IMAGES
