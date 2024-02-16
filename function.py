@@ -476,7 +476,6 @@ async def upscale_image(cuda_number, image_path, prompt):
     pipeline = StableDiffusionUpscalePipeline.from_pretrained(
         model_id, revision="fp16", torch_dtype=torch.float16, device_map="balanced"
     )
-    pipeline = pipeline.to(f"cuda")
 
     with open(image_path, "rb") as file:
         image_data = file.read()
@@ -502,7 +501,7 @@ async def video_generate(cuda_number, image_path, seed, fps, decode_chunk_size=8
 
     image = Image.open(BytesIO(image_data)).convert("RGB")
 
-    generator = torch.manual_seed(seed)
+    generator = torch.Generator(device=f"cuda").manual_seed(seed)
     frames = pipe(image, decode_chunk_size=decode_chunk_size, generator=generator).frames[0]
 
     export_to_video(frames, video_path, fps=fps)
