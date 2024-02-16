@@ -386,8 +386,7 @@ async def generate_image(cuda_number: int, prompt: str, negative_prompt: str, im
     """
 
     pipe = AutoPipelineForImage2Image.from_pretrained("kandinsky-community/kandinsky-3", variant="fp16",
-                                                      torch_dtype=torch.float16)
-    pipe.enable_model_cpu_offload()
+                                                      torch_dtype=torch.float16).to(f"cuda:{cuda_number}")
 
     logger.logging("Processing image...", color=Color.CYAN)
     if x and y:
@@ -482,12 +481,13 @@ async def upscale_image(cuda_number, image_path, prompt):
     upscaled_image.save(image_path)
 
 
-async def video_generate(image_path, seed, fps, decode_chunk_size=8):
+async def video_generate(cuda_number, image_path, seed, fps, decode_chunk_size=8):
     video_path = image_path.replace(".png", ".mp4")
+    gif_path = video_path.replace(".mp4", ".gif")
 
     pipe = StableVideoDiffusionPipeline.from_pretrained(
         "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16"
-    )
+    ).to(f"cuda:{cuda_number}")
     pipe.enable_model_cpu_offload()
 
     # Load the conditioning image
@@ -498,7 +498,8 @@ async def video_generate(image_path, seed, fps, decode_chunk_size=8):
     frames = pipe(image, decode_chunk_size=decode_chunk_size, generator=generator).frames[0]
 
     export_to_video(frames, video_path, fps=fps)
-    await convert_mp4_to_gif(video_path, video_path.replace(".mp4", ".gif"), fps)
+    await convert_mp4_to_gif(video_path, gif_path, fps)
+    return video_path, gif_path
 
 
 async def audio_generate(cuda_number, wav_audio_path, prompt, duration, steps):

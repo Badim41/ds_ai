@@ -26,7 +26,7 @@ from discord_tools.sql_db import set_get_database_async as set_get_config_all
 from discord_tools.timer import Time_Count
 from download_voice_model import download_online_model
 from function import Character, Voice_Changer, get_link_to_file, Text2ImageAPI, upscale_image, \
-    audio_generate, generate_image
+    audio_generate, generate_image, video_generate
 from modifed_sinks import StreamSink
 from use_free_cuda import Use_Cuda
 
@@ -274,6 +274,24 @@ async def __upscale_image_command(ctx,
 
     # Освобождаем CUDA
     await cuda_manager.stop_use_cuda(cuda_number)
+
+@bot.slash_command(name="video_generate", description='Создать видео на основе изображения с помощью нейросети')
+async def video_generate_command(ctx,
+                                 image: Option(str, description='Путь к изображению', required=True),
+                                 seed: Option(int, description='Семя генератора', required=True),
+                                 fps: Option(int, description='Количество кадров в секунду', required=True),
+                                 decode_chunk_size: Option(int, description='Размер чанка декодирования', required=False, default=8)
+                                 ):
+    await ctx.defer()
+
+    cuda_number = await cuda_manager.use_cuda()
+    timer = Time_Count()
+    video_path, gif_path = await video_generate(cuda_number, image, seed, fps, decode_chunk_size)
+
+    await ctx.respond(timer.count_time())
+    await cuda_manager.stop_use_cuda(cuda_number)
+    await send_file(ctx, video_path)
+    await send_file(ctx, gif_path)
 
 @bot.slash_command(name="generate_audio", description='Создать аудиофайл с помощью нейросети')
 async def __generate_audio(ctx,
