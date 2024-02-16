@@ -1,5 +1,6 @@
 import PIL
 import asyncio
+import base64
 import gc
 import json
 import os
@@ -461,18 +462,49 @@ def create_white_image(width, height):
 def fill_transparent_with_black(image_path):
     image = Image.open(image_path)
 
-    # Проверка, является ли изображение прозрачным (имеет альфа-канал)
+    # имеет альфа-канал
     if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):
         # Создание нового изображения с фоном чёрного цвета
         new_image = Image.new('RGB', image.size, (0, 0, 0))
-        new_image.paste(image, mask=image.split()[3])  # Используем альфа-канал для маскирования
+        new_image.paste(image, mask=image.split()[3])
         return new_image
     else:
         return image
 
 
-async def inpaint_image(cuda_number: int, prompt: str, negative_prompt: str, image_path: str, mask_path: str,
-                        invert: bool, strength: float, steps: int):
+async def generate_image_API(ctx, prompt, x, y, negative_prompt="", style="DEFAULT"):
+    api = Text2ImageAPI('https://api-key.fusionbrain.ai/')
+    model_id = api.get_model()
+
+    if x and y:
+        max_size = 1024 * 1024
+        if max_size > x * y:
+            scale_factor = (max_size / (x * y)) ** 0.5
+            x = int(x * scale_factor)
+            y = int(y * scale_factor)
+    elif not x and not y:
+        x, y = 1024, 1024
+    else:
+        await ctx.respond(f"Указана только 1 величина. X={x}, Y={y}")
+        return
+
+    uuid = api.generate(prompt=prompt, negative_prompt=negative_prompt, model=model_id, width=x, height=y,
+                        style=style)
+    image_data_base64 = api.check_generation(uuid)
+
+    selected_image_base64 = image_data_base64[0]
+
+    image_data_binary = base64.b64decode(selected_image_base64)
+
+    input_image = "images/image" + str(ctx.author.id) + "_generate.png"
+
+    with open(input_image, 'wb') as file:
+        file.write(image_data_binary)
+    return input_image
+
+
+async def inpaint_image(cuda_number, prompt, negative_prompt, image_path, mask_path,
+                        invert, strength, steps):
     image = Image.open(image_path)
 
     pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
