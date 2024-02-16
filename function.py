@@ -1,14 +1,32 @@
 import asyncio
 import json
-import numpy as np
 import os
 import re
+import requests
 import subprocess
+import time
+from diffusers import Kandinsky3Img2ImgPipeline, StableDiffusionUpscalePipeline, StableVideoDiffusionPipeline, \
+    MusicLDMPipeline
+from scipy.io.wavfile import write
+from diffusers.utils import export_to_video
+from io import BytesIO
+from moviepy.video.io.VideoFileClip import VideoFileClip
 from pydub import AudioSegment
 
 from PIL import Image
 from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
 from gtts import gTTS
+
+from discord_tools.sql_db import set_get_database_async as set_get_config_all
+
+
+class SQL_Keys:
+    kandinsky_api_key = "kandinsky_api_key"
+    kandinsky_secret_key = "kandinsky_secret_key"
+
+
+api_key = asyncio.run(set_get_config_all("secret", SQL_Keys.kandinsky_api_key))
+secret_key = asyncio.run(set_get_config_all("secret", SQL_Keys.kandinsky_secret_key))
 
 from discord_tools.logs import Color, Logs
 from discord_tools.secret import load_secret, SecretKey, create_secret
@@ -182,15 +200,6 @@ class TextToSpeechRVC:
         return voice["voice_id"] if voice else None
 
 
-def make_hint(image, depth_estimator, torch):
-    image = depth_estimator(image)["depth"]
-    image = np.array(image)
-    image = image[:, :, None]
-    image = np.concatenate([image, image, image], axis=2)
-    detected_map = torch.from_numpy(image).float() / 255.0
-    hint = detected_map.permute(2, 0, 1)
-    return hint
-
 class Character:
     def __init__(self, name, max_simbols=300, algo="rmvpe", protect=0.2, rms_mix_rate=0.3, index_rate=0.5,
                  filter_radius=3, speaker_boost=True):
@@ -336,19 +345,52 @@ class Character:
         await self.voice.text_to_speech(text, audio_path=audio_path, output_name=output_name)
 
 
+def get_image_dimensions(file_path):
+    with Image.open(file_path) as img:
+        width, height = img.size
+    return int(width), int(height)
+
+
+def scale_image(image_path, max_size):
+    x, y = get_image_dimensions(image_path)
+
+    # скэйлинг во избежания ошибок из-за нехватки памяти
+    if max_size > x * y:
+        scale_factor = (max_size / (x * y)) ** 0.5
+        x = int(x * scale_factor)
+        y = int(y * scale_factor)
+        # if not x % 64 == 0:
+        #     x = ((x // 64) + 1) * 64
+        # if not y % 64 == 0:
+        #     y = ((y // 64) + 1) * 64
+        logger.logging(f"scaled {image_path} to {x};{y}", color=Color.GRAY)
+        resize_image(image_path=image_path, x=x, y=y)
+
+
+def resize_image(image_path, x, y):
+    """
+    Изменяет размер изображения
+    """
+    image = Image.open(image_path)
+    resized_image = image.resize((x, y))
+    resized_image.save(image_path)
+
+
 class Image_Generator:
-    def __init__(self, cuda_number):
-        from kandinsky3 import get_inpainting_pipeline
+    def __init__(self, cuda_number: int):
         import torch
         self.torch = torch
         self.loaded = False
-        self.cuda_number = str(cuda_number)
-        self.inp_pipe = get_inpainting_pipeline(f'cuda:{cuda_number}', fp16=True)
+        self.cuda_number = cuda_number
+        self.device = f"cuda:{cuda_number}"
+        self.pipe = Kandinsky3Img2ImgPipeline.from_pretrained("kandinsky-community/kandinsky-3", variant="fp16",
+                                                              torch_dtype=torch.float16, device_map=self.device)
         self.busy = False
         self.loaded = True
         logger.logging("Loaded class!", color=Color.GRAY)
 
-    async def generate_image(self, prompt, image_input, mask_input=None):
+    async def generate_image(self, prompt: str, negative_prompt: str, image_input: str, seed: int, x: int, y: int,
+                             steps: int, strength: float):
         """
         prompt - запрос
         image_input - путь к изображению
@@ -357,20 +399,18 @@ class Image_Generator:
         if not self.loaded:
             raise Exception("Модель не загружена")
         if self.busy:
-            logger.logging("warn: Генератор занят", color=Color.YELLOW)
+            logger.logging("Генератор занят", color=Color.RED)
             await asyncio.sleep(0.25)
 
-        mask = None
-        if mask_input:
-            # Загрузка маски изображения из файла
-            mask_image = Image.open(mask_input)
-            mask = np.array(mask_image)[:, :, 0] // 255  # Преобразование в маску (0 или 1)
-            mask_image.close()
+        resize_image(image_path=image_input, x=x, y=y)
+        scale_image(image_path=image_input, max_size=2048 * 2048)
 
         self.busy = True
         logger.logging("Processing image...", color=Color.CYAN)
         try:
-            image_name = self.inp_pipe(prompt, image_input, mask)
+            generator = self.torch.Generator(device=self.device).manual_seed(seed)
+            image_name = self.pipe(prompt, negative_prompt=negative_prompt, image=image_input, strength=strength,
+                                   num_inference_steps=steps, generator=generator).images[0]
             self.busy = False
             return image_name
         except Exception as e:
@@ -378,3 +418,116 @@ class Image_Generator:
             error_message = f"Произошла ошибка: {e}"
             logger.logging(error_message, color=Color.RED)
             raise Exception(error_message)
+
+
+class Text2ImageAPI:
+
+    def __init__(self, url):
+        try:
+            self.URL = url
+            self.AUTH_HEADERS = {
+                'X-Key': f'Key {api_key}',
+                'X-Secret': f'Secret {secret_key}',
+            }
+        except Exception as e:
+            print("error in async_image:(id:4)", e)
+
+    def get_model(self):
+        try:
+            response = requests.get(self.URL + 'key/api/v1/models', headers=self.AUTH_HEADERS)
+            data = response.json()
+            return data[0]['id']
+        except Exception as e:
+            print("error in async_image:(id:3)", e)
+
+    def generate(self, prompt, negative_prompt, model, images=1, width=1024, height=1024, style="UHD"):
+        try:
+            params = {
+                "type": "GENERATE",
+                "style": style,
+                "numImages": images,
+                "negativePromptUnclip": negative_prompt,
+                "width": width,
+                "height": height,
+                "generateParams": {
+                    "query": f"{prompt}"
+                }
+            }
+
+            data = {
+                'model_id': (None, model),
+                'params': (None, json.dumps(params), 'application/json')
+            }
+            response = requests.post(self.URL + 'key/api/v1/text2image/run', headers=self.AUTH_HEADERS, files=data)
+            data = response.json()
+            return data['uuid']
+        except Exception as e:
+            print("error in async_image:(id:2)", e)
+
+    def check_generation(self, request_id, attempts=10, delay=1):
+        try:
+            while attempts > 0:
+                response = requests.get(self.URL + 'key/api/v1/text2image/status/' + request_id,
+                                        headers=self.AUTH_HEADERS)
+                data = response.json()
+                if data['status'] == 'DONE':
+                    return data['images']
+
+                attempts -= 1
+                time.sleep(delay)
+        except Exception as e:
+            print("error in async_image:(id:1)", e)
+
+
+async def convert_mp4_to_gif(input_file, output_file, fps):
+    video = VideoFileClip(input_file)
+    video.write_gif(output_file, fps=fps)
+    video.close()
+
+
+async def upscale_image(cuda_number, image_path, prompt):
+    import torch
+
+    # load model and scheduler
+    model_id = "stabilityai/stable-diffusion-x4-upscaler"
+    pipeline = StableDiffusionUpscalePipeline.from_pretrained(
+        model_id, revision="fp16", torch_dtype=torch.float16
+    )
+    pipeline = pipeline.to(f"cuda:{cuda_number}")
+
+    upscaled_image = pipeline(prompt=prompt, image=image_path).images[0]
+    upscaled_image.save(image_path)
+
+
+async def video_generate(image_path, seed, fps, decode_chunk_size=8):
+    import torch
+
+    video_path = image_path.replace(".png", ".mp4")
+
+    pipe = StableVideoDiffusionPipeline.from_pretrained(
+        "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16"
+    )
+    pipe.enable_model_cpu_offload()
+
+    # Load the conditioning image
+    scale_image(image_path=image_path, max_size=1024 * 1024)
+    image = Image.open(image_path)
+
+    generator = torch.manual_seed(seed)
+    frames = pipe(image, decode_chunk_size=decode_chunk_size, generator=generator).frames[0]
+
+    export_to_video(frames, video_path, fps=fps)
+    await convert_mp4_to_gif(video_path, video_path.replace(".mp4", ".gif"), fps)
+
+
+async def audio_generate(cuda_number, wav_audio_path, prompt, duration, steps):
+    import torch
+
+    repo_id = "ucsd-reach/musicldm"
+    pipe = MusicLDMPipeline.from_pretrained(repo_id, torch_dtype=torch.float16)
+    pipe = pipe.to(f"cuda{cuda_number}")
+
+    audio = pipe(prompt, num_inference_steps=steps, audio_length_in_s=duration).audios[0]
+
+    # save the audio sample as a .wav file
+    write(wav_audio_path, rate=16000, data=audio)

@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import os
 import random
 import re
@@ -26,7 +27,7 @@ from discord_tools.logs import Logs, Color
 from discord_tools.sql_db import set_get_database_async as set_get_config_all
 from discord_tools.timer import Time_Count
 from download_voice_model import download_online_model
-from function import Image_Generator, Character, Voice_Changer, get_link_to_file
+from function import Image_Generator, Character, Voice_Changer, get_link_to_file, Text2ImageAPI, upscale_image, audio_generate, video_generate
 from modifed_sinks import StreamSink
 from use_free_cuda import Use_Cuda
 
@@ -256,197 +257,130 @@ async def help_command(
                           "speaker - Модель голоса\n"
                           "gen_temp - Температура генерации")
 
+@bot.slash_command(name="upscale_image", description='Увеличить масштаб изображения с помощью нейросети')
+async def upscale_image_command(ctx,
+                                image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
+                                              required=True),
+                                prompt: Option(str, description='Запрос (что изображено на картинке)', required=True)
+                                ):
+    await ctx.defer()
+    input_image = "images/image" + str(ctx.author.id) + "_upscale.png"
+    await image.save(input_image)
 
-@bot.slash_command(name="change_video",
-                   description='Перерисовать и переозвучить видео')
-async def __change_video(
-        ctx,
-        video_path: Option(discord.SlashCommandOptionType.attachment, description='Файл с видео',
-                           required=True),
-        fps: Option(int, description='Частота кадров (ОЧЕНЬ влияет на время ожидания))', required=True,
-                    choices=[30, 15, 10, 6, 5, 3, 2, 1]),
-        extension: Option(str, description='Расширение (сильно влияет на время ожидания)', required=True,
-                          choices=["144p", "240p", "360p", "480p", "720p"]),
-        prompt: Option(str, description='запрос', required=True),
-        negative_prompt: Option(str, description='негативный запрос', default="NSFW", required=False),
-        steps: Option(int, description='число шагов', required=False,
-                      default=30,
-                      min_value=1,
-                      max_value=500),
-        seed: Option(int, description='сид изображения', required=False,
-                     default=random.randint(1, 1000000),
-                     min_value=1,
-                     max_value=1000000),
-        strength: Option(float, description='насколько сильны будут изменения', required=False,
-                         default=0.15, min_value=0,
-                         max_value=1),
-        strength_prompt: Option(float,
-                                description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется положительный промпт',
-                                required=False,
-                                default=0.85, min_value=0.1,
-                                max_value=1),
-        strength_negative_prompt: Option(float,
-                                         description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется отрицательный промпт',
-                                         required=False,
-                                         default=1, min_value=0.1,
-                                         max_value=1),
-        voice_name: Option(str, description='Голос для видео', required=False, default="None")
-):
-    cuda_all = None
-    global image_generators
-    try:
-        await ctx.defer()
+    cuda_number = await cuda_manager.use_cuda()
+    timer = Time_Count()
 
-        # ошибки входных данных
-        voices = (await set_get_config_all("Sound", "voices")).replace("\"", "").replace(",", "").split(";")
-        if voice_name not in voices:
-            await ctx.respond("Выберите голос из списка: " + ';'.join(voices))
-            return
+    await upscale_image(cuda_number, input_image, prompt)
 
-        if not image_generators:
-            import torch
-            cuda_avaible = torch.cuda.device_count()
-            if len(image_generators) == 0:
-                for i in range(cuda_avaible):
-                    await ctx.send(f"Загрузка модели для картинок на {i + 1}-ую видеокарту")
-                    image_generator = Image_Generator(i)
-                    image_generators.append(image_generator)
-            return
-        filename = f"{ctx.author.id}.mp4"
-        await video_path.save(filename)
-        # сколько кадров будет в результате
-        video_clip = VideoFileClip(filename)
-        total_frames = int((video_clip.fps * video_clip.duration) / (30 / fps))
-        max_frames = int(await set_get_config_all("Video", "max_frames", None))
-        if max_frames <= total_frames:
-            await ctx.send(
-                f"Слишком много кадров, снизьте параметр FPS! Максимальное разрешённое количество кадров в видео: {max_frames}. Количество кадров у вас - {total_frames}")
-            return
+    await ctx.respond(f"Изображение успешно увеличено!\nПотрачено: {timer.count_time()}")
+    await ctx.send_file(input_image)
 
-        # используем видеокарты
-        cuda_avaible = await cuda_manager.check_cuda_images()
-        if cuda_avaible == 0:
-            await ctx.respond("Нет свободных видеокарт")
-            return
-        else:
-            await ctx.respond(f"Используется {cuda_avaible} видеокарт для обработки видео")
+    # Освобождаем CUDA
+    await cuda_manager.stop_use_cuda(cuda_number)
 
-        cuda_all = []
-        generators_all = []
-        for i in range(cuda_avaible):
-            cuda_number, generator = await cuda_manager.use_cuda_images(image_generators)
-            cuda_all.append(cuda_number)
-            generators_all.append(generator)
+@bot.slash_command(name="generate_audio", description='Создать аудиофайл с помощью нейросети')
+async def __generate_audio(ctx,
+                         prompt: Option(str, description='Запрос', required=True),
+                         duration: Option(float, description='Длительность аудио в секундах', required=True),
+                         steps: Option(int, description='Количество шагов для генерации', required=False, default=10)
+                         ):
+    await ctx.defer()
 
-        # run timer
+    cuda_number = await cuda_manager.use_cuda()
+    timer = Time_Count()
+    wav_audio_path = f"{ctx.author.id}_generate_audio.wav"
+    await audio_generate(cuda_number, wav_audio_path, prompt, duration, steps)
+    await cuda_manager.stop_use_cuda(cuda_number)
+
+    await ctx.respond(f"Аудиофайл успешно создан!\nПотрачено: {timer.count_time()}")
+    await ctx.send_file(wav_audio_path)
+
+@bot.slash_command(name="generate_image", description='создать изображение нейросетью')
+async def __image_generate(ctx,
+                           prompt: Option(str, description='Запрос', required=True),
+                           negative_prompt: Option(str, description='Негативный запрос', default="NSFW",
+                                                   required=False),
+                           x: Option(int,
+                                     description='Размер картинки по x',
+                                     required=False,
+                                     default=None, min_value=64,
+                                     max_value=768),
+                           y: Option(int,
+                                     description='Размер картинки по y',
+                                     required=False,
+                                     default=None, min_value=64,
+                                     max_value=768),
+                           style: Option(str, description="Стиль", required=False,
+                                         choices=["KANDINSKY", "UHD", "ANIME", "DEFAULT"], default="DEFAULT"),
+                           repeats: Option(int,
+                                           description='Количество повторов',
+                                           required=False,
+                                           default=1, min_value=1,
+                                           max_value=16)
+
+                           ):
+    await ctx.defer()
+    await ctx.respond("Выполнение...")
+    for i in range(repeats):
         timer = Time_Count()
 
-        if len(cuda_all) > 1:
-            seconds = total_frames * 13 / len(cuda_all)
-        else:
-            seconds = total_frames * 16
-        if seconds >= 3600:
-            hours = seconds // 3600
-            minutes = (seconds % 3600) // 60
-            remaining_seconds = seconds % 60
-            if minutes == 0 and remaining_seconds == 0:
-                time_spend = f"{hours} часов"
-            elif remaining_seconds == 0:
-                time_spend = f"{hours} часов, {minutes} минут"
-            elif minutes == 0:
-                time_spend = f"{hours} часов, {remaining_seconds} секунд"
-            else:
-                time_spend = f"{hours} часов, {minutes} минут, {remaining_seconds} секунд"
-        elif seconds >= 60:
-            minutes = seconds // 60
-            remaining_seconds = seconds % 60
-            if remaining_seconds == 0:
-                time_spend = f"{minutes} минут"
-            else:
-                time_spend = f"{minutes} минут, {remaining_seconds} секунд"
-        else:
-            time_spend = f"{seconds} секунд"
-        await ctx.send(f"Видео будет обрабатываться ~{time_spend}")
-        logger.logging("params suc", color=Color.CYAN)
-        # wait for answer
-        from video_change import video_pipeline
-        video_path = await video_pipeline(video_path=filename, fps_output=fps, video_extension=extension, prompt=prompt,
-                                          voice_name=voice_name, video_id=ctx.author.id, cuda_all=cuda_all,
-                                          image_generators=generators_all,
-                                          strength_negative_prompt=strength_negative_prompt,
-                                          strength_prompt=strength_prompt,
-                                          strength=strength, seed=seed, steps=steps, negative_prompt=negative_prompt)
+        api = Text2ImageAPI('https://api-key.fusionbrain.ai/')
+        model_id = api.get_model()
 
-        await ctx.send("Вот как я изменил ваше видео🖌. Потрачено " + timer.count_time())
-        await send_file(ctx, video_path)
-        # освобождаем видеокарты
-        for i in cuda_all:
-            await cuda_manager.stop_use_cuda_images(i)
-    except Exception as e:
-        await ctx.send(f"Ошибка при изменении картинки (с параметрами\
-                          {fps, extension, prompt, negative_prompt, steps, seed, strength, strength_prompt, voice_name}\
-                          ): {e}")
-        if cuda_all:
-            for i in range(cuda_avaible):
-                await cuda_manager.stop_use_cuda_images(i)
+        max_size = 1024 * 1024
+        if max_size > x * y:
+            scale_factor = (max_size / (x * y)) ** 0.5
+            x = int(x * scale_factor)
+            y = int(y * scale_factor)
 
-        traceback_str = traceback.format_exc()
-        await logger.logging(str(traceback_str), Color.RED)
-        raise e
+        uuid = api.generate(prompt=prompt, negative_prompt=negative_prompt, model=model_id, width=x, height=y,
+                            style=style)
+        image_data_base64 = api.check_generation(uuid)
+
+        selected_image_base64 = image_data_base64[0]
+
+        image_data_binary = base64.b64decode(selected_image_base64)
+
+        input_image = "images/image" + str(ctx.author.id) + "_generate.png"
+
+        with open(input_image, 'wb') as file:
+            file.write(image_data_binary)
+        await send_file(ctx=ctx, file_path=input_image, delete_file=True)
+        await ctx.send(f"Картинка: {i}/{repeats}\nПотрачено: {timer.count_time()}")
 
 
 @bot.slash_command(name="change_image", description='изменить изображение нейросетью')
-async def __image(ctx,
-                  image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
-                                required=True),
-                  mask_input: Option(discord.SlashCommandOptionType.attachment,
-                                     description='Маска. Будет изменять изображение на месте чёрных пикселей',
-                                     required=False, default=None),
-                  prompt: Option(str, description='запрос', required=True),
-                  negative_prompt: Option(str, description='негативный запрос', default="NSFW", required=False),
-                  steps: Option(int, description='число шагов', required=False,
-                                default=60,
-                                min_value=1,
-                                max_value=500),
-                  seed: Option(int, description='сид изображения', required=False,
-                               default=None,
-                               min_value=1,
-                               max_value=9007199254740991),
-                  x: Option(int,
-                            description='изменить размер картинки по x',
-                            required=False,
-                            default=None, min_value=64,
-                            max_value=768),
-                  y: Option(int,
-                            description='изменить размер картинки по y',
-                            required=False,
-                            default=None, min_value=64,
-                            max_value=768),
-                  strength: Option(float, description='насколько сильны будут изменения', required=False,
-                                   default=0.5, min_value=0,
-                                   max_value=1),
-                  strength_prompt: Option(float,
-                                          description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется положительный промпт',
-                                          required=False,
-                                          default=0.85, min_value=0.1,
+async def __image_change(ctx,
+                         image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
+                                       required=True),
+                         prompt: Option(str, description='запрос', required=True),
+                         negative_prompt: Option(str, description='негативный запрос', default="NSFW", required=False),
+                         steps: Option(int, description='число шагов', required=False,
+                                       default=60,
+                                       min_value=1,
+                                       max_value=500),
+                         seed: Option(int, description='сид изображения', required=False,
+                                      default=None,
+                                      min_value=1,
+                                      max_value=9007199254740991),
+                         x: Option(int,
+                                   description='размер картинки по x',
+                                   required=False,
+                                   default=None, min_value=64),
+                         y: Option(int,
+                                   description='размер картинки по y',
+                                   required=False,
+                                   default=None, min_value=64),
+                         strength: Option(float, description='насколько сильны будут изменения', required=False,
+                                          default=0.5, min_value=0,
                                           max_value=1),
-                  strength_negative_prompt: Option(float,
-                                                   description='ЛУЧШЕ НЕ ТРОГАТЬ! Насколько сильно генерируется отрицательный промпт',
-                                                   required=False,
-                                                   default=1, min_value=0.1,
-                                                   max_value=1),
-                  repeats: Option(int,
-                                  description='Количество повторов',
-                                  required=False,
-                                  default=1, min_value=1,
-                                  max_value=16)
-                  ):
+                         repeats: Option(int,
+                                         description='Количество повторов',
+                                         required=False,
+                                         default=1, min_value=1,
+                                         max_value=16)
+                         ):
     global image_generators
-
-    async def get_image_dimensions(file_path):
-        with Image.open(file_path) as img:
-            sizes = img.size
-        return str(sizes).replace("(", "").replace(")", "").replace(" ", "").split(",")
 
     await ctx.defer()
     if not image_generators:
@@ -470,33 +404,22 @@ async def __image(ctx,
 
             logger.logging("Using GPU:", cuda_number)
 
-            input_image = "images/image" + str(ctx.author.id) + ".png"
+            input_image = "images/image" + str(ctx.author.id) + "_change.png"
             logger.logging("Saved image:", input_image)
             await image.save(input_image)
-            # get image size and round to 64
-            if x is None or y is None:
-                x, y = await get_image_dimensions(input_image)
-                x = int(x)
-                y = int(y)
-                # скэйлинг во избежания ошибок из-за нехватки памяти
-                scale_factor = (1000000 / (x * y)) ** 0.5
-                x = int(x * scale_factor)
-                y = int(y * scale_factor)
-            if not x % 64 == 0:
-                x = ((x // 64) + 1) * 64
-            if not y % 64 == 0:
-                y = ((y // 64) + 1) * 64
+
             logger.logging("X:", x, "Y:", y)
             # loading params
             if seed is None or repeats > 1:
                 seed_current = random.randint(1, 9007199254740991)
             else:
                 seed_current = seed
-            image_path = await image_generator.generate_image(prompt=prompt,
-                                                              image_name=input_image, mask_input=mask_input)
+            image_path = await image_generator.generate_image(prompt=prompt, negative_promp=negative_prompt,
+                                                              image_input=input_image, seed=seed_current, x=x, y=y,
+                                                              steps=steps, strength=strength)
 
             # отправляем
-            text = "Вот как я изменил ваше изображение🖌.\nПотрачено " + timer.count_time() + f" сид:{seed_current}"
+            text = f"Изображение {i}/{repeats}\nПотрачено {timer.count_time()}\nСид:{seed_current}"
             if repeats == 1:
                 await ctx.respond(text)
             else:
@@ -509,7 +432,7 @@ async def __image(ctx,
             traceback_str = traceback.format_exc()
             logger.logging(str(traceback_str), Color.RED)
             await ctx.send(f"Ошибка при изменении картинки (с параметрами\
-                              {prompt, negative_prompt, steps, x, y, strength, strength_prompt, strength_negative_prompt}): {e}")
+                              {prompt, x, y}): {e}")
             # перестаём использовать видеокарту
             if not cuda_number is None:
                 await cuda_manager.stop_use_cuda_images(cuda_number)

@@ -26,10 +26,10 @@ Discord-бот для использования ИИ
 6. [📋 Помощь](#section-6)
 
 Репозитории, из которых взята часть кода:
-
-https://github.com/ai-forever/Kandinsky-2                                
+                          
 https://github.com/SociallyIneptWeeb/AICoverGen                                
 https://github.com/xtekky/gpt4free
+https://github.com/ai-forever/Kandinsky-3?tab=readme-ov-file
 
 ## 📖 Описание проекта <a name="section-1"></a>
 

@@ -12,23 +12,25 @@ from PIL import Image
 from cover_gen import run_ai_cover_gen
 from function import Character
 from discord_tools.logs import Logs, Color
+
 logger = Logs(warnings=True)
 
 
-async def image_change(output_folder, prompt, negative_prompt, x, y, steps, seed, strength, strength_prompt,
-                       strength_negative_prompt, cuda_all: int, cuda_index: int, image_generator):
+async def image_change(output_folder, prompt, negative_prompt, x, y, steps, seed, strength, cuda_all: int, image_generator):
     print("image changing...", cuda_index)
     # several GPU
-    for i, filename in enumerate(sorted(os.listdir(output_folder))):
-        if i % cuda_all == cuda_index:
+    for i, image_path in enumerate(sorted(os.listdir(output_folder))):
+        if i % cuda_all == image_generator.cuda_number:
             continue
-        if filename.endswith('.png'):
-            await image_generator.generate_image(prompt, negative_prompt, x, y, steps, seed, strength, strength_prompt,
-                                                  strength_negative_prompt, filename)
+        if image_path.endswith('.png'):
+            await image_generator.generate_image(prompt=prompt, negative_promp=negative_prompt,
+                                                 image_input=image_path, seed=seed, x=x, y=y,
+                                                 steps=steps, strength=strength)
     return
 
 
-async def video_pipeline(video_path, fps_output, video_extension, prompt, voice_name, video_id, cuda_all, image_generators, strength_negative_prompt, strength_prompt,
+async def video_pipeline(video_path, fps_output, video_extension, prompt, voice_name, video_id, cuda_all,
+                         image_generators, strength_negative_prompt, strength_prompt,
                          strength, seed, steps, negative_prompt):
     try:
 
@@ -100,15 +102,16 @@ async def video_pipeline(video_path, fps_output, video_extension, prompt, voice_
         print(f"saved {frame_number // save_img_step} frames!")
 
         # === обработка изображений ===
-        functions = [image_change(output_folder=output_folder, prompt=prompt, negative_prompt=negative_prompt, x=x, y=y,
-                                  steps=steps, seed=seed, strength=strength, strength_prompt=strength_prompt,
-                                  strength_negative_prompt=strength_negative_prompt, cuda_all=cuda_all, image_generator=image_generator)
+        functions = [image_change(output_folder=output_folder, prompt=prompt, negative_prompt=negative_prompt, x=new_width, y=new_height,
+                                  steps=steps, seed=seed, strength=strength, cuda_all=cuda_all,
+                                  image_generator=image_generator)
                      for image_generator in image_generators]
         await asyncio.gather(*functions)  # результаты всех функций
 
         character = Character(voice_name)
         pitch = character.pitch
-        audio_path = await run_ai_cover_gen(song_input=extracted_audio_path, rvc_dirname=voice_name, pitch=pitch, cuda_number=cuda_all[0])
+        audio_path = await run_ai_cover_gen(song_input=extracted_audio_path, rvc_dirname=voice_name, pitch=pitch,
+                                            cuda_number=cuda_all[0])
 
         # === Снова создаём видео ===
         images = []
