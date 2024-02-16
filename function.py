@@ -6,7 +6,7 @@ import requests
 import subprocess
 import time
 from diffusers import Kandinsky3Img2ImgPipeline, StableDiffusionUpscalePipeline, StableVideoDiffusionPipeline, \
-    MusicLDMPipeline
+    MusicLDMPipeline, AutoPipelineForImage2Image
 from diffusers.utils import export_to_video
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from pydub import AudioSegment
@@ -377,25 +377,27 @@ def resize_image(image_path, x, y):
     resized_image.save(image_path)
 
 
-async def generate_image(cuda_number:int, prompt: str, negative_prompt: str, image_input: str, seed: int, x, y,
+async def generate_image(cuda_number: int, prompt: str, negative_prompt: str, image_input: str, seed: int, x, y,
                          steps: int, strength: float):
     """
     prompt - запрос
     image_input - путь к изображению
     mask_input - путь к изображению с маской
     """
-    logger.logging("Processing image...", color=Color.CYAN)
-    pipe = Kandinsky3Img2ImgPipeline.from_pretrained("kandinsky-community/kandinsky-3", variant="fp16",
-                                                     torch_dtype=torch.float16).to(f"cuda:{cuda_number}")
 
+    pipe = AutoPipelineForImage2Image.from_pretrained("kandinsky-community/kandinsky-3", variant="fp16",
+                                                      torch_dtype=torch.float16)
+    pipe.enable_model_cpu_offload()
+
+    logger.logging("Processing image...", color=Color.CYAN)
     if x and y:
         resize_image(image_path=image_input, x=x, y=y)
-    scale_image(image_path=image_input, max_size=1024*1024)
+    scale_image(image_path=image_input, max_size=1024 * 1024)
 
     try:
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
         image_name = pipe(prompt, negative_prompt=negative_prompt, image=image_input, strength=strength,
-                               num_inference_steps=steps, generator=generator).images[0]
+                          num_inference_steps=steps, generator=generator).images[0]
         return image_name
     except Exception as e:
         error_message = f"Произошла ошибка: {e}"
@@ -469,7 +471,6 @@ async def convert_mp4_to_gif(input_file, output_file, fps):
 
 
 async def upscale_image(cuda_number, image_path, prompt):
-
     # load model and scheduler
     model_id = "stabilityai/stable-diffusion-x4-upscaler"
     pipeline = StableDiffusionUpscalePipeline.from_pretrained(
@@ -482,7 +483,6 @@ async def upscale_image(cuda_number, image_path, prompt):
 
 
 async def video_generate(image_path, seed, fps, decode_chunk_size=8):
-
     video_path = image_path.replace(".png", ".mp4")
 
     pipe = StableVideoDiffusionPipeline.from_pretrained(
@@ -502,7 +502,6 @@ async def video_generate(image_path, seed, fps, decode_chunk_size=8):
 
 
 async def audio_generate(cuda_number, wav_audio_path, prompt, duration, steps):
-
     repo_id = "ucsd-reach/musicldm"
     pipe = MusicLDMPipeline.from_pretrained(repo_id, torch_dtype=torch.float16)
     pipe = pipe.to(f"cuda{cuda_number}")
