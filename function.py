@@ -458,7 +458,8 @@ async def change_image(cuda_number: int, prompt: str, negative_prompt: str, imag
     """
 
     pipe = AutoPipelineForImage2Image.from_pretrained("kandinsky-community/kandinsky-3", variant="fp16",
-                                                      torch_dtype=torch.float16, device_map="balanced").to(f"cuda")
+                                                      torch_dtype=torch.float16, device_map="balanced")
+    pipe = pipe.to(f"cuda")
 
     logger.logging("Processing image...", color=Color.CYAN)
     if x and y:
@@ -479,11 +480,6 @@ async def change_image(cuda_number: int, prompt: str, negative_prompt: str, imag
 async def upscale_image(cuda_number, image_path, prompt):
 
     scale_image(image_path=image_path, max_size=1024 * 1024, match_size=84)
-
-    pipeline = StableDiffusionPipeline.from_pretrained(
-        "CompVis/stable-diffusion-v1-4", torch_dtype=torch.float16
-    )
-    pipeline.to(f"cuda:{cuda_number}")
 
     model_id = "stabilityai/sd-x2-latent-upscaler"
     upscaler = StableDiffusionLatentUpscalePipeline.from_pretrained(model_id, torch_dtype=torch.float16)
@@ -512,7 +508,8 @@ async def video_generate(cuda_number, image_path, seed, fps, decode_chunk_size=8
 
     pipe = StableVideoDiffusionPipeline.from_pretrained(
         "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16", device_map="balanced"
-    ).to(f"cuda")
+    )
+    pipe = pipe.to(f"cuda:{cuda_number}")
 
     # Load the conditioning image
     scale_image(image_path=image_path, max_size=1024 * 1024)
@@ -522,7 +519,7 @@ async def video_generate(cuda_number, image_path, seed, fps, decode_chunk_size=8
 
     image = Image.open(BytesIO(image_data)).convert("RGB")
 
-    generator = torch.Generator(device=f"cuda").manual_seed(seed)
+    generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
     frames = pipe(image, decode_chunk_size=decode_chunk_size, generator=generator).frames[0]
 
     export_to_video(frames, video_path, fps=fps)
@@ -532,8 +529,8 @@ async def video_generate(cuda_number, image_path, seed, fps, decode_chunk_size=8
 
 async def audio_generate(cuda_number, wav_audio_path, prompt, duration, steps):
     repo_id = "ucsd-reach/musicldm"
-    pipe = MusicLDMPipeline.from_pretrained(repo_id, torch_dtype=torch.float16, device_map="balanced")
-    pipe = pipe.to(f"cuda")
+    pipe = MusicLDMPipeline.from_pretrained(repo_id, torch_dtype=torch.float16)
+    pipe = pipe.to(f"cuda:{cuda_number}")
 
     audio = pipe(prompt, num_inference_steps=steps, audio_length_in_s=duration).audios[0]
 
