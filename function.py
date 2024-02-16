@@ -1,5 +1,6 @@
 import PIL
 import asyncio
+import gc
 import json
 import os
 import re
@@ -7,7 +8,8 @@ import requests
 import subprocess
 import time
 from diffusers import Kandinsky3Img2ImgPipeline, StableDiffusionUpscalePipeline, StableVideoDiffusionPipeline, \
-    MusicLDMPipeline, AutoPipelineForImage2Image, StableDiffusionPipeline, StableDiffusionLatentUpscalePipeline
+    MusicLDMPipeline, AutoPipelineForImage2Image, StableDiffusionPipeline, StableDiffusionLatentUpscalePipeline, \
+    StableDiffusionXLImg2ImgPipeline, StableDiffusionXLInpaintPipeline
 from diffusers.utils import export_to_video
 from io import BytesIO
 from moviepy.video.io.VideoFileClip import VideoFileClip
@@ -411,6 +413,7 @@ async def convert_mp4_to_gif(input_file, output_file, fps):
     video.write_gif(output_file, fps=fps)
     video.close()
 
+
 def get_image_dimensions(file_path):
     with Image.open(file_path) as img:
         width, height = img.size
@@ -443,47 +446,89 @@ def resize_image(image_path, x, y):
     resized_image = image.resize((x, y))
     resized_image.save(image_path)
 
-def format_image(image_path):
+
+def invert_image(image_path):
     image = Image.open(image_path)
-    image = image.convert("RGB")
+    inverted_image = Image.eval(image, lambda x: 255 - x)
+    return inverted_image
+
+
+def create_white_image(width, height):
+    image = Image.new("RGB", (width, height), color="white")
     return image
 
 
-async def change_image(cuda_number: int, prompt: str, negative_prompt: str, image_input: str, seed: int, x, y,
-                         steps: int, strength: float):
-    """
-    prompt - запрос
-    image_input - путь к изображению
-    mask_input - путь к изображению с маской
-    """
+def fill_transparent_with_black(image_path):
+    image = Image.open(image_path)
 
-    pipe = AutoPipelineForImage2Image.from_pretrained("kandinsky-community/kandinsky-3", variant="fp16",
-                                                      torch_dtype=torch.float16, device_map="balanced")
-    pipe = pipe.to(f"cuda")
-
-    logger.logging("Processing image...", color=Color.CYAN)
-    if x and y:
-        resize_image(image_path=image_input, x=x, y=y)
-    scale_image(image_path=image_input, max_size=600 * 600)
-
-    try:
-        generator = torch.Generator(device=f"cuda").manual_seed(seed)
-        image_name = pipe(prompt, negative_prompt=negative_prompt, image=image_input, strength=strength,
-                          num_inference_steps=steps, generator=generator).images[0]
-        return image_name
-    except Exception as e:
-        error_message = f"Произошла ошибка: {e}"
-        logger.logging(error_message, color=Color.RED)
-        raise Exception(error_message)
+    # Проверка, является ли изображение прозрачным (имеет альфа-канал)
+    if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):
+        # Создание нового изображения с фоном чёрного цвета
+        new_image = Image.new('RGB', image.size, (0, 0, 0))
+        new_image.paste(image, mask=image.split()[3])  # Используем альфа-канал для маскирования
+        return new_image
+    else:
+        return image
 
 
-async def upscale_image(cuda_number, image_path, prompt):
+async def inpaint_image(cuda_number: int, prompt: str, negative_prompt: str, image_path: str, mask_path: str,
+                        invert: bool, strength: float, steps: int):
+    image = Image.open(image_path)
 
-    scale_image(image_path=image_path, max_size=1024 * 1024, match_size=84)
+    pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
+        "stabilityai/stable-diffusion-xl-base-1.0",
+        torch_dtype=torch.float16,
+        variant="fp16",
+        use_safetensors=True,
+    )
+    pipe = pipe.to(f"cuda:{cuda_number}")
+
+    x, y = get_image_dimensions(image_path)
+
+    if mask_path:
+        # заполнение пустых пикселей чёрными
+        mask = fill_transparent_with_black(mask_path).resize((x, y))
+        if invert:
+            # замена белых пикселей чёрными
+            mask.save(mask_path)
+            mask = invert_image(mask_path)
+    else:
+        # белое изображение
+        mask = create_white_image(x, y)
+
+    pipe(prompt=prompt, image=image, mask_image=mask, num_inference_steps=steps, strength=strength,
+         negative_prompt=negative_prompt).images[0].save(image_path)
+
+    del pipe
+    torch.cuda.empty_cache()
+    gc.collect()
+
+
+async def refine_image(prompt, negative_prompt, strength, image_path, cuda_number, seed):
+    image = Image.open(image_path)
+
+    pipe = StableDiffusionXLImg2ImgPipeline.from_pretrained(
+        "stabilityai/stable-diffusion-xl-refiner-1.0", torch_dtype=torch.float16
+    )
+
+    pipe = pipe.to(f"cuda:{cuda_number}")
+
+    generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
+
+    pipe(prompt, image=image, generator=generator, negative_prompt=negative_prompt, strength=strength).images[
+        0].save(image_path)
+
+    del pipe
+    torch.cuda.empty_cache()
+    gc.collect()
+
+
+async def upscale_image(cuda_number, image_path, prompt, steps):
+    scale_image(image_path=image_path, max_size=1024 * 1024, match_size=64)
 
     model_id = "stabilityai/sd-x2-latent-upscaler"
-    upscaler = StableDiffusionLatentUpscalePipeline.from_pretrained(model_id, torch_dtype=torch.float16)
-    upscaler.to(f"cuda:{cuda_number}")
+    pipe = StableDiffusionLatentUpscalePipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+    pipe.to(f"cuda:{cuda_number}")
 
     if not prompt:
         prompt = "a photo of an astronaut high resolution, unreal engine, ultra realistic"
@@ -492,38 +537,43 @@ async def upscale_image(cuda_number, image_path, prompt):
 
     image = Image.open(image_path)
 
-    upscaled_image = upscaler(
+    pipe(
         prompt=prompt,
         image=image,
-        num_inference_steps=20,
+        num_inference_steps=steps,
         guidance_scale=0,
         generator=generator,
-    ).images[0]
-    upscaled_image.save(image_path)
+    ).images[0].save(image_path)
+
+    del pipe
+    torch.cuda.empty_cache()
+    gc.collect()
 
 
-async def video_generate(cuda_number, image_path, seed, fps, decode_chunk_size=8):
+async def video_generate(image_path, seed, fps, decode_chunk_size=8):
     video_path = image_path.replace(".png", ".mp4")
     gif_path = video_path.replace(".mp4", ".gif")
 
     pipe = StableVideoDiffusionPipeline.from_pretrained(
-        "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16", device_map="balanced"
+        "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16",
+        device_map="balanced"
     )
-    pipe = pipe.to(f"cuda:{cuda_number}")
 
     # Load the conditioning image
-    scale_image(image_path=image_path, max_size=1024 * 1024)
+    scale_image(image_path=image_path, max_size=768 * 768)
 
-    with open(image_path, "rb") as file:
-        image_data = file.read()
+    image = Image.open(image_path)
 
-    image = Image.open(BytesIO(image_data)).convert("RGB")
-
-    generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
+    generator = torch.manual_seed(seed)
     frames = pipe(image, decode_chunk_size=decode_chunk_size, generator=generator).frames[0]
 
     export_to_video(frames, video_path, fps=fps)
     await convert_mp4_to_gif(video_path, gif_path, fps)
+
+    del pipe
+    torch.cuda.empty_cache()
+    gc.collect()
+
     return video_path, gif_path
 
 
@@ -536,3 +586,7 @@ async def audio_generate(cuda_number, wav_audio_path, prompt, duration, steps):
 
     # save the audio sample as a .wav file
     write(wav_audio_path, rate=16000, data=audio)
+
+    del pipe
+    torch.cuda.empty_cache()
+    gc.collect()

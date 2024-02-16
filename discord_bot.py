@@ -1356,6 +1356,15 @@ async def command_exit(ctx, *args):
     exit(0)
     # asyncio.ensure_future(command_line(ctx=ctx, command="pkill -f python"))
 
+@bot.command(aliases=['clear'], help="Отчистить память")
+async def command_exit(ctx):
+    owner_ids = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")
+    if str(ctx.author.id) not in owner_ids:
+        await ctx.author.send("Доступ запрещён")
+        return
+    import os
+    os.kill(os.getpid(), 9)
+
 
 @bot.command(aliases=['log'], help="логи")
 async def command_log(ctx):
