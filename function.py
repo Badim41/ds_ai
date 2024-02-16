@@ -417,7 +417,7 @@ def get_image_dimensions(file_path):
     return int(width), int(height)
 
 
-def scale_image(image_path, max_size):
+def scale_image(image_path, max_size, match_size=64):
     x, y = get_image_dimensions(image_path)
 
     # скэйлинг во избежания ошибок из-за нехватки памяти
@@ -425,13 +425,14 @@ def scale_image(image_path, max_size):
         scale_factor = (max_size / (x * y)) ** 0.5
         x = int(x * scale_factor)
         y = int(y * scale_factor)
-        # if not x % 64 == 0:
-        #     x = ((x // 64) + 1) * 64
-        # if not y % 64 == 0:
-        #     y = ((y // 64) + 1) * 64
-        logger.logging(f"scaled {image_path} to {x};{y}", color=Color.GRAY)
-        resize_image(image_path=image_path, x=x, y=y)
-        logger.logging(f"Resized: {x};{y}", color=Color.GRAY)
+
+    if not x % match_size == 0:
+        x = ((x // match_size) + 1) * match_size
+    if not y % match_size == 0:
+        y = ((y // match_size) + 1) * match_size
+    logger.logging(f"scaled {image_path} to {x};{y}", color=Color.GRAY)
+    resize_image(image_path=image_path, x=x, y=y)
+    logger.logging(f"Resized: {x};{y}", color=Color.GRAY)
 
 
 def resize_image(image_path, x, y):
@@ -477,7 +478,7 @@ async def change_image(cuda_number: int, prompt: str, negative_prompt: str, imag
 
 async def upscale_image(cuda_number, image_path, prompt):
 
-    scale_image(image_path=image_path, max_size=1024 * 1024)
+    scale_image(image_path=image_path, max_size=1024 * 1024, match_size=84)
 
     pipeline = StableDiffusionPipeline.from_pretrained(
         "CompVis/stable-diffusion-v1-4", torch_dtype=torch.float16
