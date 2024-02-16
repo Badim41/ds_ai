@@ -270,7 +270,7 @@ async def __upscale_image_command(ctx,
     await upscale_image(cuda_number, input_image, prompt)
 
     await ctx.respond(f"Изображение успешно увеличено!\nПотрачено: {timer.count_time()}")
-    await ctx.send_file(input_image)
+    await send_file(ctx, input_image)
 
     # Освобождаем CUDA
     await cuda_manager.stop_use_cuda(cuda_number)
@@ -290,7 +290,7 @@ async def __generate_audio(ctx,
     await cuda_manager.stop_use_cuda(cuda_number)
 
     await ctx.respond(f"Аудиофайл успешно создан!\nПотрачено: {timer.count_time()}")
-    await ctx.send_file(wav_audio_path)
+    await send_file(ctx, wav_audio_path, delete_file=True)
 
 @bot.slash_command(name="generate_image", description='создать изображение нейросетью')
 async def __image_generate(ctx,
