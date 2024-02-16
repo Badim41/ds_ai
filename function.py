@@ -474,7 +474,7 @@ async def upscale_image(cuda_number, image_path, prompt):
     # load model and scheduler
     model_id = "stabilityai/stable-diffusion-x4-upscaler"
     pipeline = StableDiffusionUpscalePipeline.from_pretrained(
-        model_id, revision="fp16", torch_dtype=torch.float16, device_map="balanced"
+        model_id, revision="fp16", torch_dtype=torch.float16
     )
     pipeline = pipeline.to(f"cuda:{cuda_number}")
 
