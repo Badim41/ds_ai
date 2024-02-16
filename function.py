@@ -480,7 +480,9 @@ async def upscale_image(cuda_number, image_path, prompt):
     upscaler = StableDiffusionLatentUpscalePipeline.from_pretrained(model_id, torch_dtype=torch.float16)
     upscaler.to(f"cuda{cuda_number}")
 
-    prompt = "a photo of an astronaut high resolution, unreal engine, ultra realistic"
+    if not prompt:
+        prompt = "a photo of an astronaut high resolution, unreal engine, ultra realistic"
+
     generator = torch.manual_seed(33)
 
     low_res_latents = pipeline(prompt, generator=generator, output_type="latent").images
