@@ -384,7 +384,7 @@ async def generate_image(cuda_number:int, prompt: str, negative_prompt: str, ima
     mask_input - путь к изображению с маской
     """
     pipe = Kandinsky3Img2ImgPipeline.from_pretrained("kandinsky-community/kandinsky-3", variant="fp16",
-                                                     torch_dtype=torch.float16)
+                                                     torch_dtype=torch.float16).to(f"cuda:{cuda_number}")
 
     if x and y:
         resize_image(image_path=image_input, x=x, y=y)
