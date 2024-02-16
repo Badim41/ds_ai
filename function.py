@@ -392,7 +392,7 @@ async def generate_image(cuda_number: int, prompt: str, negative_prompt: str, im
     logger.logging("Processing image...", color=Color.CYAN)
     if x and y:
         resize_image(image_path=image_input, x=x, y=y)
-    scale_image(image_path=image_input, max_size=1024 * 1024)
+    scale_image(image_path=image_input, max_size=768 * 768)
 
     try:
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
