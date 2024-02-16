@@ -25,8 +25,8 @@ from discord_tools.logs import Logs, Color
 from discord_tools.sql_db import set_get_database_async as set_get_config_all
 from discord_tools.timer import Time_Count
 from download_voice_model import download_online_model
-from function import Image_Generator, Character, Voice_Changer, get_link_to_file, Text2ImageAPI, upscale_image, \
-    audio_generate
+from function import Character, Voice_Changer, get_link_to_file, Text2ImageAPI, upscale_image, \
+    audio_generate, generate_image
 from modifed_sinks import StreamSink
 from use_free_cuda import Use_Cuda
 
@@ -45,7 +45,6 @@ characters_all = {}
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='\\', intents=intents)
 cuda_manager = Use_Cuda()
-image_generators = []
 bark_model = None
 
 logger = Logs(warnings=True)
@@ -378,27 +377,13 @@ async def __image_change(ctx,
                                          default=1, min_value=1,
                                          max_value=16)
                          ):
-    global image_generators
 
     await ctx.defer()
-    if not image_generators:
-        import torch
-        cuda_avaible = torch.cuda.device_count()
-        if len(image_generators) == 0:
-            await ctx.send(f"Загрузка модели для картинок на {cuda_avaible}-ую видеокарту")
-            image_generator = Image_Generator(cuda_avaible - 1)
-            image_generators.append(image_generator)
-            logger.logging("loaded model")
 
     for i in range(repeats):
-        cuda_number = None
         try:
             timer = Time_Count()
-            try:
-                cuda_number, image_generator = await cuda_manager.use_cuda_images(image_generators)
-            except Exception:
-                await ctx.respond("Нет свободных видеокарт")
-                return
+            cuda_number = await cuda_manager.use_cuda()
 
             logger.logging("Using GPU:", cuda_number)
 
@@ -411,7 +396,7 @@ async def __image_change(ctx,
                 seed_current = random.randint(1, 9007199254740991)
             else:
                 seed_current = seed
-            image_path = await image_generator.generate_image(prompt=prompt, negative_prompt=negative_prompt,
+            image_path = await generate_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
                                                               image_input=input_image, seed=seed_current, x=x, y=y,
                                                               steps=steps, strength=strength)
 
@@ -424,15 +409,14 @@ async def __image_change(ctx,
 
             await send_file(ctx, image_path, delete_file=True)
             # перестаём использовать видеокарту
-            await cuda_manager.stop_use_cuda_images(cuda_number)
+            await cuda_manager.stop_use_cuda(cuda_number)
         except Exception as e:
             traceback_str = traceback.format_exc()
             logger.logging(str(traceback_str), Color.RED)
             await ctx.send(f"Ошибка при изменении картинки (с параметрами\
                               {prompt, x, y}): {e}")
             # перестаём использовать видеокарту
-            if not cuda_number is None:
-                await cuda_manager.stop_use_cuda_images(cuda_number)
+            await cuda_manager.stop_use_cuda(cuda_number)
 
 
 @bot.slash_command(name="config", description='изменить конфиг')
@@ -756,7 +740,7 @@ async def run_ai_cover_gen_several_cuda(song_input, rvc_dirname, pitch, index_ra
     except Exception as e:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
-        await ctx.respond(f"Ошибка при изменении голоса(ID:d5) (с параметрами {param_string}): {e}")
+        await ctx.respond(f"Ошибка при изменении голоса(ID:d5): {e}")
 
 
 @bot.slash_command(name="ai_cover", description='Заставить бота озвучить видео/спеть песню')
@@ -848,13 +832,13 @@ async def __cover(
             await audio_path.save(filename)
             urls.append(filename)
             if only_voice_change:
-                cuda = await cuda_manager.use_cuda()
-                voice_changer = Voice_Changer(cuda_number=cuda, voice_name=voice_name, index_rate=indexrate,
+                cuda_number = await cuda_manager.use_cuda()
+                voice_changer = Voice_Changer(cuda_number=cuda_number, voice_name=voice_name, index_rate=indexrate,
                                               pitch=pitch, filter_radius=filter_radius, rms_mix_rate=rms_mix_rate,
                                               protect=0.3, algo=palgo)
                 await voice_changer.voice_change(input_path=filename, output_path=filename)
                 await send_file(ctx, file_path=filename)
-                await cuda_manager.stop_use_cuda(cuda)
+                await cuda_manager.stop_use_cuda(cuda_number)
                 return
         if url:
             if ";" in url:
@@ -882,7 +866,7 @@ async def __cover(
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
         await ctx.respond(f"Ошибка при изменении голоса(ID:d5) (с параметрами {param_string}): {e}")
-        await cuda_manager.stop_use_cuda(cuda)
+        await cuda_manager.stop_use_cuda(cuda_number)
 
 
 @bot.slash_command(name="create_dialog", description='Имитировать диалог людей')
@@ -1658,31 +1642,10 @@ if __name__ == "__main__":
 
         if len(arguments) > 1:
             discord_token = arguments[1]
-            # load models? (img, gpt, all)
-            load_gpt = False
-            load_images1 = False
-            load_images2 = False
-            if len(arguments) > 2:
-                args = arguments[2]
-                if "img1" in args:
-                    load_images1 = True
-                if "img2" in args:
-                    load_images1 = True
-                    load_images2 = True
         else:
             # raise error & exit
             logger.logging("Укажите discord_TOKEN", color=Color.RED)
             exit(-1)
-
-        # == load images ==
-        if load_images1:
-            import discord_bot_images
-
-            logger.logging("load image model on GPU-0", color=Color.CYAN)
-            image_generators.append(Image_Generator(0))
-        if load_images2:
-            logger.logging("load image model on GPU-1", color=Color.CYAN)
-            image_generators.append(Image_Generator(1))
 
         # ==== load bot ====
         logger.logging("====load bot====", color=Color.CYAN)

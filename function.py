@@ -7,12 +7,12 @@ import subprocess
 import time
 from diffusers import Kandinsky3Img2ImgPipeline, StableDiffusionUpscalePipeline, StableVideoDiffusionPipeline, \
     MusicLDMPipeline
-from scipy.io.wavfile import write
 from diffusers.utils import export_to_video
-from io import BytesIO
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from pydub import AudioSegment
+from scipy.io.wavfile import write
 
+import torch
 from PIL import Image
 from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
 from gtts import gTTS
@@ -376,49 +376,30 @@ def resize_image(image_path, x, y):
     resized_image.save(image_path)
 
 
-class Image_Generator:
-    def __init__(self, cuda_number: int):
-        import torch
-        self.torch = torch
-        self.loaded = False
-        self.cuda_number = cuda_number
-        self.device = f"cuda:{cuda_number}"
-        self.pipe = Kandinsky3Img2ImgPipeline.from_pretrained("kandinsky-community/kandinsky-3", variant="fp16",
-                                                              torch_dtype=torch.float16)
-        self.busy = False
-        self.loaded = True
-        logger.logging("Loaded class!", color=Color.GRAY)
+async def generate_image(cuda_number:int, prompt: str, negative_prompt: str, image_input: str, seed: int, x, y,
+                         steps: int, strength: float):
+    """
+    prompt - запрос
+    image_input - путь к изображению
+    mask_input - путь к изображению с маской
+    """
+    pipe = Kandinsky3Img2ImgPipeline.from_pretrained("kandinsky-community/kandinsky-3", variant="fp16",
+                                                     torch_dtype=torch.float16)
 
-    async def generate_image(self, prompt: str, negative_prompt: str, image_input: str, seed: int, x, y,
-                             steps: int, strength: float):
-        """
-        prompt - запрос
-        image_input - путь к изображению
-        mask_input - путь к изображению с маской
-        """
-        if not self.loaded:
-            raise Exception("Модель не загружена")
-        if self.busy:
-            logger.logging("Генератор занят", color=Color.RED)
-            await asyncio.sleep(0.25)
+    if x and y:
+        resize_image(image_path=image_input, x=x, y=y)
+    scale_image(image_path=image_input, max_size=2048 * 2048)
 
-        if x and y:
-            resize_image(image_path=image_input, x=x, y=y)
-        scale_image(image_path=image_input, max_size=2048 * 2048)
-
-        self.busy = True
-        logger.logging("Processing image...", color=Color.CYAN)
-        try:
-            generator = self.torch.Generator(device=self.device).manual_seed(seed)
-            image_name = self.pipe(prompt, negative_prompt=negative_prompt, image=image_input, strength=strength,
-                                   num_inference_steps=steps, generator=generator).images[0]
-            self.busy = False
-            return image_name
-        except Exception as e:
-            self.busy = False
-            error_message = f"Произошла ошибка: {e}"
-            logger.logging(error_message, color=Color.RED)
-            raise Exception(error_message)
+    logger.logging("Processing image...", color=Color.CYAN)
+    try:
+        generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
+        image_name = pipe(prompt, negative_prompt=negative_prompt, image=image_input, strength=strength,
+                               num_inference_steps=steps, generator=generator).images[0]
+        return image_name
+    except Exception as e:
+        error_message = f"Произошла ошибка: {e}"
+        logger.logging(error_message, color=Color.RED)
+        raise Exception(error_message)
 
 
 class Text2ImageAPI:
@@ -487,7 +468,6 @@ async def convert_mp4_to_gif(input_file, output_file, fps):
 
 
 async def upscale_image(cuda_number, image_path, prompt):
-    import torch
 
     # load model and scheduler
     model_id = "stabilityai/stable-diffusion-x4-upscaler"
@@ -501,7 +481,6 @@ async def upscale_image(cuda_number, image_path, prompt):
 
 
 async def video_generate(image_path, seed, fps, decode_chunk_size=8):
-    import torch
 
     video_path = image_path.replace(".png", ".mp4")
 
@@ -522,7 +501,6 @@ async def video_generate(image_path, seed, fps, decode_chunk_size=8):
 
 
 async def audio_generate(cuda_number, wav_audio_path, prompt, duration, steps):
-    import torch
 
     repo_id = "ucsd-reach/musicldm"
     pipe = MusicLDMPipeline.from_pretrained(repo_id, torch_dtype=torch.float16)

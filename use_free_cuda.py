@@ -41,34 +41,34 @@ class Use_Cuda:
         else:
             self.cuda_is_busy[index] = False
 
-    async def use_cuda_images(self, image_generators, index=None):
-        async with cuda_lock():
-            if not index is None:
-                if self.cuda_is_busy_images[index]:
-                    raise Exception("Cuda is not using right now")
-                else:
-                    self.cuda_is_busy_images[index] = True
-                    self.cuda_is_busy[index] = True
-                return
-            for i in range(240):
-                print("image generators:", image_generators, len(image_generators))
-                for generator in image_generators:
-                    number = int(generator.cuda_number)
-                    print("image generator cuda number:", number)
-                    if not self.cuda_is_busy_images[number]:
-                        self.cuda_is_busy_images[number] = True
-                        self.cuda_is_busy[number] = True
-                        return number, generator
-                    print("image generator busy:", number)
-                await asyncio.sleep(0.25)
-            raise Exception("No avaible cuda")
-
-    async def stop_use_cuda_images(self, index):
-        if not self.cuda_is_busy_images[index]:
-            raise Exception("Cuda is not using right now")
-        else:
-            self.cuda_is_busy_images[index] = False
-            self.cuda_is_busy[index] = False
+    # async def use_cuda_images(self, image_generators, index=None):
+    #     async with cuda_lock():
+    #         if not index is None:
+    #             if self.cuda_is_busy_images[index]:
+    #                 raise Exception("Cuda is not using right now")
+    #             else:
+    #                 self.cuda_is_busy_images[index] = True
+    #                 self.cuda_is_busy[index] = True
+    #             return
+    #         for i in range(240):
+    #             print("image generators:", image_generators, len(image_generators))
+    #             for generator in image_generators:
+    #                 number = int(generator.cuda_number)
+    #                 print("image generator cuda number:", number)
+    #                 if not self.cuda_is_busy_images[number]:
+    #                     self.cuda_is_busy_images[number] = True
+    #                     self.cuda_is_busy[number] = True
+    #                     return number, generator
+    #                 print("image generator busy:", number)
+    #             await asyncio.sleep(0.25)
+    #         raise Exception("No avaible cuda")
+    #
+    # async def stop_use_cuda_images(self, index):
+    #     if not self.cuda_is_busy_images[index]:
+    #         raise Exception("Cuda is not using right now")
+    #     else:
+    #         self.cuda_is_busy_images[index] = False
+    #         self.cuda_is_busy[index] = False
 
     async def check_cuda(self):
         found = 0
@@ -78,11 +78,11 @@ class Use_Cuda:
 
         return found
 
-    async def check_cuda_images(self):
-        from discord_bot import image_generators
-        found = 0
-        for i, cuda in enumerate(self.cuda_is_busy):
-            if cuda and i <= len(image_generators):
-                found += 1
-
-        return found
+    # async def check_cuda_images(self):
+    #     from discord_bot import image_generators
+    #     found = 0
+    #     for i, cuda in enumerate(self.cuda_is_busy):
+    #         if cuda and i <= len(image_generators):
+    #             found += 1
+    #
+    #     return found
