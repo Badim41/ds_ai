@@ -4,14 +4,11 @@ import numpy as np
 import os
 import re
 import subprocess
-import time
 from pydub import AudioSegment
 
-from diffusers import KandinskyV22PriorEmb2EmbPipeline, KandinskyV22ControlnetImg2ImgPipeline
-from diffusers.utils import load_image
+from PIL import Image
 from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
 from gtts import gTTS
-from transformers import pipeline
 
 from discord_tools.logs import Color, Logs
 from discord_tools.secret import load_secret, SecretKey, create_secret
@@ -341,31 +338,43 @@ class Character:
 
 class Image_Generator:
     def __init__(self, cuda_number):
-        from kandinsky3 import get_T2I_pipeline
+        from kandinsky3 import get_inpainting_pipeline
         import torch
         self.torch = torch
         self.loaded = False
         self.cuda_number = str(cuda_number)
-        self.t2i_pipe = get_T2I_pipeline(f'cuda:{cuda_number}', fp16=True)
+        self.inp_pipe = get_inpainting_pipeline(f'cuda:{cuda_number}', fp16=True)
         self.busy = False
         self.loaded = True
         logger.logging("Loaded class!", color=Color.GRAY)
 
-    async def generate_image(self, prompt):
+    async def generate_image(self, prompt, image_input, mask_input=None):
+        """
+        prompt - запрос
+        image_input - путь к изображению
+        mask_input - путь к изображению с маской
+        """
         if not self.loaded:
             raise Exception("Модель не загружена")
         if self.busy:
-            logger.logging("warn: Модель занята", color=Color.YELLOW)
+            logger.logging("warn: Генератор занят", color=Color.YELLOW)
             await asyncio.sleep(0.25)
+
+        mask = None
+        if mask_input:
+            # Загрузка маски изображения из файла
+            mask_image = Image.open(mask_input)
+            mask = np.array(mask_image)[:, :, 0] // 255  # Преобразование в маску (0 или 1)
+            mask_image.close()
+
         self.busy = True
-        print("Processing image...")
+        logger.logging("Processing image...", color=Color.CYAN)
         try:
-            image_name = self.t2i_pipe(prompt)
+            image_name = self.inp_pipe(prompt, image_input, mask)
             self.busy = False
             return image_name
         except Exception as e:
             self.busy = False
             error_message = f"Произошла ошибка: {e}"
+            logger.logging(error_message, color=Color.RED)
             raise Exception(error_message)
-    async def change_image(self, image_input, prompt): #TODO IMAGES
-        pass
