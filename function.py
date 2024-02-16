@@ -477,7 +477,11 @@ async def upscale_image(cuda_number, image_path, prompt):
         model_id, revision="fp16", torch_dtype=torch.float16
     )
     pipeline = pipeline.to(f"cuda:{cuda_number}")
-    image = Image.open(BytesIO(image_path)).convert("RGB")
+
+    with open(image_path, "rb") as file:
+        image_data = file.read()
+
+    image = Image.open(BytesIO(image_data)).convert("RGB")
     upscaled_image = pipeline(prompt=prompt, image=image).images[0]
     upscaled_image.save(image_path)
 
