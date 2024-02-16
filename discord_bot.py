@@ -26,7 +26,7 @@ from discord_tools.sql_db import set_get_database_async as set_get_config_all
 from discord_tools.timer import Time_Count
 from download_voice_model import download_online_model
 from function import Character, Voice_Changer, get_link_to_file, Text2ImageAPI, upscale_image, \
-    audio_generate, generate_image, video_generate
+    audio_generate, change_image, video_generate
 from modifed_sinks import StreamSink
 from use_free_cuda import Use_Cuda
 
@@ -428,7 +428,7 @@ async def __image_change(ctx,
                 seed_current = random.randint(1, 9007199254740991)
             else:
                 seed_current = seed
-            image_path = await generate_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
+            image_path = await change_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
                                                               image_input=input_image, seed=seed_current, x=x, y=y,
                                                               steps=steps, strength=strength)
 
