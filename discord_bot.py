@@ -561,7 +561,7 @@ async def __say(
         answer = await chatGPT.run_all_gpt(f"{user.name}:{text}", user_id=user.id, gpt_role=gpt_role, mode=gpt_mode)
         await ctx.send(answer)
         audio_player = AudioPlayerDiscord(ctx)
-        if user.character:
+        if not user.character.name == "None":
             audio_path_1 = f"{user.id}-{user.character.name}-say-row.mp3"
             audio_path_2 = f"{user.id}-{user.character.name}-say.mp3"
             await user.character.text_to_speech(answer, audio_path=audio_path_1, output_name=audio_path_2)
