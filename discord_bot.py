@@ -536,7 +536,7 @@ async def skip(ctx):
 async def __say(
         ctx,
         text: Option(str, description='Сам текст/команда. Список команд: \\help-say', required=True),
-        gpt_mode: Option(str, description="модификация GPT. Модификация сохраняется при следующих запросах!",
+        gpt_mode: Option(str, description="модификация GPT",
                          choices=["быстрый режим", "много ответов"], required=False,
                          default=None)
 ):
