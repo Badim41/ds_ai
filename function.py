@@ -378,7 +378,7 @@ def resize_image(image_path, x, y):
     resized_image.save(image_path)
 
 
-async def generate_image(cuda_number: int, prompt: str, negative_prompt: str, image_input: str, seed: int, x, y,
+async def change_image(cuda_number: int, prompt: str, negative_prompt: str, image_input: str, seed: int, x, y,
                          steps: int, strength: float):
     """
     prompt - запрос
@@ -387,7 +387,7 @@ async def generate_image(cuda_number: int, prompt: str, negative_prompt: str, im
     """
 
     pipe = AutoPipelineForImage2Image.from_pretrained("kandinsky-community/kandinsky-3", variant="fp16",
-                                                      torch_dtype=torch.float16).to(f"cuda:{cuda_number}")
+                                                      torch_dtype=torch.float16, device_map="balanced").to(f"cuda")
 
     logger.logging("Processing image...", color=Color.CYAN)
     if x and y:
@@ -395,7 +395,7 @@ async def generate_image(cuda_number: int, prompt: str, negative_prompt: str, im
     scale_image(image_path=image_input, max_size=768 * 768)
 
     try:
-        generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
+        generator = torch.Generator(device=f"cuda").manual_seed(seed)
         image_name = pipe(prompt, negative_prompt=negative_prompt, image=image_input, strength=strength,
                           num_inference_steps=steps, generator=generator).images[0]
         return image_name
