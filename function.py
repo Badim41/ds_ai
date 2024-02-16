@@ -491,8 +491,8 @@ async def video_generate(cuda_number, image_path, seed, fps, decode_chunk_size=8
     gif_path = video_path.replace(".mp4", ".gif")
 
     pipe = StableVideoDiffusionPipeline.from_pretrained(
-        "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16"
-    ).to(f"cuda:{cuda_number}")
+        "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16", device_map="cuda"
+    ).to(f"cuda")
     pipe.enable_model_cpu_offload()
 
     # Load the conditioning image
