@@ -477,11 +477,11 @@ async def upscale_image(cuda_number, image_path, prompt):
     pipeline = StableDiffusionPipeline.from_pretrained(
         "CompVis/stable-diffusion-v1-4", torch_dtype=torch.float16
     )
-    pipeline.to(f"cuda{cuda_number}")
+    pipeline.to(f"cuda:{cuda_number}")
 
     model_id = "stabilityai/sd-x2-latent-upscaler"
     upscaler = StableDiffusionLatentUpscalePipeline.from_pretrained(model_id, torch_dtype=torch.float16)
-    upscaler.to(f"cuda{cuda_number}")
+    upscaler.to(f"cuda:{cuda_number}")
 
     if not prompt:
         prompt = "a photo of an astronaut high resolution, unreal engine, ultra realistic"
