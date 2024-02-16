@@ -504,7 +504,7 @@ async def video_generate(image_path, seed, fps, decode_chunk_size=8):
 async def audio_generate(cuda_number, wav_audio_path, prompt, duration, steps):
     repo_id = "ucsd-reach/musicldm"
     pipe = MusicLDMPipeline.from_pretrained(repo_id, torch_dtype=torch.float16)
-    pipe = pipe.to(f"cuda{cuda_number}")
+    pipe = pipe.to(f"cuda:{cuda_number}")
 
     audio = pipe(prompt, num_inference_steps=steps, audio_length_in_s=duration).audios[0]
 
