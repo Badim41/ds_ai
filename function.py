@@ -8,6 +8,7 @@ import time
 from diffusers import Kandinsky3Img2ImgPipeline, StableDiffusionUpscalePipeline, StableVideoDiffusionPipeline, \
     MusicLDMPipeline, AutoPipelineForImage2Image
 from diffusers.utils import export_to_video
+from io import BytesIO
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from pydub import AudioSegment
 from scipy.io.wavfile import write
@@ -476,7 +477,7 @@ async def upscale_image(cuda_number, image_path, prompt):
         model_id, revision="fp16", torch_dtype=torch.float16
     )
     pipeline = pipeline.to(f"cuda:{cuda_number}")
-    image = Image.open(image_path)
+    image = Image.open(BytesIO(image_path)).convert("RGB")
     upscaled_image = pipeline(prompt=prompt, image=image).images[0]
     upscaled_image.save(image_path)
 
