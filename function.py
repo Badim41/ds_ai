@@ -6,15 +6,15 @@ import requests
 import subprocess
 import time
 from diffusers import Kandinsky3Img2ImgPipeline, StableDiffusionUpscalePipeline, StableVideoDiffusionPipeline, \
-    MusicLDMPipeline, AutoPipelineForImage2Image
+    MusicLDMPipeline, AutoPipelineForImage2Image, StableDiffusionPipeline, StableDiffusionLatentUpscalePipeline
 from diffusers.utils import export_to_video
 from io import BytesIO
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from pydub import AudioSegment
 from scipy.io.wavfile import write
-
 import torch
 from PIL import Image
+
 from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
 from gtts import gTTS
 
@@ -392,7 +392,7 @@ async def change_image(cuda_number: int, prompt: str, negative_prompt: str, imag
     logger.logging("Processing image...", color=Color.CYAN)
     if x and y:
         resize_image(image_path=image_input, x=x, y=y)
-    scale_image(image_path=image_input, max_size=768 * 768)
+    scale_image(image_path=image_input, max_size=450 * 450)
 
     try:
         generator = torch.Generator(device=f"cuda").manual_seed(seed)
@@ -471,18 +471,33 @@ async def convert_mp4_to_gif(input_file, output_file, fps):
 
 
 async def upscale_image(cuda_number, image_path, prompt):
-    # load model and scheduler
-    model_id = "stabilityai/stable-diffusion-x4-upscaler"
-    pipeline = StableDiffusionUpscalePipeline.from_pretrained(
-        model_id, revision="fp16", torch_dtype=torch.float16, max_split_size_mb=5000
+    pipeline = StableDiffusionPipeline.from_pretrained(
+        "CompVis/stable-diffusion-v1-4", torch_dtype=torch.float16
     )
-    pipeline = pipeline.to(f"cuda:{cuda_number}")
+    pipeline.to(f"cuda{cuda_number}")
 
-    with open(image_path, "rb") as file:
-        image_data = file.read()
+    model_id = "stabilityai/sd-x2-latent-upscaler"
+    upscaler = StableDiffusionLatentUpscalePipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+    upscaler.to(f"cuda{cuda_number}")
 
-    image = Image.open(BytesIO(image_data)).convert("RGB")
-    upscaled_image = pipeline(prompt=prompt, image=image).images[0]
+    prompt = "a photo of an astronaut high resolution, unreal engine, ultra realistic"
+    generator = torch.manual_seed(33)
+
+    low_res_latents = pipeline(prompt, generator=generator, output_type="latent").images
+
+    with torch.no_grad():
+        image = pipeline.decode_latents(low_res_latents)
+
+    image = pipeline.numpy_to_pil(image)[0]
+    image.save(image_path.replace(".png", "-row.png"))
+
+    upscaled_image = upscaler(
+        prompt=prompt,
+        image=low_res_latents,
+        num_inference_steps=20,
+        guidance_scale=0,
+        generator=generator,
+    ).images[0]
     upscaled_image.save(image_path)
 
 
