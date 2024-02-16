@@ -384,7 +384,7 @@ class Image_Generator:
         self.cuda_number = cuda_number
         self.device = f"cuda:{cuda_number}"
         self.pipe = Kandinsky3Img2ImgPipeline.from_pretrained("kandinsky-community/kandinsky-3", variant="fp16",
-                                                              torch_dtype=torch.float16, device_map=self.device)
+                                                              torch_dtype=torch.float16)
         self.busy = False
         self.loaded = True
         logger.logging("Loaded class!", color=Color.GRAY)
