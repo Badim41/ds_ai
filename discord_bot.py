@@ -369,7 +369,7 @@ async def __image_generate(ctx,
         with open(input_image, 'wb') as file:
             file.write(image_data_binary)
         await send_file(ctx=ctx, file_path=input_image, delete_file=True)
-        await ctx.send(f"Картинка: {i}/{repeats}\nПотрачено: {timer.count_time()}")
+        await ctx.send(f"Картинка: {i+1}/{repeats}\nПотрачено: {timer.count_time()}")
 
 
 @bot.slash_command(name="change_image", description='изменить изображение нейросетью')
@@ -427,7 +427,7 @@ async def __image_change(ctx,
                                                               steps=steps, strength=strength)
 
             # отправляем
-            text = f"Изображение {i}/{repeats}\nПотрачено {timer.count_time()}\nСид:{seed_current}"
+            text = f"Изображение {i+1}/{repeats}\nПотрачено {timer.count_time()}\nСид:{seed_current}"
             if repeats == 1:
                 await ctx.respond(text)
             else:
