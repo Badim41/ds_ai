@@ -388,7 +388,7 @@ async def generate_image(cuda_number:int, prompt: str, negative_prompt: str, ima
 
     if x and y:
         resize_image(image_path=image_input, x=x, y=y)
-    scale_image(image_path=image_input, max_size=2048 * 2048)
+    scale_image(image_path=image_input, max_size=1024*1024)
 
     logger.logging("Processing image...", color=Color.CYAN)
     try:
