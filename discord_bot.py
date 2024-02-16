@@ -412,7 +412,7 @@ async def __image_change(ctx,
                 seed_current = random.randint(1, 9007199254740991)
             else:
                 seed_current = seed
-            image_path = await image_generator.generate_image(prompt=prompt, negative_promp=negative_prompt,
+            image_path = await image_generator.generate_image(prompt=prompt, negative_prompt=negative_prompt,
                                                               image_input=input_image, seed=seed_current, x=x, y=y,
                                                               steps=steps, strength=strength)
 
