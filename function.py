@@ -493,7 +493,6 @@ async def video_generate(cuda_number, image_path, seed, fps, decode_chunk_size=8
     pipe = StableVideoDiffusionPipeline.from_pretrained(
         "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16", device_map="balanced"
     ).to(f"cuda")
-    pipe.enable_model_cpu_offload()
 
     # Load the conditioning image
     scale_image(image_path=image_path, max_size=1024 * 1024)
