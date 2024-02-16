@@ -384,6 +384,7 @@ async def generate_image(cuda_number:int, prompt: str, negative_prompt: str, ima
     image_input - путь к изображению
     mask_input - путь к изображению с маской
     """
+    logger.logging("Processing image...", color=Color.CYAN)
     pipe = Kandinsky3Img2ImgPipeline.from_pretrained("kandinsky-community/kandinsky-3", variant="fp16",
                                                      torch_dtype=torch.float16).to(f"cuda:{cuda_number}")
 
@@ -391,7 +392,6 @@ async def generate_image(cuda_number:int, prompt: str, negative_prompt: str, ima
         resize_image(image_path=image_input, x=x, y=y)
     scale_image(image_path=image_input, max_size=1024*1024)
 
-    logger.logging("Processing image...", color=Color.CYAN)
     try:
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
         image_name = pipe(prompt, negative_prompt=negative_prompt, image=image_input, strength=strength,
