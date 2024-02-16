@@ -399,6 +399,9 @@ async def __change_video(
 async def __image(ctx,
                   image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
                                 required=True),
+                  mask_input: Option(discord.SlashCommandOptionType.attachment,
+                                     description='Маска. Будет изменять изображение на месте чёрных пикселей',
+                                     required=False, default=None),
                   prompt: Option(str, description='запрос', required=True),
                   negative_prompt: Option(str, description='негативный запрос', default="NSFW", required=False),
                   steps: Option(int, description='число шагов', required=False,
@@ -490,7 +493,7 @@ async def __image(ctx,
             else:
                 seed_current = seed
             image_path = await image_generator.generate_image(prompt=prompt,
-                                                              image_name=input_image)
+                                                              image_name=input_image, mask_input=mask_input)
 
             # отправляем
             text = "Вот как я изменил ваше изображение🖌.\nПотрачено " + timer.count_time() + f" сид:{seed_current}"
