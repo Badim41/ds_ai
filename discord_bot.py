@@ -275,20 +275,22 @@ async def __upscale_image_command(ctx,
     # Освобождаем CUDA
     await cuda_manager.stop_use_cuda(cuda_number)
 
-@bot.slash_command(name="video_generate", description='Создать видео на основе изображения с помощью нейросети')
+@bot.slash_command(name="generate_video", description='Создать видео на основе изображения с помощью нейросети')
 async def video_generate_command(ctx,
-                                 image: Option(str, description='Путь к изображению', required=True),
-                                 seed: Option(int, description='Семя генератора', required=True),
-                                 fps: Option(int, description='Количество кадров в секунду', required=True),
+                                 image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
+                                               required=True),
+                                 fps: Option(int, description='Количество кадров в секунду', required=False, default=30),
+                                 seed: Option(int, description='Сид генератора', required=False, default=None),
                                  decode_chunk_size: Option(int, description='Размер чанка декодирования', required=False, default=8)
                                  ):
     await ctx.defer()
-
+    if not seed:
+        seed = random.randint(1, 99999)
     cuda_number = await cuda_manager.use_cuda()
     timer = Time_Count()
     video_path, gif_path = await video_generate(cuda_number, image, seed, fps, decode_chunk_size)
 
-    await ctx.respond(timer.count_time())
+    await ctx.respond(f"{timer.count_time()}\nСид:{seed}")
     await cuda_manager.stop_use_cuda(cuda_number)
     await send_file(ctx, video_path)
     await send_file(ctx, gif_path)
