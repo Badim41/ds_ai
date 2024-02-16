@@ -1,3 +1,4 @@
+import PIL
 import asyncio
 import json
 import os
@@ -346,65 +347,6 @@ class Character:
         await self.voice.text_to_speech(text, audio_path=audio_path, output_name=output_name)
 
 
-def get_image_dimensions(file_path):
-    with Image.open(file_path) as img:
-        width, height = img.size
-    return int(width), int(height)
-
-
-def scale_image(image_path, max_size):
-    x, y = get_image_dimensions(image_path)
-
-    # скэйлинг во избежания ошибок из-за нехватки памяти
-    if max_size > x * y:
-        scale_factor = (max_size / (x * y)) ** 0.5
-        x = int(x * scale_factor)
-        y = int(y * scale_factor)
-        # if not x % 64 == 0:
-        #     x = ((x // 64) + 1) * 64
-        # if not y % 64 == 0:
-        #     y = ((y // 64) + 1) * 64
-        logger.logging(f"scaled {image_path} to {x};{y}", color=Color.GRAY)
-        resize_image(image_path=image_path, x=x, y=y)
-        logger.logging(f"Resized: {x};{y}", color=Color.GRAY)
-
-
-def resize_image(image_path, x, y):
-    """
-    Изменяет размер изображения
-    """
-    image = Image.open(image_path)
-    resized_image = image.resize((x, y))
-    resized_image.save(image_path)
-
-
-async def change_image(cuda_number: int, prompt: str, negative_prompt: str, image_input: str, seed: int, x, y,
-                         steps: int, strength: float):
-    """
-    prompt - запрос
-    image_input - путь к изображению
-    mask_input - путь к изображению с маской
-    """
-
-    pipe = AutoPipelineForImage2Image.from_pretrained("kandinsky-community/kandinsky-3", variant="fp16",
-                                                      torch_dtype=torch.float16, device_map="balanced").to(f"cuda")
-
-    logger.logging("Processing image...", color=Color.CYAN)
-    if x and y:
-        resize_image(image_path=image_input, x=x, y=y)
-    scale_image(image_path=image_input, max_size=600 * 600)
-
-    try:
-        generator = torch.Generator(device=f"cuda").manual_seed(seed)
-        image_name = pipe(prompt, negative_prompt=negative_prompt, image=image_input, strength=strength,
-                          num_inference_steps=steps, generator=generator).images[0]
-        return image_name
-    except Exception as e:
-        error_message = f"Произошла ошибка: {e}"
-        logger.logging(error_message, color=Color.RED)
-        raise Exception(error_message)
-
-
 class Text2ImageAPI:
 
     def __init__(self, url):
@@ -469,6 +411,69 @@ async def convert_mp4_to_gif(input_file, output_file, fps):
     video.write_gif(output_file, fps=fps)
     video.close()
 
+def get_image_dimensions(file_path):
+    with Image.open(file_path) as img:
+        width, height = img.size
+    return int(width), int(height)
+
+
+def scale_image(image_path, max_size):
+    x, y = get_image_dimensions(image_path)
+
+    # скэйлинг во избежания ошибок из-за нехватки памяти
+    if max_size > x * y:
+        scale_factor = (max_size / (x * y)) ** 0.5
+        x = int(x * scale_factor)
+        y = int(y * scale_factor)
+        # if not x % 64 == 0:
+        #     x = ((x // 64) + 1) * 64
+        # if not y % 64 == 0:
+        #     y = ((y // 64) + 1) * 64
+        logger.logging(f"scaled {image_path} to {x};{y}", color=Color.GRAY)
+        resize_image(image_path=image_path, x=x, y=y)
+        logger.logging(f"Resized: {x};{y}", color=Color.GRAY)
+
+
+def resize_image(image_path, x, y):
+    """
+    Изменяет размер изображения
+    """
+    image = Image.open(image_path)
+    resized_image = image.resize((x, y))
+    resized_image.save(image_path)
+
+def format_image(image_path):
+    image = Image.open(image_path)
+    image = image.convert("RGB")
+    return image
+
+
+async def change_image(cuda_number: int, prompt: str, negative_prompt: str, image_input: str, seed: int, x, y,
+                         steps: int, strength: float):
+    """
+    prompt - запрос
+    image_input - путь к изображению
+    mask_input - путь к изображению с маской
+    """
+
+    pipe = AutoPipelineForImage2Image.from_pretrained("kandinsky-community/kandinsky-3", variant="fp16",
+                                                      torch_dtype=torch.float16, device_map="balanced").to(f"cuda")
+
+    logger.logging("Processing image...", color=Color.CYAN)
+    if x and y:
+        resize_image(image_path=image_input, x=x, y=y)
+    scale_image(image_path=image_input, max_size=600 * 600)
+
+    try:
+        generator = torch.Generator(device=f"cuda").manual_seed(seed)
+        image_name = pipe(prompt, negative_prompt=negative_prompt, image=image_input, strength=strength,
+                          num_inference_steps=steps, generator=generator).images[0]
+        return image_name
+    except Exception as e:
+        error_message = f"Произошла ошибка: {e}"
+        logger.logging(error_message, color=Color.RED)
+        raise Exception(error_message)
+
 
 async def upscale_image(cuda_number, image_path, prompt):
 
@@ -486,19 +491,13 @@ async def upscale_image(cuda_number, image_path, prompt):
     if not prompt:
         prompt = "a photo of an astronaut high resolution, unreal engine, ultra realistic"
 
-    generator = torch.manual_seed(33)
+    generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(33)
 
-    low_res_latents = pipeline(prompt, generator=generator, output_type="latent").images
-
-    with torch.no_grad():
-        image = pipeline.decode_latents(low_res_latents)
-
-    image = pipeline.numpy_to_pil(image)[0]
-    image.save(image_path.replace(".png", "-row.png"))
+    image = format_image(image_path)
 
     upscaled_image = upscaler(
         prompt=prompt,
-        image=low_res_latents,
+        image=image,
         num_inference_steps=20,
         guidance_scale=0,
         generator=generator,
