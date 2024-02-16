@@ -392,7 +392,7 @@ async def change_image(cuda_number: int, prompt: str, negative_prompt: str, imag
     logger.logging("Processing image...", color=Color.CYAN)
     if x and y:
         resize_image(image_path=image_input, x=x, y=y)
-    scale_image(image_path=image_input, max_size=450 * 450)
+    scale_image(image_path=image_input, max_size=600 * 600)
 
     try:
         generator = torch.Generator(device=f"cuda").manual_seed(seed)
@@ -471,6 +471,9 @@ async def convert_mp4_to_gif(input_file, output_file, fps):
 
 
 async def upscale_image(cuda_number, image_path, prompt):
+
+    scale_image(image_path=image_path, max_size=512 * 512)
+
     pipeline = StableDiffusionPipeline.from_pretrained(
         "CompVis/stable-diffusion-v1-4", torch_dtype=torch.float16
     )
