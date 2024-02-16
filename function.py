@@ -365,6 +365,7 @@ def scale_image(image_path, max_size):
         #     y = ((y // 64) + 1) * 64
         logger.logging(f"scaled {image_path} to {x};{y}", color=Color.GRAY)
         resize_image(image_path=image_path, x=x, y=y)
+        logger.logging(f"Resized: {x};{y}", color.GRAY)
 
 
 def resize_image(image_path, x, y):
