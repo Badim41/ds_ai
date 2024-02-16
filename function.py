@@ -497,7 +497,11 @@ async def video_generate(cuda_number, image_path, seed, fps, decode_chunk_size=8
 
     # Load the conditioning image
     scale_image(image_path=image_path, max_size=1024 * 1024)
-    image = Image.open(image_path)
+
+    with open(image_path, "rb") as file:
+        image_data = file.read()
+
+    image = Image.open(BytesIO(image_data)).convert("RGB")
 
     generator = torch.manual_seed(seed)
     frames = pipe(image, decode_chunk_size=decode_chunk_size, generator=generator).frames[0]
