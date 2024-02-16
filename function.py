@@ -474,9 +474,9 @@ async def upscale_image(cuda_number, image_path, prompt):
     # load model and scheduler
     model_id = "stabilityai/stable-diffusion-x4-upscaler"
     pipeline = StableDiffusionUpscalePipeline.from_pretrained(
-        model_id, revision="fp16", torch_dtype=torch.float16
+        model_id, revision="fp16", torch_dtype=torch.float16, device_map="balanced"
     )
-    pipeline = pipeline.to(f"cuda:{cuda_number}")
+    pipeline = pipeline.to(f"cuda")
 
     with open(image_path, "rb") as file:
         image_data = file.read()
@@ -491,7 +491,7 @@ async def video_generate(cuda_number, image_path, seed, fps, decode_chunk_size=8
     gif_path = video_path.replace(".mp4", ".gif")
 
     pipe = StableVideoDiffusionPipeline.from_pretrained(
-        "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16", device_map="cuda"
+        "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16", device_map="balanced"
     ).to(f"cuda")
     pipe.enable_model_cpu_offload()
 
@@ -513,8 +513,8 @@ async def video_generate(cuda_number, image_path, seed, fps, decode_chunk_size=8
 
 async def audio_generate(cuda_number, wav_audio_path, prompt, duration, steps):
     repo_id = "ucsd-reach/musicldm"
-    pipe = MusicLDMPipeline.from_pretrained(repo_id, torch_dtype=torch.float16)
-    pipe = pipe.to(f"cuda:{cuda_number}")
+    pipe = MusicLDMPipeline.from_pretrained(repo_id, torch_dtype=torch.float16, device_map="balanced")
+    pipe = pipe.to(f"cuda")
 
     audio = pipe(prompt, num_inference_steps=steps, audio_length_in_s=duration).audios[0]
 
