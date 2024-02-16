@@ -406,7 +406,6 @@ async def __image_change(ctx,
             logger.logging("Saved image:", input_image)
             await image.save(input_image)
 
-            logger.logging("X:", x, "Y:", y)
             # loading params
             if seed is None or repeats > 1:
                 seed_current = random.randint(1, 9007199254740991)

@@ -389,7 +389,7 @@ class Image_Generator:
         self.loaded = True
         logger.logging("Loaded class!", color=Color.GRAY)
 
-    async def generate_image(self, prompt: str, negative_prompt: str, image_input: str, seed: int, x: int, y: int,
+    async def generate_image(self, prompt: str, negative_prompt: str, image_input: str, seed: int, x, y,
                              steps: int, strength: float):
         """
         prompt - запрос
@@ -402,7 +402,8 @@ class Image_Generator:
             logger.logging("Генератор занят", color=Color.RED)
             await asyncio.sleep(0.25)
 
-        resize_image(image_path=image_input, x=x, y=y)
+        if x and y:
+            resize_image(image_path=image_input, x=x, y=y)
         scale_image(image_path=image_input, max_size=2048 * 2048)
 
         self.busy = True
