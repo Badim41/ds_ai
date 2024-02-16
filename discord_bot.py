@@ -286,9 +286,15 @@ async def video_generate_command(ctx,
     await ctx.defer()
     if not seed:
         seed = random.randint(1, 99999)
+
     cuda_number = await cuda_manager.use_cuda()
+
     timer = Time_Count()
-    video_path, gif_path = await video_generate(cuda_number, image, seed, fps, decode_chunk_size)
+
+    image_path = f"{ctx.author.id}_generate_video.png"
+    await image.save(image_path)
+
+    video_path, gif_path = await video_generate(cuda_number, image_path, seed, fps, decode_chunk_size)
 
     await ctx.respond(f"{timer.count_time()}\nСид:{seed}")
     await cuda_manager.stop_use_cuda(cuda_number)
