@@ -8,13 +8,11 @@ import sys
 import traceback
 import zipfile
 from contextlib import asynccontextmanager
-from moviepy.video.io.VideoFileClip import VideoFileClip
 from pathlib import Path
 from pydub import AudioSegment
 from pytube import Playlist
 
 import speech_recognition as sr
-from PIL import Image
 
 import discord
 from bark_tts import BarkTTS
@@ -27,7 +25,8 @@ from discord_tools.logs import Logs, Color
 from discord_tools.sql_db import set_get_database_async as set_get_config_all
 from discord_tools.timer import Time_Count
 from download_voice_model import download_online_model
-from function import Image_Generator, Character, Voice_Changer, get_link_to_file, Text2ImageAPI, upscale_image, audio_generate, video_generate
+from function import Image_Generator, Character, Voice_Changer, get_link_to_file, Text2ImageAPI, upscale_image, \
+    audio_generate
 from modifed_sinks import StreamSink
 from use_free_cuda import Use_Cuda
 
@@ -80,7 +79,9 @@ class SQL_Keys:
     # [User]
     # gpt_mode
 
-
+diffusers_group = discord.SlashCommandGroup("diffusers", "Все команды с diffusers")
+voice_group = discord.SlashCommandGroup("voice", "Все команды с войсами")
+RVC_group = discord.SlashCommandGroup("rvc", "Все команды с RVC")
 class DiscordUser:
     def __init__(self, ctx):
         self.ctx = ctx
@@ -257,8 +258,8 @@ async def help_command(
                           "speaker - Модель голоса\n"
                           "gen_temp - Температура генерации")
 
-@bot.slash_command(name="upscale_image", description='Увеличить масштаб изображения с помощью нейросети')
-async def upscale_image_command(ctx,
+@diffusers_group.command(name="upscale_image", description='Увеличить масштаб изображения с помощью нейросети')
+async def __upscale_image(ctx,
                                 image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
                                               required=True),
                                 prompt: Option(str, description='Запрос (что изображено на картинке)', required=True)
@@ -278,7 +279,7 @@ async def upscale_image_command(ctx,
     # Освобождаем CUDA
     await cuda_manager.stop_use_cuda(cuda_number)
 
-@bot.slash_command(name="generate_audio", description='Создать аудиофайл с помощью нейросети')
+@diffusers_group.command(name="generate_audio", description='Создать аудиофайл с помощью нейросети')
 async def __generate_audio(ctx,
                          prompt: Option(str, description='Запрос', required=True),
                          duration: Option(float, description='Длительность аудио в секундах', required=True),
@@ -295,7 +296,7 @@ async def __generate_audio(ctx,
     await ctx.respond(f"Аудиофайл успешно создан!\nПотрачено: {timer.count_time()}")
     await ctx.send_file(wav_audio_path)
 
-@bot.slash_command(name="generate_image", description='создать изображение нейросетью')
+@diffusers_group.command(name="generate_image", description='создать изображение нейросетью')
 async def __image_generate(ctx,
                            prompt: Option(str, description='Запрос', required=True),
                            negative_prompt: Option(str, description='Негативный запрос', default="NSFW",
@@ -349,7 +350,7 @@ async def __image_generate(ctx,
         await ctx.send(f"Картинка: {i}/{repeats}\nПотрачено: {timer.count_time()}")
 
 
-@bot.slash_command(name="change_image", description='изменить изображение нейросетью')
+@diffusers_group.command(name="change_image", description='изменить изображение нейросетью')
 async def __image_change(ctx,
                          image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
                                        required=True),
@@ -488,14 +489,14 @@ async def __read_messages(
         await ctx.respond(f"Произошла ошибка: {e}")
 
 
-@bot.slash_command(name="join", description='присоединиться к голосовому каналу')
+@voice_group.command(name="join", description='присоединиться к голосовому каналу')
 async def join(ctx):
     await ctx.defer()
     await AudioPlayerDiscord(ctx).join_channel()
     await ctx.respond("Присоединяюсь")
 
 
-@bot.slash_command(name="disconnect", description='выйти из войс-чата')
+@voice_group.command(name="disconnect", description='выйти из войс-чата')
 async def disconnect(ctx):
     await ctx.defer()
 
@@ -510,7 +511,7 @@ async def disconnect(ctx):
     await ctx.respond("Покидаю войс-чат")
 
 
-@bot.slash_command(name="pause", description='пауза/воспроизведение (остановка диалога)')
+@voice_group.command(name="pause", description='пауза/воспроизведение (остановка диалога)')
 async def pause(ctx):
     await ctx.defer()
     guild_id = ctx.guild.id
@@ -524,7 +525,7 @@ async def pause(ctx):
     await ctx.respond(result)
 
 
-@bot.slash_command(name="skip", description='пропуск аудио')
+@voice_group.command(name="skip", description='пропуск аудио')
 async def skip(ctx):
     await ctx.defer()
     result = await AudioPlayerDiscord(ctx).skip()
@@ -582,7 +583,7 @@ async def get_voice_list():
     return [folder for folder in os.listdir(directory_path) if os.path.isdir(os.path.join(directory_path, folder))]
 
 
-@bot.slash_command(name="tts", description='Заставить бота говорить всё, что захочешь')
+@RVC_group.command(name="tts", description='Заставить бота говорить всё, что захочешь')
 async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
@@ -669,7 +670,7 @@ async def __tts(
         # await cuda_manager.stop_use_cuda(cuda_number)
 
 
-@bot.slash_command(name="bark", description='Тестовая генерация речи с помощью bark')
+@RVC_group.command(name="bark", description='Тестовая генерация речи с помощью bark')
 async def __bark(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
@@ -760,7 +761,7 @@ async def run_ai_cover_gen_several_cuda(song_input, rvc_dirname, pitch, index_ra
         await ctx.respond(f"Ошибка при изменении голоса(ID:d5) (с параметрами {param_string}): {e}")
 
 
-@bot.slash_command(name="ai_cover", description='Заставить бота озвучить видео/спеть песню')
+@RVC_group.command(name="ai_cover", description='Заставить бота озвучить видео/спеть песню')
 async def __cover(
         ctx,
         url: Option(str, description='Ссылка на видео', required=False, default=None),
@@ -886,7 +887,7 @@ async def __cover(
         await cuda_manager.stop_use_cuda(cuda)
 
 
-@bot.slash_command(name="create_dialog", description='Имитировать диалог людей')
+@voice_group.command(name="create_dialog", description='Имитировать диалог людей')
 async def __dialog(
         ctx,
         names: Option(str, description="Участники диалога через ';' (у каждого должен быть добавлен голос!)",
@@ -1135,7 +1136,7 @@ class Dialog_AI:
                 await self.ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
 
 
-@bot.slash_command(name="add_voice", description='Добавить RVC голос')
+@RVC_group.command(name="add_voice", description='Добавить RVC голос')
 async def __add_voice(
         ctx,
         url: Option(str, description='Ссылка на .zip файл с моделью RVC', required=True),
@@ -1369,7 +1370,7 @@ async def themer_set(ctx, *args):
             await ctx.send("Изменена тема:" + text)
 
 
-@bot.slash_command(name="record", description='воспринимать команды из микрофона')
+@voice_group.command(name="record", description='воспринимать команды из микрофона')
 async def record(ctx):
     global recognizers, audio_players, dialogs
     author_id = ctx.author.id
@@ -1391,7 +1392,7 @@ async def record(ctx):
         Recognizer(ctx)
 
 
-@bot.slash_command(name="stop_recording", description='перестать воспринимать команды из микрофона')
+@voice_group.command(name="stop_recording", description='перестать воспринимать команды из микрофона')
 async def stop_recording(ctx):
     author_id = ctx.author.id
 
