@@ -537,14 +537,13 @@ async def __say(
         ctx,
         text: Option(str, description='Сам текст/команда. Список команд: \\help-say', required=True),
         gpt_mode: Option(str, description="модификация GPT. Модификация сохраняется при следующих запросах!",
-                         choices=["быстрый режим", "много ответов (медленный)", "экономный режим"], required=False,
+                         choices=["быстрый режим", "много ответов"], required=False,
                          default=None)
 ):
     # ["fast", "all", "None"], ["быстрый режим", "много ответов (медленный)", "Экономный режим"]
     user = DiscordUser(ctx)
     if gpt_mode:
-        gpt_mode = gpt_mode.replace("быстрый режим", "Fast").replace("много ответов (медленный)", "All").replace(
-            "экономный режим", "None")
+        gpt_mode = gpt_mode.replace("быстрый режим", "Fast").replace("много ответов", "All")
         await user.set_user_config(SQL_Keys.gpt_mode, gpt_mode)
     else:
         gpt_mode = user.gpt_mode
