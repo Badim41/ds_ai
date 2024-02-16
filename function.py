@@ -472,7 +472,7 @@ async def convert_mp4_to_gif(input_file, output_file, fps):
 
 async def upscale_image(cuda_number, image_path, prompt):
 
-    scale_image(image_path=image_path, max_size=512 * 512)
+    scale_image(image_path=image_path, max_size=1024 * 1024)
 
     pipeline = StableDiffusionPipeline.from_pretrained(
         "CompVis/stable-diffusion-v1-4", torch_dtype=torch.float16
