@@ -431,8 +431,8 @@ async def __generate_image(ctx,
                 cuda_number = await cuda_manager.use_cuda()
 
                 image_path = await asyncio.to_thread(
-                    await generate_image_sd(ctx=ctx, prompt=prompt, x=x, y=y, negative_prompt=negative_prompt,
-                                      steps=steps, seed=seed, cuda_number=cuda_number, refine=refine)
+                    generate_image_sd, ctx=ctx, prompt=prompt, x=x, y=y, negative_prompt=negative_prompt,
+                                      steps=steps, seed=seed, cuda_number=cuda_number, refine=refine
                 )
 
                 await cuda_manager.stop_use_cuda(cuda_number)

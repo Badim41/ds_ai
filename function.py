@@ -555,7 +555,7 @@ def generate_image_with_example(image_path, mask_path, example_path, steps, seed
         logger.logging("Cleared memory", color=Color.CYAN)
 
 
-async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cuda_number, refine):
+def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cuda_number, refine):
     try:
         pipe = StableDiffusionXLPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16
