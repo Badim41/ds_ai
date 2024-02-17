@@ -481,7 +481,7 @@ def fill_transparent_with_black(image_path):
         return image
 
 
-async def generate_image_API(ctx, prompt, x, y, negative_prompt="", style="DEFAULT"):
+async def generate_image_API(ctx, prompt, x, y, negative_prompt, style="DEFAULT"):
     api = Text2ImageAPI('https://api-key.fusionbrain.ai/')
     model_id = api.get_model()
 
@@ -496,6 +496,9 @@ async def generate_image_API(ctx, prompt, x, y, negative_prompt="", style="DEFAU
     else:
         await ctx.respond(f"Указана только 1 величина. X={x}, Y={y}")
         return
+
+    if not negative_prompt:
+        negative_prompt = "."
 
     uuid = api.generate(prompt=prompt, negative_prompt=negative_prompt, model=model_id, width=x, height=y,
                         style=style)
