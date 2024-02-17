@@ -550,7 +550,7 @@ async def generate_image_with_example(image_path, mask_path, example_path, steps
         logger.logging("Cleared memory", color=Color.CYAN)
 
 
-async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cuda_number):
+async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cuda_number, refine):
     try:
         pipe = StableDiffusionXLPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16
@@ -559,10 +559,16 @@ async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cud
 
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
         image_path = "images/image" + str(ctx.author.id) + "_generate_sd.png"
-        image = pipe(prompt, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps, width=x,
-                     height=y, denoising_end=0.8, output_type="latent").images
-        print(image)
-        await refine_image(cuda_number, prompt, image, image_path)
+
+        if refine:
+            image = pipe(prompt, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps,
+                         width=x,
+                         height=y, denoising_end=0.8, output_type="latent").images
+            await refine_image(cuda_number, prompt, image, image_path)
+        else:
+            pipe(prompt, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps,
+                         width=x,
+                         height=y).images[0].save(image_path)
         return image_path
     except Exception as e:
         traceback_str = traceback.format_exc()
@@ -589,7 +595,7 @@ def get_mask(mask_path, invert, x, y):
 
 
 async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
-                        invert, strength, steps, seed, cuda_number):
+                        invert, strength, steps, seed, cuda_number, refine):
     try:
         x, y = scale_image(image_path=image_path, max_size=1024 * 1024, match_size=64)
         image = format_image(image_path)
@@ -609,8 +615,8 @@ async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
         image = pipe(prompt=prompt, image=image, mask_image=mask, num_inference_steps=steps, strength=strength,
                      negative_prompt=negative_prompt, generator=generator, width=x,
                      height=y, denoising_end=0.8, output_type="latent").images
-
-        await refine_image(cuda_number, prompt, image, image_path)
+        if refine:
+            await refine_image(cuda_number, prompt, image, image_path)
 
     except Exception as e:
         traceback_str = traceback.format_exc()

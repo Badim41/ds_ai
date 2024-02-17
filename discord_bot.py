@@ -378,7 +378,9 @@ async def __generate_image(ctx,
                                         description='Сид',
                                         required=False,
                                         default=None, min_value=1,
-                                        max_value=9999999999)
+                                        max_value=9999999999),
+                           refine: Option(bool, description="Улучить изображение (не для API)", required=False,
+                                          default=False)
                            ):
     try:
         await ctx.defer()
@@ -386,6 +388,8 @@ async def __generate_image(ctx,
             await ctx.send("seed игнорируется, так как включён API")
         if steps and api:
             await ctx.send("steps игнорируется, так как включён API")
+        if refine and api:
+            await ctx.send("refine игнорируется, так как включён API")
         if not style == "DEFAULT" and not api:
             await ctx.send("style игнорируется, так как выключен API")
         print("suc params")
@@ -402,7 +406,7 @@ async def __generate_image(ctx,
                 cuda_number = await cuda_manager.use_cuda()
 
                 image_path = await generate_image_sd(ctx=ctx, prompt=prompt, x=x, y=y, negative_prompt=negative_prompt,
-                                                     steps=steps, seed=seed, cuda_number=cuda_number)
+                                                     steps=steps, seed=seed, cuda_number=cuda_number, refine=refine)
 
                 await cuda_manager.stop_use_cuda(cuda_number)
             await send_file(ctx=ctx, file_path=image_path, delete_file=True)
@@ -440,7 +444,9 @@ async def __image_change(ctx,
                                          description='Количество повторов',
                                          required=False,
                                          default=1, min_value=1,
-                                         max_value=16)
+                                         max_value=16),
+                         refine: Option(bool, description="Улучить изображение", required=False,
+                                        default=False)
                          ):
     try:
         cuda_number = await cuda_manager.use_cuda()
@@ -463,7 +469,7 @@ async def __image_change(ctx,
 
             await inpaint_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
                                 image_path=image_path, mask_path=mask_path,
-                                invert=invert, strength=strength, steps=steps, seed=seed)
+                                invert=invert, strength=strength, steps=steps, seed=seed, refine=refine)
 
             # отправляем
             text = f"Изображение {i + 1}/{repeats}\nПотрачено {timer.count_time()}.\nСид:{seed}"
