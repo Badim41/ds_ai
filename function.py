@@ -9,8 +9,7 @@ import subprocess
 import time
 import traceback
 from diffusers import StableVideoDiffusionPipeline, \
-    MusicLDMPipeline, StableDiffusionLatentUpscalePipeline, \
-    StableDiffusionXLImg2ImgPipeline, StableDiffusionXLInpaintPipeline, StableDiffusionXLPipeline, DiffusionPipeline, \
+    MusicLDMPipeline, StableDiffusionXLInpaintPipeline, StableDiffusionXLPipeline, DiffusionPipeline, \
     PaintByExamplePipeline, StableDiffusionUpscalePipeline
 from diffusers.utils import export_to_video
 from io import BytesIO
@@ -556,7 +555,7 @@ def generate_image_with_example(image_path, mask_path, example_path, steps, seed
         logger.logging("Cleared memory", color=Color.CYAN)
 
 
-def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cuda_number, refine):
+async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cuda_number, refine):
     try:
         pipe = StableDiffusionXLPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16
