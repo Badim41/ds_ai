@@ -11,7 +11,7 @@ import traceback
 from diffusers import StableVideoDiffusionPipeline, \
     MusicLDMPipeline, StableDiffusionLatentUpscalePipeline, \
     StableDiffusionXLImg2ImgPipeline, StableDiffusionXLInpaintPipeline, StableDiffusionXLPipeline, DiffusionPipeline, \
-    PaintByExamplePipeline
+    PaintByExamplePipeline, StableDiffusionUpscalePipeline
 from diffusers.utils import export_to_video
 from io import BytesIO
 from moviepy.video.io.VideoFileClip import VideoFileClip
@@ -642,8 +642,10 @@ async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
 async def upscale_image(image_path, prompt, steps, cuda_number):
     try:
         scale_image(image_path=image_path, max_size=1024 * 1024, match_size=64)
-        model_id = "stabilityai/sd-x2-latent-upscaler"
-        pipe = StableDiffusionLatentUpscalePipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+        model_id = "stabilityai/stable-diffusion-x4-upscaler"
+        pipe = StableDiffusionUpscalePipeline.from_pretrained(
+            model_id, revision="fp16", torch_dtype=torch.float16
+        )
         pipe.to(f"cuda:{cuda_number}")
 
         if not prompt:
