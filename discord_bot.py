@@ -414,8 +414,9 @@ async def __image_change(ctx,
     try:
         await ctx.defer()
         for i in range(repeats):
-            if not i == 0:
+            if not i == 0 or seed is None:
                 seed = random.randint(1, 9999999999)
+
             timer = Time_Count()
             cuda_number = await cuda_manager.use_cuda()
 
