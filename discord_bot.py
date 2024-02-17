@@ -413,7 +413,6 @@ async def __generate_image(ctx,
             await ctx.respond(f"Картинка: {i + 1}/{repeats}\nПотрачено: {timer.count_time()}" + seed_text)
     except Exception as e:
         await ctx.respond(f"Ошибка:{e}")
-    finally:
         await cuda_manager.stop_use_cuda(cuda_number)
 
 
