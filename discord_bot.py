@@ -282,7 +282,6 @@ async def __upscale_image_command(ctx,
         await cuda_manager.stop_use_cuda(cuda_number)
 
 
-
 @bot.slash_command(name="generate_video", description='Создать видео на основе изображения с помощью нейросети')
 async def __generate_video(ctx,
                            image: Option(discord.SlashCommandOptionType.attachment, description='Изображение (None)',
@@ -323,7 +322,7 @@ async def __generate_video(ctx,
                 return
             try:
                 image_path = await asyncio.to_thread(
-                    generate_image_API, ctx=ctx, prompt=prompt, x=1280, y=720, negative_prompt=".", style="DEFAULT"
+                    generate_image_API, ctx=ctx, prompt=prompt, x=1024, y=720, negative_prompt=".", style="DEFAULT"
                 )
             except Exception as e:
                 logger.logging("Cant generate image", e, color=Color.GRAY)
