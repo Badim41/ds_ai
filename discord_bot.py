@@ -107,7 +107,7 @@ async def on_ready():
 
     id = await set_get_config_all("Default", SQL_Keys.reload)
     if not id or str(id) == "clear":
-        id = (await set_get_config_all("Default", SQL_Keys.reload)).split(";")[0]
+        id = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")[0]
 
     logger.logging("ID:", id, color=Color.GRAY)
     if not id == "True":
