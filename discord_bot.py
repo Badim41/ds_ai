@@ -262,7 +262,7 @@ async def __upscale_image_command(ctx,
                                   steps: Option(int, description='Количество шагов для генерации (75)', required=False,
                                                 default=75, min_value=1, max_value=150)
                                   ):
-    asyncio.ensure_future(upscale_image_async(ctx, image, prompt, steps))
+    asyncio.create_task(upscale_image_async(ctx, image, prompt, steps))
     print("Async done")
 
 
@@ -994,7 +994,7 @@ async def __cover(
                 urls.append(url)
 
         for i, url in enumerate(urls):
-            asyncio.ensure_future(
+            asyncio.create_task(
                 run_ai_cover_gen_several_cuda(song_input=url, rvc_dirname=voice_name, pitch=pitch, index_rate=indexrate,
                                               filter_radius=filter_radius, rms_mix_rate=rms_mix_rate, protect=0.3,
                                               pitch_detection_algo=palgo,
@@ -1098,11 +1098,11 @@ class Dialog_AI:
         with open(self.text_file, "a", encoding="utf-8") as writer:
             writer.write("\n\n" + ', '.join(self.names))
 
-        asyncio.ensure_future(self.gpt_dialog())
-        asyncio.ensure_future(self.play_dialog())
+        asyncio.create_task(self.gpt_dialog())
+        asyncio.create_task(self.play_dialog())
         functions = [self.create_audio_dialog(character) for character in self.characters]
         for function in functions:
-            asyncio.ensure_future(function)
+            asyncio.create_task(function)
 
     async def stop_dialog(self):
         if self.ctx.guild.id in dialogs:
@@ -1430,7 +1430,7 @@ async def commands(ctx, *args):
 
     # Получение объекта пользователя по ID
     command = " ".join(args)
-    asyncio.ensure_future(command_line(ctx=ctx, command=command))
+    asyncio.create_task(command_line(ctx=ctx, command=command))
 
 
 @bot.command(aliases=['send'], help="Отправить файл")
@@ -1468,7 +1468,7 @@ async def command_exit(ctx, *args):
         await ctx.send(f"Выключение")
     await set_get_config_all("Default", SQL_Keys.reload, "False")
     exit(0)
-    # asyncio.ensure_future(command_line(ctx=ctx, command="pkill -f python"))
+    # asyncio.create_task(command_line(ctx=ctx, command="pkill -f python"))
 
 
 @bot.command(aliases=['clear'], help="Отчистить память")
@@ -1567,7 +1567,7 @@ class Recognizer:
         self.vc = None
         asyncio.run(ctx.respond("Внимательно вас слушаю"))
         asyncio.run(self.initialize())
-        asyncio.ensure_future(self.recognize())
+        asyncio.create_task(self.recognize())
 
     async def initialize(self):
         if not self.audio_player.voice_client:
