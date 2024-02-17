@@ -100,9 +100,10 @@ class DiscordUser:
 @bot.event
 async def on_ready():
     import torch
-    logger.logging('Status: online', "\ncuda:", torch.cuda.device_count(), color=Color.GREEN)
+    devices = torch.cuda.device_count()
+    logger.logging('Status: online', "\ncuda:", , color=Color.GREEN)
     await bot.change_presence(activity=discord.Activity(
-        type=discord.ActivityType.listening, name='AI-covers'))
+        type=discord.ActivityType.listening, name=f'AI-covers ({devices})'))
     id = await set_get_config_all("Default", SQL_Keys.reload)
     if not id:
         id = (await set_get_config_all("Default", SQL_Keys.reload)).split(";")[0]
