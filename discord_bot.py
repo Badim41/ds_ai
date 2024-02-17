@@ -24,7 +24,7 @@ from discord_tools.sql_db import set_get_database_async as set_get_config_all
 from discord_tools.timer import Time_Count
 from download_voice_model import download_online_model
 from function import Character, Voice_Changer, get_link_to_file, upscale_image, \
-    audio_generate, video_generate, inpaint_image, generate_image_API
+    audio_generate, video_generate, inpaint_image, generate_image_API, refine_image, generate_image_sd
 from modifed_sinks import StreamSink
 from use_free_cuda import Use_Cuda
 
@@ -310,8 +310,7 @@ async def video_generate_command(ctx,
             if not prompt:
                 await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
                 return
-            image_path = await generate_image_API(ctx=ctx, prompt=prompt, x=1280,
-                                                  y=720)
+            image_path = await generate_image_API(ctx=ctx, prompt=prompt, x=1280, y=720)
 
         video_path, gif_path = await video_generate(cuda_number=cuda_number, image_path=image_path, seed=seed, fps=fps,
                                                     decode_chunk_size=decode_chunk_size)
@@ -370,26 +369,53 @@ async def __image_generate(ctx,
                                            description='Количество повторов',
                                            required=False,
                                            default=1, min_value=1,
-                                           max_value=16)
-
+                                           max_value=16),
+                           API: Option(bool, description="Если True, использует Kandinsky 3, если False - SD XL",
+                                       required=False, default=True),
+                           steps: Option(int, description='число шагов', required=False,
+                                         default=60,
+                                         min_value=1,
+                                         max_value=100),
+                           seed: Option(int,
+                                        description='Сид',
+                                        required=False,
+                                        default=None, min_value=1,
+                                        max_value=9999999999)
                            ):
-    await ctx.defer()
-    for i in range(repeats):
-        timer = Time_Count()
-        image_path = await generate_image_API(ctx=ctx, prompt=prompt, negative_prompt=negative_prompt, style=style, x=x,
-                                              y=y)
-        await send_file(ctx=ctx, file_path=image_path, delete_file=True)
-        await ctx.respond(f"Картинка: {i + 1}/{repeats}\nПотрачено: {timer.count_time()}")
+    try:
+        await ctx.defer()
+        for i in range(repeats):
+            timer = Time_Count()
+            seed_text = ""
+            if API:
+                image_path = await generate_image_API(ctx=ctx, prompt=prompt, negative_prompt=negative_prompt,
+                                                      style=style, x=x, y=y)
+            else:
+                if seed in None:
+                    seed = random.randint(1, 9999999999)
+                    seed_text = f"\nСид:{seed}"
+                cuda_number = await cuda_manager.use_cuda()
+
+                image_path = await generate_image_sd(ctx=ctx, prompt=prompt, x=x, y=y, negative_prompt=negative_prompt,
+                                                     steps=steps, seed=seed, cuda_number=cuda_number)
+
+                await cuda_manager.stop_use_cuda(cuda_number)
+            await send_file(ctx=ctx, file_path=image_path, delete_file=True)
+            await ctx.respond(f"Картинка: {i + 1}/{repeats}\nПотрачено: {timer.count_time()}" + seed_text)
+    except Exception as e:
+        await ctx.respond(f"Ошибка:{e}")
+    finally:
+        await cuda_manager.stop_use_cuda(cuda_number)
 
 
-@bot.slash_command(name="change_image", description='изменить изображение нейросетью')
+@bot.slash_command(name="inpaint_image", description='изменить изображение нейросетью')
 async def __image_change(ctx,
                          image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
                                        required=True),
                          prompt: Option(str, description='запрос', required=True),
                          mask: Option(discord.SlashCommandOptionType.attachment,
-                                           description='Маска. Будут изменены только БЕЛЫЕ пиксели',
-                                           required=False, default=None),
+                                      description='Маска. Будут изменены только БЕЛЫЕ пиксели',
+                                      required=False, default=None),
                          invert: Option(bool, description='изменить всё, КРОМЕ белых пикселей', required=False,
                                         default=False),
                          negative_prompt: Option(str, description='негативный запрос', default="NSFW", required=False),
@@ -435,6 +461,58 @@ async def __image_change(ctx,
             await inpaint_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
                                 image_path=image_path, mask_path=mask_path,
                                 invert=invert, strength=strength, steps=steps, seed=seed)
+
+            # отправляем
+            text = f"Изображение {i + 1}/{repeats}\nПотрачено {timer.count_time()}.\nСид:{seed}"
+            if repeats == 1:
+                await ctx.respond(text)
+            else:
+                await ctx.send(text)
+
+            await send_file(ctx, image_path, delete_file=True)
+    except Exception as e:
+        await ctx.respond(f"Ошибка:{e}")
+    finally:
+        await cuda_manager.stop_use_cuda(cuda_number)
+
+
+@bot.slash_command(name="refine_image", description='улучшить изображение нейросетью')
+async def __image_refine(ctx,
+                         image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
+                                       required=True),
+                         prompt: Option(str, description='запрос', required=True),
+                         negative_prompt: Option(str, description='негативный запрос', default="NSFW", required=False),
+                         strength: Option(float, description='насколько сильны будут изменения', required=False,
+                                          default=0.5, min_value=0,
+                                          max_value=1),
+                         seed: Option(int,
+                                      description='Сид',
+                                      required=False,
+                                      default=None, min_value=1,
+                                      max_value=9999999999),
+                         repeats: Option(int,
+                                         description='Количество повторов',
+                                         required=False,
+                                         default=1, min_value=1,
+                                         max_value=16)
+                         ):
+    try:
+        await ctx.defer()
+        for i in range(repeats):
+            if not i == 0 or seed is None:
+                seed = random.randint(1, 9999999999)
+
+            timer = Time_Count()
+            cuda_number = await cuda_manager.use_cuda()
+
+            # logger.logging("Using GPU:", cuda_number)
+
+            image_path = "images/image" + str(ctx.author.id) + "_refine.png"
+            await image.save(image_path)
+            # logger.logging("Saved image:", image_path)
+
+            await refine_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
+                               image_path=image_path, strength=strength, seed=seed)
 
             # отправляем
             text = f"Изображение {i + 1}/{repeats}\nПотрачено {timer.count_time()}.\nСид:{seed}"

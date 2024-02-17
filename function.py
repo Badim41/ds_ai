@@ -10,7 +10,7 @@ import time
 import traceback
 from diffusers import StableVideoDiffusionPipeline, \
     MusicLDMPipeline, StableDiffusionLatentUpscalePipeline, \
-    StableDiffusionXLImg2ImgPipeline, StableDiffusionXLInpaintPipeline
+    StableDiffusionXLImg2ImgPipeline, StableDiffusionXLInpaintPipeline, StableDiffusionXLPipeline
 from diffusers.utils import export_to_video
 from io import BytesIO
 from moviepy.video.io.VideoFileClip import VideoFileClip
@@ -465,7 +465,7 @@ def format_image(image_path):
     return Image.open(BytesIO(image_data)).convert("RGB")
 
 
-async def generate_image_API(ctx, prompt, x, y, negative_prompt, style="DEFAULT"):
+async def generate_image_API(ctx, prompt, x, y, negative_prompt=None, style="DEFAULT"):
     api = Text2ImageAPI('https://api-key.fusionbrain.ai/')
     model_id = api.get_model()
 
@@ -492,11 +492,24 @@ async def generate_image_API(ctx, prompt, x, y, negative_prompt, style="DEFAULT"
 
     image_data_binary = base64.b64decode(selected_image_base64)
 
-    input_image = "images/image" + str(ctx.author.id) + "_generate.png"
+    image_path = "images/image" + str(ctx.author.id) + "_generate_API.png"
 
-    with open(input_image, 'wb') as file:
+    with open(image_path, 'wb') as file:
         file.write(image_data_binary)
-    return input_image
+    return image_path
+
+
+async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cuda_number):
+    pipe = StableDiffusionXLPipeline.from_pretrained(
+        "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16
+    )
+    pipe = pipe.to(f"cuda:{cuda_number}")
+
+    generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
+    image_path = "images/image" + str(ctx.author.id) + "_generate_sd.png"
+    pipe(prompt, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps, width=x,
+         height=y).images[0].save(image_path)
+    return image_path
 
 
 async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
@@ -550,7 +563,8 @@ async def refine_image(prompt, negative_prompt, strength, image_path, cuda_numbe
 
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
 
-        pipe(prompt, image=image, generator=generator, negative_prompt=negative_prompt, strength=strength, width=x, height=y).images[
+        pipe(prompt, image=image, generator=generator, negative_prompt=negative_prompt, strength=strength, width=x,
+             height=y).images[
             0].save(image_path)
     except Exception as e:
         traceback_str = traceback.format_exc()
