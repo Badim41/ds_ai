@@ -738,12 +738,9 @@ def generate_audio(cuda_number, wav_audio_path, prompt, duration, steps, seed):
         pipe = MusicLDMPipeline.from_pretrained(repo_id, torch_dtype=torch.float16)
         pipe = pipe.to(f"cuda:{cuda_number}")
 
-        compel_proc = Compel(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder)
-        prompt_embeds = compel_proc(prompt)
-
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
 
-        audio = pipe(prompt_embeds=prompt_embeds, num_inference_steps=steps, audio_length_in_s=duration, generator=generator).audios[0]
+        audio = pipe(prompt=prompt, num_inference_steps=steps, audio_length_in_s=duration, generator=generator).audios[0]
 
         # save the audio sample as a .wav file
         write(wav_audio_path, rate=16000, data=audio)
