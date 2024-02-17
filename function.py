@@ -426,6 +426,7 @@ def scale_image_decorator(max_size=1024 * 1024, match_size=64):
     def decorator(func):
         async def wrapper(*args, **kwargs):
             image_path = kwargs.get("image_path")
+            kwargs.pop("cuda_number", None)
             scale_image(image_path=image_path, max_size=max_size, match_size=match_size)
             return await func(*args, **kwargs)
 
