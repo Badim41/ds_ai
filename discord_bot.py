@@ -15,7 +15,6 @@ import speech_recognition as sr
 
 import discord
 from bark_tts import BarkTTS
-from cover_gen import run_ai_cover_gen
 from discord import Option
 from discord.ext import commands
 from discord_tools.chat_gpt import ChatGPT
@@ -741,6 +740,7 @@ async def run_ai_cover_gen_several_cuda(song_input, rvc_dirname, pitch, index_ra
                                         reverb_damping,
                                         output_format, output, ctx):
     try:
+        from cover_gen import run_ai_cover_gen
         cuda_number = await cuda_manager.use_cuda()
         timer = Time_Count()
         audio_path = await run_ai_cover_gen(song_input=song_input, rvc_dirname=rvc_dirname, pitch=pitch,
