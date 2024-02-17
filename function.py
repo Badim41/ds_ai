@@ -420,7 +420,7 @@ def get_image_dimensions(file_path):
         width, height = img.size
     x = int(width)
     y = int(height)
-    print(f"Image size: X:{x}, Y:{y}, All:{x*y}")
+    print(f"Image size: X:{x}, Y:{y}, All:{x * y}")
     return x, y
 
 
@@ -432,7 +432,6 @@ def scale_image(image_path, max_size, match_size=64):
         scale_factor = (max_size / (x * y)) ** 0.5
         x = int(x * scale_factor)
         y = int(y * scale_factor)
-        print("Large, scaled:", x, y)
 
     if not x % match_size == 0:
         x = ((x // match_size) + 1) * match_size
@@ -446,18 +445,6 @@ def scale_image(image_path, max_size, match_size=64):
     logger.logging(f"Resized: {x};{y}", color=Color.GRAY)
 
 
-def invert_image(image_path):
-    image = Image.open(image_path)
-    inverted_image = Image.eval(image, lambda x: 255 - x)
-    inverted_image.save(image_path)
-    return Image.open(image_path)
-
-
-def create_white_image(width, height):
-    image = Image.new("RGB", (width, height), color="white")
-    return image
-
-
 def fill_transparent_with_black(image_path):
     image = Image.open(image_path)
 
@@ -469,6 +456,7 @@ def fill_transparent_with_black(image_path):
         return new_image
     else:
         return image
+
 
 def format_image(image_path):
     with open(image_path, "rb") as file:
@@ -514,7 +502,7 @@ async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
                         invert, strength, steps, seed, cuda_number):
     try:
         scale_image(image_path=image_path, max_size=768 * 768, match_size=64)
-        image = Image.open(image_path)
+        image = format_image(image_path)
 
         pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-base-1.0",
@@ -530,12 +518,12 @@ async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
             # заполнение пустых пикселей чёрными
             mask = (fill_transparent_with_black(mask_path)).resize((x, y))
             if invert:
-                # замена белых пикселей чёрными
-                mask.save(mask_path)
-                mask = invert_image(mask_path)
+                inverted_image = Image.eval(mask, lambda x: 255 - x)
+                inverted_image.save(mask_path)
+
+                mask = format_image(mask_path)
         else:
-            # белое изображение
-            mask = create_white_image(x, y)
+            mask = Image.new("RGB", (x, y), color="white")
 
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
 
