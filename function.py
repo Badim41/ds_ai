@@ -659,7 +659,7 @@ def inpaint_image(prompt, negative_prompt, image_path, mask_path,
 
 def upscale_image(image_path, prompt, steps, cuda_number):
     try:
-        scale_image(image_path=image_path, max_size=1024 * 1024, match_size=64)
+        scale_image(image_path=image_path, max_size=600 * 600, match_size=64)
         model_id = "stabilityai/stable-diffusion-x4-upscaler"
         pipe = StableDiffusionUpscalePipeline.from_pretrained(
             model_id, revision="fp16", torch_dtype=torch.float16
