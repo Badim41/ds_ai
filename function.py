@@ -651,7 +651,7 @@ async def upscale_image(image_path, prompt, steps, cuda_number):
 
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(33)
 
-        image = Image.open(image_path)
+        image = format_image(image_path)
 
         pipe(
             prompt=prompt,
