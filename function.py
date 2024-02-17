@@ -354,6 +354,8 @@ class Text2ImageAPI:
 
     def __init__(self, url):
         try:
+            print("API_KEY:", api_key)
+            print("SECRET_KEY:", secret_key)
             self.URL = url
             self.AUTH_HEADERS = {
                 'X-Key': f'Key {api_key}',
