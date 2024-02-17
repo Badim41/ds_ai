@@ -449,7 +449,7 @@ async def __generate_audio(ctx,
             )
 
             await ctx.respond(
-                f"Аудиофайл {i + 1}/{repeats}\nЗапрос:{prompt}\nСид:{seed}\nПотрачено: {timer.count_time()}")
+                f"Аудиофайл {i + 1}/{repeats}\nСид:{seed}\nПотрачено: {timer.count_time()}")
             await send_file(ctx, wav_audio_path, delete_file=True)
         except Exception as e:
             await ctx.respond(f"Ошибка:{e}")
@@ -531,7 +531,7 @@ async def __generate_image(ctx,
                 await cuda_manager.stop_use_cuda(cuda_number)
             await send_file(ctx=ctx, file_path=image_path)
             await ctx.respond(
-                f"Картинка: {i + 1}/{repeats}\nЗапрос:{prompt}\nПотрачено: {timer.count_time()}" + seed_text)
+                f"Картинка: {i + 1}/{repeats}\nПотрачено: {timer.count_time()}" + seed_text)
         except Exception as e:
             await ctx.respond(f"Ошибка:{e}")
             await cuda_manager.stop_use_cuda(cuda_number)
@@ -611,7 +611,7 @@ async def __image_change(ctx,
             )
 
             # отправляем
-            text = f"Изображение {i + 1}/{repeats}\nЗапрос:{prompt}\nПотрачено {timer.count_time()}.\nСид:{seed}"
+            text = f"Изображение {i + 1}/{repeats}\nПотрачено {timer.count_time()}.\nСид:{seed}"
             if repeats == 1:
                 await ctx.respond(text)
             else:
