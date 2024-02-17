@@ -58,7 +58,7 @@ ALL_VOICES = {'Rachel': "Ж", 'Clyde': 'М', 'Domi': 'Ж', 'Dave': 'М', 'Fin': 
               'Glinda': 'Ж',
               'Giovanni': 'М', 'Mimi': 'Ж'}
 
-custom_prompts_files = os.listdir("gpt_history\prompts")
+custom_prompts_files = os.listdir("gpt_history/prompts")
 
 
 class SQL_Keys:
