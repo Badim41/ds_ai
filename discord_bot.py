@@ -445,13 +445,13 @@ async def __image_change(ctx,
                                          max_value=16)
                          ):
     try:
+        cuda_number = await cuda_manager.use_cuda()
         await ctx.defer()
         for i in range(repeats):
             if not i == 0 or seed is None:
                 seed = random.randint(1, 9999999999)
 
             timer = Time_Count()
-            cuda_number = await cuda_manager.use_cuda()
 
             # logger.logging("Using GPU:", cuda_number)
 
@@ -505,12 +505,12 @@ async def __image_refine(ctx,
                          ):
     try:
         await ctx.defer()
+        cuda_number = await cuda_manager.use_cuda()
         for i in range(repeats):
             if not i == 0 or seed is None:
                 seed = random.randint(1, 9999999999)
 
             timer = Time_Count()
-            cuda_number = await cuda_manager.use_cuda()
 
             # logger.logging("Using GPU:", cuda_number)
 
