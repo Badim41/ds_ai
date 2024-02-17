@@ -12,6 +12,7 @@ from diffusers import StableVideoDiffusionPipeline, \
     MusicLDMPipeline, StableDiffusionLatentUpscalePipeline, \
     StableDiffusionXLImg2ImgPipeline, StableDiffusionXLInpaintPipeline
 from diffusers.utils import export_to_video
+from io import BytesIO
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from pydub import AudioSegment
 from scipy.io.wavfile import write
@@ -417,7 +418,7 @@ def convert_mp4_to_gif(input_file, output_file, fps):
 def get_image_dimensions(file_path):
     with Image.open(file_path) as img:
         width, height = img.size
-    print("Image size: X:{x}, Y:{y}, All:{x*y}")
+    print(f"Image size: X:{x}, Y:{y}, All:{x*y}")
     return int(width), int(height)
 
 
@@ -443,8 +444,6 @@ def scale_image(image_path, max_size, match_size=64):
     logger.logging(f"Resized: {x};{y}", color=Color.GRAY)
 
 
-
-
 def invert_image(image_path):
     image = Image.open(image_path)
     inverted_image = Image.eval(image, lambda x: 255 - x)
@@ -468,6 +467,11 @@ def fill_transparent_with_black(image_path):
         return new_image
     else:
         return image
+
+def format_image(image_path):
+    with open(image_path, "rb") as file:
+        image_data = file.read()
+    return Image.open(BytesIO(image_data)).convert("RGB")
 
 
 async def generate_image_API(ctx, prompt, x, y, negative_prompt, style="DEFAULT"):

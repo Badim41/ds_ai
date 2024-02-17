@@ -423,10 +423,15 @@ async def __image_change(ctx,
             logger.logging("Using GPU:", cuda_number)
 
             image_path = "images/image" + str(ctx.author.id) + "_change.png"
-            mask_path = "images/image" + str(ctx.author.id) + "_change_mask.png"
-            logger.logging("Saved image:", image_path)
             await image.save(image_path)
-            await mask.save(mask_path)
+            logger.logging("Saved image:", image_path)
+
+            mask_path = None
+            if mask:
+                mask_path = "images/image" + str(ctx.author.id) + "_change_mask.png"
+                await mask.save(mask_path)
+                logger.logging("Saved mask:", mask_path)
+
             await inpaint_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
                                 image_path=image_path, mask_path=mask_path,
                                 invert=invert, strength=strength, steps=steps, seed=seed)
