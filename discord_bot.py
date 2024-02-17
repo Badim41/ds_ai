@@ -330,7 +330,7 @@ async def __generate_video(ctx,
                            ):
     async def repeat_generate_videos(seed, i):
         try:
-            seed = random.randint(1, 9999999999) if seed is None else int(seed) // (i + 1)
+            seed = random.randint(1, 9999999999) if seed is None else seed // (i + 1)
 
             cuda_number = await cuda_manager.use_cuda()
 
@@ -400,7 +400,7 @@ async def __generate_audio(ctx,
                            ):
     async def generate_audios_async(seed, i):
         try:
-            seed = random.randint(1, 9999999999) if seed is None else int(seed) // (i + 1)
+            seed = random.randint(1, 9999999999) if seed is None else seed // (i + 1)
 
             cuda_number = await cuda_manager.use_cuda()
             timer = Time_Count()
@@ -411,7 +411,7 @@ async def __generate_audio(ctx,
                 steps=steps, seed=seed
             )
 
-            await ctx.respond(f"Аудиофайл {i}/{repeats}\nСид:{seed}\nПотрачено: {timer.count_time()}")
+            await ctx.respond(f"Аудиофайл {i+1}/{repeats}\nСид:{seed}\nПотрачено: {timer.count_time()}")
             await send_file(ctx, wav_audio_path, delete_file=True)
         except Exception as e:
             await ctx.respond(f"Ошибка:{e}")
@@ -470,7 +470,7 @@ async def __generate_image(ctx,
                     style=style, x=x, y=y, image_path=image_path
                 )
             else:
-                seed = random.randint(1, 9999999999) if seed is None else int(seed) // (i + 1)
+                seed = random.randint(1, 9999999999) if seed is None else seed // (i + 1)
                 seed_text = f"\nСид:{seed}"
                 cuda_number = await cuda_manager.use_cuda()
 
@@ -542,7 +542,7 @@ async def __image_change(ctx,
     async def images_change_async(seed, i, image_path):
         try:
             cuda_number = await cuda_manager.use_cuda()
-            seed = random.randint(1, 9999999999) if seed is None else int(seed) // (i + 1)
+            seed = random.randint(1, 9999999999) if seed is None else seed // (i + 1)
             await asyncio.sleep((i%2) / 4 + 0.05)
 
             timer = Time_Count()
