@@ -3,6 +3,7 @@ import base64
 import gc
 import json
 import os
+import random
 import re
 import requests
 import subprocess
@@ -492,7 +493,7 @@ def generate_image_API(ctx, prompt, x, y, negative_prompt=None, style="DEFAULT")
 
     image_data_binary = base64.b64decode(selected_image_base64)
 
-    image_path = "images/image" + str(ctx.author.id) + "_generate_API.png"
+    image_path = f"images/image{ctx.author.id}_{random.randint(1, 999999999)}_generate_API.png"
 
     with open(image_path, 'wb') as file:
         file.write(image_data_binary)
@@ -563,7 +564,7 @@ def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cuda_numb
         pipe = pipe.to(f"cuda:{cuda_number}")
 
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
-        image_path = "images/image" + str(ctx.author.id) + "_generate_sd.png"
+        image_path = f"images/image{ctx.author.id}_{seed}_generate_sd.png"
 
         if refine:
             image = pipe(prompt, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps,
