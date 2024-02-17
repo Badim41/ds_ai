@@ -8,6 +8,7 @@ import re
 import requests
 import subprocess
 import time
+import traceback
 from diffusers import Kandinsky3Img2ImgPipeline, StableDiffusionUpscalePipeline, StableVideoDiffusionPipeline, \
     MusicLDMPipeline, AutoPipelineForImage2Image, StableDiffusionPipeline, StableDiffusionLatentUpscalePipeline, \
     StableDiffusionXLImg2ImgPipeline, StableDiffusionXLInpaintPipeline
@@ -547,7 +548,9 @@ async def inpaint_image(cuda_number, prompt, negative_prompt, image_path, mask_p
         pipe(prompt=prompt, image=image, mask_image=mask, num_inference_steps=steps, strength=strength,
              negative_prompt=negative_prompt, generator=generator).images[0].save(image_path)
     except Exception as e:
-        raise e
+        traceback_str = traceback.format_exc()
+        logger.logging(str(traceback_str), color=Color.RED)
+        raise Exception(e)
     finally:
         del pipe
         torch.cuda.empty_cache()
@@ -570,7 +573,9 @@ async def refine_image(prompt, negative_prompt, strength, image_path, cuda_numbe
         pipe(prompt, image=image, generator=generator, negative_prompt=negative_prompt, strength=strength).images[
             0].save(image_path)
     except Exception as e:
-        raise e
+        traceback_str = traceback.format_exc()
+        logger.logging(str(traceback_str), color=Color.RED)
+        raise Exception(e)
     finally:
         del pipe
         torch.cuda.empty_cache()
@@ -599,7 +604,9 @@ async def upscale_image(cuda_number, image_path, prompt, steps):
             generator=generator,
         ).images[0].save(image_path)
     except Exception as e:
-        raise e
+        traceback_str = traceback.format_exc()
+        logger.logging(str(traceback_str), color=Color.RED)
+        raise Exception(e)
     finally:
         del pipe
         torch.cuda.empty_cache()
@@ -626,7 +633,9 @@ async def video_generate(image_path, seed, fps, decode_chunk_size=8):
         await convert_mp4_to_gif(video_path, gif_path, fps)
         return video_path, gif_path
     except Exception as e:
-        raise e
+        traceback_str = traceback.format_exc()
+        logger.logging(str(traceback_str), color=Color.RED)
+        raise Exception(e)
     finally:
         del pipe
         torch.cuda.empty_cache()
@@ -644,7 +653,9 @@ async def audio_generate(cuda_number, wav_audio_path, prompt, duration, steps):
         # save the audio sample as a .wav file
         write(wav_audio_path, rate=16000, data=audio)
     except Exception as e:
-        raise e
+        traceback_str = traceback.format_exc()
+        logger.logging(str(traceback_str), color=Color.RED)
+        raise Exception(e)
     finally:
         del pipe
         torch.cuda.empty_cache()
