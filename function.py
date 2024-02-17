@@ -410,7 +410,7 @@ class Text2ImageAPI:
             print("error in async_image:(id:1)", e)
 
 
-async def convert_mp4_to_gif(input_file, output_file, fps):
+def convert_mp4_to_gif(input_file, output_file, fps):
     video = VideoFileClip(input_file)
     video.write_gif(output_file, fps=fps)
     video.close()
@@ -419,7 +419,6 @@ async def convert_mp4_to_gif(input_file, output_file, fps):
 def get_image_dimensions(file_path):
     with Image.open(file_path) as img:
         width, height = img.size
-        print(img.size, "GOT")
     return int(width), int(height)
 
 
@@ -447,18 +446,14 @@ def scale_image(image_path, max_size, match_size=64):
         x = ((x // match_size) + 1) * match_size
     if not y % match_size == 0:
         y = ((y // match_size) + 1) * match_size
-    logger.logging(f"scaled {image_path} to {x};{y}", color=Color.GRAY)
-    resize_image(image_path=image_path, x=x, y=y)
-    logger.logging(f"Resized: {x};{y}", color=Color.GRAY)
 
-
-def resize_image(image_path, x, y):
-    """
-    Изменяет размер изображения
-    """
     image = Image.open(image_path)
     resized_image = image.resize((x, y))
     resized_image.save(image_path)
+
+    logger.logging(f"Resized: {x};{y}", color=Color.GRAY)
+
+
 
 
 def invert_image(image_path):
@@ -534,7 +529,7 @@ async def inpaint_image(cuda_number, prompt, negative_prompt, image_path, mask_p
 
         if mask_path:
             # заполнение пустых пикселей чёрными
-            mask = fill_transparent_with_black(mask_path).resize((x, y))
+            mask = (fill_transparent_with_black(mask_path)).resize((x, y))
             if invert:
                 # замена белых пикселей чёрными
                 mask.save(mask_path)
@@ -630,7 +625,7 @@ async def video_generate(image_path, seed, fps, decode_chunk_size=8):
         frames = pipe(image, decode_chunk_size=decode_chunk_size, generator=generator).frames[0]
 
         export_to_video(frames, video_path, fps=fps)
-        await convert_mp4_to_gif(video_path, gif_path, fps)
+        convert_mp4_to_gif(video_path, gif_path, fps)
         return video_path, gif_path
     except Exception as e:
         traceback_str = traceback.format_exc()
