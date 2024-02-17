@@ -459,7 +459,8 @@ def scale_image(image_path, max_size, match_size=64):
 def invert_image(image_path):
     image = Image.open(image_path)
     inverted_image = Image.eval(image, lambda x: 255 - x)
-    return inverted_image
+    inverted_image.save(image_path)
+    return Image.open(image_path)
 
 
 def create_white_image(width, height):
