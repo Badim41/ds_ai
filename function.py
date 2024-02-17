@@ -578,7 +578,6 @@ async def refine_image(prompt, negative_prompt, strength, image_path, cuda_numbe
         gc.collect()
 
 
-@scale_image_decorator
 async def upscale_image(cuda_number, image_path, prompt, steps):
     try:
         model_id = "stabilityai/sd-x2-latent-upscaler"
