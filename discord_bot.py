@@ -275,7 +275,9 @@ async def upscale_image_async(ctx, image, prompt, steps):
         cuda_number = await cuda_manager.use_cuda()
         timer = Time_Count()
 
-        await upscale_image(cuda_number=cuda_number, image_path=image_path, prompt=prompt, steps=steps)
+        await asyncio.to_thread(
+            upscale_image(cuda_number=cuda_number, image_path=image_path, prompt=prompt, steps=steps)
+        )
 
         await ctx.respond(f"Изображение успешно увеличено!\nПотрачено: {timer.count_time()}")
         await send_file(ctx, image_path)
@@ -323,11 +325,15 @@ async def __generate_video(ctx,
             if not prompt:
                 await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
                 return
-            image_path = await generate_image_API(ctx=ctx, prompt=prompt, x=1280, y=720)
+            image_path = await asyncio.to_thread(
+                generate_image_API(ctx=ctx, prompt=prompt, x=1280, y=720)
+            )
 
-        video_path, gif_path = await generate_video(cuda_number=cuda_number, image_path=image_path, seed=seed, fps=fps,
-                                                    decode_chunk_size=decode_chunk_size, duration=duration, steps=steps,
-                                                    noise_strenght=noise_strenght)
+        video_path, gif_path = await asyncio.to_thread(
+            generate_video(cuda_number=cuda_number, image_path=image_path, seed=seed, fps=fps,
+                           decode_chunk_size=decode_chunk_size, duration=duration, steps=steps,
+                           noise_strenght=noise_strenght)
+        )
 
         await ctx.respond(f"{timer.count_time()}\nСид:{seed}")
         await send_file(ctx, video_path)
@@ -352,8 +358,10 @@ async def __generate_audio(ctx,
         cuda_number = await cuda_manager.use_cuda()
         timer = Time_Count()
         wav_audio_path = f"{ctx.author.id}_generate_audio.wav"
-        await generate_audio(cuda_number=cuda_number, wav_audio_path=wav_audio_path, prompt=prompt, duration=duration,
-                             steps=steps)
+        await asyncio.to_thread(
+            generate_audio(cuda_number=cuda_number, wav_audio_path=wav_audio_path, prompt=prompt, duration=duration,
+                           steps=steps)
+        )
 
         await ctx.respond(f"Аудиофайл успешно создан!\nПотрачено: {timer.count_time()}")
         await send_file(ctx, wav_audio_path, delete_file=True)
@@ -412,16 +420,20 @@ async def __generate_image(ctx,
             timer = Time_Count()
             seed_text = ""
             if api:
-                image_path = await generate_image_API(ctx=ctx, prompt=prompt, negative_prompt=negative_prompt,
-                                                      style=style, x=x, y=y)
+                image_path = await asyncio.to_thread(
+                    generate_image_API(ctx=ctx, prompt=prompt, negative_prompt=negative_prompt,
+                                       style=style, x=x, y=y)
+                )
             else:
                 if seed is None:
                     seed = random.randint(1, 9999999999)
                     seed_text = f"\nСид:{seed}"
                 cuda_number = await cuda_manager.use_cuda()
 
-                image_path = await generate_image_sd(ctx=ctx, prompt=prompt, x=x, y=y, negative_prompt=negative_prompt,
-                                                     steps=steps, seed=seed, cuda_number=cuda_number, refine=refine)
+                image_path = await asyncio.to_thread(
+                    generate_image_sd(ctx=ctx, prompt=prompt, x=x, y=y, negative_prompt=negative_prompt,
+                                      steps=steps, seed=seed, cuda_number=cuda_number, refine=refine)
+                )
 
                 await cuda_manager.stop_use_cuda(cuda_number)
             await send_file(ctx=ctx, file_path=image_path, delete_file=True)
@@ -482,9 +494,11 @@ async def __image_change(ctx,
 
             timer = Time_Count()
 
-            await inpaint_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
-                                image_path=image_path, mask_path=mask_path,
-                                invert=invert, strength=strength, steps=steps, seed=seed, refine=refine)
+            await asyncio.to_thread(
+                inpaint_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
+                              image_path=image_path, mask_path=mask_path,
+                              invert=invert, strength=strength, steps=steps, seed=seed, refine=refine)
+            )
 
             # отправляем
             text = f"Изображение {i + 1}/{repeats}\nПотрачено {timer.count_time()}.\nСид:{seed}"
@@ -546,8 +560,10 @@ async def __image_example(ctx,
 
             timer = Time_Count()
 
-            await generate_image_with_example(image_path=image_path, mask_path=mask_path, example_path=example_path,
-                                              steps=steps, seed=seed, invert=invert, cuda_number=cuda_number)
+            await asyncio.to_thread(
+                generate_image_with_example(image_path=image_path, mask_path=mask_path, example_path=example_path,
+                                            steps=steps, seed=seed, invert=invert, cuda_number=cuda_number)
+            )
 
             # отправляем
             text = f"Изображение {i + 1}/{repeats}\nПотрачено {timer.count_time()}.\nСид:{seed}"
