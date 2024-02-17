@@ -471,10 +471,16 @@ async def generate_image_API(ctx, prompt, x, y, negative_prompt=None, style="DEF
     model_id = api.get_model()
 
     max_size = 1024 * 1024
-    if max_size > x * y:
+    if max_size < x * y:
         scale_factor = (max_size / (x * y)) ** 0.5
         x = int(x * scale_factor)
         y = int(y * scale_factor)
+
+    match_size = 64
+    if not x % match_size == 0:
+        x = (x // match_size) * match_size
+    if not y % match_size == 0:
+        y = (y // match_size) * match_size
 
     if not negative_prompt:
         negative_prompt = "."
