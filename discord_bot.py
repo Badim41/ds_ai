@@ -364,12 +364,11 @@ async def __image_generate(ctx,
 
                            ):
     await ctx.defer()
-    await ctx.respond("Выполнение...")
     for i in range(repeats):
         timer = Time_Count()
         image_path = await generate_image_API(ctx=ctx, prompt=prompt, negative_prompt=negative_prompt, style=style, x=x, y=y)
         await send_file(ctx=ctx, file_path=image_path, delete_file=True)
-        await ctx.send(f"Картинка: {i + 1}/{repeats}\nПотрачено: {timer.count_time()}")
+        await ctx.respond(f"Картинка: {i + 1}/{repeats}\nПотрачено: {timer.count_time()}")
 
 
 @bot.slash_command(name="change_image", description='изменить изображение нейросетью')
@@ -387,10 +386,6 @@ async def __image_change(ctx,
                                        default=60,
                                        min_value=1,
                                        max_value=100),
-                         seed: Option(int, description='сид изображения', required=False,
-                                      default=None,
-                                      min_value=0,
-                                      max_value=9007199254740991),
                          strength: Option(float, description='насколько сильны будут изменения', required=False,
                                           default=0.5, min_value=0,
                                           max_value=1),
@@ -548,7 +543,6 @@ async def __say(
         gpt_mode = user.gpt_mode
 
     try:
-        await ctx.respond('Выполнение...')
         if not gpt_mode:
             gpt_mode = "Fast"
         _, text = await moderate_mat_in_sentence(text)
@@ -557,7 +551,7 @@ async def __say(
 
         chatGPT = ChatGPT()
         answer = await chatGPT.run_all_gpt(f"{user.name}:{text}", user_id=user.id, gpt_role=gpt_role, mode=gpt_mode)
-        await ctx.send(answer)
+        await ctx.respond(answer)
         audio_player = AudioPlayerDiscord(ctx)
         if not user.character.name == "None":
             audio_path_1 = f"{user.id}-{user.character.name}-say-row.mp3"
@@ -629,8 +623,6 @@ async def __tts(
     character = user.character
 
     try:
-
-        await ctx.response.send_message('Выполнение...' + voice_name)
         # cuda_number = await cuda_manager.use_cuda()
         await character.load_voice(0, speed=speed, stability=stability, similarity_boost=similarity_boost,
                                    style=style, pitch=pitch, algo=palgo)
@@ -688,7 +680,6 @@ async def __bark(
         await ctx.respond('Загрузка модели...')
         bark_model = BarkTTS()
         await ctx.respond('Модель загружена!')
-    await ctx.respond('Выполнение...')
     await cuda_manager.use_cuda(index=0)
     try:
         audio_path = f"{ctx.author.id}-{speaker}-bark.mp3"
@@ -824,7 +815,6 @@ async def __cover(
         "все файлы", "all_files").replace("не отправлять", "None")
     try:
         await ctx.defer()
-        await ctx.respond('Выполнение...')
         user = DiscordUser(ctx)
 
         if not voice_name:
@@ -1160,7 +1150,6 @@ async def __add_voice(
         await ctx.respond("Список голосов: \n" + '; '.join(ALL_VOICES.keys()))
         return
     await ctx.defer()
-    await ctx.respond('Выполнение...')
 
     if txt_file:
         urls, names, genders, infos, speeds, voice_model_elevens, stabilities, similarity_boosts, styles = await agrs_with_txt(
@@ -1186,7 +1175,7 @@ async def __add_voice(
                 continue
             await download_voice(ctx, urls[i], names[i], genders[i], infos[i], speeds[i], voice_model_elevens[i], False,
                                  stability=stabilities[i], similarity_boost=similarity_boosts[i], style=styles[i])
-        await ctx.send("Все модели успешно установлены!")
+        await ctx.respond("Все модели успешно установлены!")
         return
     if pitch is None:
         pitch = gender

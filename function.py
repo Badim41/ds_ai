@@ -420,6 +420,13 @@ def get_image_dimensions(file_path):
         width, height = img.size
     return int(width), int(height)
 
+def scale_image_decorator(func, max_size=1024 * 1024, match_size=64):
+    def wrapper(*args, **kwargs):
+        # Выполнить функцию scale_image
+        scale_image(image_path=kwargs.get("image_path"), max_size=max_size, match_size=match_size)
+        # Вызвать функцию func с переданными аргументами и вернуть результат
+        return func(*args, **kwargs)
+    return wrapper
 
 def scale_image(image_path, max_size, match_size=64):
     x, y = get_image_dimensions(image_path)
@@ -502,7 +509,7 @@ async def generate_image_API(ctx, prompt, x, y, negative_prompt="", style="DEFAU
         file.write(image_data_binary)
     return input_image
 
-
+@scale_image_decorator(max_size=768*768, match_size=128)
 async def inpaint_image(cuda_number, prompt, negative_prompt, image_path, mask_path,
                         invert, strength, steps):
     image = Image.open(image_path)
@@ -535,9 +542,10 @@ async def inpaint_image(cuda_number, prompt, negative_prompt, image_path, mask_p
     torch.cuda.empty_cache()
     gc.collect()
 
-
+@scale_image_decorator
 async def refine_image(prompt, negative_prompt, strength, image_path, cuda_number, seed):
     image = Image.open(image_path)
+
 
     pipe = StableDiffusionXLImg2ImgPipeline.from_pretrained(
         "stabilityai/stable-diffusion-xl-refiner-1.0", torch_dtype=torch.float16
@@ -554,9 +562,8 @@ async def refine_image(prompt, negative_prompt, strength, image_path, cuda_numbe
     torch.cuda.empty_cache()
     gc.collect()
 
-
+@scale_image_decorator
 async def upscale_image(cuda_number, image_path, prompt, steps):
-    scale_image(image_path=image_path, max_size=1024 * 1024, match_size=64)
 
     model_id = "stabilityai/sd-x2-latent-upscaler"
     pipe = StableDiffusionLatentUpscalePipeline.from_pretrained(model_id, torch_dtype=torch.float16)
@@ -581,7 +588,7 @@ async def upscale_image(cuda_number, image_path, prompt, steps):
     torch.cuda.empty_cache()
     gc.collect()
 
-
+@scale_image_decorator(max_size=768*768)
 async def video_generate(image_path, seed, fps, decode_chunk_size=8):
     video_path = image_path.replace(".png", ".mp4")
     gif_path = video_path.replace(".mp4", ".gif")
@@ -590,9 +597,6 @@ async def video_generate(image_path, seed, fps, decode_chunk_size=8):
         "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16",
         device_map="balanced"
     )
-
-    # Load the conditioning image
-    scale_image(image_path=image_path, max_size=768 * 768)
 
     image = Image.open(image_path)
 
