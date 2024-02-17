@@ -470,17 +470,11 @@ async def generate_image_API(ctx, prompt, x, y, negative_prompt=None, style="DEF
     api = Text2ImageAPI('https://api-key.fusionbrain.ai/')
     model_id = api.get_model()
 
-    if x and y:
-        max_size = 1024 * 1024
-        if max_size > x * y:
-            scale_factor = (max_size / (x * y)) ** 0.5
-            x = int(x * scale_factor)
-            y = int(y * scale_factor)
-    elif not x and not y:
-        x, y = 1024, 1024
-    else:
-        await ctx.respond(f"Указана только 1 величина. X={x}, Y={y}")
-        return
+    max_size = 1024 * 1024
+    if max_size > x * y:
+        scale_factor = (max_size / (x * y)) ** 0.5
+        x = int(x * scale_factor)
+        y = int(y * scale_factor)
 
     if not negative_prompt:
         negative_prompt = "."
