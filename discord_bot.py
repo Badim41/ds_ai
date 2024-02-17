@@ -396,7 +396,7 @@ async def __generate_image(ctx,
                 image_path = await generate_image_API(ctx=ctx, prompt=prompt, negative_prompt=negative_prompt,
                                                       style=style, x=x, y=y)
             else:
-                if seed in None:
+                if seed is None:
                     seed = random.randint(1, 9999999999)
                     seed_text = f"\nСид:{seed}"
                 cuda_number = await cuda_manager.use_cuda()
