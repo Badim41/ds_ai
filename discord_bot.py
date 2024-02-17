@@ -326,7 +326,7 @@ async def __generate_video(ctx,
                                            description='Количество повторов (1)',
                                            required=False,
                                            default=1, min_value=1,
-                                           max_value=16)
+                                           max_value=4)
                            ):
     async def repeat_generate_videos(seed, i):
         try:
