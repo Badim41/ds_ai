@@ -1509,7 +1509,7 @@ async def agrs_with_txt(txt_file):
                 similarity_boost.append(arguments.get('similarity_boost', "0.25"))
                 style.append(arguments.get('style', "0.4"))
         return url, name, gender, info, speed, voice_model_eleven, stability, similarity_boost, style
-    except Exception:
+    except:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
         return None, None, None, None, None, None, None, None, None
@@ -1780,7 +1780,7 @@ class Recognizer:
                             text = google_recognizer.recognize_google(audio_data, language="ru-RU")
                     except sr.UnknownValueError:
                         pass
-                    except Exception:
+                    except:
                         traceback_str = traceback.format_exc()
                         logger.logging(str(traceback_str), color=Color.RED)
 
