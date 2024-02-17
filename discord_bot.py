@@ -262,25 +262,26 @@ async def __upscale_image_command(ctx,
                                   steps: Option(int, description='Количество шагов для генерации (75)', required=False,
                                                 default=75, min_value=1, max_value=150)
                                   ):
-    async def upscale_image_async():
-        try:
-            await ctx.defer()
-            image_path = "images/image" + str(ctx.author.id) + "_upscale.png"
-            await image.save(image_path)
+    asyncio.ensure_future(upscale_image_async(ctx, image, prompt, steps))
 
-            cuda_number = await cuda_manager.use_cuda()
-            timer = Time_Count()
 
-            await upscale_image(cuda_number=cuda_number, image_path=image_path, prompt=prompt, steps=steps)
+async def upscale_image_async(ctx, image, prompt, steps):
+    try:
+        await ctx.defer()
+        image_path = "images/image" + str(ctx.author.id) + "_upscale.png"
+        await image.save(image_path)
 
-            await ctx.respond(f"Изображение успешно увеличено!\nПотрачено: {timer.count_time()}")
-            await send_file(ctx, image_path)
-        except Exception as e:
-            await ctx.respond(f"Ошибка:{e}")
-        finally:
-            await cuda_manager.stop_use_cuda(cuda_number)
-    asyncio.ensure_future(upscale_image_async())
+        cuda_number = await cuda_manager.use_cuda()
+        timer = Time_Count()
 
+        await upscale_image(cuda_number=cuda_number, image_path=image_path, prompt=prompt, steps=steps)
+
+        await ctx.respond(f"Изображение успешно увеличено!\nПотрачено: {timer.count_time()}")
+        await send_file(ctx, image_path)
+    except Exception as e:
+        await ctx.respond(f"Ошибка:{e}")
+    finally:
+        await cuda_manager.stop_use_cuda(cuda_number)
 
 
 @bot.slash_command(name="generate_video", description='Создать видео на основе изображения с помощью нейросети')
@@ -291,7 +292,8 @@ async def __generate_video(ctx,
                                           default=None),
                            fps: Option(int, description='Количество кадров в секунду (30)', required=False,
                                        default=30),
-                           steps: Option(int, description='Количество шагов для генерации (25)', required=False, default=25,
+                           steps: Option(int, description='Количество шагов для генерации (25)', required=False,
+                                         default=25,
                                          min_value=1, max_value=100),
                            seed: Option(int, description='Сид генератора (random)', required=False, default=None),
                            duration: Option(int, description='Длительность видео (5)', required=False, default=5),
@@ -339,7 +341,8 @@ async def __generate_video(ctx,
 async def __generate_audio(ctx,
                            prompt: Option(str, description='Запрос', required=True),
                            duration: Option(float, description='Длительность аудио в секундах', required=True),
-                           steps: Option(int, description='Количество шагов для генерации (200)', required=False, default=200,
+                           steps: Option(int, description='Количество шагов для генерации (200)', required=False,
+                                         default=200,
                                          min_value=1, max_value=1000)
                            ):
     try:
@@ -437,7 +440,8 @@ async def __image_change(ctx,
                                       required=False, default=None),
                          invert: Option(bool, description='изменить всё, КРОМЕ белых пикселей (False)', required=False,
                                         default=False),
-                         negative_prompt: Option(str, description='негативный запрос (None)', default=".", required=False),
+                         negative_prompt: Option(str, description='негативный запрос (None)', default=".",
+                                                 required=False),
                          steps: Option(int, description='число шагов (50)', required=False,
                                        default=50,
                                        min_value=1,
@@ -708,14 +712,19 @@ async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
         voice_name: Option(str, description='Голос для озвучки (User character)', required=False, default=None),
-        speed: Option(float, description='Ускорение голоса (Character)', required=False, default=None, min_value=1, max_value=3),
-        voice_model_eleven: Option(str, description=f'Какая модель elevenlabs будет использована (Character)', required=False,
+        speed: Option(float, description='Ускорение голоса (Character)', required=False, default=None, min_value=1,
+                      max_value=3),
+        voice_model_eleven: Option(str, description=f'Какая модель elevenlabs будет использована (Character)',
+                                   required=False,
                                    default=None),
-        stability: Option(float, description='Стабильность голоса (Character)', required=False, default=None, min_value=0,
+        stability: Option(float, description='Стабильность голоса (Character)', required=False, default=None,
+                          min_value=0,
                           max_value=1),
-        similarity_boost: Option(float, description='Повышение сходства (Character)', required=False, default=None, min_value=0,
+        similarity_boost: Option(float, description='Повышение сходства (Character)', required=False, default=None,
+                                 min_value=0,
                                  max_value=1),
-        style: Option(float, description='Выражение (Character)', required=False, default=None, min_value=0, max_value=1),
+        style: Option(float, description='Выражение (Character)', required=False, default=None, min_value=0,
+                      max_value=1),
         output: Option(str, description='Отправить результат (1 файл RVC)', required=False,
                        choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"], default="1 файл (RVC)"),
         pitch: Option(int, description="Изменить тональность (Character)", required=False, default=0, min_value=-24,
@@ -1009,7 +1018,8 @@ async def __dialog(
         ctx,
         names: Option(str, description="Участники диалога через ';' (у каждого должен быть добавлен голос!)",
                       required=True),
-        theme: Option(str, description="Начальная тема разговора (случайная тема)", required=False, default="случайная тема"),
+        theme: Option(str, description="Начальная тема разговора (случайная тема)", required=False,
+                      default="случайная тема"),
         prompt: Option(str, description="Общий запрос для всех диалогов (None)", required=False, default="")
 ):
     try:
@@ -1266,7 +1276,8 @@ async def __add_voice(
                      default="Отсутствует"),
         speed: Option(float, description=f'Ускорение/замедление голоса (1)', required=False,
                       default=1, min_value=1, max_value=3),
-        voice_model_eleven: Option(str, description=f'Какая модель elevenlabs будет использована (Adam)', required=False,
+        voice_model_eleven: Option(str, description=f'Какая модель elevenlabs будет использована (Adam)',
+                                   required=False,
                                    default="Adam"),
         change_voice: Option(bool, description=f'Изменить голос на этот (False)', required=False,
                              default=False),
