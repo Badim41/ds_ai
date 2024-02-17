@@ -263,6 +263,7 @@ async def __upscale_image_command(ctx,
                                                 default=75, min_value=1, max_value=150)
                                   ):
     asyncio.ensure_future(upscale_image_async(ctx, image, prompt, steps))
+    print("Async done")
 
 
 async def upscale_image_async(ctx, image, prompt, steps):
