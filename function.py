@@ -420,13 +420,15 @@ def get_image_dimensions(file_path):
         width, height = img.size
     return int(width), int(height)
 
-def scale_image_decorator(func, max_size=1024 * 1024, match_size=64):
-    def wrapper(*args, **kwargs):
-        # Выполнить функцию scale_image
-        scale_image(image_path=kwargs.get("image_path"), max_size=max_size, match_size=match_size)
-        # Вызвать функцию func с переданными аргументами и вернуть результат
-        return func(*args, **kwargs)
-    return wrapper
+def scale_image_decorator(max_size=1024 * 1024, match_size=64):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            # Выполнить функцию scale_image с переданным max_size
+            scale_image(image_path=kwargs.get("image_path"), max_size=max_size, match_size=match_size)
+            # Вызвать функцию func с переданными аргументами и вернуть результат
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 def scale_image(image_path, max_size, match_size=64):
     x, y = get_image_dimensions(image_path)
