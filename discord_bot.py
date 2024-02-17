@@ -329,7 +329,7 @@ async def __generate_video(ctx,
                 logger.logging("Cant generate image", e, color=Color.GRAY)
                 image_path = await asyncio.to_thread(
                     generate_image_sd, ctx=ctx, prompt=prompt, x=1280, y=720,
-                    steps=steps, seed=seed, cuda_number=cuda_number, negative_prompt=".", refine=True
+                    steps=steps, seed=seed, cuda_number=cuda_number, negative_prompt=".", refine=False
                 )
 
         video_path, gif_path = await asyncio.to_thread(
