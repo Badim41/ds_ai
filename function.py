@@ -524,7 +524,7 @@ async def refine_image(cuda_number, prompt, image, image_path):
 async def generate_image_with_example(image_path, mask_path, example_path, steps, seed, invert, cuda_number):
     try:
         x, y = scale_image(image_path=image_path, max_size=1024 * 1024, match_size=64)
-        mask = get_mask(mask_path, invert)
+        mask = get_mask(mask_path, invert, x, y)
         example_image = format_image(example_path)
         init_image = format_image(image_path)
 
@@ -573,7 +573,7 @@ async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cud
         logger.logging("Cleared memory", color=Color.CYAN)
 
 
-def get_mask(mask_path, invert):
+def get_mask(mask_path, invert, x, y):
     if mask_path:
         # заполнение пустых пикселей чёрными
         mask = (fill_transparent_with_black(mask_path)).resize((x, y))
@@ -600,7 +600,7 @@ async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
         )
         pipe = pipe.to(f"cuda:{cuda_number}")
 
-        mask = get_mask(mask_path, invert)
+        mask = get_mask(mask_path, invert, x, y)
 
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
 
