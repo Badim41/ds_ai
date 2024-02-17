@@ -329,7 +329,6 @@ async def __generate_video(ctx,
     async def repeat_generate_videos(seed, i):
         try:
             seed = random.randint(1, 9999999999) if seed is None else int(seed // (i + 1))
-            await asyncio.sleep(i % 2 / 4 + 0.05)
 
             cuda_number = await cuda_manager.use_cuda()
 
@@ -402,8 +401,6 @@ async def __generate_audio(ctx,
             else:
                 seed = int(seed // (i + 1))
 
-            await asyncio.sleep(i % 2 / 4 + 0.05)
-
             cuda_number = await cuda_manager.use_cuda()
             timer = Time_Count()
             wav_audio_path = f"{ctx.author.id}_generate_audio{i}.wav"
@@ -463,16 +460,14 @@ async def __generate_image(ctx,
         try:
             timer = Time_Count()
             seed_text = ""
-            image_path = f"images/image{ctx.author.id}_{seed}_generate_sd.png"
+            image_path = f"images/image{ctx.author.id}_{seed}_{i}generated.png"
             if api:
-                await asyncio.sleep(i % 2 / 4 + 0.05)
                 image_path = await asyncio.to_thread(
                     generate_image_API, ctx=ctx, prompt=prompt, negative_prompt=negative_prompt,
                     style=style, x=x, y=y, image_path=image_path
                 )
             else:
                 seed = random.randint(1, 9999999999) if seed is None else int(seed // (i + 1))
-                await asyncio.sleep(i % 2 / 4 + 0.05)
                 seed_text = f"\nСид:{seed}"
                 cuda_number = await cuda_manager.use_cuda()
 
@@ -545,7 +540,7 @@ async def __image_change(ctx,
         try:
             cuda_number = await cuda_manager.use_cuda()
             seed = random.randint(1, 9999999999) if seed is None else int(seed // (i + 1))
-            await asyncio.sleep(i % 2 / 4 + 0.05)
+            await asyncio.sleep((i%2) / 4 + 0.05)
 
             timer = Time_Count()
 
