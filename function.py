@@ -390,10 +390,9 @@ class Text2ImageAPI:
             }
             response = requests.post(self.URL + 'key/api/v1/text2image/run', headers=self.AUTH_HEADERS, files=data)
             data = response.json()
-            print("data", data)
             return data['uuid']
         except Exception as e:
-            print("error in async_image:(id:2)", e)
+            logger.logging("data", data, color=Color.RED)
 
     def check_generation(self, request_id, attempts=10, delay=1):
         try:
@@ -487,7 +486,6 @@ def generate_image_API(ctx, prompt, x, y, negative_prompt=None, style="DEFAULT")
     logger.logging("Params:", prompt, negative_prompt, model_id, x, y, style, color=Color.GRAY)
     uuid = api.generate(prompt=prompt, negative_prompt=negative_prompt, model=model_id, width=x, height=y,
                         style=style)
-    print("uuid", uuid)
     image_data_base64 = api.check_generation(uuid)
 
     selected_image_base64 = image_data_base64[0]
