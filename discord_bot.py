@@ -548,7 +548,7 @@ async def __generate_image(ctx,
         await ctx.send("style игнорируется, так как выключен API")
     if gpt:
         prompt = await image_prompt_with_gpt(prompt)
-        await ctx.send(f"Запрос:\n{prompt}")
+        await ctx.resond(f"Запрос:\n{prompt}")
     else:
         await ctx.resond(f"Выполнение")
 
