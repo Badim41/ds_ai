@@ -297,57 +297,66 @@ async def __generate_video(ctx,
                            steps: Option(int, description='Количество шагов для генерации (25)', required=False,
                                          default=25,
                                          min_value=1, max_value=100),
-                           seed: Option(int, description='Сид генератора (random)', required=False, default=None),
+                           seed: Option(int, description='Сид генератора (random)', required=False, default=None,
+                                        min_value=9999999999, max_value=9999999999),
                            duration: Option(int, description='Длительность видео (5)', required=False, default=5),
                            decode_chunk_size: Option(int,
                                                      description='Декодирование кадров за раз. Влияет на использование видеопамяти (4)',
                                                      required=False, default=4),
                            noise_strenght: Option(float,
                                                   description='Количество добавляемого шума к исходному изображению (0.02)',
-                                                  required=False, default=0.02)
+                                                  required=False, default=0.02),
+                           repeats: Option(int,
+                                           description='Количество повторов (1)',
+                                           required=False,
+                                           default=1, min_value=1,
+                                           max_value=16)
                            ):
-    try:
-        await ctx.defer()
-        if not seed:
-            seed = random.randint(1, 99999)
+    async def repeat_generate_videos(seed, i):
+        try:
+            seed = random.randint(1, 9999999999) if seed in None else seed // i
 
-        cuda_number = await cuda_manager.use_cuda()
+            cuda_number = await cuda_manager.use_cuda()
 
-        timer = Time_Count()
+            timer = Time_Count()
 
-        image_path = f"images/{ctx.author.id}_generate_video.png"
-        if image:
-            if prompt:
-                await ctx.send("Загружено изображение, prompt игнорируется")
-            await image.save(image_path)
-        else:
-            if not prompt:
-                await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
-                return
-            try:
-                image_path = await asyncio.to_thread(
-                    generate_image_API, ctx=ctx, prompt=prompt, x=1024, y=720, negative_prompt=".", style="DEFAULT"
-                )
-            except Exception as e:
-                logger.logging("Cant generate image", e, color=Color.GRAY)
-                image_path = await asyncio.to_thread(
-                    generate_image_sd, ctx=ctx, prompt=prompt, x=1280, y=720,
-                    steps=steps, seed=seed, cuda_number=cuda_number, negative_prompt=".", refine=False
-                )
+            image_path = f"images/{ctx.author.id}_generate_video.png"
+            if image:
+                if prompt:
+                    await ctx.send("Загружено изображение, prompt игнорируется")
+                await image.save(image_path)
+            else:
+                if not prompt:
+                    await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
+                    return
+                try:
+                    image_path = await asyncio.to_thread(
+                        generate_image_API, ctx=ctx, prompt=prompt, x=1024, y=720, negative_prompt=".", style="DEFAULT"
+                    )
+                except Exception as e:
+                    logger.logging("Cant generate image", e, color=Color.GRAY)
+                    image_path = await asyncio.to_thread(
+                        generate_image_sd, ctx=ctx, prompt=prompt, x=1280, y=720,
+                        steps=steps, seed=seed, cuda_number=cuda_number, negative_prompt=".", refine=False
+                    )
 
-        video_path, gif_path = await asyncio.to_thread(
-            generate_video, cuda_number=cuda_number, image_path=image_path, seed=seed, fps=fps,
-            decode_chunk_size=decode_chunk_size, duration=duration, steps=steps,
-            noise_strenght=noise_strenght
-        )
+            video_path, gif_path = await asyncio.to_thread(
+                generate_video, cuda_number=cuda_number, image_path=image_path, seed=seed, fps=fps,
+                decode_chunk_size=decode_chunk_size, duration=duration, steps=steps,
+                noise_strenght=noise_strenght
+            )
 
-        await ctx.respond(f"{timer.count_time()}\nСид:{seed}")
-        await send_file(ctx, video_path)
-        await send_file(ctx, gif_path)
-    except Exception as e:
-        await ctx.respond(f"Ошибка:{e}")
-    finally:
-        await cuda_manager.stop_use_cuda(cuda_number)
+            await ctx.respond(f"{timer.count_time()}\nСид:{seed}")
+            await send_file(ctx, video_path)
+            await send_file(ctx, gif_path)
+        except Exception as e:
+            await ctx.respond(f"Ошибка:{e}")
+        finally:
+            await cuda_manager.stop_use_cuda(cuda_number)
+
+    await ctx.defer()
+    for i in range(repeats):
+        asyncio.create_task(repeat_generate_videos(seed, i))
 
 
 @bot.slash_command(name="generate_audio", description='Создать аудиофайл с помощью нейросети')
@@ -421,9 +430,8 @@ async def __generate_image(ctx,
                     style=style, x=x, y=y
                 )
             else:
-                if seed is None:
-                    seed = random.randint(1, 9999999999)
-                    seed_text = f"\nСид:{seed}"
+                seed = random.randint(1, 9999999999) if seed in None else seed // i
+                seed_text = f"\nСид:{seed}"
                 cuda_number = await cuda_manager.use_cuda()
 
                 image_path = await asyncio.to_thread(
@@ -432,13 +440,14 @@ async def __generate_image(ctx,
                 )
 
                 await cuda_manager.stop_use_cuda(cuda_number)
-            await send_file(ctx=ctx, file_path=image_path, delete_file=True)
+            await send_file(ctx=ctx, file_path=image_path)
             await ctx.respond(f"Картинка: {i + 1}/{repeats}\nПотрачено: {timer.count_time()}" + seed_text)
         except:
             await ctx.respond(f"Ошибка:{e}")
             await cuda_manager.stop_use_cuda(cuda_number)
 
     await ctx.defer()
+
     if seed and api:
         await ctx.send("seed игнорируется, так как включён API")
     if not steps == 50 and api:
@@ -484,22 +493,10 @@ async def __image_change(ctx,
                          refine: Option(bool, description="Улучить изображение (False)", required=False,
                                         default=False)
                          ):
-    try:
-        cuda_number = await cuda_manager.use_cuda()
-        await ctx.defer()
-
-        image_path = "images/image" + str(ctx.author.id) + "_change.png"
-        await image.save(image_path)
-        # logger.logging("Saved image:", image_path)
-
-        mask_path = None
-        if mask:
-            mask_path = "images/image" + str(ctx.author.id) + "_change_mask.png"
-            await mask.save(mask_path)
-
-        for i in range(repeats):
-            if not i == 0 or seed is None:
-                seed = random.randint(1, 9999999999)
+    async def images_change_async(seed, i):
+        try:
+            cuda_number = await cuda_manager.use_cuda()
+            seed = random.randint(1, 9999999999) if seed in None else seed // i
 
             timer = Time_Count()
 
@@ -516,11 +513,24 @@ async def __image_change(ctx,
             else:
                 await ctx.send(text)
 
-            await send_file(ctx, image_path, delete_file=True)
-    except Exception as e:
-        await ctx.respond(f"Ошибка:{e}")
-    finally:
-        await cuda_manager.stop_use_cuda(cuda_number)
+            await send_file(ctx, image_path)
+        except Exception as e:
+            await ctx.respond(f"Ошибка:{e}")
+        finally:
+            await cuda_manager.stop_use_cuda(cuda_number)
+
+    await ctx.defer()
+
+    image_path = "images/image" + str(ctx.author.id) + "_change.png"
+    await image.save(image_path)
+
+    mask_path = None
+    if mask:
+        mask_path = "images/image" + str(ctx.author.id) + "_change_mask.png"
+        await mask.save(mask_path)
+
+    for i in range(repeats):
+        asyncio.create_task(images_change_async(seed, i))
 
 
 @bot.slash_command(name="example_image", description='Изменить изображение нейросетью с помощью примера')
@@ -549,21 +559,9 @@ async def __image_example(ctx,
                                           default=1, min_value=1,
                                           max_value=16)
                           ):
-    try:
-        cuda_number = await cuda_manager.use_cuda()
-        await ctx.defer()
-
-        image_path = "images/image" + str(ctx.author.id) + "_example.png"
-        await image.save(image_path)
-        example_path = "images/image" + str(ctx.author.id) + "_example_example.png"
-        await example.save(example_path)
-
-        mask_path = None
-        if mask:
-            mask_path = "images/image" + str(ctx.author.id) + "_example_mask.png"
-            await mask.save(mask_path)
-
-        for i in range(repeats):
+    async def images_example_async(seed, i):
+        try:
+            cuda_number = await cuda_manager.use_cuda()
             if not i == 0 or seed is None:
                 seed = random.randint(1, 9999999999)
 
@@ -581,11 +579,28 @@ async def __image_example(ctx,
             else:
                 await ctx.send(text)
 
-            await send_file(ctx, image_path, delete_file=True)
-    except Exception as e:
-        await ctx.respond(f"Ошибка:{e}")
-    finally:
-        await cuda_manager.stop_use_cuda(cuda_number)
+            await send_file(ctx, image_path)
+
+        except Exception as e:
+            await ctx.respond(f"Ошибка:{e}")
+        finally:
+            await cuda_manager.stop_use_cuda(cuda_number)
+
+    await ctx.defer()
+
+    image_path = "images/image" + str(ctx.author.id) + "_example.png"
+    await image.save(image_path)
+
+    example_path = "images/image" + str(ctx.author.id) + "_example_example.png"
+    await example.save(example_path)
+
+    mask_path = None
+    if mask:
+        mask_path = "images/image" + str(ctx.author.id) + "_example_mask.png"
+        await mask.save(mask_path)
+
+    for i in range(repeats):
+        asyncio.create_task(images_example_async(seed, i))
 
 
 @bot.slash_command(name="config", description='изменить конфиг')
