@@ -412,27 +412,31 @@ async def __generate_image(ctx,
                                           default=False)
                            ):
     async def repeat_generate_images(seed, i):
-        timer = Time_Count()
-        seed_text = ""
-        if api:
-            image_path = await asyncio.to_thread(
-                generate_image_API, ctx=ctx, prompt=prompt, negative_prompt=negative_prompt,
-                style=style, x=x, y=y
-            )
-        else:
-            if seed is None:
-                seed = random.randint(1, 9999999999)
-                seed_text = f"\nСид:{seed}"
-            cuda_number = await cuda_manager.use_cuda()
+        try:
+            timer = Time_Count()
+            seed_text = ""
+            if api:
+                image_path = await asyncio.to_thread(
+                    generate_image_API, ctx=ctx, prompt=prompt, negative_prompt=negative_prompt,
+                    style=style, x=x, y=y
+                )
+            else:
+                if seed is None:
+                    seed = random.randint(1, 9999999999)
+                    seed_text = f"\nСид:{seed}"
+                cuda_number = await cuda_manager.use_cuda()
 
-            image_path = await asyncio.to_thread(
-                generate_image_sd, ctx=ctx, prompt=prompt, x=x, y=y, negative_prompt=negative_prompt,
-                steps=steps, seed=seed, cuda_number=cuda_number, refine=refine
-            )
+                image_path = await asyncio.to_thread(
+                    generate_image_sd, ctx=ctx, prompt=prompt, x=x, y=y, negative_prompt=negative_prompt,
+                    steps=steps, seed=seed, cuda_number=cuda_number, refine=refine
+                )
 
+                await cuda_manager.stop_use_cuda(cuda_number)
+            await send_file(ctx=ctx, file_path=image_path, delete_file=True)
+            await ctx.respond(f"Картинка: {i + 1}/{repeats}\nПотрачено: {timer.count_time()}" + seed_text)
+        except:
+            await ctx.respond(f"Ошибка:{e}")
             await cuda_manager.stop_use_cuda(cuda_number)
-        await send_file(ctx=ctx, file_path=image_path, delete_file=True)
-        await ctx.respond(f"Картинка: {i + 1}/{repeats}\nПотрачено: {timer.count_time()}" + seed_text)
 
     await ctx.defer()
     if seed and api:
