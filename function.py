@@ -12,6 +12,7 @@ import traceback
 from diffusers import StableVideoDiffusionPipeline, \
     MusicLDMPipeline, StableDiffusionXLInpaintPipeline, StableDiffusionXLPipeline, DiffusionPipeline, \
     PaintByExamplePipeline, StableDiffusionUpscalePipeline
+from compel import Compel, ReturnedEmbeddingsType
 from diffusers.utils import export_to_video
 from io import BytesIO
 from moviepy.video.io.VideoFileClip import VideoFileClip
@@ -562,10 +563,18 @@ def generate_image_sd(image_path, prompt, x, y, negative_prompt, steps, seed, cu
         )
         pipe = pipe.to(f"cuda:{cuda_number}")
 
+        compel = Compel(
+            tokenizer=[pipe.tokenizer, pipe.tokenizer_2],
+            text_encoder=[pipe.text_encoder, pipe.text_encoder_2],
+            returned_embeddings_type=ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED,
+            requires_pooled=[False, True]
+        )
+        conditioning, pooled = compel(prompt)
+
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
 
         if refine:
-            image = pipe(prompt, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps,
+            image = pipe(prompt_embeds=conditioning, pooled_prompt_embeds=pooled, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps,
                          width=x,
                          height=y, denoising_end=0.8, output_type="latent").images
             refine_image(cuda_number, prompt, image, image_path)
@@ -612,12 +621,20 @@ def inpaint_image(prompt, negative_prompt, image_path, mask_path,
         )
         pipe = pipe.to(f"cuda:{cuda_number}")
 
+        compel = Compel(
+            tokenizer=[pipe.tokenizer, pipe.tokenizer_2],
+            text_encoder=[pipe.text_encoder, pipe.text_encoder_2],
+            returned_embeddings_type=ReturnedEmbeddingsType.PENULTIMATE_HIDDEN_STATES_NON_NORMALIZED,
+            requires_pooled=[False, True]
+        )
+        conditioning, pooled = compel(prompt)
+
         mask = get_mask(mask_path, invert, x, y)
 
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
 
         if refine:
-            image = pipe(prompt=prompt, image=image, mask_image=mask, num_inference_steps=steps, strength=strength,
+            image = pipe(prompt_embeds=conditioning, pooled_prompt_embeds=pooled, image=image, mask_image=mask, num_inference_steps=steps, strength=strength,
                          negative_prompt=negative_prompt, generator=generator, width=x,
                          height=y, denoising_end=0.8, output_type="latent").images
             refine_image(cuda_number, prompt, image, image_path)
@@ -652,12 +669,15 @@ def upscale_image(image_path, prompt, steps, cuda_number):
         if not prompt:
             prompt = "HD, 4K, high resolution, unreal engine, ultra realistic"
 
+        compel_proc = Compel(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder)
+        prompt_embeds = compel_proc(prompt)
+
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(33)
 
         image = format_image(image_path)
 
         pipe(
-            prompt=prompt,
+            prompt_embeds=prompt_embeds,
             image=image,
             num_inference_steps=steps,
             generator=generator,
@@ -718,9 +738,12 @@ def generate_audio(cuda_number, wav_audio_path, prompt, duration, steps, seed):
         pipe = MusicLDMPipeline.from_pretrained(repo_id, torch_dtype=torch.float16)
         pipe = pipe.to(f"cuda:{cuda_number}")
 
+        compel_proc = Compel(tokenizer=pipe.tokenizer, text_encoder=pipe.text_encoder)
+        prompt_embeds = compel_proc(prompt)
+
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
 
-        audio = pipe(prompt, num_inference_steps=steps, audio_length_in_s=duration, generator=generator).audios[0]
+        audio = pipe(prompt_embeds=prompt_embeds, num_inference_steps=steps, audio_length_in_s=duration, generator=generator).audios[0]
 
         # save the audio sample as a .wav file
         write(wav_audio_path, rate=16000, data=audio)
