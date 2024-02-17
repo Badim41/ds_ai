@@ -24,7 +24,7 @@ from discord_tools.sql_db import set_get_database_async as set_get_config_all
 from discord_tools.timer import Time_Count
 from download_voice_model import download_online_model
 from function import Character, Voice_Changer, get_link_to_file, upscale_image, \
-    generate_audio, generate_video, inpaint_image, generate_image_API, refine_image, generate_image_sd
+    generate_audio, generate_video, inpaint_image, generate_image_API, generate_image_with_example, generate_image_sd
 from modifed_sinks import StreamSink
 from use_free_cuda import Use_Cuda
 
@@ -447,23 +447,21 @@ async def __image_change(ctx,
     try:
         cuda_number = await cuda_manager.use_cuda()
         await ctx.defer()
+
+        image_path = "images/image" + str(ctx.author.id) + "_change.png"
+        await image.save(image_path)
+        # logger.logging("Saved image:", image_path)
+
+        mask_path = None
+        if mask:
+            mask_path = "images/image" + str(ctx.author.id) + "_change_mask.png"
+            await mask.save(mask_path)
+
         for i in range(repeats):
             if not i == 0 or seed is None:
                 seed = random.randint(1, 9999999999)
 
             timer = Time_Count()
-
-            # logger.logging("Using GPU:", cuda_number)
-
-            image_path = "images/image" + str(ctx.author.id) + "_change.png"
-            await image.save(image_path)
-            # logger.logging("Saved image:", image_path)
-
-            mask_path = None
-            if mask:
-                mask_path = "images/image" + str(ctx.author.id) + "_change_mask.png"
-                await mask.save(mask_path)
-                # logger.logging("Saved mask:", mask_path)
 
             await inpaint_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
                                 image_path=image_path, mask_path=mask_path,
@@ -483,56 +481,54 @@ async def __image_change(ctx,
         await cuda_manager.stop_use_cuda(cuda_number)
 
 
-@bot.slash_command(name="inpaint_image", description='изменить изображение нейросетью')
-async def __image_change(ctx,
-                         image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
-                                       required=True),
-                         example_image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
-                                               required=True),
-                         mask: Option(discord.SlashCommandOptionType.attachment,
-                                      description='Маска. Будут изменены только БЕЛЫЕ пиксели',
-                                      required=True, default=None),
-                         invert: Option(bool, description='изменить всё, КРОМЕ белых пикселей', required=False,
-                                        default=False),
-                         steps: Option(int, description='число шагов', required=False,
-                                       default=60,
-                                       min_value=1,
-                                       max_value=100),
-                         seed: Option(int,
-                                      description='Сид',
-                                      required=False,
-                                      default=None, min_value=1,
-                                      max_value=9999999999),
-                         repeats: Option(int,
-                                         description='Количество повторов',
-                                         required=False,
-                                         default=1, min_value=1,
-                                         max_value=16)
-                         ):
+@bot.slash_command(name="example_image", description='Изменить изображение нейросетью с помощью примера')
+async def __image_example(ctx,
+                          image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
+                                        required=True),
+                          example: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
+                                          required=True),
+                          mask: Option(discord.SlashCommandOptionType.attachment,
+                                       description='Маска. Будут изменены только БЕЛЫЕ пиксели',
+                                       required=False, default=None),
+                          invert: Option(bool, description='изменить всё, КРОМЕ белых пикселей', required=False,
+                                         default=False),
+                          steps: Option(int, description='число шагов', required=False,
+                                        default=60,
+                                        min_value=1,
+                                        max_value=100),
+                          seed: Option(int,
+                                       description='Сид',
+                                       required=False,
+                                       default=None, min_value=1,
+                                       max_value=9999999999),
+                          repeats: Option(int,
+                                          description='Количество повторов',
+                                          required=False,
+                                          default=1, min_value=1,
+                                          max_value=16)
+                          ):
     try:
         cuda_number = await cuda_manager.use_cuda()
         await ctx.defer()
+
+        image_path = "images/image" + str(ctx.author.id) + "_example.png"
+        await image.save(image_path)
+        example_path = "images/image" + str(ctx.author.id) + "_example_example.png"
+        await example.save(example_path)
+
+        mask_path = None
+        if mask:
+            mask_path = "images/image" + str(ctx.author.id) + "_example_mask.png"
+            await mask.save(mask_path)
+
         for i in range(repeats):
             if not i == 0 or seed is None:
                 seed = random.randint(1, 9999999999)
 
             timer = Time_Count()
 
-            # logger.logging("Using GPU:", cuda_number)
-
-            image_path = "images/image" + str(ctx.author.id) + "_change.png"
-            await image.save(image_path)
-            # logger.logging("Saved image:", image_path)
-
-            mask_path = None
-            if mask:
-                mask_path = "images/image" + str(ctx.author.id) + "_change_mask.png"
-                await mask.save(mask_path)
-                # logger.logging("Saved mask:", mask_path)
-
-            await inpaint_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
-                                image_path=image_path, mask_path=mask_path,
-                                invert=invert, strength=strength, steps=steps, seed=seed)
+            await generate_image_with_example(image_path=image_path, mask_path=mask_path, example_path=example_path,
+                                              steps=steps, seed=seed, invert=invert, cuda_number=cuda_number)
 
             # отправляем
             text = f"Изображение {i + 1}/{repeats}\nПотрачено {timer.count_time()}.\nСид:{seed}"

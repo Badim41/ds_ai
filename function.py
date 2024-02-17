@@ -500,6 +500,23 @@ async def generate_image_API(ctx, prompt, x, y, negative_prompt=None, style="DEF
     return image_path
 
 
+async def refine_image(cuda_number, prompt, image, image_path):
+    refiner = DiffusionPipeline.from_pretrained(
+        "stabilityai/stable-diffusion-xl-refiner-1.0",
+        torch_dtype=torch.float16,
+        use_safetensors=True,
+        variant="fp16",
+    )
+    refiner = refiner.to(f"cuda:{cuda_number}")
+
+    refiner(
+        prompt=prompt,
+        num_inference_steps=40,
+        denoising_start=0.8,
+        image=image,
+    ).images[0].save(image_path)
+
+
 async def generate_image_with_example(image_path, mask_path, example_path, steps, seed, invert, cuda_number):
     x, y = scale_image(image_path=image_path, max_size=1024 * 1024, match_size=64)
     mask = get_mask(mask_path, invert)
@@ -528,22 +545,7 @@ async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cud
     image_path = "images/image" + str(ctx.author.id) + "_generate_sd.png"
     image = pipe(prompt, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps, width=x,
                  height=y, output_type="latent", denoising_end=0.8)
-
-    refiner = DiffusionPipeline.from_pretrained(
-        "stabilityai/stable-diffusion-xl-refiner-1.0",
-        torch_dtype=torch.float16,
-        use_safetensors=True,
-        variant="fp16",
-    )
-    refiner = refiner.to(f"cuda:{cuda_number}")
-
-    refiner(
-        prompt=prompt,
-        num_inference_steps=40,
-        denoising_start=0.8,
-        image=image,
-    ).images[0].save(image_path)
-
+    await refine_image(cuda_number, prompt, image, image_path)
     return image_path
 
 
@@ -582,20 +584,7 @@ async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
                      negative_prompt=negative_prompt, generator=generator, width=x, height=y, output_type="latent",
                      denoising_end=0.8)
 
-        refiner = DiffusionPipeline.from_pretrained(
-            "stabilityai/stable-diffusion-xl-refiner-1.0",
-            torch_dtype=torch.float16,
-            use_safetensors=True,
-            variant="fp16",
-        )
-        refiner = refiner.to(f"cuda:{cuda_number}")
-
-        refiner(
-            prompt=prompt,
-            num_inference_steps=40,
-            denoising_start=0.8,
-            image=image,
-        ).images[0].save(image_path)
+        await refine_image(cuda_number, prompt, image, image_path)
 
     except Exception as e:
         traceback_str = traceback.format_exc()
