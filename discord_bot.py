@@ -313,7 +313,7 @@ async def video_generate_command(ctx,
             image_path = await generate_image_API(ctx=ctx, prompt=prompt, x=1280,
                                                   y=720)
 
-        video_path, gif_path = await video_generate(image_path=image_path, seed=seed, fps=fps,
+        video_path, gif_path = await video_generate(cuda_number=cuda_number, image_path=image_path, seed=seed, fps=fps,
                                                     decode_chunk_size=decode_chunk_size)
 
         await ctx.respond(f"{timer.count_time()}\nСид:{seed}")
@@ -420,17 +420,17 @@ async def __image_change(ctx,
             timer = Time_Count()
             cuda_number = await cuda_manager.use_cuda()
 
-            logger.logging("Using GPU:", cuda_number)
+            # logger.logging("Using GPU:", cuda_number)
 
             image_path = "images/image" + str(ctx.author.id) + "_change.png"
             await image.save(image_path)
-            logger.logging("Saved image:", image_path)
+            # logger.logging("Saved image:", image_path)
 
             mask_path = None
             if mask:
                 mask_path = "images/image" + str(ctx.author.id) + "_change_mask.png"
                 await mask.save(mask_path)
-                logger.logging("Saved mask:", mask_path)
+                # logger.logging("Saved mask:", mask_path)
 
             await inpaint_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
                                 image_path=image_path, mask_path=mask_path,
