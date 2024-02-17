@@ -510,6 +510,7 @@ async def refine_image(cuda_number, prompt, image, image_path):
             denoising_start=0.8,
             image=image,
         ).images[0].save(image_path)
+
     except Exception as e:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
@@ -559,7 +560,8 @@ async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cud
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
         image_path = "images/image" + str(ctx.author.id) + "_generate_sd.png"
         image = pipe(prompt, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps, width=x,
-                     height=y, output_type="latent", denoising_end=0.8)
+                     height=y, denoising_end=0.8, output_type="latent").images
+        print(image)
         await refine_image(cuda_number, prompt, image, image_path)
         return image_path
     except Exception as e:
@@ -605,8 +607,8 @@ async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
 
         image = pipe(prompt=prompt, image=image, mask_image=mask, num_inference_steps=steps, strength=strength,
-                     negative_prompt=negative_prompt, generator=generator, width=x, height=y, output_type="latent",
-                     denoising_end=0.8)
+                     negative_prompt=negative_prompt, generator=generator, width=x,
+                     height=y, denoising_end=0.8, output_type="latent").images
 
         await refine_image(cuda_number, prompt, image, image_path)
 
