@@ -417,6 +417,7 @@ def convert_mp4_to_gif(input_file, output_file, fps):
 def get_image_dimensions(file_path):
     with Image.open(file_path) as img:
         width, height = img.size
+    print("Image size: X:{x}, Y:{y}, All:{x*y}")
     return int(width), int(height)
 
 
