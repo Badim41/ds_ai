@@ -409,7 +409,7 @@ async def __generate_image(ctx,
         await ctx.defer()
         if seed and api:
             await ctx.send("seed игнорируется, так как включён API")
-        if steps and api:
+        if not steps == 50 and api:
             await ctx.send("steps игнорируется, так как включён API")
         if refine and api:
             await ctx.send("refine игнорируется, так как включён API")
