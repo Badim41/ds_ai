@@ -387,7 +387,7 @@ async def __image_change(ctx,
                          image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
                                        required=True),
                          prompt: Option(str, description='запрос', required=True),
-                         mask_path: Option(discord.SlashCommandOptionType.attachment,
+                         mask: Option(discord.SlashCommandOptionType.attachment,
                                            description='Маска. Будут изменены только БЕЛЫЕ пиксели',
                                            required=False, default=None),
                          invert: Option(bool, description='изменить всё, КРОМЕ белых пикселей', required=False,
@@ -422,8 +422,10 @@ async def __image_change(ctx,
             logger.logging("Using GPU:", cuda_number)
 
             image_path = "images/image" + str(ctx.author.id) + "_change.png"
+            mask_path = "images/image" + str(ctx.author.id) + "_change_mask.png"
             logger.logging("Saved image:", image_path)
             await image.save(image_path)
+            await mask.save(mask_path)
             await inpaint_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
                                 image_path=image_path, mask_path=mask_path,
                                 invert=invert, strength=strength, steps=steps, seed=seed)
