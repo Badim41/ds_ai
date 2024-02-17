@@ -513,8 +513,8 @@ async def generate_image_API(ctx, prompt, x, y, negative_prompt="", style="DEFAU
 
 
 @scale_image_decorator(max_size=768 * 768, match_size=128)
-async def inpaint_image(cuda_number, prompt, negative_prompt, image_path, mask_path,
-                        invert, strength, steps, seed):
+async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
+                        invert, strength, steps, seed, cuda_number):
     try:
         image = Image.open(image_path)
 
@@ -578,7 +578,8 @@ async def refine_image(prompt, negative_prompt, strength, image_path, cuda_numbe
         gc.collect()
 
 
-async def upscale_image(cuda_number, image_path, prompt, steps):
+@scale_image_decorator
+async def upscale_image(image_path, prompt, steps, cuda_number):
     try:
         model_id = "stabilityai/sd-x2-latent-upscaler"
         pipe = StableDiffusionLatentUpscalePipeline.from_pretrained(model_id, torch_dtype=torch.float16)
