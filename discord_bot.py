@@ -412,7 +412,7 @@ async def __image_change(ctx,
             image_path = "images/image" + str(ctx.author.id) + "_change.png"
             logger.logging("Saved image:", image_path)
             await image.save(image_path)
-            image_path = inpaint_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
+            await inpaint_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
                                        image_path=image_path, mask_path=mask_path,
                                        invert=invert, strength=strength, steps=steps)
 
