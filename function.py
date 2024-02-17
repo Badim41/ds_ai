@@ -10,7 +10,8 @@ import time
 import traceback
 from diffusers import StableVideoDiffusionPipeline, \
     MusicLDMPipeline, StableDiffusionLatentUpscalePipeline, \
-    StableDiffusionXLImg2ImgPipeline, StableDiffusionXLInpaintPipeline, StableDiffusionXLPipeline, DiffusionPipeline
+    StableDiffusionXLImg2ImgPipeline, StableDiffusionXLInpaintPipeline, StableDiffusionXLPipeline, DiffusionPipeline, \
+    PaintByExamplePipeline
 from diffusers.utils import export_to_video
 from io import BytesIO
 from moviepy.video.io.VideoFileClip import VideoFileClip
@@ -499,6 +500,24 @@ async def generate_image_API(ctx, prompt, x, y, negative_prompt=None, style="DEF
     return image_path
 
 
+async def generate_image_with_example(image_path, mask_path, example_path, steps, seed, invert, cuda_number):
+    x, y = scale_image(image_path=image_path, max_size=1024 * 1024, match_size=64)
+    mask = get_mask(mask_path, invert)
+    example_image = format_image(example_path)
+    init_image = format_image(image_path)
+
+    pipe = PaintByExamplePipeline.from_pretrained(
+        "Fantasy-Studio/Paint-by-Example",
+        torch_dtype=torch.float16,
+    )
+    pipe = pipe.to("cuda")
+
+    generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
+
+    pipe(image=init_image, mask_image=mask, example_image=example_image, width=x, height=y,
+         num_inference_steps=steps, generator=generator).images[0].save(image_path)
+
+
 async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cuda_number):
     pipe = StableDiffusionXLPipeline.from_pretrained(
         "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16
@@ -508,7 +527,7 @@ async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cud
     generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
     image_path = "images/image" + str(ctx.author.id) + "_generate_sd.png"
     image = pipe(prompt, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps, width=x,
-         height=y, output_type="latent", denoising_end=0.8)
+                 height=y, output_type="latent", denoising_end=0.8)
 
     refiner = DiffusionPipeline.from_pretrained(
         "stabilityai/stable-diffusion-xl-refiner-1.0",
@@ -528,6 +547,19 @@ async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cud
     return image_path
 
 
+def get_mask(mask_path, invert):
+    if mask_path:
+        # заполнение пустых пикселей чёрными
+        mask = (fill_transparent_with_black(mask_path)).resize((x, y))
+        if invert:
+            inverted_image = Image.eval(mask, lambda x: 255 - x)
+            inverted_image.save(mask_path)
+            mask = format_image(mask_path)
+    else:
+        mask = Image.new("RGB", (x, y), color="white")
+    return mask
+
+
 async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
                         invert, strength, steps, seed, cuda_number):
     try:
@@ -542,20 +574,13 @@ async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
         )
         pipe = pipe.to(f"cuda:{cuda_number}")
 
-        if mask_path:
-            # заполнение пустых пикселей чёрными
-            mask = (fill_transparent_with_black(mask_path)).resize((x, y))
-            if invert:
-                inverted_image = Image.eval(mask, lambda x: 255 - x)
-                inverted_image.save(mask_path)
-                mask = format_image(mask_path)
-        else:
-            mask = Image.new("RGB", (x, y), color="white")
+        mask = get_mask(mask_path, invert)
 
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
 
         image = pipe(prompt=prompt, image=image, mask_image=mask, num_inference_steps=steps, strength=strength,
-             negative_prompt=negative_prompt, generator=generator, width=x, height=y, output_type="latent", denoising_end=0.8)
+                     negative_prompt=negative_prompt, generator=generator, width=x, height=y, output_type="latent",
+                     denoising_end=0.8)
 
         refiner = DiffusionPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-refiner-1.0",
@@ -623,7 +648,7 @@ async def generate_video(cuda_number, image_path, seed, fps, decode_chunk_size=8
         )
         pipe.to(f"cuda:{cuda_number}")
 
-        image = Image.open(image_path)
+        image = format_image(image_path)
 
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
         frames = pipe(image, decode_chunk_size=decode_chunk_size, generator=generator).frames[0]

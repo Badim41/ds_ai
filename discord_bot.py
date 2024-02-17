@@ -282,16 +282,16 @@ async def __upscale_image_command(ctx,
 
 @bot.slash_command(name="generate_video", description='Создать видео на основе изображения с помощью нейросети')
 async def __generate_video(ctx,
-                                 image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
-                                               required=False),
-                                 prompt: Option(str, description="Запрос для начального изображения", required=False,
-                                                default=None),
-                                 fps: Option(int, description='Количество кадров в секунду', required=False,
-                                             default=30),
-                                 seed: Option(int, description='Сид генератора', required=False, default=None),
-                                 decode_chunk_size: Option(int, description='Длительность видео',
-                                                           required=False, default=8)
-                                 ):
+                           image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
+                                         required=False),
+                           prompt: Option(str, description="Запрос для начального изображения", required=False,
+                                          default=None),
+                           fps: Option(int, description='Количество кадров в секунду', required=False,
+                                       default=30),
+                           seed: Option(int, description='Сид генератора', required=False, default=None),
+                           decode_chunk_size: Option(int, description='Длительность видео',
+                                                     required=False, default=8)
+                           ):
     try:
         await ctx.defer()
         if not seed:
@@ -483,15 +483,21 @@ async def __image_change(ctx,
         await cuda_manager.stop_use_cuda(cuda_number)
 
 
-@bot.slash_command(name="refine_image", description='улучшить изображение нейросетью')
-async def __image_refine(ctx,
+@bot.slash_command(name="inpaint_image", description='изменить изображение нейросетью')
+async def __image_change(ctx,
                          image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
                                        required=True),
-                         prompt: Option(str, description='запрос', required=True),
-                         negative_prompt: Option(str, description='негативный запрос', default="NSFW", required=False),
-                         strength: Option(float, description='насколько сильны будут изменения', required=False,
-                                          default=0.5, min_value=0,
-                                          max_value=1),
+                         example_image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
+                                               required=True),
+                         mask: Option(discord.SlashCommandOptionType.attachment,
+                                      description='Маска. Будут изменены только БЕЛЫЕ пиксели',
+                                      required=True, default=None),
+                         invert: Option(bool, description='изменить всё, КРОМЕ белых пикселей', required=False,
+                                        default=False),
+                         steps: Option(int, description='число шагов', required=False,
+                                       default=60,
+                                       min_value=1,
+                                       max_value=100),
                          seed: Option(int,
                                       description='Сид',
                                       required=False,
@@ -504,8 +510,8 @@ async def __image_refine(ctx,
                                          max_value=16)
                          ):
     try:
-        await ctx.defer()
         cuda_number = await cuda_manager.use_cuda()
+        await ctx.defer()
         for i in range(repeats):
             if not i == 0 or seed is None:
                 seed = random.randint(1, 9999999999)
@@ -514,12 +520,19 @@ async def __image_refine(ctx,
 
             # logger.logging("Using GPU:", cuda_number)
 
-            image_path = "images/image" + str(ctx.author.id) + "_refine.png"
+            image_path = "images/image" + str(ctx.author.id) + "_change.png"
             await image.save(image_path)
             # logger.logging("Saved image:", image_path)
 
-            await refine_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
-                               image_path=image_path, strength=strength, seed=seed)
+            mask_path = None
+            if mask:
+                mask_path = "images/image" + str(ctx.author.id) + "_change_mask.png"
+                await mask.save(mask_path)
+                # logger.logging("Saved mask:", mask_path)
+
+            await inpaint_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
+                                image_path=image_path, mask_path=mask_path,
+                                invert=invert, strength=strength, steps=steps, seed=seed)
 
             # отправляем
             text = f"Изображение {i + 1}/{repeats}\nПотрачено {timer.count_time()}.\nСид:{seed}"
