@@ -673,11 +673,11 @@ async def generate_video(cuda_number, image_path, seed, fps, decode_chunk_size=8
         pipe = StableVideoDiffusionPipeline.from_pretrained(
             "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16"
         )
-        pipe.to(f"cuda:{cuda_number}")
+        pipe.to(f"cuda")
 
         image = format_image(image_path)
 
-        generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
+        generator = torch.Generator(device=f"cuda").manual_seed(seed)
         frames = pipe(image, decode_chunk_size=decode_chunk_size, generator=generator).frames[0]
 
         export_to_video(frames, video_path, fps=fps)
