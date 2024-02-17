@@ -1343,7 +1343,7 @@ async def command_exit(ctx, *args):
 
 
 @bot.command(aliases=['clear'], help="Отчистить память")
-async def command_exit(ctx):
+async def command_clear(ctx):
     owner_ids = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")
     if str(ctx.author.id) not in owner_ids:
         await ctx.author.send("Доступ запрещён")
