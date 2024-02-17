@@ -304,6 +304,29 @@ async def __upscale_image_command(ctx,
         await cuda_manager.stop_use_cuda(cuda_number)
 
 
+async def image_prompt_with_gpt(prompt, iteration=0):
+    if iteration == 3:
+        return prompt
+
+    with open(f"gpt_history/prompts/image") as file:
+        content = file.read()
+    result = await ChatGPT().run_all_gpt(content + prompt)
+    if not result == "" and "fulfill that request" not in result and not "I'm sorry" in result:
+        if "```" in result:
+            result = result[result.find("```") + 3:]
+            result = result[:result.find("```")]
+        if "Example 5:" in result:
+            result = result[result.find("Example 5:") + 10:]
+        if "description:" in result:
+            result = result[result.find("description:") + 12:]
+        if "Example:" in result:
+            result = result[result.find("Example:") + 8:]
+        return result
+    else:
+        result = await image_prompt_with_gpt(prompt, iteration=iteration+1)
+        return result
+
+
 @bot.slash_command(name="generate_video", description='Создать видео на основе изображения с помощью нейросети')
 async def __generate_video(ctx,
                            image: Option(discord.SlashCommandOptionType.attachment, description='Изображение (None)',
@@ -328,7 +351,9 @@ async def __generate_video(ctx,
                                            description='Количество повторов (1)',
                                            required=False,
                                            default=1, min_value=1,
-                                           max_value=4)
+                                           max_value=4),
+                           gpt: Option(bool, description="Улучить запрос с помощью ChatGPT (False)", required=False,
+                                       default=False)
                            ):
     async def repeat_generate_videos(seed, i):
         try:
@@ -347,6 +372,7 @@ async def __generate_video(ctx,
                 if not prompt:
                     await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
                     return
+
                 try:
                     image_path = f"images/image{ctx.author.id}_{seed}_generate_API.png"
                     await asyncio.to_thread(
@@ -377,6 +403,10 @@ async def __generate_video(ctx,
         finally:
             await cuda_manager.stop_use_cuda(cuda_number)
 
+    if not image and prompt and gpt:
+        prompt = await image_prompt_with_gpt(prompt)
+        await ctx.send(f"Запрос:\n{prompt}")
+
     await ctx.defer()
     for i in range(repeats):
         asyncio.create_task(repeat_generate_videos(seed, i))
@@ -398,7 +428,9 @@ async def __generate_audio(ctx,
                                            description='Количество повторов (1)',
                                            required=False,
                                            default=1, min_value=1,
-                                           max_value=16)
+                                           max_value=16),
+                           gpt: Option(bool, description="Улучить запрос с помощью ChatGPT (False)", required=False,
+                                       default=False)
                            ):
     async def generate_audios_async(seed, i):
         try:
@@ -413,7 +445,8 @@ async def __generate_audio(ctx,
                 steps=steps, seed=seed
             )
 
-            await ctx.respond(f"Аудиофайл {i + 1}/{repeats}\nСид:{seed}\nПотрачено: {timer.count_time()}")
+            await ctx.respond(
+                f"Аудиофайл {i + 1}/{repeats}\nЗапрос:{prompt}\nСид:{seed}\nПотрачено: {timer.count_time()}")
             await send_file(ctx, wav_audio_path, delete_file=True)
         except Exception as e:
             await ctx.respond(f"Ошибка:{e}")
@@ -421,6 +454,11 @@ async def __generate_audio(ctx,
             logger.logging(str(traceback_str), color=Color.RED)
         finally:
             await cuda_manager.stop_use_cuda(cuda_number)
+
+    if gpt:
+        with open(f"gpt_history/prompts/music") as file:
+            content = file.read()
+        prompt = await ChatGPT().run_all_gpt(content + prompt)
 
     await ctx.defer()
     for i in range(repeats):
@@ -459,7 +497,9 @@ async def __generate_image(ctx,
                                         default=None, min_value=1,
                                         max_value=9999999999),
                            refine: Option(bool, description="Улучить изображение (False)", required=False,
-                                          default=False)
+                                          default=False),
+                           gpt: Option(bool, description="Улучить запрос с помощью ChatGPT (False)", required=False,
+                                       default=False)
                            ):
     async def repeat_generate_images(seed, i):
         try:
@@ -500,6 +540,9 @@ async def __generate_image(ctx,
         await ctx.send("refine игнорируется, так как включён API")
     if not style == "DEFAULT" and not api:
         await ctx.send("style игнорируется, так как выключен API")
+    if gpt:
+        prompt = await image_prompt_with_gpt(prompt)
+        await ctx.send(f"Запрос:\n{prompt}")
 
     for i in range(repeats):
         asyncio.create_task(repeat_generate_images(seed, i))
@@ -763,7 +806,7 @@ async def __say(
         gpt_mode: Option(str, description="модификация GPT. Модификация сохраняется при следующих запросах!",
                          choices=["быстрый режим", "много ответов"], required=False,
                          default=None),
-        custom_prompt: Option(str, description="Кастомный запрос", choices=custom_prompts_files,
+        custom_prompt: Option(str, description="Кастомный запрос (None)", choices=custom_prompts_files,
                               required=False,
                               default=None)
 ):
@@ -780,12 +823,14 @@ async def __say(
             gpt_mode = "Fast"
         _, text = await moderate_mat_in_sentence(text)
 
+        gpt_role = None
         if custom_prompt:
             with open(f"gpt_history/prompts/{custom_prompt}") as file:
                 content = file.read()
             text = content + text
-
-        gpt_role = user.character.gpt_info
+            user.id = 0
+        else:
+            gpt_role = user.character.gpt_info
 
         chatGPT = ChatGPT()
         answer = await chatGPT.run_all_gpt(f"{user.name}:{text}", user_id=user.id, gpt_role=gpt_role, mode=gpt_mode)
