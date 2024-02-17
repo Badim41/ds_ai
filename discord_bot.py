@@ -262,22 +262,25 @@ async def __upscale_image_command(ctx,
                                   steps: Option(int, description='Количество шагов для генерации (75)', required=False,
                                                 default=75, min_value=1, max_value=150)
                                   ):
-    try:
-        await ctx.defer()
-        image_path = "images/image" + str(ctx.author.id) + "_upscale.png"
-        await image.save(image_path)
+    async def upscale_image_async():
+        try:
+            await ctx.defer()
+            image_path = "images/image" + str(ctx.author.id) + "_upscale.png"
+            await image.save(image_path)
 
-        cuda_number = await cuda_manager.use_cuda()
-        timer = Time_Count()
+            cuda_number = await cuda_manager.use_cuda()
+            timer = Time_Count()
 
-        await upscale_image(cuda_number=cuda_number, image_path=image_path, prompt=prompt, steps=steps)
+            await upscale_image(cuda_number=cuda_number, image_path=image_path, prompt=prompt, steps=steps)
 
-        await ctx.respond(f"Изображение успешно увеличено!\nПотрачено: {timer.count_time()}")
-        await send_file(ctx, image_path)
-    except Exception as e:
-        await ctx.respond(f"Ошибка:{e}")
-    finally:
-        await cuda_manager.stop_use_cuda(cuda_number)
+            await ctx.respond(f"Изображение успешно увеличено!\nПотрачено: {timer.count_time()}")
+            await send_file(ctx, image_path)
+        except Exception as e:
+            await ctx.respond(f"Ошибка:{e}")
+        finally:
+            await cuda_manager.stop_use_cuda(cuda_number)
+    asyncio.ensure_future(upscale_image_async())
+
 
 
 @bot.slash_command(name="generate_video", description='Создать видео на основе изображения с помощью нейросети')
