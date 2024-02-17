@@ -495,52 +495,82 @@ async def generate_image_API(ctx, prompt, x, y, negative_prompt=None, style="DEF
 
 
 async def refine_image(cuda_number, prompt, image, image_path):
-    refiner = DiffusionPipeline.from_pretrained(
-        "stabilityai/stable-diffusion-xl-refiner-1.0",
-        torch_dtype=torch.float16,
-        use_safetensors=True,
-        variant="fp16",
-    )
-    refiner = refiner.to(f"cuda:{cuda_number}")
+    try:
+        refiner = DiffusionPipeline.from_pretrained(
+            "stabilityai/stable-diffusion-xl-refiner-1.0",
+            torch_dtype=torch.float16,
+            use_safetensors=True,
+            variant="fp16",
+        )
+        refiner = refiner.to(f"cuda:{cuda_number}")
 
-    refiner(
-        prompt=prompt,
-        num_inference_steps=40,
-        denoising_start=0.8,
-        image=image,
-    ).images[0].save(image_path)
+        refiner(
+            prompt=prompt,
+            num_inference_steps=40,
+            denoising_start=0.8,
+            image=image,
+        ).images[0].save(image_path)
+    except Exception as e:
+        traceback_str = traceback.format_exc()
+        logger.logging(str(traceback_str), color=Color.RED)
+        raise Exception(e)
+    finally:
+        del refiner
+        torch.cuda.empty_cache()
+        gc.collect()
+        logger.logging("Cleared memory", color=Color.CYAN)
 
 
 async def generate_image_with_example(image_path, mask_path, example_path, steps, seed, invert, cuda_number):
-    x, y = scale_image(image_path=image_path, max_size=1024 * 1024, match_size=64)
-    mask = get_mask(mask_path, invert)
-    example_image = format_image(example_path)
-    init_image = format_image(image_path)
+    try:
+        x, y = scale_image(image_path=image_path, max_size=1024 * 1024, match_size=64)
+        mask = get_mask(mask_path, invert)
+        example_image = format_image(example_path)
+        init_image = format_image(image_path)
 
-    pipe = PaintByExamplePipeline.from_pretrained(
-        "Fantasy-Studio/Paint-by-Example",
-        torch_dtype=torch.float16,
-    )
-    pipe = pipe.to("cuda")
+        pipe = PaintByExamplePipeline.from_pretrained(
+            "Fantasy-Studio/Paint-by-Example",
+            torch_dtype=torch.float16,
+        )
+        pipe = pipe.to("cuda")
 
-    generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
+        generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
 
-    pipe(image=init_image, mask_image=mask, example_image=example_image, width=x, height=y,
-         num_inference_steps=steps, generator=generator).images[0].save(image_path)
+        pipe(image=init_image, mask_image=mask, example_image=example_image, width=x, height=y,
+             num_inference_steps=steps, generator=generator).images[0].save(image_path)
+    except Exception as e:
+        traceback_str = traceback.format_exc()
+        logger.logging(str(traceback_str), color=Color.RED)
+        raise Exception(e)
+    finally:
+        del pipe
+        torch.cuda.empty_cache()
+        gc.collect()
+        logger.logging("Cleared memory", color=Color.CYAN)
 
 
 async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cuda_number):
-    pipe = StableDiffusionXLPipeline.from_pretrained(
-        "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16
-    )
-    pipe = pipe.to(f"cuda:{cuda_number}")
+    try:
+        pipe = StableDiffusionXLPipeline.from_pretrained(
+            "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16
+        )
+        pipe = pipe.to(f"cuda:{cuda_number}")
 
-    generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
-    image_path = "images/image" + str(ctx.author.id) + "_generate_sd.png"
-    image = pipe(prompt, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps, width=x,
-                 height=y, output_type="latent", denoising_end=0.8)
-    await refine_image(cuda_number, prompt, image, image_path)
-    return image_path
+        generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
+        image_path = "images/image" + str(ctx.author.id) + "_generate_sd.png"
+        image = pipe(prompt, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps, width=x,
+                     height=y, output_type="latent", denoising_end=0.8)
+        await refine_image(cuda_number, prompt, image, image_path)
+        return image_path
+    except Exception as e:
+        traceback_str = traceback.format_exc()
+        logger.logging(str(traceback_str), color=Color.RED)
+        raise Exception(e)
+    finally:
+        del pipe
+        torch.cuda.empty_cache()
+        gc.collect()
+        logger.logging("Cleared memory", color=Color.CYAN)
 
 
 def get_mask(mask_path, invert):
@@ -588,6 +618,7 @@ async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
         del pipe
         torch.cuda.empty_cache()
         gc.collect()
+        logger.logging("Cleared memory", color=Color.CYAN)
 
 
 async def upscale_image(image_path, prompt, steps, cuda_number):
@@ -618,6 +649,7 @@ async def upscale_image(image_path, prompt, steps, cuda_number):
         del pipe
         torch.cuda.empty_cache()
         gc.collect()
+        logger.logging("Cleared memory", color=Color.CYAN)
 
 
 async def generate_video(cuda_number, image_path, seed, fps, decode_chunk_size=8):
@@ -647,6 +679,7 @@ async def generate_video(cuda_number, image_path, seed, fps, decode_chunk_size=8
         del pipe
         torch.cuda.empty_cache()
         gc.collect()
+        logger.logging("Cleared memory", color=Color.CYAN)
 
 
 async def generate_audio(cuda_number, wav_audio_path, prompt, duration, steps):
@@ -667,3 +700,4 @@ async def generate_audio(cuda_number, wav_audio_path, prompt, duration, steps):
         del pipe
         torch.cuda.empty_cache()
         gc.collect()
+        logger.logging("Cleared memory", color=Color.CYAN)
