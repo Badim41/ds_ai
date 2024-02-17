@@ -384,6 +384,13 @@ async def __image_generate(ctx,
                            ):
     try:
         await ctx.defer()
+        if seed and API:
+            await ctx.send("seed игнорируется, так как включён API")
+        if steps and API:
+            await ctx.send("steps игнорируется, так как включён API")
+        if not style == "DEFAULT" and not API:
+            await ctx.send("steps игнорируется, так как выключен API")
+
         for i in range(repeats):
             timer = Time_Count()
             seed_text = ""
