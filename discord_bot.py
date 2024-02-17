@@ -370,7 +370,7 @@ async def __image_generate(ctx,
                                            required=False,
                                            default=1, min_value=1,
                                            max_value=16),
-                           API: Option(bool, description="Если True, использует Kandinsky 3, если False - SD XL",
+                           api: Option(bool, description="Если True, использует Kandinsky 3, если False - SD XL",
                                        required=False, default=True),
                            steps: Option(int, description='число шагов', required=False,
                                          default=60,
@@ -384,17 +384,17 @@ async def __image_generate(ctx,
                            ):
     try:
         await ctx.defer()
-        if seed and API:
+        if seed and api:
             await ctx.send("seed игнорируется, так как включён API")
-        if steps and API:
+        if steps and api:
             await ctx.send("steps игнорируется, так как включён API")
-        if not style == "DEFAULT" and not API:
+        if not style == "DEFAULT" and not api:
             await ctx.send("steps игнорируется, так как выключен API")
 
         for i in range(repeats):
             timer = Time_Count()
             seed_text = ""
-            if API:
+            if api:
                 image_path = await generate_image_API(ctx=ctx, prompt=prompt, negative_prompt=negative_prompt,
                                                       style=style, x=x, y=y)
             else:
