@@ -441,6 +441,7 @@ def scale_image(image_path, max_size, match_size=64):
         scale_factor = (max_size / (x * y)) ** 0.5
         x = int(x * scale_factor)
         y = int(y * scale_factor)
+        print("Large, scaled:", x, y)
 
     if not x % match_size == 0:
         x = ((x // match_size) + 1) * match_size
