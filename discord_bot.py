@@ -103,7 +103,9 @@ async def on_ready():
     logger.logging('Status: online', "\ncuda:", torch.cuda.device_count(), color=Color.GREEN)
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name='AI-covers'))
-    id = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")[0]
+    id = await set_get_config_all("Default", SQL_Keys.reload)
+    if not id:
+        id = (await set_get_config_all("Default", SQL_Keys.reload)).split(";")[0]
     logger.logging("ID:", id, color=Color.GRAY)
     if not id == "True":
         user = await bot.fetch_user(int(id))
