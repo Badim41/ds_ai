@@ -104,9 +104,11 @@ async def on_ready():
     logger.logging('Status: online', "\ncuda:", devices, color=Color.GREEN)
     await bot.change_presence(activity=discord.Activity(
         type=discord.ActivityType.listening, name=f'AI-covers ({devices})'))
+
     id = await set_get_config_all("Default", SQL_Keys.reload)
-    if not id:
+    if not id or id == "clear":
         id = (await set_get_config_all("Default", SQL_Keys.reload)).split(";")[0]
+
     logger.logging("ID:", id, color=Color.GRAY)
     if not id == "True":
         user = await bot.fetch_user(int(id))
