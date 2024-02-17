@@ -400,7 +400,6 @@ async def __generate_audio(ctx,
                            ):
     async def generate_audios_async(seed, i):
         try:
-            print(seed, i)
             seed = random.randint(1, 9999999999) if seed is None else int(seed) // (i + 1)
 
             cuda_number = await cuda_manager.use_cuda()
@@ -423,7 +422,7 @@ async def __generate_audio(ctx,
 
     await ctx.defer()
     for i in range(repeats):
-        asyncio.create_task(generate_audios_async(i, seed))
+        asyncio.create_task(generate_audios_async(seed, i))
 
 
 @bot.slash_command(name="generate_image", description='создать изображение нейросетью')
