@@ -262,20 +262,22 @@ async def __upscale_image_command(ctx,
                                   steps: Option(int, description='Количество шагов для генерации', required=False,
                                                 default=10, min_value=1, max_value=100)
                                   ):
-    await ctx.defer()
-    image_path = "images/image" + str(ctx.author.id) + "_upscale.png"
-    await image.save(image_path)
+    try:
+        await ctx.defer()
+        image_path = "images/image" + str(ctx.author.id) + "_upscale.png"
+        await image.save(image_path)
 
-    cuda_number = await cuda_manager.use_cuda()
-    timer = Time_Count()
+        cuda_number = await cuda_manager.use_cuda()
+        timer = Time_Count()
 
-    await upscale_image(cuda_number=cuda_number, image_path=image_path, prompt=prompt, steps=steps)
+        await upscale_image(cuda_number=cuda_number, image_path=image_path, prompt=prompt, steps=steps)
 
-    await ctx.respond(f"Изображение успешно увеличено!\nПотрачено: {timer.count_time()}")
-    await send_file(ctx, image_path)
-
-    # Освобождаем CUDA
-    await cuda_manager.stop_use_cuda(cuda_number)
+        await ctx.respond(f"Изображение успешно увеличено!\nПотрачено: {timer.count_time()}")
+        await send_file(ctx, image_path)
+    except Exception as e:
+        await ctx.respond(f"Ошибка:{e}")
+    finally:
+        await cuda_manager.stop_use_cuda(cuda_number)
 
 
 @bot.slash_command(name="generate_video", description='Создать видео на основе изображения с помощью нейросети')
@@ -290,33 +292,37 @@ async def video_generate_command(ctx,
                                  decode_chunk_size: Option(int, description='Длительность видео',
                                                            required=False, default=8)
                                  ):
-    await ctx.defer()
-    if not seed:
-        seed = random.randint(1, 99999)
+    try:
+        await ctx.defer()
+        if not seed:
+            seed = random.randint(1, 99999)
 
-    cuda_number = await cuda_manager.use_cuda()
+        cuda_number = await cuda_manager.use_cuda()
 
-    timer = Time_Count()
+        timer = Time_Count()
 
-    image_path = f"images/{ctx.author.id}_generate_video.png"
-    if image:
-        if prompt:
-            await ctx.send("Загружено изображение, prompt игнорируется")
-        await image.save(image_path)
-    else:
-        if not prompt:
-            await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
-            return
-        image_path = await generate_image_API(ctx=ctx, prompt=prompt, x=1280,
-                                              y=720)
+        image_path = f"images/{ctx.author.id}_generate_video.png"
+        if image:
+            if prompt:
+                await ctx.send("Загружено изображение, prompt игнорируется")
+            await image.save(image_path)
+        else:
+            if not prompt:
+                await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
+                return
+            image_path = await generate_image_API(ctx=ctx, prompt=prompt, x=1280,
+                                                  y=720)
 
-    video_path, gif_path = await video_generate(image_path=image_path, seed=seed, fps=fps,
-                                                decode_chunk_size=decode_chunk_size)
+        video_path, gif_path = await video_generate(image_path=image_path, seed=seed, fps=fps,
+                                                    decode_chunk_size=decode_chunk_size)
 
-    await ctx.respond(f"{timer.count_time()}\nСид:{seed}")
-    await cuda_manager.stop_use_cuda(cuda_number)
-    await send_file(ctx, video_path)
-    await send_file(ctx, gif_path)
+        await ctx.respond(f"{timer.count_time()}\nСид:{seed}")
+        await send_file(ctx, video_path)
+        await send_file(ctx, gif_path)
+    except Exception as e:
+        await ctx.respond(f"Ошибка:{e}")
+    finally:
+        await cuda_manager.stop_use_cuda(cuda_number)
 
 
 @bot.slash_command(name="generate_audio", description='Создать аудиофайл с помощью нейросети')
@@ -326,17 +332,21 @@ async def __generate_audio(ctx,
                            steps: Option(int, description='Количество шагов для генерации', required=False, default=10,
                                          min_value=1, max_value=200)
                            ):
-    await ctx.defer()
+    try:
+        await ctx.defer()
 
-    cuda_number = await cuda_manager.use_cuda()
-    timer = Time_Count()
-    wav_audio_path = f"{ctx.author.id}_generate_audio.wav"
-    await audio_generate(cuda_number=cuda_number, wav_audio_path=wav_audio_path, prompt=prompt, duration=duration,
-                         steps=steps)
-    await cuda_manager.stop_use_cuda(cuda_number)
+        cuda_number = await cuda_manager.use_cuda()
+        timer = Time_Count()
+        wav_audio_path = f"{ctx.author.id}_generate_audio.wav"
+        await audio_generate(cuda_number=cuda_number, wav_audio_path=wav_audio_path, prompt=prompt, duration=duration,
+                             steps=steps)
 
-    await ctx.respond(f"Аудиофайл успешно создан!\nПотрачено: {timer.count_time()}")
-    await send_file(ctx, wav_audio_path, delete_file=True)
+        await ctx.respond(f"Аудиофайл успешно создан!\nПотрачено: {timer.count_time()}")
+        await send_file(ctx, wav_audio_path, delete_file=True)
+    except Exception as e:
+        await ctx.respond(f"Ошибка:{e}")
+    finally:
+        await cuda_manager.stop_use_cuda(cuda_number)
 
 
 @bot.slash_command(name="generate_image", description='создать изображение нейросетью')
@@ -366,7 +376,8 @@ async def __image_generate(ctx,
     await ctx.defer()
     for i in range(repeats):
         timer = Time_Count()
-        image_path = await generate_image_API(ctx=ctx, prompt=prompt, negative_prompt=negative_prompt, style=style, x=x, y=y)
+        image_path = await generate_image_API(ctx=ctx, prompt=prompt, negative_prompt=negative_prompt, style=style, x=x,
+                                              y=y)
         await send_file(ctx=ctx, file_path=image_path, delete_file=True)
         await ctx.respond(f"Картинка: {i + 1}/{repeats}\nПотрачено: {timer.count_time()}")
 
@@ -395,10 +406,9 @@ async def __image_change(ctx,
                                          default=1, min_value=1,
                                          max_value=16)
                          ):
-    await ctx.defer()
-
-    for i in range(repeats):
-        try:
+    try:
+        await ctx.defer()
+        for i in range(repeats):
             timer = Time_Count()
             cuda_number = await cuda_manager.use_cuda()
 
@@ -408,8 +418,8 @@ async def __image_change(ctx,
             logger.logging("Saved image:", image_path)
             await image.save(image_path)
             await inpaint_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
-                                       image_path=image_path, mask_path=mask_path,
-                                       invert=invert, strength=strength, steps=steps)
+                                image_path=image_path, mask_path=mask_path,
+                                invert=invert, strength=strength, steps=steps)
 
             # отправляем
             text = f"Изображение {i + 1}/{repeats}\nПотрачено {timer.count_time()}"
@@ -419,15 +429,10 @@ async def __image_change(ctx,
                 await ctx.send(text)
 
             await send_file(ctx, image_path, delete_file=True)
-            # перестаём использовать видеокарту
-            await cuda_manager.stop_use_cuda(cuda_number)
-        except Exception as e:
-            traceback_str = traceback.format_exc()
-            logger.logging(str(traceback_str), Color.RED)
-            await ctx.send(f"Ошибка при изменении картинки (с параметрами\
-                                  {prompt}): {e}")
-            # перестаём использовать видеокарту
-            await cuda_manager.stop_use_cuda(cuda_number)
+    except Exception as e:
+        await ctx.respond(f"Ошибка:{e}")
+    finally:
+        await cuda_manager.stop_use_cuda(cuda_number)
 
 
 @bot.slash_command(name="config", description='изменить конфиг')

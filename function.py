@@ -513,117 +513,132 @@ async def generate_image_API(ctx, prompt, x, y, negative_prompt="", style="DEFAU
 @scale_image_decorator(max_size=768*768, match_size=128)
 async def inpaint_image(cuda_number, prompt, negative_prompt, image_path, mask_path,
                         invert, strength, steps):
-    image = Image.open(image_path)
+    try:
+        image = Image.open(image_path)
 
-    pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
-        "stabilityai/stable-diffusion-xl-base-1.0",
-        torch_dtype=torch.float16,
-        variant="fp16",
-        use_safetensors=True,
-    )
-    pipe = pipe.to(f"cuda:{cuda_number}")
+        pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
+            "stabilityai/stable-diffusion-xl-base-1.0",
+            torch_dtype=torch.float16,
+            variant="fp16",
+            use_safetensors=True,
+        )
+        pipe = pipe.to(f"cuda:{cuda_number}")
 
-    x, y = get_image_dimensions(image_path)
+        x, y = get_image_dimensions(image_path)
 
-    if mask_path:
-        # заполнение пустых пикселей чёрными
-        mask = fill_transparent_with_black(mask_path).resize((x, y))
-        if invert:
-            # замена белых пикселей чёрными
-            mask.save(mask_path)
-            mask = invert_image(mask_path)
-    else:
-        # белое изображение
-        mask = create_white_image(x, y)
+        if mask_path:
+            # заполнение пустых пикселей чёрными
+            mask = fill_transparent_with_black(mask_path).resize((x, y))
+            if invert:
+                # замена белых пикселей чёрными
+                mask.save(mask_path)
+                mask = invert_image(mask_path)
+        else:
+            # белое изображение
+            mask = create_white_image(x, y)
 
-    pipe(prompt=prompt, image=image, mask_image=mask, num_inference_steps=steps, strength=strength,
-         negative_prompt=negative_prompt).images[0].save(image_path)
-
-    del pipe
-    torch.cuda.empty_cache()
-    gc.collect()
+        pipe(prompt=prompt, image=image, mask_image=mask, num_inference_steps=steps, strength=strength,
+             negative_prompt=negative_prompt).images[0].save(image_path)
+    except Exception as e:
+        raise e
+    finally:
+        del pipe
+        torch.cuda.empty_cache()
+        gc.collect()
 
 @scale_image_decorator
 async def refine_image(prompt, negative_prompt, strength, image_path, cuda_number, seed):
-    image = Image.open(image_path)
+    try:
+        image = Image.open(image_path)
 
 
-    pipe = StableDiffusionXLImg2ImgPipeline.from_pretrained(
-        "stabilityai/stable-diffusion-xl-refiner-1.0", torch_dtype=torch.float16
-    )
+        pipe = StableDiffusionXLImg2ImgPipeline.from_pretrained(
+            "stabilityai/stable-diffusion-xl-refiner-1.0", torch_dtype=torch.float16
+        )
 
-    pipe = pipe.to(f"cuda:{cuda_number}")
+        pipe = pipe.to(f"cuda:{cuda_number}")
 
-    generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
+        generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
 
-    pipe(prompt, image=image, generator=generator, negative_prompt=negative_prompt, strength=strength).images[
-        0].save(image_path)
-
-    del pipe
-    torch.cuda.empty_cache()
-    gc.collect()
+        pipe(prompt, image=image, generator=generator, negative_prompt=negative_prompt, strength=strength).images[
+            0].save(image_path)
+    except Exception as e:
+        raise e
+    finally:
+        del pipe
+        torch.cuda.empty_cache()
+        gc.collect()
 
 @scale_image_decorator
 async def upscale_image(cuda_number, image_path, prompt, steps):
+    try:
+        model_id = "stabilityai/sd-x2-latent-upscaler"
+        pipe = StableDiffusionLatentUpscalePipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+        pipe.to(f"cuda:{cuda_number}")
 
-    model_id = "stabilityai/sd-x2-latent-upscaler"
-    pipe = StableDiffusionLatentUpscalePipeline.from_pretrained(model_id, torch_dtype=torch.float16)
-    pipe.to(f"cuda:{cuda_number}")
+        if not prompt:
+            prompt = "a photo of an astronaut high resolution, unreal engine, ultra realistic"
 
-    if not prompt:
-        prompt = "a photo of an astronaut high resolution, unreal engine, ultra realistic"
+        generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(33)
 
-    generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(33)
+        image = Image.open(image_path)
 
-    image = Image.open(image_path)
-
-    pipe(
-        prompt=prompt,
-        image=image,
-        num_inference_steps=steps,
-        guidance_scale=0,
-        generator=generator,
-    ).images[0].save(image_path)
-
-    del pipe
-    torch.cuda.empty_cache()
-    gc.collect()
+        pipe(
+            prompt=prompt,
+            image=image,
+            num_inference_steps=steps,
+            guidance_scale=0,
+            generator=generator,
+        ).images[0].save(image_path)
+    except Exception as e:
+        raise e
+    finally:
+        del pipe
+        torch.cuda.empty_cache()
+        gc.collect()
 
 @scale_image_decorator(max_size=768*768)
 async def video_generate(image_path, seed, fps, decode_chunk_size=8):
-    video_path = image_path.replace(".png", ".mp4")
-    gif_path = video_path.replace(".mp4", ".gif")
+    try:
+        video_path = image_path.replace(".png", ".mp4")
+        gif_path = video_path.replace(".mp4", ".gif")
 
-    pipe = StableVideoDiffusionPipeline.from_pretrained(
-        "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16",
-        device_map="balanced"
-    )
+        pipe = StableVideoDiffusionPipeline.from_pretrained(
+            "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16",
+            device_map="balanced"
+        )
 
-    image = Image.open(image_path)
+        image = Image.open(image_path)
 
-    generator = torch.manual_seed(seed)
-    frames = pipe(image, decode_chunk_size=decode_chunk_size, generator=generator).frames[0]
+        generator = torch.manual_seed(seed)
+        frames = pipe(image, decode_chunk_size=decode_chunk_size, generator=generator).frames[0]
 
-    export_to_video(frames, video_path, fps=fps)
-    await convert_mp4_to_gif(video_path, gif_path, fps)
+        export_to_video(frames, video_path, fps=fps)
+        await convert_mp4_to_gif(video_path, gif_path, fps)
+        return video_path, gif_path
+    except Exception as e:
+        raise e
+    finally:
+        del pipe
+        torch.cuda.empty_cache()
+        gc.collect()
 
-    del pipe
-    torch.cuda.empty_cache()
-    gc.collect()
 
-    return video_path, gif_path
 
 
 async def audio_generate(cuda_number, wav_audio_path, prompt, duration, steps):
-    repo_id = "ucsd-reach/musicldm"
-    pipe = MusicLDMPipeline.from_pretrained(repo_id, torch_dtype=torch.float16)
-    pipe = pipe.to(f"cuda:{cuda_number}")
+    try:
+        repo_id = "ucsd-reach/musicldm"
+        pipe = MusicLDMPipeline.from_pretrained(repo_id, torch_dtype=torch.float16)
+        pipe = pipe.to(f"cuda:{cuda_number}")
 
-    audio = pipe(prompt, num_inference_steps=steps, audio_length_in_s=duration).audios[0]
+        audio = pipe(prompt, num_inference_steps=steps, audio_length_in_s=duration).audios[0]
 
-    # save the audio sample as a .wav file
-    write(wav_audio_path, rate=16000, data=audio)
-
-    del pipe
-    torch.cuda.empty_cache()
-    gc.collect()
+        # save the audio sample as a .wav file
+        write(wav_audio_path, rate=16000, data=audio)
+    except Exception as e:
+        raise e
+    finally:
+        del pipe
+        torch.cuda.empty_cache()
+        gc.collect()
