@@ -191,7 +191,8 @@ async def help_command(
         ctx,
         command: Option(str, description='Нужная вам команда', required=True,
                         choices=['say', 'read_messages', 'ai_cover', 'tts', 'add_voice', 'create_dialog',
-                                 'change_image', 'change_video', 'join', 'disconnect', 'record', 'stop_recording',
+                                 'upscale_image', 'generate_video', 'generate_audio', 'generate_image',
+                                 'inpaint_image', 'example_image', 'join', 'disconnect', 'record', 'stop_recording',
                                  'pause', 'skip', 'bark']
                         ),
 ):
@@ -233,12 +234,6 @@ async def help_command(
             "# /create_dialog\n(Создать диалог в войс-чате)\n**names - участники диалога "
             "через ';' - список голосовых моделей Например, Участник1;Участник2**\ntheme - Тема разговора "
             "(может измениться)\nprompt - Постоянный запрос (например, что они находятся в определённом месте)\n")
-    elif command == "change_image":
-        await ctx.respond("# /change_image \n(Изменить изображение)\n**image - картинка, которую нужно изменить**\n"
-                          "**prompt - Запрос **\nnegative_prompt - Негативный запрос\nsteps - Количество шагов (больше - "
-                          "лучше, но медленнее)\nseed - сид (если одинаковый сид и файл, то получится то же самое изображение)"
-                          "\nx - расширение по X\ny - расширение по Y\nstrength - сила изменения\nstrength_prompt - сила для "
-                          "запроса\nstrength_negative_prompt - сила для негативного запроса\nrepeats - количество изображений")
     elif command == "join":
         await ctx.respond("# /join\n - присоединиться к вам в войс-чате")
     elif command == "disconnect":
@@ -252,10 +247,29 @@ async def help_command(
     elif command == "skip":
         await ctx.respond("# /skip\n - пропуск аудио")
     elif command == "bark":
-        await ctx.respond("Используется для создания аудио на основе текста с использованием модели генерации речи.\n"
-                          "**text** - Текст, который будет преобразован в речь.\n"
-                          "speaker - Модель голоса\n"
-                          "gen_temp - Температура генерации")
+        await ctx.respond(
+            "# /bark\nИспользуется для создания аудио на основе текста с использованием модели генерации речи.\n"
+            "**text** - Текст, который будет преобразован в речь.\n"
+            "speaker - Модель голоса (1)\n"
+            "gen_temp - Температура генерации (0.6)")
+    elif command == "upscale_image":
+        await ctx.respond(
+            "# /upscale_image\n(Увеличить масштаб изображения с помощью нейросети)\n**image - изображение**\n**prompt - запрос (что изображено на картинке)**\nsteps - количество шагов для генерации (75)\n")
+    elif command == "generate_video":
+        await ctx.respond(
+            "# /generate_video\n(Создать видео на основе изображения с помощью нейросети)\n**image - изображение (None)**\n**prompt - запрос для начального изображения (None)**\nfps - количество кадров в секунду (20)\nsteps - количество шагов для генерации. Чем больше, тем дольше генерация (25)\nseed - сид генератора (random)\nduration - длительность видео (2)\ndecode_chunk_size - декодирование кадров за раз. Влияет на использование видеопамяти (1)\nnoise_strenght - количество добавляемого шума к исходному изображению (0.02)\nrepeats - количество повторов (1)\n")
+    elif command == "generate_audio":
+        await ctx.respond(
+            "# /generate_audio\n(Создать аудиофайл с помощью нейросети)\n**prompt - запрос**\n**duration - длительность аудио в секундах**\nsteps - количество шагов для генерации (200)\nseed - сид (random)\nrepeats - количество повторов (1)\n")
+    elif command == "generate_image":
+        await ctx.respond(
+            "# /generate_image\n(Создать изображение нейросетью)\n**prompt - запрос**\n**negative_prompt - негативный запрос (None)**\nx - размер картинки по x (1024)\ny - размер картинки по y (1024)\nstyle - стиль (DEFAULT)\nrepeats - количество повторов (1)\napi - True - Kandinsky 3 API; False - Stable Diffusion XL\nsteps - число шагов. Чем больше, тем дольше генерация  (50)\nseed - сид (random)\nrefine - улучить изображение (False)\n")
+    elif command == "inpaint_image":
+        await ctx.respond(
+            "# /inpaint_image\n(Изменить изображение нейросетью)\n**image - изображение**\n**prompt - запрос**\nmask - маска. Будут изменены только БЕЛЫЕ пиксели (All)\ninvert - изменить всё, КРОМЕ белых пикселей (False)\nnegative_prompt - негативный запрос (None)\nsteps - число шагов. Чем больше, тем дольше генерация  (50)\nstrength - насколько сильны будут изменения (0.5)\nseed - сид (random)\nrepeats - количество повторов (1)\nconsistently - увеличивать изменение картинки последовательно (False)\nrefine - улучить изображение (False)\n")
+    elif command == "example_image":
+        await ctx.respond(
+            "# /example_image\n(Изменить изображение нейросетью с помощью примера)\n**image - изображение**\n**example - изображение**\nmask - маска. Будут изменены только БЕЛЫЕ пиксели (All)\ninvert - изменить всё, КРОМЕ белых пикселей (False)\nsteps - число шагов. Чем больше, тем дольше генерация  (50)\nseed - Сид (random)\nrepeats - количество повторов (1)\n")
 
 
 @bot.slash_command(name="upscale_image", description='Увеличить масштаб изображения с помощью нейросети')
@@ -315,7 +329,7 @@ async def __generate_video(ctx,
     async def repeat_generate_videos(seed, i):
         try:
             seed = random.randint(1, 9999999999) if seed is None else int(seed // (i + 1))
-            await asyncio.sleep(i%2/4 + 0.05)
+            await asyncio.sleep(i % 2 / 4 + 0.05)
 
             cuda_number = await cuda_manager.use_cuda()
 
@@ -350,7 +364,7 @@ async def __generate_video(ctx,
                 noise_strenght=noise_strenght
             )
 
-            await ctx.respond(f"Видео: {i+1}/{repeats}\nПотрачено:{timer.count_time()}\nСид:{seed}")
+            await ctx.respond(f"Видео: {i + 1}/{repeats}\nПотрачено:{timer.count_time()}\nСид:{seed}")
             await send_file(ctx, video_path)
             await send_file(ctx, gif_path)
         except Exception as e:
@@ -384,7 +398,7 @@ async def __generate_audio(ctx,
     async def generate_audios_async(seed, i):
         try:
             seed = random.randint(1, 9999999999) if seed is None else int(seed // (i + 1))
-            await asyncio.sleep(i%2/4 + 0.05)
+            await asyncio.sleep(i % 2 / 4 + 0.05)
 
             cuda_number = await cuda_manager.use_cuda()
             timer = Time_Count()
@@ -447,14 +461,14 @@ async def __generate_image(ctx,
             seed_text = ""
             image_path = f"images/image{ctx.author.id}_{seed}_generate_sd.png"
             if api:
-                await asyncio.sleep(i%2/4 + 0.05)
+                await asyncio.sleep(i % 2 / 4 + 0.05)
                 image_path = await asyncio.to_thread(
                     generate_image_API, ctx=ctx, prompt=prompt, negative_prompt=negative_prompt,
                     style=style, x=x, y=y, image_path=image_path
                 )
             else:
                 seed = random.randint(1, 9999999999) if seed is None else int(seed // (i + 1))
-                await asyncio.sleep(i%2/4 + 0.05)
+                await asyncio.sleep(i % 2 / 4 + 0.05)
                 seed_text = f"\nСид:{seed}"
                 cuda_number = await cuda_manager.use_cuda()
 
@@ -527,7 +541,7 @@ async def __image_change(ctx,
         try:
             cuda_number = await cuda_manager.use_cuda()
             seed = random.randint(1, 9999999999) if seed is None else int(seed // (i + 1))
-            await asyncio.sleep(i%2/4 + 0.05)
+            await asyncio.sleep(i % 2 / 4 + 0.05)
 
             timer = Time_Count()
 
