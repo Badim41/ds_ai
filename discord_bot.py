@@ -289,7 +289,7 @@ async def __upscale_image_command(ctx,
 
         cuda_number = await cuda_manager.use_cuda()
         timer = Time_Count()
-        await ctx.resond(f"Выполнение")
+        await ctx.respond(f"Выполнение")
 
         await asyncio.to_thread(
             upscale_image, cuda_number=cuda_number, image_path=image_path, prompt=prompt, steps=steps
@@ -406,9 +406,9 @@ async def __generate_video(ctx,
 
     if not image and prompt and gpt:
         prompt = await image_prompt_with_gpt(prompt)
-        await ctx.resond(f"Запрос:\n{prompt}")
+        await ctx.respond(f"Запрос:\n{prompt}")
     else:
-        await ctx.resond(f"Выполнение")
+        await ctx.respond(f"Выполнение")
 
     await ctx.defer()
     for i in range(repeats):
@@ -449,7 +449,7 @@ async def __generate_audio(ctx,
             )
 
             await ctx.respond(
-                f"Аудиофайл {i + 1}/{repeats}\nСид:{seed}\nПотрачено: {timer.count_time()}")
+                f"Аудиофайл {i + 1}/{repeats}\nЗапрос:{prompt}\nСид:{seed}\nПотрачено: {timer.count_time()}")
             await send_file(ctx, wav_audio_path, delete_file=True)
         except Exception as e:
             await ctx.respond(f"Ошибка:{e}")
@@ -462,9 +462,9 @@ async def __generate_audio(ctx,
         with open(f"gpt_history/prompts/music") as file:
             content = file.read()
         prompt = await ChatGPT().run_all_gpt(content + prompt)
-        await ctx.resond(f"Запрос:\n{prompt}")
+        await ctx.respond(f"Запрос:\n{prompt}")
     else:
-        await ctx.resond(f"Выполнение")
+        await ctx.respond(f"Выполнение")
 
     await ctx.defer()
     for i in range(repeats):
@@ -531,7 +531,7 @@ async def __generate_image(ctx,
                 await cuda_manager.stop_use_cuda(cuda_number)
             await send_file(ctx=ctx, file_path=image_path)
             await ctx.respond(
-                f"Картинка: {i + 1}/{repeats}\nПотрачено: {timer.count_time()}" + seed_text)
+                f"Картинка: {i + 1}/{repeats}\nЗапрос:{prompt}\nПотрачено: {timer.count_time()}" + seed_text)
         except Exception as e:
             await ctx.respond(f"Ошибка:{e}")
             await cuda_manager.stop_use_cuda(cuda_number)
@@ -548,9 +548,9 @@ async def __generate_image(ctx,
         await ctx.send("style игнорируется, так как выключен API")
     if gpt:
         prompt = await image_prompt_with_gpt(prompt)
-        await ctx.resond(f"Запрос:\n{prompt}")
+        await ctx.respond(f"Запрос:\n{prompt}")
     else:
-        await ctx.resond(f"Выполнение")
+        await ctx.respond(f"Выполнение")
 
     for i in range(repeats):
         asyncio.create_task(repeat_generate_images(seed, i))
@@ -611,7 +611,7 @@ async def __image_change(ctx,
             )
 
             # отправляем
-            text = f"Изображение {i + 1}/{repeats}\nПотрачено {timer.count_time()}.\nСид:{seed}"
+            text = f"Изображение {i + 1}/{repeats}\nЗапрос:{prompt}\nПотрачено {timer.count_time()}.\nСид:{seed}"
             if repeats == 1:
                 await ctx.respond(text)
             else:
@@ -635,7 +635,7 @@ async def __image_change(ctx,
         mask_path = "images/image" + str(ctx.author.id) + "_change_mask.png"
         await mask.save(mask_path)
 
-    await ctx.resond(f"Выполнение")
+    await ctx.respond(f"Выполнение")
 
     for i in range(repeats):
         asyncio.create_task(images_change_async(seed, i, image_path))
@@ -709,7 +709,7 @@ async def __image_example(ctx,
         mask_path = "images/image" + str(ctx.author.id) + "_example_mask.png"
         await mask.save(mask_path)
 
-    await ctx.resond(f"Выполнение")
+    await ctx.respond(f"Выполнение")
 
     for i in range(repeats):
         asyncio.create_task(images_example_async(seed, i))
