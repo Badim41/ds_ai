@@ -387,8 +387,8 @@ async def __generate_image(ctx,
         if steps and api:
             await ctx.send("steps игнорируется, так как включён API")
         if not style == "DEFAULT" and not api:
-            await ctx.send("steps игнорируется, так как выключен API")
-
+            await ctx.send("style игнорируется, так как выключен API")
+        print("suc params")
         for i in range(repeats):
             timer = Time_Count()
             seed_text = ""

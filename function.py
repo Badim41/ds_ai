@@ -543,7 +543,7 @@ async def generate_image_with_example(image_path, mask_path, example_path, steps
         logger.logging(str(traceback_str), color=Color.RED)
         raise Exception(e)
     finally:
-        del pipe
+
         torch.cuda.empty_cache()
         gc.collect()
         logger.logging("Cleared memory", color=Color.CYAN)
@@ -567,7 +567,7 @@ async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cud
         logger.logging(str(traceback_str), color=Color.RED)
         raise Exception(e)
     finally:
-        del pipe
+
         torch.cuda.empty_cache()
         gc.collect()
         logger.logging("Cleared memory", color=Color.CYAN)
@@ -629,7 +629,7 @@ async def upscale_image(image_path, prompt, steps, cuda_number):
         pipe.to(f"cuda:{cuda_number}")
 
         if not prompt:
-            prompt = "a photo of an astronaut high resolution, unreal engine, ultra realistic"
+            prompt = "HD, 4K, high resolution, unreal engine, ultra realistic"
 
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(33)
 
