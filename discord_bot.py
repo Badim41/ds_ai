@@ -1495,6 +1495,7 @@ async def command_clear(ctx):
     if str(ctx.author.id) not in owner_ids:
         await ctx.author.send("Доступ запрещён")
         return
+    await set_get_config_all("Default", SQL_Keys.reload, "clear")
     import os
     os.kill(os.getpid(), 9)
 
