@@ -1,4 +1,3 @@
-import PIL
 import asyncio
 import base64
 import gc
@@ -9,17 +8,16 @@ import requests
 import subprocess
 import time
 import traceback
-from diffusers import Kandinsky3Img2ImgPipeline, StableDiffusionUpscalePipeline, StableVideoDiffusionPipeline, \
-    MusicLDMPipeline, AutoPipelineForImage2Image, StableDiffusionPipeline, StableDiffusionLatentUpscalePipeline, \
+from diffusers import StableVideoDiffusionPipeline, \
+    MusicLDMPipeline, StableDiffusionLatentUpscalePipeline, \
     StableDiffusionXLImg2ImgPipeline, StableDiffusionXLInpaintPipeline
 from diffusers.utils import export_to_video
-from io import BytesIO
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from pydub import AudioSegment
 from scipy.io.wavfile import write
+
 import torch
 from PIL import Image
-
 from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
 from gtts import gTTS
 
@@ -422,24 +420,6 @@ def get_image_dimensions(file_path):
     return int(width), int(height)
 
 
-
-def scale_image_decorator(max_size=1024 * 1024, match_size=64):
-    def decorator(func):
-        async def wrapper(*args, **kwargs):
-            # Получаем cuda_number из kwargs
-            cuda_number = kwargs.get("cuda_number")
-            # Удаляем cuda_number из kwargs, чтобы он не попал в upscale_image
-            kwargs.pop("cuda_number", None)
-            # Вызываем scale_image с cuda_number
-            scale_image(image_path=kwargs.get("image_path"), max_size=max_size, match_size=match_size)
-            return await func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
-
 def scale_image(image_path, max_size, match_size=64):
     x, y = get_image_dimensions(image_path)
 
@@ -523,10 +503,10 @@ async def generate_image_API(ctx, prompt, x, y, negative_prompt, style="DEFAULT"
     return input_image
 
 
-@scale_image_decorator(max_size=768 * 768, match_size=128)
 async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
                         invert, strength, steps, seed, cuda_number):
     try:
+        scale_image(image_path=image_path, max_size=768 * 768, match_size=64)
         image = Image.open(image_path)
 
         pipe = StableDiffusionXLInpaintPipeline.from_pretrained(
@@ -564,9 +544,9 @@ async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
         gc.collect()
 
 
-@scale_image_decorator
 async def refine_image(prompt, negative_prompt, strength, image_path, cuda_number, seed):
     try:
+        scale_image(image_path=image_path, max_size=1024 * 1024, match_size=64)
         image = Image.open(image_path)
 
         pipe = StableDiffusionXLImg2ImgPipeline.from_pretrained(
@@ -589,9 +569,9 @@ async def refine_image(prompt, negative_prompt, strength, image_path, cuda_numbe
         gc.collect()
 
 
-@scale_image_decorator
 async def upscale_image(image_path, prompt, steps, cuda_number):
     try:
+        scale_image(image_path=image_path, max_size=1024 * 1024, match_size=64)
         model_id = "stabilityai/sd-x2-latent-upscaler"
         pipe = StableDiffusionLatentUpscalePipeline.from_pretrained(model_id, torch_dtype=torch.float16)
         pipe.to(f"cuda:{cuda_number}")
@@ -620,9 +600,9 @@ async def upscale_image(image_path, prompt, steps, cuda_number):
         gc.collect()
 
 
-@scale_image_decorator(max_size=768 * 768)
 async def video_generate(image_path, seed, fps, decode_chunk_size=8):
     try:
+        scale_image(image_path=image_path, max_size=768 * 768, match_size=64)
         video_path = image_path.replace(".png", ".mp4")
         gif_path = video_path.replace(".mp4", ".gif")
 
