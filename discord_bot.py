@@ -295,6 +295,8 @@ async def __upscale_image_command(ctx,
         await ctx.respond(f"Изображение успешно увеличено!\nПотрачено: {timer.count_time()}")
         await send_file(ctx, image_path)
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        logger.logging(str(traceback_str), color=Color.RED)
         await ctx.respond(f"Ошибка:{e}")
     finally:
         await cuda_manager.stop_use_cuda(cuda_number)
@@ -367,6 +369,8 @@ async def __generate_video(ctx,
             await send_file(ctx, video_path)
             await send_file(ctx, gif_path)
         except Exception as e:
+            traceback_str = traceback.format_exc()
+            logger.logging(str(traceback_str), color=Color.RED)
             await ctx.respond(f"Ошибка:{e}")
         finally:
             await cuda_manager.stop_use_cuda(cuda_number)
@@ -414,6 +418,8 @@ async def __generate_audio(ctx,
             await send_file(ctx, wav_audio_path, delete_file=True)
         except Exception as e:
             await ctx.respond(f"Ошибка:{e}")
+            traceback_str = traceback.format_exc()
+            logger.logging(str(traceback_str), color=Color.RED)
         finally:
             await cuda_manager.stop_use_cuda(cuda_number)
 
@@ -562,6 +568,8 @@ async def __image_change(ctx,
 
             await send_file(ctx, image_path)
         except Exception as e:
+            traceback_str = traceback.format_exc()
+            logger.logging(str(traceback_str), color=Color.RED)
             await ctx.respond(f"Ошибка:{e}")
         finally:
             await cuda_manager.stop_use_cuda(cuda_number)
@@ -629,6 +637,8 @@ async def __image_example(ctx,
             await send_file(ctx, image_path)
 
         except Exception as e:
+            traceback_str = traceback.format_exc()
+            logger.logging(str(traceback_str), color=Color.RED)
             await ctx.respond(f"Ошибка:{e}")
         finally:
             await cuda_manager.stop_use_cuda(cuda_number)
@@ -911,6 +921,8 @@ async def __bark(
         await bark_model.text_to_speech_bark(text=text, speaker=speaker, gen_temp=gen_temp, audio_path=audio_path)
         await send_file(ctx, audio_path)
     except Exception as e:
+        traceback_str = traceback.format_exc()
+        logger.logging(str(traceback_str), color=Color.RED)
         await ctx.send(f'Ошибка при команде bark: {e}')
     await ctx.respond(timer.count_time())
     await cuda_manager.stop_use_cuda(0)
