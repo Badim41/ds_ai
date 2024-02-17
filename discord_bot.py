@@ -332,7 +332,8 @@ async def __generate_video(ctx,
                 try:
                     image_path = f"images/image{ctx.author.id}_{seed}_generate_sd.png"
                     image_path = await asyncio.to_thread(
-                        generate_image_API, prompt=prompt, x=1024, y=720, negative_prompt=".", style="DEFAULT", image_path=image_path
+                        generate_image_API, prompt=prompt, x=1024, y=720, negative_prompt=".", style="DEFAULT",
+                        image_path=image_path
                     )
                 except Exception as e:
                     logger.logging("Cant generate image", e, color=Color.GRAY)
@@ -510,15 +511,23 @@ async def __image_change(ctx,
                                          required=False,
                                          default=1, min_value=1,
                                          max_value=16),
+                         consistently: Option(bool,
+                                              description="Увеличивать изменение картинки последовательно (False)",
+                                              required=False,
+                                              default=False),
                          refine: Option(bool, description="Улучить изображение (False)", required=False,
                                         default=False)
+
                          ):
-    async def images_change_async(seed, i):
+    async def images_change_async(seed, i, image_path):
         try:
             cuda_number = await cuda_manager.use_cuda()
             seed = random.randint(1, 9999999999) if seed is None else seed // (i + 1)
 
             timer = Time_Count()
+
+            if not consistently:
+                image_path = f"images/image{ctx.author.id}_change{i}.png"
 
             await asyncio.to_thread(
                 inpaint_image, cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
@@ -550,7 +559,7 @@ async def __image_change(ctx,
         await mask.save(mask_path)
 
     for i in range(repeats):
-        asyncio.create_task(images_change_async(seed, i))
+        asyncio.create_task(images_change_async(seed, i, image_path))
 
 
 @bot.slash_command(name="example_image", description='Изменить изображение нейросетью с помощью примера')
