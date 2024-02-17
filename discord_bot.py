@@ -288,7 +288,7 @@ async def __generate_video(ctx,
                                           default=None),
                            fps: Option(int, description='Количество кадров в секунду (30)', required=False,
                                        default=30),
-                           steps: Option(int, description='Количество шагов для генерации (75)', required=False, default=75,
+                           steps: Option(int, description='Количество шагов для генерации (25)', required=False, default=25,
                                          min_value=1, max_value=100),
                            seed: Option(int, description='Сид генератора (random)', required=False, default=None),
                            duration: Option(int, description='Длительность видео (5)', required=False, default=5),
@@ -336,8 +336,8 @@ async def __generate_video(ctx,
 async def __generate_audio(ctx,
                            prompt: Option(str, description='Запрос', required=True),
                            duration: Option(float, description='Длительность аудио в секундах', required=True),
-                           steps: Option(int, description='Количество шагов для генерации (75)', required=False, default=75,
-                                         min_value=1, max_value=200)
+                           steps: Option(int, description='Количество шагов для генерации (200)', required=False, default=200,
+                                         min_value=1, max_value=1000)
                            ):
     try:
         await ctx.defer()

@@ -478,7 +478,7 @@ async def generate_image_API(ctx, prompt, x, y, negative_prompt=None, style="DEF
 
     if not negative_prompt:
         negative_prompt = "."
-
+    logger.logging("Params:", prompt, negative_prompt, model_id, x, y, style, color=Color.GRAY)
     uuid = api.generate(prompt=prompt, negative_prompt=negative_prompt, model=model_id, width=x, height=y,
                         style=style)
     image_data_base64 = api.check_generation(uuid)

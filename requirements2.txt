@@ -38,6 +38,7 @@ pytorch_lightning==1.7.5
 transformers
 accelerate
 sentencepiece
+opencv-python
 --find-links https://download.pytorch.org/whl/torch_stable.html
 torch==2.0.1+cu118
 torchcrepe==0.0.20
