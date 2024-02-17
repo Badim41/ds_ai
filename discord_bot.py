@@ -24,7 +24,7 @@ from discord_tools.sql_db import set_get_database_async as set_get_config_all
 from discord_tools.timer import Time_Count
 from download_voice_model import download_online_model
 from function import Character, Voice_Changer, get_link_to_file, upscale_image, \
-    audio_generate, video_generate, inpaint_image, generate_image_API, refine_image, generate_image_sd
+    generate_audio, generate_video, inpaint_image, generate_image_API, refine_image, generate_image_sd
 from modifed_sinks import StreamSink
 from use_free_cuda import Use_Cuda
 
@@ -281,7 +281,7 @@ async def __upscale_image_command(ctx,
 
 
 @bot.slash_command(name="generate_video", description='Создать видео на основе изображения с помощью нейросети')
-async def video_generate_command(ctx,
+async def __generate_video(ctx,
                                  image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
                                                required=False),
                                  prompt: Option(str, description="Запрос для начального изображения", required=False,
@@ -312,7 +312,7 @@ async def video_generate_command(ctx,
                 return
             image_path = await generate_image_API(ctx=ctx, prompt=prompt, x=1280, y=720)
 
-        video_path, gif_path = await video_generate(cuda_number=cuda_number, image_path=image_path, seed=seed, fps=fps,
+        video_path, gif_path = await generate_video(cuda_number=cuda_number, image_path=image_path, seed=seed, fps=fps,
                                                     decode_chunk_size=decode_chunk_size)
 
         await ctx.respond(f"{timer.count_time()}\nСид:{seed}")
@@ -337,7 +337,7 @@ async def __generate_audio(ctx,
         cuda_number = await cuda_manager.use_cuda()
         timer = Time_Count()
         wav_audio_path = f"{ctx.author.id}_generate_audio.wav"
-        await audio_generate(cuda_number=cuda_number, wav_audio_path=wav_audio_path, prompt=prompt, duration=duration,
+        await generate_audio(cuda_number=cuda_number, wav_audio_path=wav_audio_path, prompt=prompt, duration=duration,
                              steps=steps)
 
         await ctx.respond(f"Аудиофайл успешно создан!\nПотрачено: {timer.count_time()}")
@@ -349,7 +349,7 @@ async def __generate_audio(ctx,
 
 
 @bot.slash_command(name="generate_image", description='создать изображение нейросетью')
-async def __image_generate(ctx,
+async def __generate_image(ctx,
                            prompt: Option(str, description='Запрос', required=True),
                            negative_prompt: Option(str, description='Негативный запрос', default="NSFW",
                                                    required=False),

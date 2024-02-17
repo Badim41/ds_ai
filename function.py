@@ -10,7 +10,7 @@ import time
 import traceback
 from diffusers import StableVideoDiffusionPipeline, \
     MusicLDMPipeline, StableDiffusionLatentUpscalePipeline, \
-    StableDiffusionXLImg2ImgPipeline, StableDiffusionXLInpaintPipeline, StableDiffusionXLPipeline
+    StableDiffusionXLImg2ImgPipeline, StableDiffusionXLInpaintPipeline, StableDiffusionXLPipeline, DiffusionPipeline
 from diffusers.utils import export_to_video
 from io import BytesIO
 from moviepy.video.io.VideoFileClip import VideoFileClip
@@ -507,8 +507,24 @@ async def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cud
 
     generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
     image_path = "images/image" + str(ctx.author.id) + "_generate_sd.png"
-    pipe(prompt, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps, width=x,
-         height=y).images[0].save(image_path)
+    image = pipe(prompt, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps, width=x,
+         height=y, output_type="latent", denoising_end=0.8)
+
+    refiner = DiffusionPipeline.from_pretrained(
+        "stabilityai/stable-diffusion-xl-refiner-1.0",
+        torch_dtype=torch.float16,
+        use_safetensors=True,
+        variant="fp16",
+    )
+    refiner = refiner.to(f"cuda:{cuda_number}")
+
+    refiner(
+        prompt=prompt,
+        num_inference_steps=40,
+        denoising_start=0.8,
+        image=image,
+    ).images[0].save(image_path)
+
     return image_path
 
 
@@ -538,34 +554,24 @@ async def inpaint_image(prompt, negative_prompt, image_path, mask_path,
 
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
 
-        pipe(prompt=prompt, image=image, mask_image=mask, num_inference_steps=steps, strength=strength,
-             negative_prompt=negative_prompt, generator=generator, width=x, height=y).images[0].save(image_path)
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), color=Color.RED)
-        raise Exception(e)
-    finally:
-        del pipe
-        torch.cuda.empty_cache()
-        gc.collect()
+        image = pipe(prompt=prompt, image=image, mask_image=mask, num_inference_steps=steps, strength=strength,
+             negative_prompt=negative_prompt, generator=generator, width=x, height=y, output_type="latent", denoising_end=0.8)
 
-
-async def refine_image(prompt, negative_prompt, strength, image_path, cuda_number, seed):
-    try:
-        x, y = scale_image(image_path=image_path, max_size=1024 * 1024, match_size=64)
-        image = Image.open(image_path)
-
-        pipe = StableDiffusionXLImg2ImgPipeline.from_pretrained(
-            "stabilityai/stable-diffusion-xl-refiner-1.0", torch_dtype=torch.float16
+        refiner = DiffusionPipeline.from_pretrained(
+            "stabilityai/stable-diffusion-xl-refiner-1.0",
+            torch_dtype=torch.float16,
+            use_safetensors=True,
+            variant="fp16",
         )
+        refiner = refiner.to(f"cuda:{cuda_number}")
 
-        pipe = pipe.to(f"cuda:{cuda_number}")
+        refiner(
+            prompt=prompt,
+            num_inference_steps=40,
+            denoising_start=0.8,
+            image=image,
+        ).images[0].save(image_path)
 
-        generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
-
-        pipe(prompt, image=image, generator=generator, negative_prompt=negative_prompt, strength=strength, width=x,
-             height=y).images[
-            0].save(image_path)
     except Exception as e:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
@@ -606,7 +612,7 @@ async def upscale_image(image_path, prompt, steps, cuda_number):
         gc.collect()
 
 
-async def video_generate(cuda_number, image_path, seed, fps, decode_chunk_size=8):
+async def generate_video(cuda_number, image_path, seed, fps, decode_chunk_size=8):
     try:
         scale_image(image_path=image_path, max_size=768 * 768, match_size=64)
         video_path = image_path.replace(".png", ".mp4")
@@ -635,7 +641,7 @@ async def video_generate(cuda_number, image_path, seed, fps, decode_chunk_size=8
         gc.collect()
 
 
-async def audio_generate(cuda_number, wav_audio_path, prompt, duration, steps):
+async def generate_audio(cuda_number, wav_audio_path, prompt, duration, steps):
     try:
         repo_id = "ucsd-reach/musicldm"
         pipe = MusicLDMPipeline.from_pretrained(repo_id, torch_dtype=torch.float16)
