@@ -325,14 +325,21 @@ async def __generate_video(ctx,
             if not prompt:
                 await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
                 return
-            image_path = await asyncio.to_thread(
-                generate_image_API, ctx=ctx, prompt=prompt, x=1280, y=720
-            )
+            try:
+                image_path = await asyncio.to_thread(
+                    generate_image_API, ctx=ctx, prompt=prompt, x=1280, y=720
+                )
+            except Exception as e:
+                logger.logging("Cant generate image", e, color=Color.GRAY)
+                image_path = await asyncio.to_thread(
+                    generate_image_sd, ctx=ctx, prompt=prompt, x=1280, y=720,
+                    steps=steps, seed=seed, cuda_number=cuda_number
+                )
 
         video_path, gif_path = await asyncio.to_thread(
             generate_video, cuda_number=cuda_number, image_path=image_path, seed=seed, fps=fps,
-                           decode_chunk_size=decode_chunk_size, duration=duration, steps=steps,
-                           noise_strenght=noise_strenght
+            decode_chunk_size=decode_chunk_size, duration=duration, steps=steps,
+            noise_strenght=noise_strenght
         )
 
         await ctx.respond(f"{timer.count_time()}\nСид:{seed}")
@@ -360,7 +367,7 @@ async def __generate_audio(ctx,
         wav_audio_path = f"{ctx.author.id}_generate_audio.wav"
         await asyncio.to_thread(
             generate_audio, cuda_number=cuda_number, wav_audio_path=wav_audio_path, prompt=prompt, duration=duration,
-                           steps=steps
+            steps=steps
         )
 
         await ctx.respond(f"Аудиофайл успешно создан!\nПотрачено: {timer.count_time()}")
@@ -422,7 +429,7 @@ async def __generate_image(ctx,
             if api:
                 image_path = await asyncio.to_thread(
                     generate_image_API, ctx=ctx, prompt=prompt, negative_prompt=negative_prompt,
-                                       style=style, x=x, y=y
+                    style=style, x=x, y=y
                 )
             else:
                 if seed is None:
@@ -432,7 +439,7 @@ async def __generate_image(ctx,
 
                 image_path = await asyncio.to_thread(
                     generate_image_sd, ctx=ctx, prompt=prompt, x=x, y=y, negative_prompt=negative_prompt,
-                                      steps=steps, seed=seed, cuda_number=cuda_number, refine=refine
+                    steps=steps, seed=seed, cuda_number=cuda_number, refine=refine
                 )
 
                 await cuda_manager.stop_use_cuda(cuda_number)
@@ -496,8 +503,8 @@ async def __image_change(ctx,
 
             await asyncio.to_thread(
                 inpaint_image, cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
-                              image_path=image_path, mask_path=mask_path,
-                              invert=invert, strength=strength, steps=steps, seed=seed, refine=refine
+                image_path=image_path, mask_path=mask_path,
+                invert=invert, strength=strength, steps=steps, seed=seed, refine=refine
             )
 
             # отправляем
@@ -562,7 +569,7 @@ async def __image_example(ctx,
 
             await asyncio.to_thread(
                 generate_image_with_example, image_path=image_path, mask_path=mask_path, example_path=example_path,
-                                            steps=steps, seed=seed, invert=invert, cuda_number=cuda_number
+                steps=steps, seed=seed, invert=invert, cuda_number=cuda_number
             )
 
             # отправляем
