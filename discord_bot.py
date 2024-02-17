@@ -400,10 +400,7 @@ async def __generate_audio(ctx,
                            ):
     async def generate_audios_async(seed, i):
         try:
-            if seed is None:
-                seed = random.randint(1, 9999999999)
-            else:
-                seed = seed // (i + 1)
+            seed = random.randint(1, 9999999999) if seed is None else int(seed // (i + 1))
 
             cuda_number = await cuda_manager.use_cuda()
             timer = Time_Count()
