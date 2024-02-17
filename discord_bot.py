@@ -346,7 +346,7 @@ async def __generate_video(ctx,
                 noise_strenght=noise_strenght
             )
 
-            await ctx.respond(f"{timer.count_time()}\nСид:{seed}")
+            await ctx.respond(f"Видео: {i}/{repeats}\nПотрачено:{timer.count_time()}\nСид:{seed}")
             await send_file(ctx, video_path)
             await send_file(ctx, gif_path)
         except Exception as e:
@@ -365,25 +365,41 @@ async def __generate_audio(ctx,
                            duration: Option(float, description='Длительность аудио в секундах', required=True),
                            steps: Option(int, description='Количество шагов для генерации (200)', required=False,
                                          default=200,
-                                         min_value=1, max_value=1000)
+                                         min_value=1, max_value=1000),
+                           seed: Option(int,
+                                        description='Сид (random)',
+                                        required=False,
+                                        default=None, min_value=1,
+                                        max_value=9999999999),
+                           repeats: Option(int,
+                                           description='Количество повторов (1)',
+                                           required=False,
+                                           default=1, min_value=1,
+                                           max_value=16)
                            ):
-    try:
-        await ctx.defer()
+    async def generate_audios_async(seed, i):
+        try:
+            seed = random.randint(1, 9999999999) if seed is None else seed // i
 
-        cuda_number = await cuda_manager.use_cuda()
-        timer = Time_Count()
-        wav_audio_path = f"{ctx.author.id}_generate_audio.wav"
-        await asyncio.to_thread(
-            generate_audio, cuda_number=cuda_number, wav_audio_path=wav_audio_path, prompt=prompt, duration=duration,
-            steps=steps
-        )
+            cuda_number = await cuda_manager.use_cuda()
+            timer = Time_Count()
+            wav_audio_path = f"{ctx.author.id}_generate_audio.wav"
+            await asyncio.to_thread(
+                generate_audio, cuda_number=cuda_number, wav_audio_path=wav_audio_path, prompt=prompt,
+                duration=duration,
+                steps=steps, seed=seed
+            )
 
-        await ctx.respond(f"Аудиофайл успешно создан!\nПотрачено: {timer.count_time()}")
-        await send_file(ctx, wav_audio_path, delete_file=True)
-    except Exception as e:
-        await ctx.respond(f"Ошибка:{e}")
-    finally:
-        await cuda_manager.stop_use_cuda(cuda_number)
+            await ctx.respond(f"Аудиофайл {i}/{repeats}\nСид:{seed}\nПотрачено: {timer.count_time()}")
+            await send_file(ctx, wav_audio_path, delete_file=True)
+        except Exception as e:
+            await ctx.respond(f"Ошибка:{e}")
+        finally:
+            await cuda_manager.stop_use_cuda(cuda_number)
+
+    await ctx.defer()
+    for i in range(repeats):
+        asyncio.create_task(generate_audios_async(i, seed))
 
 
 @bot.slash_command(name="generate_image", description='создать изображение нейросетью')
@@ -441,7 +457,8 @@ async def __generate_image(ctx,
 
                 await cuda_manager.stop_use_cuda(cuda_number)
             await send_file(ctx=ctx, file_path=image_path)
-            await ctx.respond(f"Картинка: {i + 1}/{repeats}\nПотрачено: {timer.count_time()}" + seed_text)
+            await ctx.respond(
+                f"Картинка: {i + 1}/{repeats}\nЗапрос:{prompt}\nПотрачено: {timer.count_time()}" + seed_text)
         except:
             await ctx.respond(f"Ошибка:{e}")
             await cuda_manager.stop_use_cuda(cuda_number)
@@ -507,7 +524,7 @@ async def __image_change(ctx,
             )
 
             # отправляем
-            text = f"Изображение {i + 1}/{repeats}\nПотрачено {timer.count_time()}.\nСид:{seed}"
+            text = f"Изображение {i + 1}/{repeats}\nЗапрос:{prompt}\nПотрачено {timer.count_time()}.\nСид:{seed}"
             if repeats == 1:
                 await ctx.respond(text)
             else:

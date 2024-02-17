@@ -714,13 +714,15 @@ def generate_video(cuda_number, image_path, seed, fps, decode_chunk_size, durati
         logger.logging("Cleared memory", color=Color.CYAN)
 
 
-def generate_audio(cuda_number, wav_audio_path, prompt, duration, steps):
+def generate_audio(cuda_number, wav_audio_path, prompt, duration, steps, seed):
     try:
         repo_id = "ucsd-reach/musicldm"
         pipe = MusicLDMPipeline.from_pretrained(repo_id, torch_dtype=torch.float16)
         pipe = pipe.to(f"cuda:{cuda_number}")
 
-        audio = pipe(prompt, num_inference_steps=steps, audio_length_in_s=duration).audios[0]
+        generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
+
+        audio = pipe(prompt, num_inference_steps=steps, audio_length_in_s=duration, generator=generator).audios[0]
 
         # save the audio sample as a .wav file
         write(wav_audio_path, rate=16000, data=audio)
