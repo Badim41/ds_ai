@@ -465,18 +465,19 @@ async def __generate_image(ctx,
         try:
             timer = Time_Count()
             seed_text = ""
-            image_path = f"images/image{ctx.author.id}_{seed}_{i}generated.png"
             if api:
-                image_path = await asyncio.to_thread(
-                    generate_image_API, ctx=ctx, prompt=prompt, negative_prompt=negative_prompt,
+                image_path = f"images/image{ctx.author.id}_{seed}_{i}_generate_API.png"
+                await asyncio.to_thread(
+                    generate_image_API, prompt=prompt, negative_prompt=negative_prompt,
                     style=style, x=x, y=y, image_path=image_path
                 )
             else:
+                image_path = f"images/image{ctx.author.id}_{seed}_{i}_generate_sd.png"
                 seed = random.randint(1, 9999999999) if seed is None else seed // (i + 1)
                 seed_text = f"\nСид:{seed}"
                 cuda_number = await cuda_manager.use_cuda()
 
-                image_path = await asyncio.to_thread(
+                await asyncio.to_thread(
                     generate_image_sd, image_path=image_path, prompt=prompt, x=x, y=y, negative_prompt=negative_prompt,
                     steps=steps, seed=seed, cuda_number=cuda_number, refine=refine
                 )
