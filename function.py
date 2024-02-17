@@ -556,7 +556,7 @@ def generate_image_with_example(image_path, mask_path, example_path, steps, seed
         logger.logging("Cleared memory", color=Color.CYAN)
 
 
-def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cuda_number, refine):
+def generate_image_sd(image_path, prompt, x, y, negative_prompt, steps, seed, cuda_number, refine):
     try:
         pipe = StableDiffusionXLPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16
@@ -564,7 +564,6 @@ def generate_image_sd(ctx, prompt, x, y, negative_prompt, steps, seed, cuda_numb
         pipe = pipe.to(f"cuda:{cuda_number}")
 
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
-        image_path = f"images/image{ctx.author.id}_{seed}_generate_sd.png"
 
         if refine:
             image = pipe(prompt, generator=generator, negative_prompt=negative_prompt, num_inference_steps=steps,

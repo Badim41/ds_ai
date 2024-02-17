@@ -320,7 +320,7 @@ async def __generate_video(ctx,
 
             timer = Time_Count()
 
-            image_path = f"images/{ctx.author.id}_generate_video.png"
+            image_path = f"images/{ctx.author.id}_generate_video{i}.png"
             if image:
                 if prompt:
                     await ctx.send("Загружено изображение, prompt игнорируется")
@@ -330,13 +330,15 @@ async def __generate_video(ctx,
                     await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
                     return
                 try:
+                    image_path = f"images/image{ctx.author.id}_{seed}_generate_sd.png"
                     image_path = await asyncio.to_thread(
-                        generate_image_API, ctx=ctx, prompt=prompt, x=1024, y=720, negative_prompt=".", style="DEFAULT"
+                        generate_image_API, prompt=prompt, x=1024, y=720, negative_prompt=".", style="DEFAULT", image_path=image_path
                     )
                 except Exception as e:
                     logger.logging("Cant generate image", e, color=Color.GRAY)
+                    image_path = f"images/image{ctx.author.id}_{seed}_generate_sd.png"
                     image_path = await asyncio.to_thread(
-                        generate_image_sd, ctx=ctx, prompt=prompt, x=1280, y=720,
+                        generate_image_sd, image_path=image_path, prompt=prompt, x=1280, y=720,
                         steps=steps, seed=seed, cuda_number=cuda_number, negative_prompt=".", refine=False
                     )
 
@@ -383,7 +385,7 @@ async def __generate_audio(ctx,
 
             cuda_number = await cuda_manager.use_cuda()
             timer = Time_Count()
-            wav_audio_path = f"{ctx.author.id}_generate_audio.wav"
+            wav_audio_path = f"{ctx.author.id}_generate_audio{i}.wav"
             await asyncio.to_thread(
                 generate_audio, cuda_number=cuda_number, wav_audio_path=wav_audio_path, prompt=prompt,
                 duration=duration,
@@ -440,10 +442,11 @@ async def __generate_image(ctx,
         try:
             timer = Time_Count()
             seed_text = ""
+            image_path = f"images/image{ctx.author.id}_{seed}_generate_sd.png"
             if api:
                 image_path = await asyncio.to_thread(
                     generate_image_API, ctx=ctx, prompt=prompt, negative_prompt=negative_prompt,
-                    style=style, x=x, y=y
+                    style=style, x=x, y=y, image_path=image_path
                 )
             else:
                 seed = random.randint(1, 9999999999) if seed is None else seed // (i + 1)
@@ -451,7 +454,7 @@ async def __generate_image(ctx,
                 cuda_number = await cuda_manager.use_cuda()
 
                 image_path = await asyncio.to_thread(
-                    generate_image_sd, ctx=ctx, prompt=prompt, x=x, y=y, negative_prompt=negative_prompt,
+                    generate_image_sd, image_path=image_path, prompt=prompt, x=x, y=y, negative_prompt=negative_prompt,
                     steps=steps, seed=seed, cuda_number=cuda_number, refine=refine
                 )
 
