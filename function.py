@@ -600,7 +600,7 @@ def get_mask(mask_path, invert, x, y):
 
 
 def inpaint_image(prompt, negative_prompt, image_path, mask_path,
-                        invert, strength, steps, seed, cuda_number, refine):
+                  invert, strength, steps, seed, cuda_number, refine):
     try:
         x, y = scale_image(image_path=image_path, max_size=1024 * 1024, match_size=64)
         image = format_image(image_path)
@@ -632,7 +632,10 @@ def inpaint_image(prompt, negative_prompt, image_path, mask_path,
         logger.logging(str(traceback_str), color=Color.RED)
         raise Exception(e)
     finally:
-        del pipe
+        try:
+            del pipe
+        except:
+            pass
         torch.cuda.empty_cache()
         gc.collect()
         logger.logging("Cleared memory", color=Color.CYAN)
@@ -665,7 +668,10 @@ def upscale_image(image_path, prompt, steps, cuda_number):
         logger.logging(str(traceback_str), color=Color.RED)
         raise Exception(e)
     finally:
-        del pipe
+        try:
+            del pipe
+        except:
+            pass
         torch.cuda.empty_cache()
         gc.collect()
         logger.logging("Cleared memory", color=Color.CYAN)
@@ -686,7 +692,9 @@ def generate_video(cuda_number, image_path, seed, fps, decode_chunk_size, durati
 
         generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
 
-        frames = pipe(image=image, decode_chunk_size=decode_chunk_size, width=x, height=y, num_inference_steps=steps, num_frames=duration*fps, generator=generator, fps=fps, noise_aug_strength=noise_strenght).frames[0]
+        frames = pipe(image=image, decode_chunk_size=decode_chunk_size, width=x, height=y, num_inference_steps=steps,
+                      num_frames=duration * fps, generator=generator, fps=fps,
+                      noise_aug_strength=noise_strenght).frames[0]
 
         export_to_video(frames, video_path, fps=fps)
         convert_mp4_to_gif(video_path, gif_path, fps)
@@ -696,7 +704,10 @@ def generate_video(cuda_number, image_path, seed, fps, decode_chunk_size, durati
         logger.logging(str(traceback_str), color=Color.RED)
         raise Exception(e)
     finally:
-        del pipe
+        try:
+            del pipe
+        except:
+            pass
         torch.cuda.empty_cache()
         gc.collect()
         logger.logging("Cleared memory", color=Color.CYAN)
@@ -717,7 +728,10 @@ def generate_audio(cuda_number, wav_audio_path, prompt, duration, steps):
         logger.logging(str(traceback_str), color=Color.RED)
         raise Exception(e)
     finally:
-        del pipe
+        try:
+            del pipe
+        except:
+            pass
         torch.cuda.empty_cache()
         gc.collect()
         logger.logging("Cleared memory", color=Color.CYAN)

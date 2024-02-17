@@ -239,14 +239,6 @@ async def help_command(
                           "лучше, но медленнее)\nseed - сид (если одинаковый сид и файл, то получится то же самое изображение)"
                           "\nx - расширение по X\ny - расширение по Y\nstrength - сила изменения\nstrength_prompt - сила для "
                           "запроса\nstrength_negative_prompt - сила для негативного запроса\nrepeats - количество изображений")
-    elif command == "change_video":
-        await ctx.respond(
-            "# /change_video \n(Изменить видео **ПОКАДРОВО**)\n**video_path - видеофайл**\n**fps - Количество "
-            "кадров в секунду**\n**extension - Качество видео **\n**prompt - Запрос**\nnegative_prompt - "
-            "Негативный запрос\nsteps - Количество шагов (больше - лучше, но медленнее)\nseed - сид (если "
-            "одинаковый сид и файл, то получится то же самое изображение)\nstrength - сила изменения\n"
-            "strength_prompt - сила для запроса\nstrength_negative_prompt - сила для негативного запроса\n"
-            "voice - голосовая модель\n")
     elif command == "join":
         await ctx.respond("# /join\n - присоединиться к вам в войс-чате")
     elif command == "disconnect":
