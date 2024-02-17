@@ -47,7 +47,6 @@ except:
 
 logger = Logs(warnings=True)
 
-
 async def execute_command(command, ctx):
     try:
         process = await asyncio.create_subprocess_shell(
