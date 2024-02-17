@@ -421,13 +421,17 @@ def get_image_dimensions(file_path):
         print(img.size, "GOT")
     return int(width), int(height)
 
+
 def scale_image_decorator(max_size=1024 * 1024, match_size=64):
     def decorator(func):
         def wrapper(*args, **kwargs):
             scale_image(image_path=kwargs.get("image_path"), max_size=max_size, match_size=match_size)
             return func(*args, **kwargs)
+
         return wrapper
+
     return decorator
+
 
 def scale_image(image_path, max_size, match_size=64):
     x, y = get_image_dimensions(image_path)
@@ -510,9 +514,10 @@ async def generate_image_API(ctx, prompt, x, y, negative_prompt="", style="DEFAU
         file.write(image_data_binary)
     return input_image
 
-@scale_image_decorator(max_size=768*768, match_size=128)
+
+@scale_image_decorator(max_size=768 * 768, match_size=128)
 async def inpaint_image(cuda_number, prompt, negative_prompt, image_path, mask_path,
-                        invert, strength, steps):
+                        invert, strength, steps, seed):
     try:
         image = Image.open(image_path)
 
@@ -537,8 +542,10 @@ async def inpaint_image(cuda_number, prompt, negative_prompt, image_path, mask_p
             # белое изображение
             mask = create_white_image(x, y)
 
+        generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
+
         pipe(prompt=prompt, image=image, mask_image=mask, num_inference_steps=steps, strength=strength,
-             negative_prompt=negative_prompt).images[0].save(image_path)
+             negative_prompt=negative_prompt, generator=generator).images[0].save(image_path)
     except Exception as e:
         raise e
     finally:
@@ -546,11 +553,11 @@ async def inpaint_image(cuda_number, prompt, negative_prompt, image_path, mask_p
         torch.cuda.empty_cache()
         gc.collect()
 
+
 @scale_image_decorator
 async def refine_image(prompt, negative_prompt, strength, image_path, cuda_number, seed):
     try:
         image = Image.open(image_path)
-
 
         pipe = StableDiffusionXLImg2ImgPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-refiner-1.0", torch_dtype=torch.float16
@@ -568,6 +575,7 @@ async def refine_image(prompt, negative_prompt, strength, image_path, cuda_numbe
         del pipe
         torch.cuda.empty_cache()
         gc.collect()
+
 
 @scale_image_decorator
 async def upscale_image(cuda_number, image_path, prompt, steps):
@@ -597,7 +605,8 @@ async def upscale_image(cuda_number, image_path, prompt, steps):
         torch.cuda.empty_cache()
         gc.collect()
 
-@scale_image_decorator(max_size=768*768)
+
+@scale_image_decorator(max_size=768 * 768)
 async def video_generate(image_path, seed, fps, decode_chunk_size=8):
     try:
         video_path = image_path.replace(".png", ".mp4")
@@ -622,8 +631,6 @@ async def video_generate(image_path, seed, fps, decode_chunk_size=8):
         del pipe
         torch.cuda.empty_cache()
         gc.collect()
-
-
 
 
 async def audio_generate(cuda_number, wav_audio_path, prompt, duration, steps):

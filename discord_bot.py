@@ -400,6 +400,11 @@ async def __image_change(ctx,
                          strength: Option(float, description='насколько сильны будут изменения', required=False,
                                           default=0.5, min_value=0,
                                           max_value=1),
+                         seed: Option(int,
+                                      description='Сид',
+                                      required=False,
+                                      default=None, min_value=1,
+                                      max_value=9999999999),
                          repeats: Option(int,
                                          description='Количество повторов',
                                          required=False,
@@ -409,6 +414,8 @@ async def __image_change(ctx,
     try:
         await ctx.defer()
         for i in range(repeats):
+            if not i == 0:
+                seed = random.randint(1, 9999999999)
             timer = Time_Count()
             cuda_number = await cuda_manager.use_cuda()
 
@@ -419,10 +426,10 @@ async def __image_change(ctx,
             await image.save(image_path)
             await inpaint_image(cuda_number=cuda_number, prompt=prompt, negative_prompt=negative_prompt,
                                 image_path=image_path, mask_path=mask_path,
-                                invert=invert, strength=strength, steps=steps)
+                                invert=invert, strength=strength, steps=steps, seed=seed)
 
             # отправляем
-            text = f"Изображение {i + 1}/{repeats}\nПотрачено {timer.count_time()}"
+            text = f"Изображение {i + 1}/{repeats}\nПотрачено {timer.count_time()}.\nСид:{seed}"
             if repeats == 1:
                 await ctx.respond(text)
             else:
