@@ -289,6 +289,7 @@ async def __upscale_image_command(ctx,
 
         cuda_number = await cuda_manager.use_cuda()
         timer = Time_Count()
+        await ctx.resond(f"Выполнение")
 
         await asyncio.to_thread(
             upscale_image, cuda_number=cuda_number, image_path=image_path, prompt=prompt, steps=steps
@@ -405,7 +406,9 @@ async def __generate_video(ctx,
 
     if not image and prompt and gpt:
         prompt = await image_prompt_with_gpt(prompt)
-        await ctx.send(f"Запрос:\n{prompt}")
+        await ctx.resond(f"Запрос:\n{prompt}")
+    else:
+        await ctx.resond(f"Выполнение")
 
     await ctx.defer()
     for i in range(repeats):
@@ -459,6 +462,9 @@ async def __generate_audio(ctx,
         with open(f"gpt_history/prompts/music") as file:
             content = file.read()
         prompt = await ChatGPT().run_all_gpt(content + prompt)
+        await ctx.resond(f"Запрос:\n{prompt}")
+    else:
+        await ctx.resond(f"Выполнение")
 
     await ctx.defer()
     for i in range(repeats):
@@ -543,6 +549,8 @@ async def __generate_image(ctx,
     if gpt:
         prompt = await image_prompt_with_gpt(prompt)
         await ctx.send(f"Запрос:\n{prompt}")
+    else:
+        await ctx.resond(f"Выполнение")
 
     for i in range(repeats):
         asyncio.create_task(repeat_generate_images(seed, i))
@@ -627,6 +635,8 @@ async def __image_change(ctx,
         mask_path = "images/image" + str(ctx.author.id) + "_change_mask.png"
         await mask.save(mask_path)
 
+    await ctx.resond(f"Выполнение")
+
     for i in range(repeats):
         asyncio.create_task(images_change_async(seed, i, image_path))
 
@@ -698,6 +708,8 @@ async def __image_example(ctx,
     if mask:
         mask_path = "images/image" + str(ctx.author.id) + "_example_mask.png"
         await mask.save(mask_path)
+
+    await ctx.resond(f"Выполнение")
 
     for i in range(repeats):
         asyncio.create_task(images_example_async(seed, i))
