@@ -428,7 +428,7 @@ def scale_image(image_path, max_size, match_size=64):
     x, y = get_image_dimensions(image_path)
 
     # скэйлинг во избежания ошибок из-за нехватки памяти
-    if max_size > x * y:
+    if max_size < x * y:
         scale_factor = (max_size / (x * y)) ** 0.5
         x = int(x * scale_factor)
         y = int(y * scale_factor)
