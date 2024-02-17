@@ -354,8 +354,6 @@ class Text2ImageAPI:
 
     def __init__(self, url):
         try:
-            print("API_KEY:", api_key)
-            print("SECRET_KEY:", secret_key)
             self.URL = url
             self.AUTH_HEADERS = {
                 'X-Key': f'Key {api_key}',
@@ -392,6 +390,7 @@ class Text2ImageAPI:
             }
             response = requests.post(self.URL + 'key/api/v1/text2image/run', headers=self.AUTH_HEADERS, files=data)
             data = response.json()
+            print("data", data)
             return data['uuid']
         except Exception as e:
             print("error in async_image:(id:2)", e)
