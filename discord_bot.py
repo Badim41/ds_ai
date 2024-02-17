@@ -314,7 +314,7 @@ async def __generate_video(ctx,
                            ):
     async def repeat_generate_videos(seed, i):
         try:
-            seed = random.randint(1, 9999999999) if seed in None else seed // i
+            seed = random.randint(1, 9999999999) if seed is None else seed // i
 
             cuda_number = await cuda_manager.use_cuda()
 
@@ -430,7 +430,7 @@ async def __generate_image(ctx,
                     style=style, x=x, y=y
                 )
             else:
-                seed = random.randint(1, 9999999999) if seed in None else seed // i
+                seed = random.randint(1, 9999999999) if seed is None else seed // i
                 seed_text = f"\nСид:{seed}"
                 cuda_number = await cuda_manager.use_cuda()
 
@@ -496,7 +496,7 @@ async def __image_change(ctx,
     async def images_change_async(seed, i):
         try:
             cuda_number = await cuda_manager.use_cuda()
-            seed = random.randint(1, 9999999999) if seed in None else seed // i
+            seed = random.randint(1, 9999999999) if seed is None else seed // i
 
             timer = Time_Count()
 
