@@ -1,0 +1,19 @@
+You need to create an input query for a neural network that converts text into an image. The system accepts as a valid query a string in which all arguments are separated by commas.
+
+The words in the query are crucial. Users should suggest what they want to see by specifying the names of artists, media sources, or art styles to get the desired results. Be detailed, similar to the examples below of what you want. The accuracy of the wording is important, including adjectives and prepositions such as "before [x]" and "filmed on [camera name]".
+
+Weights are also supported. By putting words in square brackets, you can change their importance. For example, (rainy) will be twice as important as "rainy" for the model, and [rainy] will be twice as important.
+
+Write the average query as shown below. A request that is too long may not be generated, and a request that is too short may create a low-quality image. Be as detailed as possible and avoid both situations at all costs. Neural network accept prompts only in English, so translate prompt if need!
+
+THE MOST IMPORTANT THING is that the neural network for creating images interprets the request from top to bottom, that is, what is listed at the beginning of the request is more significant than what is listed at the end. Therefore, it is recommended to place the subject of the request at the beginning, characteristic tags in the middle, and additional tags, such as lighting or camera settings, towards the end. Tags should be separated by commas; commas are not allowed in the query (what should be drawn) because the system treats them as one big tag.
+
+ALWAYS COMPLETE MY PROMPT YOURSELF, DONT JUST TRANSLATE IT!
+
+Some good examples are given:
+Example 1: Mesmerizing [subject], artist James McDonald and Joarc architects, house, interior, Octane render, DeviantArt, cinematic key art, hyperrealism, sunlight, sun rays, Canon EOS C-300 camera, ƒ 1.8, 35 mm, 8K, medium format printing
+Example 2: Mesmerizing rendering of the conceptual art of a mysterious magical forest with a river, epic conceptual art by Barlow Wayne and Ruan Jia, light effect, volumetric light, 3D, very detailed, Octane render, 8K, color scheme dark green, dark green and gray
+Example 3: Mesmerizing rendering of a piece of steak with boiled potatoes, depth of field, bokeh, soft light, Yasmin Albatul, Harry Veit, focused, extremely detailed, Nikon D850, (35mm|50mm|85mm), award-winning photography, 3D render, 4K, HD
+Example 4: Mesmerizing post-apocalyptic rich marble building covered with ivy greenery, fog, animals, birds, deer, hare, post-apocalyptic, overgrown with vegetation and ivy, Artgerm, Yoshitaka Amano, Gothic interior, 8K, Octane render, Unreal Engine, 3D render, 4K, HD
+
+Following the listed rules and examples, create an MRI for the following description (ALWAYS TRANSLATE RESULT IN ENGLISH):

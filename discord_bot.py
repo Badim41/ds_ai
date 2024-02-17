@@ -58,6 +58,8 @@ ALL_VOICES = {'Rachel': "Ж", 'Clyde': 'М', 'Domi': 'Ж', 'Dave': 'М', 'Fin': 
               'Glinda': 'Ж',
               'Giovanni': 'М', 'Mimi': 'Ж'}
 
+custom_prompts_files = os.listdir("gpt_history\prompts")
+
 
 class SQL_Keys:
     AIname = "AIname"
@@ -411,7 +413,7 @@ async def __generate_audio(ctx,
                 steps=steps, seed=seed
             )
 
-            await ctx.respond(f"Аудиофайл {i+1}/{repeats}\nСид:{seed}\nПотрачено: {timer.count_time()}")
+            await ctx.respond(f"Аудиофайл {i + 1}/{repeats}\nСид:{seed}\nПотрачено: {timer.count_time()}")
             await send_file(ctx, wav_audio_path, delete_file=True)
         except Exception as e:
             await ctx.respond(f"Ошибка:{e}")
@@ -543,7 +545,7 @@ async def __image_change(ctx,
         try:
             cuda_number = await cuda_manager.use_cuda()
             seed = random.randint(1, 9999999999) if seed is None else seed // (i + 1)
-            await asyncio.sleep((i%2) / 4 + 0.05)
+            await asyncio.sleep((i % 2) / 4 + 0.05)
 
             timer = Time_Count()
 
@@ -759,7 +761,10 @@ async def __say(
         text: Option(str, description='Сам текст/команда. Список команд: \\help-say', required=True),
         gpt_mode: Option(str, description="модификация GPT. Модификация сохраняется при следующих запросах!",
                          choices=["быстрый режим", "много ответов"], required=False,
-                         default=None)
+                         default=None),
+        custom_prompt: Option(str, description="Кастомный запрос", choices=custom_prompts_files,
+                              required=False,
+                              default=None)
 ):
     # ["fast", "all", "None"], ["быстрый режим", "много ответов (медленный)", "Экономный режим"]
     user = DiscordUser(ctx)
@@ -774,13 +779,18 @@ async def __say(
             gpt_mode = "Fast"
         _, text = await moderate_mat_in_sentence(text)
 
+        if custom_prompt:
+            with open(f"gpt_history/prompts/{custom_prompt}") as file:
+                content = file.read()
+            text = content + text
+
         gpt_role = user.character.gpt_info
 
         chatGPT = ChatGPT()
         answer = await chatGPT.run_all_gpt(f"{user.name}:{text}", user_id=user.id, gpt_role=gpt_role, mode=gpt_mode)
         await ctx.respond(answer)
         audio_player = AudioPlayerDiscord(ctx)
-        if not user.character.name == "None":
+        if user.character.name in await get_voice_list():
             audio_path_1 = f"{user.id}-{user.character.name}-say-row.mp3"
             audio_path_2 = f"{user.id}-{user.character.name}-say.mp3"
             await user.character.text_to_speech(answer, audio_path=audio_path_1, output_name=audio_path_2)
@@ -1743,7 +1753,7 @@ class Recognizer:
                                                                user_id=self.user.id,
                                                                gpt_role=self.user.character.gpt_info)
                             await self.ctx.send(answer)
-                            if not self.user.character.name == "None":
+                            if self.user.character.name in await get_voice_list():
                                 audio_path_1 = f"{self.user.id}-{self.user.character.name}-record-row.mp3"
                                 audio_path_2 = f"{self.user.id}-{self.user.character.name}-record.mp3"
                                 await self.user.character.text_to_speech(answer, audio_path=audio_path_1,
