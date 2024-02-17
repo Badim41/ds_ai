@@ -466,7 +466,7 @@ def format_image(image_path):
     return Image.open(BytesIO(image_data)).convert("RGB")
 
 
-def generate_image_API(ctx, prompt, x, y, negative_prompt=None, style="DEFAULT"):
+def generate_image_API(image_path, prompt, x, y, negative_prompt=None, style="DEFAULT"):
     api = Text2ImageAPI('https://api-key.fusionbrain.ai/')
     model_id = api.get_model()
 
@@ -492,8 +492,6 @@ def generate_image_API(ctx, prompt, x, y, negative_prompt=None, style="DEFAULT")
     selected_image_base64 = image_data_base64[0]
 
     image_data_binary = base64.b64decode(selected_image_base64)
-
-    image_path = f"images/image{ctx.author.id}_{random.randint(1, 999999999)}_generate_API.png"
 
     with open(image_path, 'wb') as file:
         file.write(image_data_binary)

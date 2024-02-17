@@ -348,15 +348,15 @@ async def __generate_video(ctx,
                     await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
                     return
                 try:
-                    image_path = f"images/image{ctx.author.id}_{seed}_generate_sd.png"
-                    image_path = await asyncio.to_thread(
+                    image_path = f"images/image{ctx.author.id}_{seed}_generate_API.png"
+                    await asyncio.to_thread(
                         generate_image_API, prompt=prompt, x=1024, y=720, negative_prompt=".", style="DEFAULT",
                         image_path=image_path
                     )
                 except Exception as e:
                     logger.logging("Cant generate image", e, color=Color.GRAY)
                     image_path = f"images/image{ctx.author.id}_{seed}_generate_sd.png"
-                    image_path = await asyncio.to_thread(
+                    await asyncio.to_thread(
                         generate_image_sd, image_path=image_path, prompt=prompt, x=1280, y=720,
                         steps=steps, seed=seed, cuda_number=cuda_number, negative_prompt=".", refine=False
                     )
