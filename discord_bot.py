@@ -262,11 +262,6 @@ async def __upscale_image_command(ctx,
                                   steps: Option(int, description='Количество шагов для генерации (75)', required=False,
                                                 default=75, min_value=1, max_value=150)
                                   ):
-    asyncio.create_task(upscale_image_async(ctx, image, prompt, steps))
-    print("Async done")
-
-
-async def upscale_image_async(ctx, image, prompt, steps):
     try:
         await ctx.defer()
         image_path = "images/image" + str(ctx.author.id) + "_upscale.png"
@@ -285,6 +280,7 @@ async def upscale_image_async(ctx, image, prompt, steps):
         await ctx.respond(f"Ошибка:{e}")
     finally:
         await cuda_manager.stop_use_cuda(cuda_number)
+
 
 
 @bot.slash_command(name="generate_video", description='Создать видео на основе изображения с помощью нейросети')
@@ -327,13 +323,13 @@ async def __generate_video(ctx,
                 return
             try:
                 image_path = await asyncio.to_thread(
-                    generate_image_API, ctx=ctx, prompt=prompt, x=1280, y=720
+                    generate_image_API, ctx=ctx, prompt=prompt, x=1280, y=720, negative_prompt=".", style="DEFAULT"
                 )
             except Exception as e:
                 logger.logging("Cant generate image", e, color=Color.GRAY)
                 image_path = await asyncio.to_thread(
                     generate_image_sd, ctx=ctx, prompt=prompt, x=1280, y=720,
-                    steps=steps, seed=seed, cuda_number=cuda_number
+                    steps=steps, seed=seed, cuda_number=cuda_number, negative_prompt=".", refine=True
                 )
 
         video_path, gif_path = await asyncio.to_thread(
