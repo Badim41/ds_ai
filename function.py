@@ -664,21 +664,22 @@ async def upscale_image(image_path, prompt, steps, cuda_number):
         logger.logging("Cleared memory", color=Color.CYAN)
 
 
-async def generate_video(cuda_number, image_path, seed, fps, decode_chunk_size=8):
+async def generate_video(cuda_number, image_path, seed, fps, decode_chunk_size, duration, steps, noise_strenght):
     try:
-        scale_image(image_path=image_path, max_size=768 * 768, match_size=64)
+        x, y = scale_image(image_path=image_path, max_size=768 * 768, match_size=64)
         video_path = image_path.replace(".png", ".mp4")
         gif_path = video_path.replace(".mp4", ".gif")
 
         pipe = StableVideoDiffusionPipeline.from_pretrained(
             "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16"
         )
-        pipe.to(f"cuda")
+        pipe.to(f"cuda:{cuda_number}")
 
         image = format_image(image_path)
 
-        generator = torch.Generator(device=f"cuda").manual_seed(seed)
-        frames = pipe(image, decode_chunk_size=decode_chunk_size, generator=generator).frames[0]
+        generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed)
+
+        frames = pipe(image=image, decode_chunk_size=decode_chunk_size, width=x, height=y, num_inference_steps=steps, num_frames=duration*fps, generator=generator, fps=fps, noise_aug_strength=noise_strenght).frames[0]
 
         export_to_video(frames, video_path, fps=fps)
         convert_mp4_to_gif(video_path, gif_path, fps)

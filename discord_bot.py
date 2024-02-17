@@ -259,8 +259,8 @@ async def __upscale_image_command(ctx,
                                   image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
                                                 required=True),
                                   prompt: Option(str, description='Запрос (что изображено на картинке)', required=True),
-                                  steps: Option(int, description='Количество шагов для генерации', required=False,
-                                                default=10, min_value=1, max_value=100)
+                                  steps: Option(int, description='Количество шагов для генерации (75)', required=False,
+                                                default=75, min_value=1, max_value=150)
                                   ):
     try:
         await ctx.defer()
@@ -282,15 +282,20 @@ async def __upscale_image_command(ctx,
 
 @bot.slash_command(name="generate_video", description='Создать видео на основе изображения с помощью нейросети')
 async def __generate_video(ctx,
-                           image: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
+                           image: Option(discord.SlashCommandOptionType.attachment, description='Изображение (None)',
                                          required=False),
-                           prompt: Option(str, description="Запрос для начального изображения", required=False,
+                           prompt: Option(str, description="Запрос для начального изображения (None)", required=False,
                                           default=None),
-                           fps: Option(int, description='Количество кадров в секунду', required=False,
+                           fps: Option(int, description='Количество кадров в секунду (30)', required=False,
                                        default=30),
-                           seed: Option(int, description='Сид генератора', required=False, default=None),
-                           decode_chunk_size: Option(int, description='Длительность видео',
-                                                     required=False, default=8)
+                           seed: Option(int, description='Сид генератора (random)', required=False, default=None),
+                           duration: Option(int, description='Длительность видео (5)', required=False, default=5),
+                           decode_chunk_size: Option(int,
+                                                     description='Декодирование кадров за раз. Влияет на использование видеопамяти (4)',
+                                                     required=False, default=4),
+                           noise_strenght: Option(float,
+                                                  description='Количество добавляемого шума к исходному изображению (0.02)',
+                                                  required=False, default=0.02)
                            ):
     try:
         await ctx.defer()
@@ -313,7 +318,8 @@ async def __generate_video(ctx,
             image_path = await generate_image_API(ctx=ctx, prompt=prompt, x=1280, y=720)
 
         video_path, gif_path = await generate_video(cuda_number=cuda_number, image_path=image_path, seed=seed, fps=fps,
-                                                    decode_chunk_size=decode_chunk_size)
+                                                    decode_chunk_size=decode_chunk_size, duration=duration, steps=steps,
+                                                    noise_strenght=noise_strenght)
 
         await ctx.respond(f"{timer.count_time()}\nСид:{seed}")
         await send_file(ctx, video_path)
@@ -328,7 +334,7 @@ async def __generate_video(ctx,
 async def __generate_audio(ctx,
                            prompt: Option(str, description='Запрос', required=True),
                            duration: Option(float, description='Длительность аудио в секундах', required=True),
-                           steps: Option(int, description='Количество шагов для генерации', required=False, default=10,
+                           steps: Option(int, description='Количество шагов для генерации (75)', required=False, default=75,
                                          min_value=1, max_value=200)
                            ):
     try:
@@ -351,35 +357,35 @@ async def __generate_audio(ctx,
 @bot.slash_command(name="generate_image", description='создать изображение нейросетью')
 async def __generate_image(ctx,
                            prompt: Option(str, description='Запрос', required=True),
-                           negative_prompt: Option(str, description='Негативный запрос', default="NSFW",
+                           negative_prompt: Option(str, description='Негативный запрос (None)', default=".",
                                                    required=False),
                            x: Option(int,
-                                     description='Размер картинки по x',
+                                     description='Размер картинки по x (1024)',
                                      required=False,
                                      default=1024, min_value=64),
                            y: Option(int,
-                                     description='Размер картинки по y',
+                                     description='Размер картинки по y (1024)',
                                      required=False,
                                      default=1024, min_value=64),
-                           style: Option(str, description="Стиль", required=False,
+                           style: Option(str, description="Стиль (DEFAULT)", required=False,
                                          choices=["KANDINSKY", "UHD", "ANIME", "DEFAULT"], default="DEFAULT"),
                            repeats: Option(int,
-                                           description='Количество повторов',
+                                           description='Количество повторов (1)',
                                            required=False,
                                            default=1, min_value=1,
                                            max_value=16),
-                           api: Option(bool, description="Если True, использует Kandinsky 3, если False - SD XL",
+                           api: Option(bool, description="True - Kandinsky 3 API; False - Stable Diffusion XL",
                                        required=False, default=True),
-                           steps: Option(int, description='число шагов', required=False,
+                           steps: Option(int, description='число шагов (60)', required=False,
                                          default=60,
                                          min_value=1,
                                          max_value=100),
                            seed: Option(int,
-                                        description='Сид',
+                                        description='Сид (random)',
                                         required=False,
                                         default=None, min_value=1,
                                         max_value=9999999999),
-                           refine: Option(bool, description="Улучить изображение (не для API)", required=False,
+                           refine: Option(bool, description="Улучить изображение (False)", required=False,
                                           default=False)
                            ):
     try:
@@ -422,29 +428,29 @@ async def __image_change(ctx,
                                        required=True),
                          prompt: Option(str, description='запрос', required=True),
                          mask: Option(discord.SlashCommandOptionType.attachment,
-                                      description='Маска. Будут изменены только БЕЛЫЕ пиксели',
+                                      description='Маска. Будут изменены только БЕЛЫЕ пиксели (All)',
                                       required=False, default=None),
-                         invert: Option(bool, description='изменить всё, КРОМЕ белых пикселей', required=False,
+                         invert: Option(bool, description='изменить всё, КРОМЕ белых пикселей (False)', required=False,
                                         default=False),
-                         negative_prompt: Option(str, description='негативный запрос', default="NSFW", required=False),
+                         negative_prompt: Option(str, description='негативный запрос', default=".", required=False),
                          steps: Option(int, description='число шагов', required=False,
                                        default=60,
                                        min_value=1,
                                        max_value=100),
-                         strength: Option(float, description='насколько сильны будут изменения', required=False,
+                         strength: Option(float, description='насколько сильны будут изменения (0.5)', required=False,
                                           default=0.5, min_value=0,
                                           max_value=1),
                          seed: Option(int,
-                                      description='Сид',
+                                      description='Сид (random)',
                                       required=False,
                                       default=None, min_value=1,
                                       max_value=9999999999),
                          repeats: Option(int,
-                                         description='Количество повторов',
+                                         description='Количество повторов (1)',
                                          required=False,
                                          default=1, min_value=1,
                                          max_value=16),
-                         refine: Option(bool, description="Улучить изображение", required=False,
+                         refine: Option(bool, description="Улучить изображение (False)", required=False,
                                         default=False)
                          ):
     try:
@@ -491,21 +497,21 @@ async def __image_example(ctx,
                           example: Option(discord.SlashCommandOptionType.attachment, description='Изображение',
                                           required=True),
                           mask: Option(discord.SlashCommandOptionType.attachment,
-                                       description='Маска. Будут изменены только БЕЛЫЕ пиксели',
+                                       description='Маска. Будут изменены только БЕЛЫЕ пиксели (All)',
                                        required=False, default=None),
-                          invert: Option(bool, description='изменить всё, КРОМЕ белых пикселей', required=False,
+                          invert: Option(bool, description='изменить всё, КРОМЕ белых пикселей (False)', required=False,
                                          default=False),
-                          steps: Option(int, description='число шагов', required=False,
+                          steps: Option(int, description='число шагов (60)', required=False,
                                         default=60,
                                         min_value=1,
                                         max_value=100),
                           seed: Option(int,
-                                       description='Сид',
+                                       description='Сид (random)',
                                        required=False,
                                        default=None, min_value=1,
                                        max_value=9999999999),
                           repeats: Option(int,
-                                          description='Количество повторов',
+                                          description='Количество повторов (1)',
                                           required=False,
                                           default=1, min_value=1,
                                           max_value=16)
@@ -696,20 +702,20 @@ async def get_voice_list():
 async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
-        voice_name: Option(str, description='Голос для озвучки', required=False, default=None),
-        speed: Option(float, description='Ускорение голоса', required=False, default=None, min_value=1, max_value=3),
-        voice_model_eleven: Option(str, description=f'Какая модель elevenlabs будет использована', required=False,
+        voice_name: Option(str, description='Голос для озвучки (User character)', required=False, default=None),
+        speed: Option(float, description='Ускорение голоса (Character)', required=False, default=None, min_value=1, max_value=3),
+        voice_model_eleven: Option(str, description=f'Какая модель elevenlabs будет использована (Character)', required=False,
                                    default=None),
-        stability: Option(float, description='Стабильность голоса', required=False, default=None, min_value=0,
+        stability: Option(float, description='Стабильность голоса (Character)', required=False, default=None, min_value=0,
                           max_value=1),
-        similarity_boost: Option(float, description='Повышение сходства', required=False, default=None, min_value=0,
+        similarity_boost: Option(float, description='Повышение сходства (Character)', required=False, default=None, min_value=0,
                                  max_value=1),
-        style: Option(float, description='Выражение', required=False, default=None, min_value=0, max_value=1),
-        output: Option(str, description='Отправить результат', required=False,
+        style: Option(float, description='Выражение (Character)', required=False, default=None, min_value=0, max_value=1),
+        output: Option(str, description='Отправить результат (1 файл RVC)', required=False,
                        choices=["1 файл (RVC)", "2 файла (RVC & elevenlabs/GTTS)", "None"], default="1 файл (RVC)"),
-        pitch: Option(int, description="Изменить тональность", required=False, default=0, min_value=-24,
+        pitch: Option(int, description="Изменить тональность (Character)", required=False, default=0, min_value=-24,
                       max_value=24),
-        palgo: Option(str, description='Алгоритм. Rmvpe - лучший вариант, mangio-crepe - более мягкий вокал',
+        palgo: Option(str, description='Алгоритм. Rmvpe - лучший вариант, mangio-crepe - более мягкий вокал (rmvpe)',
                       required=False,
                       choices=['rmvpe', 'mangio-crepe'], default="rmvpe"),
 
@@ -781,9 +787,9 @@ async def __tts(
 async def __bark(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
-        speaker: Option(int, description='Голосовая модель bark', required=False, default=1, min_value=1,
+        speaker: Option(int, description='Голосовая модель bark (1)', required=False, default=1, min_value=1,
                         max_value=8),
-        gen_temp: Option(float, description='Голосовая модель bark', required=False, default=0.6)
+        gen_temp: Option(float, description='Разнообразие (0.6)', required=False, default=0.6)
 ):
     global bark_model
 
@@ -998,8 +1004,8 @@ async def __dialog(
         ctx,
         names: Option(str, description="Участники диалога через ';' (у каждого должен быть добавлен голос!)",
                       required=True),
-        theme: Option(str, description="Начальная тема разговора", required=False, default="случайная тема"),
-        prompt: Option(str, description="Общий запрос для всех диалогов", required=False, default="")
+        theme: Option(str, description="Начальная тема разговора (случайная тема)", required=False, default="случайная тема"),
+        prompt: Option(str, description="Общий запрос для всех диалогов (None)", required=False, default="")
 ):
     try:
         await ctx.respond('Выполнение...')
@@ -1247,20 +1253,20 @@ async def __add_voice(
         ctx,
         url: Option(str, description='Ссылка на .zip файл с моделью RVC', required=True),
         name: Option(str, description=f'Имя модели', required=True),
-        gender: Option(str, description=f'Пол (для настройки тональности)', required=True,
+        gender: Option(str, description=f'Пол (pitch)', required=False,
                        choices=['мужчина', 'женщина']),
-        pitch: Option(int, description="Какую использовать тональность (от -24 до 24) (или указать gender)",
+        pitch: Option(int, description="Тональность. Мужчина=0, женщина=12 (gender/0)",
                       required=False, default=0, min_value=-24, max_value=24),
-        info: Option(str, description=f'Какие-то сведения о данном человеке', required=False,
+        info: Option(str, description=f'Какие-то сведения о данном человеке (Отсутствует)', required=False,
                      default="Отсутствует"),
-        speed: Option(float, description=f'Ускорение/замедление голоса', required=False,
+        speed: Option(float, description=f'Ускорение/замедление голоса (1)', required=False,
                       default=1, min_value=1, max_value=3),
-        voice_model_eleven: Option(str, description=f'Какая модель elevenlabs будет использована', required=False,
+        voice_model_eleven: Option(str, description=f'Какая модель elevenlabs будет использована (Adam)', required=False,
                                    default="Adam"),
-        change_voice: Option(bool, description=f'(необязательно) Изменить голос на этот', required=False,
+        change_voice: Option(bool, description=f'Изменить голос на этот (False)', required=False,
                              default=False),
         txt_file: Option(discord.SlashCommandOptionType.attachment,
-                         description='Файл txt для добавления нескольких моделей сразу',
+                         description='Файл txt для добавления нескольких моделей сразу (None)',
                          required=False, default=None)
 ):
     if voice_model_eleven not in ALL_VOICES.keys():
