@@ -106,7 +106,7 @@ async def on_ready():
         type=discord.ActivityType.listening, name=f'AI-covers ({devices})'))
 
     id = await set_get_config_all("Default", SQL_Keys.reload)
-    if not id or id == "clear":
+    if not id or str(id) == "clear":
         id = (await set_get_config_all("Default", SQL_Keys.reload)).split(";")[0]
 
     logger.logging("ID:", id, color=Color.GRAY)
