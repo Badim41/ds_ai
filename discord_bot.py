@@ -11,6 +11,7 @@ from pathlib import Path
 from pydub import AudioSegment
 from pytube import Playlist
 
+import json
 import speech_recognition as sr
 
 import discord
@@ -461,7 +462,15 @@ async def __generate_audio(ctx,
     if gpt:
         with open(f"gpt_history/prompts/music") as file:
             content = file.read()
-        prompt = await ChatGPT().run_all_gpt(content + prompt)
+        result = (await ChatGPT().run_all_gpt(content + prompt)).replace("json", "")
+        if "```" in result:
+            result = result[result.find("```") + 3:]
+            result = result[:result.find("```")]
+        try:
+            prompt = json.loads(result)["response"]
+        except Exception as e:
+            logger.logging("error:", e, color=Color.RED)
+
     await ctx.respond(f"Запрос:\n{prompt}")
 
     await ctx.defer()
