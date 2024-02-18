@@ -459,6 +459,8 @@ async def __generate_audio(ctx,
         finally:
             await cuda_manager.stop_use_cuda(cuda_number)
 
+    await ctx.defer()
+
     if gpt:
         with open(f"gpt_history/prompts/music") as file:
             content = file.read()
@@ -473,7 +475,6 @@ async def __generate_audio(ctx,
 
     await ctx.respond(f"Запрос:\n{prompt}")
 
-    await ctx.defer()
     for i in range(repeats):
         asyncio.create_task(generate_audios_async(seed, i))
 
