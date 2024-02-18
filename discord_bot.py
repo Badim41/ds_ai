@@ -1274,11 +1274,10 @@ class Dialog_AI:
         with open(self.text_file, "a", encoding="utf-8") as writer:
             writer.write("\n\n" + ', '.join(self.names))
 
-        asyncio.create_task(self.gpt_dialog())
-        asyncio.create_task(self.play_dialog())
-        functions = [self.create_audio_dialog(character) for character in self.characters]
-        for function in functions:
-            asyncio.create_task(function)
+        asyncio.to_thread(self.gpt_dialog)
+        asyncio.to_thread(self.play_dialog)
+        for character in self.characters:
+            asyncio.to_thread(self.create_audio_dialog, character)
 
     async def stop_dialog(self):
         if self.ctx.guild.id in dialogs:
