@@ -225,12 +225,12 @@ async def help_command(
             "similarity_boost - Повышение сходства (0 - отсутствует)\n"
             "style - Выражение (0 - мало пауз и выражения, 1 - большое количество пауз и выражения)\n")
     elif command == "add_voice":
-        await ctx.respond("# /add_voice\n(Добавить голосовую модель)\n**url - ссылка на модель **\n**name - имя модели "
+        text = ("# /add_voice\n(Добавить голосовую модель)\n**url - ссылка на модель **\n**name - имя модели "
                           "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
                           "speed - ускорение/замедление при /tts\nvoice_model - модель elevenlab\nchange_voice - True = "
                           "заменить на текущий голос\ntxt_file - быстрое добавление множества голосовых моделей *(остальные аргументы как 'url', 'gender', 'name'  будут игнорироваться)*, для использования:\n"
                           "- напишите в txt файле аргументы для add_voice (1 модель - 1 строка), пример:")
-        await send_file(ctx, "add_voice_args.txt")
+        await send_file(ctx, "add_voice_args.txt", text=text)
     elif command == "create_dialog":
         await ctx.respond(
             "# /create_dialog\n(Создать диалог в войс-чате)\n**names - участники диалога "
@@ -295,8 +295,8 @@ async def __upscale_image_command(ctx,
             upscale_image, cuda_number=cuda_number, image_path=image_path, prompt=prompt, steps=steps
         )
 
-        await ctx.respond(f"Изображение успешно увеличено!\nПотрачено: {timer.count_time()}")
-        await send_file(ctx, image_path)
+        text = f"Изображение успешно увеличено!\nПотрачено: {timer.count_time()}"
+        await send_file(ctx, image_path, text=text)
     except Exception as e:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
@@ -394,9 +394,9 @@ async def __generate_video(ctx,
                 noise_strenght=noise_strenght
             )
 
-            await ctx.respond(f"Видео: {i + 1}/{repeats}\nПотрачено:{timer.count_time()}\nСид:{seed}")
-            await send_file(ctx, video_path)
-            await send_file(ctx, gif_path)
+            text = f"Видео: {i + 1}/{repeats}\nПотрачено:{timer.count_time()}\nСид:{seed}"
+            await send_file(ctx, video_path, text=text)
+            await send_file(ctx, gif_path, text=text)
         except Exception as e:
             traceback_str = traceback.format_exc()
             logger.logging(str(traceback_str), color=Color.RED)
@@ -448,9 +448,8 @@ async def __generate_audio(ctx,
                 steps=steps, seed=seed
             )
 
-            await ctx.respond(
-                f"Аудиофайл {i + 1}/{repeats}\nЗапрос:{prompt}\nСид:{seed}\nПотрачено: {timer.count_time()}")
-            await send_file(ctx, wav_audio_path, delete_file=True)
+            text = f"Аудиофайл {i + 1}/{repeats}\nЗапрос:{prompt}\nСид:{seed}\nПотрачено: {timer.count_time()}"
+            await send_file(ctx, wav_audio_path, delete_file=True, text=text)
         except Exception as e:
             await ctx.respond(f"Ошибка:{e}")
             traceback_str = traceback.format_exc()
@@ -529,9 +528,9 @@ async def __generate_image(ctx,
                 )
 
                 await cuda_manager.stop_use_cuda(cuda_number)
-            await send_file(ctx=ctx, file_path=image_path)
-            await ctx.respond(
-                f"Картинка: {i + 1}/{repeats}\nЗапрос:{prompt}\nПотрачено: {timer.count_time()}" + seed_text)
+            text = f"Картинка: {i + 1}/{repeats}\nЗапрос:{prompt}\nПотрачено: {timer.count_time()}" + seed_text
+            await send_file(ctx=ctx, file_path=image_path, text=text)
+
         except Exception as e:
             await ctx.respond(f"Ошибка:{e}")
             await cuda_manager.stop_use_cuda(cuda_number)
@@ -612,12 +611,8 @@ async def __image_change(ctx,
 
             # отправляем
             text = f"Изображение {i + 1}/{repeats}\nЗапрос:{prompt}\nПотрачено {timer.count_time()}.\nСид:{seed}"
-            if repeats == 1:
-                await ctx.respond(text)
-            else:
-                await ctx.send(text)
 
-            await send_file(ctx, image_path)
+            await send_file(ctx, image_path, text=text)
         except Exception as e:
             traceback_str = traceback.format_exc()
             logger.logging(str(traceback_str), color=Color.RED)
@@ -941,12 +936,12 @@ async def __tts(
             await character.text_to_speech(text, audio_path=audio_path_1, output_name=audio_path_2)
             # перестаём использовать видеокарту
 
-            await ctx.respond("Потрачено на обработку:" + timer.count_time())
+            text = "Потрачено на обработку:" + timer.count_time()
             if output:
                 if output.startswith("1"):
-                    await send_file(ctx, audio_path_2)
+                    await send_file(ctx, audio_path_2, text=text)
                 elif output.startswith("2"):
-                    await send_file(ctx, audio_path_1)
+                    await send_file(ctx, audio_path_1, text=text)
                     await send_file(ctx, audio_path_2)
 
             os.remove(audio_path_1)
@@ -984,7 +979,8 @@ async def __bark(
     try:
         audio_path = f"{ctx.author.id}-{speaker}-bark.mp3"
         await bark_model.text_to_speech_bark(text=text, speaker=speaker, gen_temp=gen_temp, audio_path=audio_path)
-        await send_file(ctx, audio_path)
+        text = f"Потрачено: {timer.count_time()}"
+        await send_file(ctx, audio_path, text=text)
     except Exception as e:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
@@ -994,16 +990,16 @@ async def __bark(
 
 
 async def send_output(ctx, audio_path, output, timer):
-    await ctx.send("===Файлы " + os.path.basename(audio_path)[:-4] + "===")
+    text = "===Файлы " + os.path.basename(audio_path)[:-4] + "==="
     output = output.replace(" ", "")
     # конечный файл
     if output == "file":
-        await send_file(ctx, audio_path)
+        await send_file(ctx, audio_path, text=text)
     # все файлы
     elif output == "all_files":
         for filename in os.listdir(os.path.dirname(audio_path)):
             file_path = os.path.join(os.path.dirname(audio_path), filename)
-            await send_file(ctx, file_path)
+            await send_file(ctx, file_path, text=f"{text}+\n{filename}")
     # zip файл по ссылке
     elif output == "link":
         zip_name = os.path.dirname(audio_path) + f"/all_files.zip"
@@ -1137,6 +1133,7 @@ async def __cover(
 
         urls = []
         if audio_path:
+            timer = Time_Count()
             filename = f"{ctx.author.id}-{random.randint(1, 1000000)}.mp3"
             await audio_path.save(filename)
             urls.append(filename)
@@ -1146,7 +1143,8 @@ async def __cover(
                                               pitch=pitch, filter_radius=filter_radius, rms_mix_rate=rms_mix_rate,
                                               protect=0.3, algo=palgo)
                 await voice_changer.voice_change(input_path=filename, output_path=filename)
-                await send_file(ctx, file_path=filename)
+                text = f"Потрачено:{timer.count_time()}"
+                await send_file(ctx, file_path=filename, text=text)
                 await cuda_manager.stop_use_cuda(cuda_number)
                 return
         if url:
@@ -1604,7 +1602,7 @@ async def send_smth(ctx, *args):
         await ctx.author.send("Доступ запрещён")
         return
     file_path = ''.join(args)
-    await send_file(ctx=ctx, file_path=file_path)
+    await send_file(ctx=ctx, file_path=file_path, text=file_path)
 
 
 @bot.command(aliases=['restart'], help="Перезагрузка")
@@ -1832,12 +1830,12 @@ class Recognizer:
         logger.logging("Stop_Recording", color=Color.GREEN)
 
 
-async def send_file(ctx, file_path, delete_file=False):
+async def send_file(ctx, file_path, delete_file=False, text=""):
     try:
         try:
-            await ctx.respond(file=discord.File(file_path))
+            await ctx.respond(content=text, file=discord.File(file_path))
         except:
-            await ctx.send(file=discord.File(file_path))
+            await ctx.send(content=text, file=discord.File(file_path))
         if delete_file:
             await asyncio.sleep(1.5)
             os.remove(file_path)
@@ -1915,7 +1913,7 @@ class AudioPlayerDiscord:
     async def play(self, audio_file, delete_file=False, is_send_file=True):
         if not self.guild:
             if is_send_file:
-                await send_file(self.ctx, audio_file)
+                await send_file(self.ctx, audio_file, text="Невозможно проиграть файл")
             return
 
         async with audio_play_lock():
