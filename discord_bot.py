@@ -289,7 +289,6 @@ async def __upscale_image_command(ctx,
 
         cuda_number = await cuda_manager.use_cuda()
         timer = Time_Count()
-        await ctx.respond(f"Выполнение")
 
         await asyncio.to_thread(
             upscale_image, cuda_number=cuda_number, image_path=image_path, prompt=prompt, steps=steps
@@ -370,9 +369,6 @@ async def __generate_video(ctx,
                     await ctx.send("Загружено изображение, prompt игнорируется")
                 await image.save(image_path)
             else:
-                if not prompt:
-                    await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
-                    return
 
                 try:
                     image_path = f"images/image{ctx.author.id}_{seed}_generate_API.png"
@@ -406,9 +402,14 @@ async def __generate_video(ctx,
 
     if not image and prompt and gpt:
         prompt = await image_prompt_with_gpt(prompt)
+    if image:
+        await ctx.respond(f"Запрос:Изображение")
+    elif prompt:
         await ctx.respond(f"Запрос:\n{prompt}")
     else:
-        await ctx.respond(f"Выполнение")
+        await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
+        return
+
 
     await ctx.defer()
     for i in range(repeats):
@@ -448,7 +449,7 @@ async def __generate_audio(ctx,
                 steps=steps, seed=seed
             )
 
-            text = f"Аудиофайл {i + 1}/{repeats}\nЗапрос:{prompt}\nСид:{seed}\nПотрачено: {timer.count_time()}"
+            text = f"Аудиофайл {i + 1}/{repeats}\nСид:{seed}\nПотрачено: {timer.count_time()}"
             await send_file(ctx, wav_audio_path, delete_file=True, text=text)
         except Exception as e:
             await ctx.respond(f"Ошибка:{e}")
@@ -461,9 +462,7 @@ async def __generate_audio(ctx,
         with open(f"gpt_history/prompts/music") as file:
             content = file.read()
         prompt = await ChatGPT().run_all_gpt(content + prompt)
-        await ctx.respond(f"Запрос:\n{prompt}")
-    else:
-        await ctx.respond(f"Выполнение")
+    await ctx.respond(f"Запрос:\n{prompt}")
 
     await ctx.defer()
     for i in range(repeats):
@@ -528,7 +527,7 @@ async def __generate_image(ctx,
                 )
 
                 await cuda_manager.stop_use_cuda(cuda_number)
-            text = f"Картинка: {i + 1}/{repeats}\nЗапрос:{prompt}\nПотрачено: {timer.count_time()}" + seed_text
+            text = f"Картинка: {i + 1}/{repeats}\nПотрачено: {timer.count_time()}" + seed_text
             await send_file(ctx=ctx, file_path=image_path, text=text)
 
         except Exception as e:
@@ -547,9 +546,7 @@ async def __generate_image(ctx,
         await ctx.send("style игнорируется, так как выключен API")
     if gpt:
         prompt = await image_prompt_with_gpt(prompt)
-        await ctx.respond(f"Запрос:\n{prompt}")
-    else:
-        await ctx.respond(f"Выполнение")
+    await ctx.respond(f"Запрос:\n{prompt}")
 
     for i in range(repeats):
         asyncio.create_task(repeat_generate_images(seed, i))
@@ -610,7 +607,7 @@ async def __image_change(ctx,
             )
 
             # отправляем
-            text = f"Изображение {i + 1}/{repeats}\nЗапрос:{prompt}\nПотрачено {timer.count_time()}.\nСид:{seed}"
+            text = f"Изображение {i + 1}/{repeats}\nПотрачено {timer.count_time()}.\nСид:{seed}"
 
             await send_file(ctx, image_path, text=text)
         except Exception as e:
@@ -630,7 +627,7 @@ async def __image_change(ctx,
         mask_path = "images/image" + str(ctx.author.id) + "_change_mask.png"
         await mask.save(mask_path)
 
-    await ctx.respond(f"Выполнение")
+    await ctx.respond(f"Запрос:{prompt}")
 
     for i in range(repeats):
         asyncio.create_task(images_change_async(seed, i, image_path))
@@ -1186,7 +1183,7 @@ async def __dialog(
         prompt: Option(str, description="Общий запрос для всех диалогов (None)", required=False, default="")
 ):
     try:
-        await ctx.respond('Выполнение...')
+        await ctx.respond(f'Выполнение...\nПерсонажи:{", ".join(names)}\nТема:{theme}\nПостоянный запрос:{prompt}')
         names = names.split(";")
         voices = await get_voice_list()
         for name in names:
