@@ -178,11 +178,12 @@ class TextToSpeechRVC:
                 logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
                 logger.logging("(error) Remove key:", self.elevenlabs_voice_keys[0], color=Color.BLUE)
                 if "Please play" in str(e):
-                    self.elevenlabs_removed_key = self.elevenlabs_voice_keys[0]
+                    self.elevenlabs_removed_key = self.elevenlabs_voice_keys[0] + "END!"
                     logger.logging("(error) LAST KEYS WAS IN ELEVENLABS:", self.elevenlabs_voice_keys[0],
                                    color=Color.RED)
                     create_secret(SecretKey.voice_keys, "None")
                 elif len(self.elevenlabs_voice_keys) > 1:
+                    self.elevenlabs_removed_key = self.elevenlabs_voice_keys[0]
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys[1:]))
                 else:
                     create_secret(SecretKey.voice_keys, "None")
