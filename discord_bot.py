@@ -828,6 +828,7 @@ async def __say(
 ):
     # ["fast", "all", "None"], ["быстрый режим", "много ответов (медленный)", "Экономный режим"]
     user = DiscordUser(ctx)
+    await ctx.defer()
     if gpt_mode:
         gpt_mode = gpt_mode.replace("быстрый режим", "Fast").replace("много ответов", "All")
         await user.set_user_config(SQL_Keys.gpt_mode, gpt_mode)
@@ -901,6 +902,7 @@ async def __tts(
                       choices=['rmvpe', 'mangio-crepe'], default="rmvpe"),
 
 ):
+    await ctx.defer()
     user = DiscordUser(ctx)
     if not voice_name:
         voice_name = user.character.name
@@ -972,6 +974,7 @@ async def __bark(
                         max_value=8),
         gen_temp: Option(float, description='Разнообразие (0.6)', required=False, default=0.6)
 ):
+    await ctx.defer()
     global bark_model
 
     mat_found, text = await moderate_mat_in_sentence(text)
