@@ -300,7 +300,7 @@ async def __upscale_image_command(ctx,
     except Exception as e:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
-        await ctx.respond(f"Ошибка:{e}")
+        await ctx.send(f"Ошибка:{e}")
     finally:
         await cuda_manager.stop_use_cuda(cuda_number)
 
@@ -397,7 +397,7 @@ async def __generate_video(ctx,
         except Exception as e:
             traceback_str = traceback.format_exc()
             logger.logging(str(traceback_str), color=Color.RED)
-            await ctx.respond(f"Ошибка:{e}")
+            await ctx.send(f"Ошибка:{e}")
         finally:
             await cuda_manager.stop_use_cuda(cuda_number)
 
@@ -453,7 +453,7 @@ async def __generate_audio(ctx,
             text = f"Аудиофайл {i + 1}/{repeats}\nСид:{seed}\nПотрачено: {timer.count_time()}"
             await send_file(ctx, wav_audio_path, delete_file=True, text=text)
         except Exception as e:
-            await ctx.respond(f"Ошибка:{e}")
+            await ctx.send(f"Ошибка:{e}")
             traceback_str = traceback.format_exc()
             logger.logging(str(traceback_str), color=Color.RED)
         finally:
@@ -540,7 +540,7 @@ async def __generate_image(ctx,
             await send_file(ctx=ctx, file_path=image_path, text=text)
 
         except Exception as e:
-            await ctx.respond(f"Ошибка:{e}")
+            await ctx.send(f"Ошибка:{e}")
             await cuda_manager.stop_use_cuda(cuda_number)
 
     await ctx.defer()
@@ -622,7 +622,7 @@ async def __image_change(ctx,
         except Exception as e:
             traceback_str = traceback.format_exc()
             logger.logging(str(traceback_str), color=Color.RED)
-            await ctx.respond(f"Ошибка:{e}")
+            await ctx.send(f"Ошибка:{e}")
         finally:
             await cuda_manager.stop_use_cuda(cuda_number)
 
@@ -693,7 +693,7 @@ async def __image_example(ctx,
         except Exception as e:
             traceback_str = traceback.format_exc()
             logger.logging(str(traceback_str), color=Color.RED)
-            await ctx.respond(f"Ошибка:{e}")
+            await ctx.send(f"Ошибка:{e}")
         finally:
             await cuda_manager.stop_use_cuda(cuda_number)
 
