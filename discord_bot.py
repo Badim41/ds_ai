@@ -409,7 +409,7 @@ async def __generate_video(ctx,
     elif image:
         await ctx.respond(f"Запрос:Изображение")
     elif prompt:
-        await ctx.respond(f"Запрос:\n{prompt}")
+        pass
     else:
         await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
         return
