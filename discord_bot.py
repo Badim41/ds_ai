@@ -384,6 +384,8 @@ async def __generate_video(ctx,
                         generate_image_sd, image_path=image_path, prompt=prompt, x=1280, y=720,
                         steps=steps, seed=seed, cuda_number=cuda_number, negative_prompt=".", refine=False
                     )
+                finally:
+                    await send_file(ctx, file_path=image_path, text=f"Запрос:\n{prompt}\n\nИдёт генерация видео...")
 
             video_path, gif_path = await asyncio.to_thread(
                 generate_video, cuda_number=cuda_number, image_path=image_path, seed=seed, fps=fps,
@@ -403,7 +405,7 @@ async def __generate_video(ctx,
 
     if not image and prompt and gpt:
         prompt = await image_prompt_with_gpt(prompt)
-    if image:
+    elif image:
         await ctx.respond(f"Запрос:Изображение")
     elif prompt:
         await ctx.respond(f"Запрос:\n{prompt}")
