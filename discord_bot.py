@@ -60,6 +60,7 @@ ALL_VOICES = {'Rachel': "Ж", 'Clyde': 'М', 'Domi': 'Ж', 'Dave': 'М', 'Fin': 
               'Giovanni': 'М', 'Mimi': 'Ж'}
 
 custom_prompts_files = os.listdir("gpt_history/prompts")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class SQL_Keys:
@@ -285,7 +286,7 @@ async def __upscale_image_command(ctx,
                                   ):
     try:
         await ctx.defer()
-        image_path = "images/image" + str(ctx.author.id) + "_upscale.png"
+        image_path = f"{BASE_DIR}/" + "images/image" + str(ctx.author.id) + "_upscale.png"
         await image.save(image_path)
 
         cuda_number = await cuda_manager.use_cuda()
@@ -364,7 +365,7 @@ async def __generate_video(ctx,
 
             timer = Time_Count()
 
-            image_path = f"images/{ctx.author.id}_generate_video{i}.png"
+            image_path = f"{BASE_DIR}/" + f"images/{ctx.author.id}_generate_video{i}.png"
             if image:
                 if prompt:
                     await ctx.send("Загружено изображение, prompt игнорируется")
@@ -631,12 +632,12 @@ async def __image_change(ctx,
 
     await ctx.defer()
 
-    image_path = "images/image" + str(ctx.author.id) + "_change.png"
+    image_path = f"{BASE_DIR}/" + "images/image" + str(ctx.author.id) + "_change.png"
     await image.save(image_path)
 
     mask_path = None
     if mask:
-        mask_path = "images/image" + str(ctx.author.id) + "_change_mask.png"
+        mask_path = f"{BASE_DIR}/" + "images/image" + str(ctx.author.id) + "_change_mask.png"
         await mask.save(mask_path)
 
     await ctx.respond(f"Запрос:{prompt}")
@@ -702,15 +703,15 @@ async def __image_example(ctx,
 
     await ctx.defer()
 
-    image_path = "images/image" + str(ctx.author.id) + "_example.png"
+    image_path = f"{BASE_DIR}/" + "images/image" + str(ctx.author.id) + "_example.png"
     await image.save(image_path)
 
-    example_path = "images/image" + str(ctx.author.id) + "_example_example.png"
+    example_path = f"{BASE_DIR}/" + "images/image" + str(ctx.author.id) + "_example_example.png"
     await example.save(example_path)
 
     mask_path = None
     if mask:
-        mask_path = "images/image" + str(ctx.author.id) + "_example_mask.png"
+        mask_path = f"{BASE_DIR}/" + "images/image" + str(ctx.author.id) + "_example_mask.png"
         await mask.save(mask_path)
 
     await ctx.respond(f"Выполнение")
@@ -1146,7 +1147,7 @@ async def __cover(
         urls = []
         if audio_path:
             timer = Time_Count()
-            filename = f"{ctx.author.id}-{random.randint(1, 1000000)}.mp3"
+            filename = f"{BASE_DIR}/" + f"{ctx.author.id}-{random.randint(1, 1000000)}.mp3"
             await audio_path.save(filename)
             urls.append(filename)
             if only_voice_change:
@@ -1498,7 +1499,7 @@ async def __add_voice(
 
 async def agrs_with_txt(txt_file):
     try:
-        filename = "temp_args.txt"
+        filename = f"{BASE_DIR}/" + "temp_args.txt"
         await txt_file.save(filename)
         with open(filename, "r", encoding="utf-8") as file:
             lines = file.readlines()
