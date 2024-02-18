@@ -1200,7 +1200,7 @@ async def __dialog(
         prompt: Option(str, description="Общий запрос для всех диалогов (None)", required=False, default="")
 ):
     try:
-        await ctx.respond(f'Выполнение...\nПерсонажи:{", ".join(names)}\nТема:{theme}\nПостоянный запрос:{prompt}')
+        await ctx.respond(f'Выполнение...\nПерсонажи:{names}\nТема:{theme}\nПостоянный запрос:{prompt}')
         names = names.split(";")
         voices = await get_voice_list()
         for name in names:
