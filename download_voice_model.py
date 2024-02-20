@@ -9,7 +9,7 @@ import json
 
 BASE_DIR = os.getcwd()
 rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
-
+HF_TOKEN = os.getenv('HF_TOKEN')
 
 async def extract_zip(extraction_folder, zip_name, parameters):
     os.makedirs(extraction_folder)
@@ -59,7 +59,14 @@ async def download_online_model(url, dir_name, parameters):
         if 'pixeldrain.com' in url:
             url = f'https://pixeldrain.com/api/file/{zip_name}'
 
-        response = requests.get(url, stream=True)
+        if "huggingface" in url and HF_TOKEN:
+            headers = {
+                "Authorization": f"Bearer {HF_TOKEN}"
+            }
+            response = requests.get(url, stream=True, headers=headers)
+        else:
+            response = requests.get(url, stream=True)
+
         with open(zip_name, 'wb') as file:
             for chunk in response.iter_content(chunk_size=8192):
                 file.write(chunk)

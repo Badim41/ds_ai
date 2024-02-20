@@ -914,7 +914,7 @@ async def __tts(
 
     voices = await get_voice_list()
     if str(voice_name) not in voices:
-        return await ctx.response.send_message("Выберите голос для озвучки (или /add_voice): " + ';'.join(voices))
+        return await ctx.respond("Выберите голос для озвучки (или /add_voice): " + ';'.join(voices))
 
     if voice_model_eleven == "All":
         voice_models = ALL_VOICES.keys()
@@ -922,10 +922,10 @@ async def __tts(
         if voice_model_eleven is None:
             voice_model_eleven = user.character.voice_model_eleven
             if voice_model_eleven is None:
-                return await ctx.response.send_message(
+                return await ctx.respond(
                     f"Голосовая модель персонажа: {voice_model_eleven}, что недопустимо")
         if voice_model_eleven not in ALL_VOICES.keys():
-            await ctx.response.send_message("Список голосов elevenlabs: \n" + ';'.join(ALL_VOICES.keys()))
+            await ctx.respond("Список голосов elevenlabs: \n" + ';'.join(ALL_VOICES.keys()))
             return
         voice_models = [voice_model_eleven]
     character = user.character
