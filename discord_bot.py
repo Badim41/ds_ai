@@ -1781,7 +1781,7 @@ class Recognizer:
         try:
             await self.user.character.load_voice(0)
         except:
-            logger.logging("У игрока не выбран голос", color=Color.GRAY)
+            logger.logging(f"У {self.user.name} не выбран голос", color=Color.GRAY)
         google_recognizer = self.google_recognizer
         logger.logging("Record", color=Color.GRAY)
         while self.alive:
