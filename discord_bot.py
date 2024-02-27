@@ -1318,7 +1318,7 @@ class Dialog_AI:
                         del self.dialog_create[files_number]
                         audio_path_1 = f"{files_number}{character.name}-row.mp3"
                         audio_path_2 = f"{files_number}{character.name}.mp3"
-                        await character.text_to_speech(text=text, audio_path=audio_path_1, output_name=audio_path_2, ctx=ctx)
+                        await character.text_to_speech(text=text, audio_path=audio_path_1, output_name=audio_path_2, ctx=self.ctx)
                         self.dialog_play[files_number] = (character.name, audio_path_2)
                         os.remove(audio_path_1)
                         break
