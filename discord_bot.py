@@ -1323,8 +1323,8 @@ class Dialog_AI:
                         os.remove(audio_path_1)
                         break
                 await asyncio.sleep(0.5)
-            except Exception as e:
-                logger.logging("Error id:create audio dialog:" + str(e), color=Color.RED)
+            except:
+                logger.logging("Error id:create audio dialog:" + str(traceback.format_exc()), color=Color.RED)
 
     async def save_dialog(self, result):
         # logger.logging(result, color=Color.GRAY)
