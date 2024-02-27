@@ -175,21 +175,21 @@ class TextToSpeechRVC:
 
                 save(audio, audio_file)
             except Exception as e:
-                from discord_bot import bot
+                from discord_bot import send_lm
                 logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
                 logger.logging("Remove key:", self.elevenlabs_voice_keys[0], color=Color.BLUE)
-                onwer_id = int((await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")[0])
-                user = await bot.fetch_user(onwer_id)
+                owner_id = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")[0]
+
                 if "Please play" in str(e):
-                    await user.send("Elevenlabs unavailable. " + self.elevenlabs_voice_keys[0] + " WAS LAST KEYS")
+                    await send_lm(user_id=owner_id, text="Elevenlabs unavailable. " + self.elevenlabs_voice_keys[0] + " WAS LAST KEYS")
                     logger.logging("(error) LAST KEY ELEVENLABS:", self.elevenlabs_voice_keys[0],
                                    color=Color.RED)
                     create_secret(SecretKey.voice_keys, "None")
                 elif len(self.elevenlabs_voice_keys) > 1:
-                    await user.send("key unavailable." + self.elevenlabs_voice_keys[0] + f"({len(self.elevenlabs_voice_keys)} left)")
+                    await send_lm(user_id=owner_id, text="key unavailable." + self.elevenlabs_voice_keys[0] + f"({len(self.elevenlabs_voice_keys)} left)")
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys[1:]))
                 else:
-                    await user.send("No keys unavailable.")
+                    await send_lm(user_id=owner_id, text="No keys unavailable.")
                     create_secret(SecretKey.voice_keys, "None")
                 pitch = await self.elevenlabs_text_to_speech(text, audio_file)
         return pitch

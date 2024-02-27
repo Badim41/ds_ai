@@ -1861,6 +1861,14 @@ async def send_file(ctx, file_path, delete_file=False, text=""):
         logger.logging(str(traceback_str), color=Color.RED)
         await ctx.send(f'Произошла ошибка при отправке файла: {e}.')
 
+async def send_lm(user_id, text):
+    try:
+        user = await bot.fetch_user(int(user_id))
+        await user.send(text)
+    except discord.HTTPException as e:
+        traceback_str = traceback.format_exc()
+        logger.logging(str(traceback_str), color=Color.RED)
+
 
 @asynccontextmanager
 async def audio_play_lock():
