@@ -124,7 +124,7 @@ class TextToSpeechRVC:
         self.speaker_boost = speaker_boost
         self.elevenlabs_voice_keys = str(load_secret(SecretKey.voice_keys)).split(";")
 
-    async def text_to_speech(self, text, audio_path="1.mp3", output_name=None):
+    async def text_to_speech(self, text, audio_path="1.mp3", output_name=None, ctx=None):
         if text is None or text.replace("\n", "").replace(" ", "") == "":
             logger.logging(f"Пустой текст \"{text}\"", color=Color.RED)
             raise Exception("No text")
@@ -138,11 +138,11 @@ class TextToSpeechRVC:
         if output_name is None:
             output_name = f"{self.voice_model_eleven}.mp3"
 
-        pitch = await self.elevenlabs_text_to_speech(text, audio_path)
+        pitch = await self.elevenlabs_text_to_speech(text, audio_path, ctx=ctx)
 
         await self.voice_changer(audio_path, output_name, pitch)
 
-    async def elevenlabs_text_to_speech(self, text, audio_file):
+    async def elevenlabs_text_to_speech(self, text, audio_file, ctx=None):
         max_simbols = self.max_simbols
         pitch = self.pitch
 
@@ -178,18 +178,29 @@ class TextToSpeechRVC:
                 from discord_bot import send_lm
                 logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
                 logger.logging("Remove key:", self.elevenlabs_voice_keys[0], color=Color.BLUE)
-                owner_id = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")[0]
 
                 if "Please play" in str(e):
-                    await send_lm(user_id=owner_id, text="Elevenlabs unavailable. " + self.elevenlabs_voice_keys[0] + " WAS LAST KEYS")
+                    if ctx:
+                        user = ctx.guild.get_member(ctx.author.id)
+                        if ctx.guild.get_member(ctx.author.id):
+                            await ctx.send("Elevenlabs unavailable. " + self.elevenlabs_voice_keys[0] + " WAS LAST KEYS" + user.mention)
+
                     logger.logging("(error) LAST KEY ELEVENLABS:", self.elevenlabs_voice_keys[0],
                                    color=Color.RED)
                     create_secret(SecretKey.voice_keys, "None")
                 elif len(self.elevenlabs_voice_keys) > 1:
-                    await send_lm(user_id=owner_id, text="key unavailable." + self.elevenlabs_voice_keys[0] + f"({len(self.elevenlabs_voice_keys)} left)")
+                    if ctx:
+                        user = ctx.guild.get_member(ctx.author.id)
+                        if ctx.guild.get_member(ctx.author.id):
+                            await ctx.send("key unavailable." + self.elevenlabs_voice_keys[0] + f"({len(self.elevenlabs_voice_keys)} left)" + user.mention)
+
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys[1:]))
                 else:
-                    await send_lm(user_id=owner_id, text="No keys unavailable.")
+                    if ctx:
+                        user = ctx.guild.get_member(ctx.author.id)
+                        if ctx.guild.get_member(ctx.author.id):
+                            await ctx.send("No keys unavailable." + user.mention)
+
                     create_secret(SecretKey.voice_keys, "None")
                 pitch = await self.elevenlabs_text_to_speech(text, audio_file)
         return pitch
@@ -350,10 +361,10 @@ class Character:
                                          speaker_boost=speaker_boost)
             logger.logging(f"Updated {self.name} voice params", color=Color.CYAN)
 
-    async def text_to_speech(self, text, audio_path="1.mp3", output_name="2.mp3"):
+    async def text_to_speech(self, text, audio_path="1.mp3", output_name="2.mp3", ctx=None):
         if not self.voice:
             await self.load_voice(0)
-        await self.voice.text_to_speech(text, audio_path=audio_path, output_name=output_name)
+        await self.voice.text_to_speech(text, audio_path=audio_path, output_name=output_name, ctx=ctx)
 
 
 class Text2ImageAPI:
