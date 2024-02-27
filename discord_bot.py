@@ -1208,6 +1208,10 @@ async def __dialog(
                 await ctx.respond("Выберите голос для озвучки (или /add_voice):" + ', '.join(voices))
                 return
 
+        if ctx.guild_id in dialogs:
+            asyncio.run(ctx.send("Уже идёт диалог"))
+            return
+
         # не в войс чате
         voice = ctx.author.voice
         if not voice:
@@ -1231,10 +1235,6 @@ async def __dialog(
 
 class Dialog_AI:
     def __init__(self, ctx, characters, theme, global_prompt):
-
-        if ctx.guild_id in dialogs:
-            asyncio.run(ctx.send("Уже идёт диалог"))
-            return
 
         self.alive = True
         self.ctx = ctx
