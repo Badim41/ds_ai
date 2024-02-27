@@ -189,6 +189,7 @@ class TextToSpeechRVC:
                     await user.send("key unavailable." + self.elevenlabs_voice_keys[0] + f"({len(self.elevenlabs_voice_keys)} left)")
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys[1:]))
                 else:
+                    await user.send("No keys unavailable.")
                     create_secret(SecretKey.voice_keys, "None")
                 pitch = await self.elevenlabs_text_to_speech(text, audio_file)
         return pitch
