@@ -1285,6 +1285,7 @@ class Dialog_AI:
             self.alive = False
 
     async def play_dialog(self):
+        logger.logging("Dialog (2/3): playing!")
         while self.alive:
             if self.play_number in self.dialog_play:
                 name, audio_path = self.dialog_play[self.play_number]
@@ -1297,10 +1298,11 @@ class Dialog_AI:
                 await self.audio_player.play(audio_path)
                 await self.ctx.send("end")
             else:
-                # logger.logging("warn: Нет аудио для диалога!", color=Color.RED)
+                logger.logging("warn: Нет аудио для диалога!", color=Color.RED)
                 await asyncio.sleep(0.75)
 
     async def create_audio_dialog(self, character):
+        logger.logging(f"Dialog (3/3): create audio ({character.name}) working!")
         while self.alive:
             try:
                 for files_number, (name, text) in self.dialog_create.items():
@@ -1353,6 +1355,7 @@ class Dialog_AI:
             "Привет, ребята! ", "").replace("Привет, ребята", "").replace("Всем привет, ", "").replace("Эй", "")
 
     async def gpt_dialog(self):
+        logger.logging("Dialog (1/3): gpt working!")
         infos = '.\n'.join(self.infos)
         prompt = (
             f"# Задача\nСоздать диалог между {', '.join(self.names)}.\n"
