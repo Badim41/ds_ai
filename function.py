@@ -30,6 +30,7 @@ from discord_tools.sql_db import set_get_database_async as set_get_config_all
 class SQL_Keys:
     kandinsky_api_key = "kandinsky_api_key"
     kandinsky_secret_key = "kandinsky_secret_key"
+    owner_id = "owner_id"
 
 
 api_key = asyncio.run(set_get_config_all("secret", SQL_Keys.kandinsky_api_key))
@@ -122,7 +123,6 @@ class TextToSpeechRVC:
         self.max_simbols = max_simbols
         self.speaker_boost = speaker_boost
         self.elevenlabs_voice_keys = str(load_secret(SecretKey.voice_keys)).split(";")
-        self.elevenlabs_removed_key = None
 
     async def text_to_speech(self, text, audio_path="1.mp3", output_name=None):
         if text is None or text.replace("\n", "").replace(" ", "") == "":
@@ -175,15 +175,18 @@ class TextToSpeechRVC:
 
                 save(audio, audio_file)
             except Exception as e:
+                from discord_bot import bot
                 logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
-                logger.logging("(error) Remove key:", self.elevenlabs_voice_keys[0], color=Color.BLUE)
+                logger.logging("Remove key:", self.elevenlabs_voice_keys[0], color=Color.BLUE)
+                onwer_id = int((await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")[0])
+                user = await bot.fetch_user(onwer_id)
                 if "Please play" in str(e):
-                    self.elevenlabs_removed_key = self.elevenlabs_voice_keys[0] + "END!"
-                    logger.logging("(error) LAST KEYS WAS IN ELEVENLABS:", self.elevenlabs_voice_keys[0],
+                    await user.send("Elevenlabs unavailable. " + self.elevenlabs_voice_keys[0] + " WAS LAST KEYS")
+                    logger.logging("(error) LAST KEY ELEVENLABS:", self.elevenlabs_voice_keys[0],
                                    color=Color.RED)
                     create_secret(SecretKey.voice_keys, "None")
                 elif len(self.elevenlabs_voice_keys) > 1:
-                    self.elevenlabs_removed_key = self.elevenlabs_voice_keys[0]
+                    await user.send("key unavailable." + self.elevenlabs_voice_keys[0] + f"({len(self.elevenlabs_voice_keys)} left)")
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys[1:]))
                 else:
                     create_secret(SecretKey.voice_keys, "None")
