@@ -1209,7 +1209,7 @@ async def __dialog(
                 return
 
         if ctx.guild_id in dialogs:
-            asyncio.run(ctx.send("Уже идёт диалог"))
+            await ctx.respond("Уже идёт диалог")
             return
 
         # не в войс чате
@@ -1863,6 +1863,7 @@ async def send_file(ctx, file_path, delete_file=False, text=""):
 
 async def send_lm(user_id, text):
     try:
+        print("USER_ID:", user_id)
         user = await bot.fetch_user(int(user_id))
         await user.send(text)
     except discord.HTTPException as e:
