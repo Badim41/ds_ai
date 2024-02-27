@@ -1778,7 +1778,10 @@ class Recognizer:
             logger.logging("Cant stop recording: No user")
 
     async def recognize(self):
-        await self.user.character.load_voice(1)
+        try:
+            await self.user.character.load_voice(0)
+        except:
+            logger.logging("У игрока не выбран голос", color=Color.GRAY)
         google_recognizer = self.google_recognizer
         logger.logging("Record", color=Color.GRAY)
         while self.alive:
