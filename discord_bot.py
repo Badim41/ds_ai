@@ -1324,7 +1324,7 @@ class Dialog_AI:
                         break
                 await asyncio.sleep(0.5)
             except Exception as e:
-                logger.logging(str(e), color=Color.RED)
+                logger.logging("Error id:create audio dialog:" + str(e), color=Color.RED)
 
     async def save_dialog(self, result):
         # logger.logging(result, color=Color.GRAY)
@@ -1435,7 +1435,7 @@ class Dialog_AI:
             except Exception as e:
                 traceback_str = traceback.format_exc()
                 logger.logging(str(traceback_str), color=Color.RED)
-                await self.ctx.send(f"Ошибка при изменении голоса(ID:d4): {e}")
+                await self.ctx.send(f"Ошибка (ID:dialog-GPT): {e}")
 
 
 @bot.slash_command(name="add_voice", description='Добавить RVC голос')
