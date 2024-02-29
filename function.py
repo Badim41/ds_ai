@@ -183,7 +183,7 @@ class TextToSpeechRVC:
                     if ctx:
                         user = ctx.guild.get_member(ctx.author.id)
                         if ctx.guild.get_member(ctx.author.id):
-                            await ctx.send("Elevenlabs unavailable. " + self.elevenlabs_voice_keys[0] + " WAS LAST KEYS" + user.mention)
+                            await ctx.send("Elevenlabs unavailable. " + self.elevenlabs_voice_keys[0][:-8] + "*** WAS LAST KEYS" + user.mention)
 
                     logger.logging("(error) LAST KEY ELEVENLABS:", self.elevenlabs_voice_keys[0],
                                    color=Color.RED)
@@ -192,7 +192,7 @@ class TextToSpeechRVC:
                     if ctx:
                         user = ctx.guild.get_member(ctx.author.id)
                         if ctx.guild.get_member(ctx.author.id):
-                            await ctx.send("key unavailable." + self.elevenlabs_voice_keys[0] + f"({len(self.elevenlabs_voice_keys)} left)" + user.mention)
+                            await ctx.send("key unavailable." + self.elevenlabs_voice_keys[0][:-8] + f"*** ({len(self.elevenlabs_voice_keys)} left)" + user.mention)
 
                     create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys[1:]))
                 else:
