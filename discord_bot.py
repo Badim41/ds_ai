@@ -1547,6 +1547,8 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model_eleven
         gender = "female"
     elif gender == "мужчина":
         gender = "male"
+    else:
+        gender = str(gender)
     try:
         parameters = {
             "info": info,
