@@ -407,11 +407,11 @@ async def __generate_video(ctx,
     if not image and prompt and gpt:
         prompt = await image_prompt_with_gpt(prompt)
     elif image:
-        await ctx.respond(f"Запрос:Изображение")
+        await ctx.send(f"Запрос:Изображение")
     elif prompt:
         pass
     else:
-        await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
+        await ctx.send("Загрузите изображение или напишите запрос (prompt)")
         return
 
 
