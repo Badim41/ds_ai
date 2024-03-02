@@ -26,7 +26,7 @@ class Use_Cuda:
                     raise Exception("Cuda is using right now")
                 else:
                     self.cuda_is_busy[index] = True
-                return
+                return index
             for _ in range(14400):
                 for i in range(len(self.cuda_is_busy)):
                     if not self.cuda_is_busy[i]:
