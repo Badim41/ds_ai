@@ -22,11 +22,12 @@ class Use_Cuda:
     async def use_cuda(self, index=None):
         async with cuda_lock():
             if not index is None:
-                if self.cuda_is_busy[index]:
-                    raise Exception("Cuda is using right now")
-                else:
-                    self.cuda_is_busy[index] = True
-                return index
+                for _ in range(14400):
+                    if not self.cuda_is_busy[index]:
+                        self.cuda_is_busy[index] = True
+                        return index
+                    await asyncio.sleep(0.25)
+                raise Exception(f"No avaible cuda:{index}")
             for _ in range(14400):
                 for i in range(len(self.cuda_is_busy)):
                     if not self.cuda_is_busy[i]:
