@@ -361,7 +361,7 @@ async def __generate_video(ctx,
         try:
             seed = random.randint(1, 9999999999) if seed is None else seed // (i + 1)
 
-            cuda_number = await cuda_manager.use_cuda()
+            cuda_number = await cuda_manager.use_cuda(0)
 
             timer = Time_Count()
 
