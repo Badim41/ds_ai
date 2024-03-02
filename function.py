@@ -673,7 +673,7 @@ def inpaint_image(prompt, negative_prompt, image_path, mask_path,
 
 def upscale_image(image_path, prompt, steps, cuda_number):
     try:
-        scale_image(image_path=image_path, max_size=600 * 600, match_size=64)
+        scale_image(image_path=image_path, max_size=448 * 448, match_size=64)
         model_id = "stabilityai/stable-diffusion-x4-upscaler"
         pipe = StableDiffusionUpscalePipeline.from_pretrained(
             model_id, revision="fp16", torch_dtype=torch.float16
@@ -712,18 +712,18 @@ def upscale_image(image_path, prompt, steps, cuda_number):
 
 def generate_video(cuda_number, image_path, seed, fps, decode_chunk_size, duration, steps, noise_strenght):
     try:
-        x, y = scale_image(image_path=image_path, max_size=768 * 768, match_size=64)
+        x, y = scale_image(image_path=image_path, max_size=512 * 512, match_size=64)
         video_path = image_path.replace(".png", ".mp4")
         gif_path = video_path.replace(".mp4", ".gif")
 
         pipe = StableVideoDiffusionPipeline.from_pretrained(
             "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16"
         )
-        pipe.to(f"cuda") # :{cuda_number}
+        pipe.to(f"cuda:{cuda_number}") #
 
         image = format_image(image_path)
 
-        generator = torch.Generator(device=f"cuda").manual_seed(seed) # :{cuda_number}
+        generator = torch.Generator(device=f"cuda:{cuda_number}").manual_seed(seed) # :{cuda_number}
 
         frames = pipe(image=image, decode_chunk_size=decode_chunk_size, width=x, height=y, num_inference_steps=steps,
                       num_frames=duration * fps, generator=generator, fps=fps,

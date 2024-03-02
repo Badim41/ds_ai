@@ -361,7 +361,7 @@ async def __generate_video(ctx,
         try:
             seed = random.randint(1, 9999999999) if seed is None else seed // (i + 1)
 
-            cuda_number = await cuda_manager.use_cuda(0)
+            cuda_number = await cuda_manager.use_cuda()
 
             timer = Time_Count()
 
@@ -382,7 +382,7 @@ async def __generate_video(ctx,
                     logger.logging("Cant generate image", e, color=Color.GRAY)
                     image_path = f"images/image{ctx.author.id}_{seed}_generate_sd.png"
                     await asyncio.to_thread(
-                        generate_image_sd, image_path=image_path, prompt=prompt, x=1280, y=720,
+                        generate_image_sd, image_path=image_path, prompt=prompt, x=1024, y=720,
                         steps=steps, seed=seed, cuda_number=cuda_number, negative_prompt=".", refine=False
                     )
                 finally:
