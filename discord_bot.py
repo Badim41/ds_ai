@@ -1163,7 +1163,7 @@ async def __cover(
                                                   pitch=pitch, filter_radius=filter_radius, rms_mix_rate=rms_mix_rate,
                                                   protect=0.3, algo=palgo)
                     await voice_changer.voice_change(input_path=filename, output_path=filename)
-                    text = f"Потрачено:{timer.count_time()}"
+                    text = f"({voice_name})\nПотрачено:{timer.count_time()}"
                     await send_file(ctx, file_path=filename, text=text)
                     await cuda_manager.stop_use_cuda(cuda_number)
             elif url:
