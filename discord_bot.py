@@ -949,12 +949,12 @@ async def __tts(
                 await character.text_to_speech(text, audio_path=audio_path_1, output_name=audio_path_2)
                 # перестаём использовать видеокарту
 
-                text = "Потрачено на обработку:" + timer.count_time()
+                spent_time = f"({voice_name})\nПотрачено на обработку:" + timer.count_time()
                 if output:
                     if output.startswith("1"):
-                        await send_file(ctx, audio_path_2, text=text)
+                        await send_file(ctx, audio_path_2, text=spent_time)
                     elif output.startswith("2"):
-                        await send_file(ctx, audio_path_1, text=text)
+                        await send_file(ctx, audio_path_1, text=spent_time)
                         await send_file(ctx, audio_path_2)
 
                 os.remove(audio_path_1)
