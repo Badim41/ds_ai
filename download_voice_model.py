@@ -7,9 +7,10 @@ import requests
 
 import json
 
+from discord_tools.sql_db import set_get_database_async
+
 BASE_DIR = os.getcwd()
 rvc_models_dir = os.path.join(BASE_DIR, 'rvc_models')
-HF_TOKEN = os.getenv('HF_TOKEN')
 
 async def extract_zip(extraction_folder, zip_name, parameters):
     os.makedirs(extraction_folder)
@@ -59,6 +60,7 @@ async def download_online_model(url, dir_name, parameters):
         if 'pixeldrain.com' in url:
             url = f'https://pixeldrain.com/api/file/{zip_name}'
 
+        HF_TOKEN = await set_get_database_async("secret", "HF_TOKEN")
         if "huggingface" in url and HF_TOKEN:
             headers = {
                 "Authorization": f"Bearer {HF_TOKEN}"

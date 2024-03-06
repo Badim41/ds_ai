@@ -228,10 +228,10 @@ async def help_command(
             "style - Выражение (0 - мало пауз и выражения, 1 - большое количество пауз и выражения)\n")
     elif command == "add_voice":
         text = ("# /add_voice\n(Добавить голосовую модель)\n**url - ссылка на модель **\n**name - имя модели "
-                          "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
-                          "speed - ускорение/замедление при /tts\nvoice_model - модель elevenlab\nchange_voice - True = "
-                          "заменить на текущий голос\ntxt_file - быстрое добавление множества голосовых моделей *(остальные аргументы как 'url', 'gender', 'name'  будут игнорироваться)*, для использования:\n"
-                          "- напишите в txt файле аргументы для add_voice (1 модель - 1 строка), пример:")
+                "**\n**gender - пол модели (для тональности)**\ninfo - информация о человеке (для запроса GPT)\n"
+                "speed - ускорение/замедление при /tts\nvoice_model - модель elevenlab\nchange_voice - True = "
+                "заменить на текущий голос\ntxt_file - быстрое добавление множества голосовых моделей *(остальные аргументы как 'url', 'gender', 'name'  будут игнорироваться)*, для использования:\n"
+                "- напишите в txt файле аргументы для add_voice (1 модель - 1 строка), пример:")
         await send_file(ctx, "add_voice_args.txt", text=text)
     elif command == "create_dialog":
         await ctx.respond(
@@ -325,7 +325,7 @@ async def image_prompt_with_gpt(prompt, iteration=0):
             result = result[result.find("Example:") + 8:]
         return result
     else:
-        result = await image_prompt_with_gpt(prompt, iteration=iteration+1)
+        result = await image_prompt_with_gpt(prompt, iteration=iteration + 1)
         return result
 
 
@@ -413,7 +413,6 @@ async def __generate_video(ctx,
     else:
         await ctx.send("Загрузите изображение или напишите запрос (prompt)")
         return
-
 
     await ctx.defer()
     for i in range(repeats):
@@ -881,7 +880,7 @@ async def get_voice_list():
 async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
-        voice_name: Option(str, description='Голос для озвучки (User character)', required=False, default=None),
+        voice_names: Option(str, description='Голоса для озвучки через ; (User character)', required=False, default=None),
         speed: Option(float, description='Ускорение голоса (Character)', required=False, default=None, min_value=1,
                       max_value=3),
         voice_model_eleven: Option(str, description=f'Какая модель elevenlabs будет использована (Character)',
@@ -906,66 +905,67 @@ async def __tts(
 ):
     await ctx.defer()
     user = DiscordUser(ctx)
-    if not voice_name:
-        voice_name = user.character.name
-    elif not user.character.name == voice_name:
-        await ctx.send("Обновлена базовая модель на:" + voice_name)
-        await user.set_user_config(SQL_Keys.AIname, voice_name)
+    if not voice_names:
+        voice_names = user.character.name
+    elif not user.character.name == voice_names.split(";")[0]:
+        await ctx.send("Обновлена базовая модель на:" + voice_names.split(";")[0])
+        await user.set_user_config(SQL_Keys.AIname, voice_names.split(";")[0])
 
     voices = await get_voice_list()
-    if str(voice_name) not in voices:
-        return await ctx.respond("Выберите голос для озвучки (или /add_voice): " + ';'.join(voices))
+    for voice_name in voice_names.split(";"):
+        if str(voice_name) not in voices:
+            return await ctx.respond("Выберите голос для озвучки (или /add_voice): " + ';'.join(voices))
 
-    if voice_model_eleven == "All":
-        voice_models = ALL_VOICES.keys()
-    else:
-        if voice_model_eleven is None:
-            voice_model_eleven = user.character.voice_model_eleven
+        if voice_model_eleven == "All":
+            voice_models = ALL_VOICES.keys()
+        else:
             if voice_model_eleven is None:
-                return await ctx.respond(
-                    f"Голосовая модель персонажа: {voice_model_eleven}, что недопустимо")
-        if voice_model_eleven not in ALL_VOICES.keys():
-            await ctx.respond("Список голосов elevenlabs: \n" + ';'.join(ALL_VOICES.keys()))
-            return
-        voice_models = [voice_model_eleven]
-    character = user.character
-
-    try:
-        # cuda_number = await cuda_manager.use_cuda()
-        await character.load_voice(0, speed=speed, stability=stability, similarity_boost=similarity_boost,
-                                   style=style, pitch=pitch, algo=palgo)
-        for voice_model in voice_models:
-            audio_path_1 = f"{user.id}-{voice_model}-tts-row.mp3"
-            audio_path_2 = f"{user.id}-{voice_model}-tts.mp3"
-            timer = Time_Count()
-            character.voice.voice_model_eleven = voice_model
-            # logger.logging("text to speech temp-3", text, color=Color.GRAY)
-            mat_found, text = await moderate_mat_in_sentence(text)
-            # logger.logging("text to speech temp-2", text, color=Color.GRAY)
-            if mat_found:
-                await ctx.respond("Такое точно нельзя произносить!")
+                voice_model_eleven = user.character.voice_model_eleven
+                if voice_model_eleven is None:
+                    return await ctx.respond(
+                        f"Голосовая модель персонажа: {voice_model_eleven}, что недопустимо")
+            if voice_model_eleven not in ALL_VOICES.keys():
+                await ctx.respond("Список голосов elevenlabs: \n" + ';'.join(ALL_VOICES.keys()))
                 return
-            # запускаем TTS
-            await character.text_to_speech(text, audio_path=audio_path_1, output_name=audio_path_2)
+            voice_models = [voice_model_eleven]
+        character = user.character
+
+        try:
+            # cuda_number = await cuda_manager.use_cuda()
+            await character.load_voice(0, speed=speed, stability=stability, similarity_boost=similarity_boost,
+                                       style=style, pitch=pitch, algo=palgo)
+            for voice_model in voice_models:
+                audio_path_1 = f"{user.id}-{voice_model}-tts-row.mp3"
+                audio_path_2 = f"{user.id}-{voice_model}-tts.mp3"
+                timer = Time_Count()
+                character.voice.voice_model_eleven = voice_model
+                # logger.logging("text to speech temp-3", text, color=Color.GRAY)
+                mat_found, text = await moderate_mat_in_sentence(text)
+                # logger.logging("text to speech temp-2", text, color=Color.GRAY)
+                if mat_found:
+                    await ctx.respond("Такое точно нельзя произносить!")
+                    return
+                # запускаем TTS
+                await character.text_to_speech(text, audio_path=audio_path_1, output_name=audio_path_2)
+                # перестаём использовать видеокарту
+
+                text = "Потрачено на обработку:" + timer.count_time()
+                if output:
+                    if output.startswith("1"):
+                        await send_file(ctx, audio_path_2, text=text)
+                    elif output.startswith("2"):
+                        await send_file(ctx, audio_path_1, text=text)
+                        await send_file(ctx, audio_path_2)
+
+                os.remove(audio_path_1)
+                os.remove(audio_path_2)
+            # await cuda_manager.stop_use_cuda(cuda_number)
+        except Exception as e:
+            traceback_str = traceback.format_exc()
+            logger.logging(str(traceback_str), color=Color.RED)
+            await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
             # перестаём использовать видеокарту
-
-            text = "Потрачено на обработку:" + timer.count_time()
-            if output:
-                if output.startswith("1"):
-                    await send_file(ctx, audio_path_2, text=text)
-                elif output.startswith("2"):
-                    await send_file(ctx, audio_path_1, text=text)
-                    await send_file(ctx, audio_path_2)
-
-            os.remove(audio_path_1)
-            os.remove(audio_path_2)
-        # await cuda_manager.stop_use_cuda(cuda_number)
-    except Exception as e:
-        traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), color=Color.RED)
-        await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
-        # перестаём использовать видеокарту
-        # await cuda_manager.stop_use_cuda(cuda_number)
+            # await cuda_manager.stop_use_cuda(cuda_number)
 
 
 @bot.slash_command(name="bark", description='Тестовая генерация речи с помощью bark')
@@ -1318,7 +1318,8 @@ class Dialog_AI:
                         del self.dialog_create[files_number]
                         audio_path_1 = f"{files_number}{character.name}-row.mp3"
                         audio_path_2 = f"{files_number}{character.name}.mp3"
-                        await character.text_to_speech(text=text, audio_path=audio_path_1, output_name=audio_path_2, ctx=self.ctx)
+                        await character.text_to_speech(text=text, audio_path=audio_path_1, output_name=audio_path_2,
+                                                       ctx=self.ctx)
                         self.dialog_play[files_number] = (character.name, audio_path_2)
                         os.remove(audio_path_1)
                         break
@@ -1862,6 +1863,7 @@ async def send_file(ctx, file_path, delete_file=False, text=""):
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
         await ctx.send(f'Произошла ошибка при отправке файла: {e}.')
+
 
 async def send_lm(user_id, text):
     try:
