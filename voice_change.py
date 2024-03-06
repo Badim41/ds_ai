@@ -28,7 +28,7 @@ def get_rvc_model(voice_name):
 
 
 class Voice_Changer:
-    def __init__(self, cuda_number:int, voice_name:str, index_rate=0.5, pitch=0, filter_radius=3, rms_mix_rate=0.3, protect=0.33, algo="rmvpe"):
+    def __init__(self, cuda_number:int, voice_name:str, index_rate=0.5, pitch=0, filter_radius=3, rms_mix_rate=0.3, protect=0.33, algo="rmvpe", hop=128):
         logger.logging(cuda_number)
         from rvc import Config, load_hubert, get_vc
         self.rvc_model_path, self.rvc_index_path = get_rvc_model(voice_name)
@@ -44,12 +44,13 @@ class Voice_Changer:
         if algo.lower() not in ["mangio-crepe", "rmvpe"]:
             raise "Not found algo"
         self.algo = algo
+        self.hop = hop
 
     async def voice_change(self, input_path: str, output_path: str, pitch_change=0):
         from rvc import rvc_infer
         rvc_infer(self.rvc_index_path, self.index_rate, input_path, output_path, self.pitch + pitch_change, self.algo, self.cpt,
                   self.version,
                   self.net_g,
-                  self.filter_radius, self.tgt_sr, self.rms_mix_rate, self.protect, 128, self.vc, self.hubert_model)
+                  self.filter_radius, self.tgt_sr, self.rms_mix_rate, self.protect, self.hop, self.vc, self.hubert_model)
         gc.collect()
         return output_path
