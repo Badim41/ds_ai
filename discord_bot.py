@@ -917,7 +917,7 @@ async def __tts(
         return
 
     voices = await get_voice_list()
-    for voice_name in voice_names.split(";"):
+    for voice_name in voice_names:
         if str(voice_name) not in voices:
             return await ctx.respond("Выберите голос для озвучки (или /add_voice): " + ';'.join(voices))
 
