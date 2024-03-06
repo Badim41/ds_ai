@@ -905,11 +905,16 @@ async def __tts(
 ):
     await ctx.defer()
     user = DiscordUser(ctx)
+
     if not voice_names:
-        voice_names = user.character.name
-    elif not user.character.name == voice_names.split(";")[0]:
-        await ctx.send("Обновлена базовая модель на:" + voice_names.split(";")[0])
-        await user.set_user_config(SQL_Keys.AIname, voice_names.split(";")[0])
+        voice_names = [user.character.name]
+    else:
+        voice_names = voice_names.split(";")
+
+    mat_found, text = await moderate_mat_in_sentence(text)
+    if mat_found:
+        await ctx.respond("Такое точно нельзя произносить!")
+        return
 
     voices = await get_voice_list()
     for voice_name in voice_names.split(";"):
@@ -966,6 +971,10 @@ async def __tts(
             await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
             # перестаём использовать видеокарту
             # await cuda_manager.stop_use_cuda(cuda_number)
+
+        if not user.character.name == voice_names[0]:
+            await ctx.send("Обновлена базовая модель на:" + voice_names[0])
+            await user.set_user_config(SQL_Keys.AIname, voice_names[0])
 
 
 @bot.slash_command(name="bark", description='Тестовая генерация речи с помощью bark')
