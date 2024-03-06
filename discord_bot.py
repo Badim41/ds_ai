@@ -1078,7 +1078,7 @@ async def __cover(
         url: Option(str, description='Ссылка на видео', required=False, default=None),
         audio_path: Option(discord.SlashCommandOptionType.attachment, description='Аудиофайл',
                            required=False, default=None),
-        voice_name: Option(str, description='Голос для видео', required=False, default=None),
+        voice_names: Option(str, description='Голоса для озвучки через ;', required=False, default=None),
         pitch: Option(int, description='Какую использовать тональность (от -24 до 24) (или указать gender)',
                       required=False,
                       default=None, min_value=-24, max_value=24),
@@ -1102,10 +1102,7 @@ async def __cover(
                         max_value=1),
         dryness: Option(float, description='Сухость (от 0 до 1)', required=False, default=0.8, min_value=0,
                         max_value=1),
-        palgo: Option(str, description='Алгоритм. Rmvpe - лучший вариант, mangio-crepe - более мягкий вокал',
-                      required=False,
-                      choices=['rmvpe', 'mangio-crepe'], default="rmvpe"),
-        hop: Option(int, description='Как часто проверяет изменения тона в mango-crepe', required=False, default=128,
+        hop: Option(int, description='Как часто проверяет изменения тона в mango-crepe', required=False, default=None,
                     min_value=64,
                     max_value=1280),
         output: Option(str, description='Отправить результат',
@@ -1130,72 +1127,75 @@ async def __cover(
             logger.logging(f"Произошла ошибка при извлечении плейлиста", color=Color.RED)
             return []
 
-    param_string = None
-    # ["link", "file", "all_files", "None"], ["ссылка на все файлы", "только результат (1 файл)", "все файлы", "не отправлять"]
+    palgo = 'mangio-crepe' if hop else 'rmvpe'
+
     output = output.replace("ссылка на все файлы", "link").replace("только результат (1 файл)", "file").replace(
         "все файлы", "all_files").replace("не отправлять", "None")
     try:
         await ctx.defer()
         user = DiscordUser(ctx)
 
-        if not voice_name:
-            voice_name = user.character.name
-        elif not user.character.name == voice_name:
-            await ctx.send("Обновлена базовая модель на:" + voice_name)
-            await user.set_user_config(SQL_Keys.AIname, voice_name)
+        if not voice_names:
+            voice_names = [user.character.name]
+        else:
+            voice_names = voice_names.split(";")
 
         voices = await get_voice_list()
-        if voice_name not in voices:
-            await ctx.respond("Выберите голос для озвучки (или /add_voice):" + ', '.join(voices))
-            return
-
-        if pitch is None:
-            pitch = user.character.pitch
-
-        logger.logging("suc params", color=Color.CYAN)
-
-        urls = []
-        if audio_path:
-            timer = Time_Count()
-            filename = f"{ctx.author.id}-{random.randint(1, 1000000)}.mp3"
-            await audio_path.save(filename)
-            urls.append(filename)
-            if only_voice_change:
-                cuda_number = await cuda_manager.use_cuda()
-                voice_changer = Voice_Changer(cuda_number=cuda_number, voice_name=voice_name, index_rate=indexrate,
-                                              pitch=pitch, filter_radius=filter_radius, rms_mix_rate=rms_mix_rate,
-                                              protect=0.3, algo=palgo)
-                await voice_changer.voice_change(input_path=filename, output_path=filename)
-                text = f"Потрачено:{timer.count_time()}"
-                await send_file(ctx, file_path=filename, text=text)
-                await cuda_manager.stop_use_cuda(cuda_number)
+        for voice_name in voice_names:
+            if voice_name not in voices:
+                await ctx.respond("Выберите голос для озвучки (или /add_voice):" + ', '.join(voices))
                 return
-        if url:
-            if ";" in url:
-                urls += url.split(";")
-            elif "playlist" in url:
-                urls += (await get_links_from_playlist(url)).split(";")
-            else:
-                urls.append(url)
 
-        for i, url in enumerate(urls):
-            asyncio.create_task(
-                run_ai_cover_gen_several_cuda(song_input=url, rvc_dirname=voice_name, pitch=pitch, index_rate=indexrate,
-                                              filter_radius=filter_radius, rms_mix_rate=rms_mix_rate, protect=0.3,
-                                              pitch_detection_algo=palgo,
-                                              crepe_hop_length=hop, main_vol=main_vocal, backup_vol=back_vocal,
-                                              inst_vol=music, reverb_size=roomsize, reverb_wetness=wetness,
-                                              reverb_dryness=dryness,
-                                              reverb_damping=0.7,
-                                              output_format='mp3', output=output, ctx=ctx))
-        if not urls:
-            await ctx.respond('Не указана ссылка или аудиофайл')
-            return
+            if pitch is None:
+                pitch = user.character.pitch
+
+            logger.logging("suc params", color=Color.CYAN)
+
+            urls = []
+            if audio_path:
+                timer = Time_Count()
+                filename = f"{ctx.author.id}-{random.randint(1, 1000000)}.mp3"
+                await audio_path.save(filename)
+                urls.append(filename)
+                if only_voice_change:
+                    cuda_number = await cuda_manager.use_cuda()
+                    voice_changer = Voice_Changer(cuda_number=cuda_number, voice_name=voice_name, index_rate=indexrate,
+                                                  pitch=pitch, filter_radius=filter_radius, rms_mix_rate=rms_mix_rate,
+                                                  protect=0.3, algo=palgo)
+                    await voice_changer.voice_change(input_path=filename, output_path=filename)
+                    text = f"Потрачено:{timer.count_time()}"
+                    await send_file(ctx, file_path=filename, text=text)
+                    await cuda_manager.stop_use_cuda(cuda_number)
+            elif url:
+                if ";" in url:
+                    urls += url.split(";")
+                elif "playlist" in url:
+                    urls += (await get_links_from_playlist(url)).split(";")
+                else:
+                    urls.append(url)
+
+                for i, url in enumerate(urls):
+                    asyncio.create_task(
+                        run_ai_cover_gen_several_cuda(song_input=url, rvc_dirname=voice_name, pitch=pitch, index_rate=indexrate,
+                                                      filter_radius=filter_radius, rms_mix_rate=rms_mix_rate, protect=0.3,
+                                                      pitch_detection_algo=palgo,
+                                                      crepe_hop_length=hop, main_vol=main_vocal, backup_vol=back_vocal,
+                                                      inst_vol=music, reverb_size=roomsize, reverb_wetness=wetness,
+                                                      reverb_dryness=dryness,
+                                                      reverb_damping=0.7,
+                                                      output_format='mp3', output=output, ctx=ctx))
+                if not urls:
+                    await ctx.respond('Не указана ссылка или аудиофайл')
+                    return
+
+        if not user.character.name == voice_names[0]:
+            await ctx.send("Обновлена базовая модель на:" + voice_names[0])
+            await user.set_user_config(SQL_Keys.AIname, voice_names[0])
 
     except Exception as e:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
-        await ctx.respond(f"Ошибка при изменении голоса(ID:d5) (с параметрами {param_string}): {e}")
+        await ctx.respond(f"Ошибка при изменении голоса(ID:d5): {e}")
         await cuda_manager.stop_use_cuda(cuda_number)
 
 
