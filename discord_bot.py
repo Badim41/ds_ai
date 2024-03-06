@@ -1153,19 +1153,22 @@ async def __cover(
 
             urls = []
             if audio_path:
+                print("Audio path.")
                 timer = Time_Count()
                 filename = f"{ctx.author.id}-{random.randint(1, 1000000)}.mp3"
                 await audio_path.save(filename)
+                print("Audio path saved.")
                 urls.append(filename)
                 if only_voice_change:
                     cuda_number = await cuda_manager.use_cuda()
                     voice_changer = Voice_Changer(cuda_number=cuda_number, voice_name=voice_name, index_rate=indexrate,
                                                   pitch=pitch, filter_radius=filter_radius, rms_mix_rate=rms_mix_rate,
-                                                  protect=0.3, algo=palgo)
+                                                  protect=0.3, algo=palgo, hop=hop)
                     await voice_changer.voice_change(input_path=filename, output_path=filename)
                     text = f"({voice_name})\nПотрачено:{timer.count_time()}"
                     await send_file(ctx, file_path=filename, text=text)
                     await cuda_manager.stop_use_cuda(cuda_number)
+                    return
             elif url:
                 if ";" in url:
                     urls += url.split(";")
@@ -1174,23 +1177,23 @@ async def __cover(
                 else:
                     urls.append(url)
 
-                for i, url in enumerate(urls):
-                    asyncio.create_task(
-                        run_ai_cover_gen_several_cuda(song_input=url, rvc_dirname=voice_name, pitch=pitch, index_rate=indexrate,
-                                                      filter_radius=filter_radius, rms_mix_rate=rms_mix_rate, protect=0.3,
-                                                      pitch_detection_algo=palgo,
-                                                      crepe_hop_length=hop, main_vol=main_vocal, backup_vol=back_vocal,
-                                                      inst_vol=music, reverb_size=roomsize, reverb_wetness=wetness,
-                                                      reverb_dryness=dryness,
-                                                      reverb_damping=0.7,
-                                                      output_format='mp3', output=output, ctx=ctx))
-                if not urls:
-                    await ctx.respond('Не указана ссылка или аудиофайл')
-                    return
+            for i, url in enumerate(urls):
+                asyncio.create_task(
+                    run_ai_cover_gen_several_cuda(song_input=url, rvc_dirname=voice_name, pitch=pitch, index_rate=indexrate,
+                                                  filter_radius=filter_radius, rms_mix_rate=rms_mix_rate, protect=0.3,
+                                                  pitch_detection_algo=palgo,
+                                                  crepe_hop_length=hop, main_vol=main_vocal, backup_vol=back_vocal,
+                                                  inst_vol=music, reverb_size=roomsize, reverb_wetness=wetness,
+                                                  reverb_dryness=dryness,
+                                                  reverb_damping=0.7,
+                                                  output_format='mp3', output=output, ctx=ctx))
+            if not urls:
+                await ctx.respond('Не указана ссылка или аудиофайл')
+                return
 
-        if not user.character.name == voice_names[0]:
-            await ctx.send("Обновлена базовая модель на:" + voice_names[0])
-            await user.set_user_config(SQL_Keys.AIname, voice_names[0])
+            if not user.character.name == voice_names[0]:
+                await ctx.send("Обновлена базовая модель на:" + voice_names[0])
+                await user.set_user_config(SQL_Keys.AIname, voice_names[0])
 
     except Exception as e:
         traceback_str = traceback.format_exc()
