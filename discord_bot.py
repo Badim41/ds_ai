@@ -1381,7 +1381,7 @@ class Dialog_AI:
         self.play_number = 0
         self.files_number = 0
 
-        for name, audio_path in self.dialog_play.items():
+        for id, (name, audio_path) in self.dialog_play.items():
             try:
                 logger.logging("removing:", audio_path, color=Color.GRAY)
                 os.remove(audio_path)
@@ -1395,6 +1395,7 @@ class Dialog_AI:
 
         not_speak = 0
         while not_speak < 120:
+            print("Wait for user say")
             spoken_text = self.recognizer.recognized
             if spoken_text:
                 logger.logging("User says:", spoken_text, color=Color.CYAN)
