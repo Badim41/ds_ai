@@ -1355,23 +1355,19 @@ class Dialog_AI:
                     # Чэловек: привет
                     # Вопрос от человека: Привет?
                     if ":" not in line:
-                        print("No : in line", line)
-                        continue
+                        break
 
                     sliced_name = name[:-1]
                     line_with_speaker = line.split(":")[0]
-                    print("line_with_speaker", line_with_speaker)
                     if sliced_name in line_with_speaker or sliced_name.replace("э", "е") in line_with_speaker:
                         line = line[line.find(":") + 1:]
 
                         # пустая строка
                         if line.replace(" ", "").replace("\n", "").replace(".", "") == "":
-                            print("empty line", line)
-                            continue
+                            break
 
                         self.dialog_create[self.files_number] = (name, line)
                         self.files_number += 1
-                        print("Write line:", line)
                         writer.write(f"{name}:{line}\n")
                         found_max_line = i
                         break
@@ -1408,7 +1404,7 @@ class Dialog_AI:
         while not_speak < 120:
             spoken_text = self.recognizer.recognized
             if spoken_text:
-                logger.logging("User says:", spoken_text, color=Color.CYAN)
+                # logger.logging("User says:", spoken_text, color=Color.CYAN)
                 self.recognizer.recognized = ""
                 not_speak = 0
 
