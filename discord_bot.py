@@ -1715,10 +1715,7 @@ async def command_restart(ctx):
             await audio_player.disconnect()
         except Exception as e:
             print("CANT LEAVE VOICE:", e)
-
-    pid = subprocess.check_output(['pgrep', 'discord_bot.py']).decode().strip()
-    subprocess.call(['kill', pid])
-
+    os.kill(os.getpid(), 9)
 
 @bot.command(aliases=['exit'], help="Выключиться")
 async def command_exit(ctx, *args):
@@ -1739,9 +1736,7 @@ async def command_exit(ctx, *args):
             await audio_player.disconnect()
         except Exception as e:
             print("CANT LEAVE VOICE:", e)
-
-    pid = subprocess.check_output(['pgrep', 'discord_bot.py']).decode().strip()
-    subprocess.call(['kill', pid])
+    os.kill(os.getpid(), 9)
 
 
 @bot.command(aliases=['clear'], help="Отчистить память")
@@ -1751,7 +1746,6 @@ async def command_clear(ctx):
         await ctx.author.send("Доступ запрещён")
         return
     await set_get_config_all("Default", SQL_Keys.reload, "clear")
-    import os
     os.kill(os.getpid(), 9)
 
 
