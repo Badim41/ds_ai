@@ -1491,7 +1491,7 @@ class Dialog_AI:
                     theme_was_in_row = 0
                     theme_last = new_theme
                     theme_temp = f"Тема диалога: \"{new_theme}\""
-                    with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
+                    with open(self.text_file, "a", encoding="utf-8") as writer:
                         writer.write(f"\n==Новая тема==: {new_theme}\n\n")
                 elif theme_was_in_row > 1:
                     change_theme_with_gpt = await self.run_gpt(
