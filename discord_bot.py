@@ -1404,7 +1404,7 @@ class Dialog_AI:
 
                 infos = '.\n'.join(self.infos)
                 prompt = (
-                    f"# Задача\nСоздать диалог (до {len(self.names)} фраз) между {', '.join(self.names)}.\n"
+                    f"# Задача\nСоздать диалог между {', '.join(self.names)}.\n"
                     f"# Информация\n{infos}.\n"
                     f"# {self.global_prompt}.\n\n"
                     f"# Требования\n"
@@ -1416,7 +1416,8 @@ class Dialog_AI:
                     f"{last_line}\n"
                     f"### Ответ пользователей войс чата\n"
                     f"{spoken_text}\n"
-                    f"## 4. Диалог должен быть в формате:\n[Говорящий]: [Произнесенный текст]."
+                    f"## 4. В диалоге должно быть ДО {len(self.names)} фраз, НЕ БОЛЬШЕ\n"
+                    f"## 5. Диалог должен быть в формате:\n[Говорящий]: [Произнесенный текст]."
                 )
                 result = await self.run_gpt(prompt, history_id=2)
 
