@@ -1403,6 +1403,8 @@ class Dialog_AI:
         last_line = "Привет! Как дела?"
         while not_speak < 120:
             spoken_text = self.recognizer.recognized
+            await self.save_dialog(f"{random.choice(self.names)}: {spoken_text}?")
+
             if spoken_text:
                 # logger.logging("User says:", spoken_text, color=Color.CYAN)
                 self.recognizer.recognized = ""
