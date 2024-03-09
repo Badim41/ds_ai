@@ -1431,7 +1431,8 @@ class Dialog_AI:
 
                 last_line = result[:result.rfind("\n") + 1]
                 if "пользоват" not in last_line.lower() and "войс" not in last_line.lower():
-                    await self.save_dialog(f"{random.choice(self.names)}: Пользователи из войс чата, что вы думаете насчёт этого?")
+                    await self.save_dialog(
+                        f"{random.choice(self.names)}: Пользователи из войс чата, что вы думаете насчёт этого?")
 
                 while not len(self.dialog_play) == 0:
                     logger.logging("Ожидания окончания фраз", color=Color.GRAY)
@@ -1488,7 +1489,10 @@ class Dialog_AI:
                         change_theme_with_gpt = json.loads(result.replace("json", "").replace("```", ""))["response"]
                     except Exception as e:
                         logger.logging("error in load theme in json", e, change_theme_with_gpt)
+                        change_theme_with_gpt = change_theme_with_gpt \
+                            .replce("\n", "").replce("json", "").replce("```", "").replce('"response"', "")
 
+                    self.theme = change_theme_with_gpt
                     theme_last = f"Тема диалога: \"{self.theme}\""
                     theme_temp = f"Тема диалога: \"{self.theme}\""
                     theme_was_in_row = 0
