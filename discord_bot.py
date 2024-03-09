@@ -1430,6 +1430,8 @@ class Dialog_AI:
                 await self.save_dialog(result)
 
                 last_line = result[:result.rfind("\n") + 1]
+                if "пользоват" not in last_line.lower() and "войс" not in last_line.lower():
+                    await self.save_dialog(f"{random.choice(self.names)}: Пользователи из войс чата, что вы думаете насчёт этого?")
 
                 while not len(self.dialog_play) == 0:
                     logger.logging("Ожидания окончания фраз", color=Color.GRAY)
