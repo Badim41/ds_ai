@@ -1716,7 +1716,8 @@ async def command_restart(ctx):
         except Exception as e:
             print("CANT LEAVE VOICE:", e)
 
-    exit(0)
+    pid = subprocess.check_output(['pgrep', 'discord_bot.py']).decode().strip()
+    subprocess.call(['kill', pid])
 
 
 @bot.command(aliases=['exit'], help="Выключиться")
@@ -1739,8 +1740,8 @@ async def command_exit(ctx, *args):
         except Exception as e:
             print("CANT LEAVE VOICE:", e)
 
-    exit(0)
-    # asyncio.create_task(command_line(ctx=ctx, command="pkill -f python"))
+    pid = subprocess.check_output(['pgrep', 'discord_bot.py']).decode().strip()
+    subprocess.call(['kill', pid])
 
 
 @bot.command(aliases=['clear'], help="Отчистить память")
