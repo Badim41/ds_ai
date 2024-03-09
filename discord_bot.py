@@ -1401,6 +1401,7 @@ class Dialog_AI:
 
         not_speak = 0
         last_line = "Привет! Как дела?"
+        theme_user = "Приветствие нового пользователя в войс чате"
         while not_speak < 120:
             spoken_text = self.recognizer.recognized
             await self.save_dialog(f"{random.choice(self.names)}: {spoken_text}?")
@@ -1413,6 +1414,7 @@ class Dialog_AI:
                 infos = '.\n'.join(self.infos)
                 prompt = (
                     f"# Задача\nСоздать диалог между {', '.join(self.names)}.\n"
+                    f"# Тема диалога: \"{theme_user}\"\n"
                     f"# Информация\n{infos}.\n"
                     f"# {self.global_prompt}.\n\n"
                     f"# Требования\n"
@@ -1432,6 +1434,20 @@ class Dialog_AI:
                 if "пользоват" not in last_line.lower() and "войс" not in last_line.lower():
                     await self.save_dialog(
                         f"{random.choice(self.names)}: Пользователи из войс чата, что вы думаете насчёт этого?")
+
+                theme_user = await self.run_gpt(f"Придумай новую тему для этого диалога:\n"
+                                                f"# Пользователь:\n {spoken_text}\n"
+                                                f"# Диалог:\n{result}\n"
+                                                f"В ответе выведи 2-3 слова в качестве следующей темы для диалога.\n"
+                                                f"Выведи тему в json формате, например:\n"
+                                                '{\n"response":"Тема"\n}', history_id=2)
+
+                try:
+                    theme_user = json.loads(result.replace("json", "").replace("```", ""))["response"]
+                except Exception as e:
+                    logger.logging("error in load theme in json", e, theme_user)
+                    theme_user = theme_user \
+                        .replce("\n", "").replce("json", "").replce("```", "").replce('"response"', "")
 
                 while not len(self.dialog_play) == 0:
                     logger.logging("Ожидания окончания фраз", color=Color.GRAY)
