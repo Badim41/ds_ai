@@ -881,7 +881,8 @@ async def get_voice_list():
 async def __tts(
         ctx,
         text: Option(str, description='Текст для озвучки', required=True),
-        voice_names: Option(str, description='Голоса для озвучки через ; (User character)', required=False, default=None),
+        voice_names: Option(str, description='Голоса для озвучки через ; (User character)', required=False,
+                            default=None),
         speed: Option(float, description='Ускорение голоса (Character)', required=False, default=None, min_value=1,
                       max_value=3),
         voice_model_eleven: Option(str, description=f'Какая модель elevenlabs будет использована (Character)',
@@ -1180,7 +1181,8 @@ async def __cover(
 
             for i, url in enumerate(urls):
                 asyncio.create_task(
-                    run_ai_cover_gen_several_cuda(song_input=url, rvc_dirname=voice_name, pitch=pitch, index_rate=indexrate,
+                    run_ai_cover_gen_several_cuda(song_input=url, rvc_dirname=voice_name, pitch=pitch,
+                                                  index_rate=indexrate,
                                                   filter_radius=filter_radius, rms_mix_rate=rms_mix_rate, protect=0.3,
                                                   pitch_detection_algo=palgo,
                                                   crepe_hop_length=hop, main_vol=main_vocal, backup_vol=back_vocal,
@@ -1287,7 +1289,7 @@ class Dialog_AI:
         with open(self.text_file, "a", encoding="utf-8") as writer:
             writer.write("\n\n" + ', '.join(self.names))
 
-        asyncio.ensure_future(self.gpt_dialog())
+        asyncio.ensure_future(self.gpt_dialog_lonely())
         asyncio.ensure_future(self.play_dialog())
         for character in self.characters:
             asyncio.ensure_future(self.create_audio_dialog(character))
@@ -1311,7 +1313,7 @@ class Dialog_AI:
                 await self.audio_player.play(audio_path)
                 await self.ctx.send("end")
             else:
-                logger.logging("warn: Нет аудио для диалога!", color=Color.RED)
+                # logger.logging("warn: Нет аудио для диалога!", color=Color.RED)
                 await asyncio.sleep(0.75)
 
     async def create_audio_dialog(self, character):
@@ -1336,7 +1338,7 @@ class Dialog_AI:
                         self.dialog_play[files_number] = (character.name, audio_path_2)
                         os.remove(audio_path_1)
                         break
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(1)
             except:
                 logger.logging("Error id:create audio dialog:" + str(traceback.format_exc()), color=Color.RED)
 
@@ -1348,7 +1350,6 @@ class Dialog_AI:
             for i, line in enumerate(lines):
                 for name in self.names:
                     # Человек: привет
-                    # Человек (man): привет
                     # Чэловек: привет
                     if (line.startswith(name) or line.startswith(name.replace("э", "е"))) and ":" in line:
                         line = line[line.find(":") + 1:]
@@ -1359,8 +1360,8 @@ class Dialog_AI:
                         break
         return ''.join(lines[found_max_line + 1:])
 
-    async def run_gpt(self, prompt):
-        result = await self.gpt.run_all_gpt(prompt=prompt, user_id=self.user_id)
+    async def run_gpt(self, prompt, history_id=0):
+        result = await self.gpt.run_all_gpt(prompt=prompt, user_id=history_id if history_id else self.user_id)
         if "(" in result and ")" in result:
             result = re.sub(r'\(.*?\)', '', result)
         if "*" in result:
@@ -1368,7 +1369,54 @@ class Dialog_AI:
         return result.replace("[", "").replace("]", "").replace(
             "Привет, ребята! ", "").replace("Привет, ребята", "").replace("Всем привет, ", "").replace("Эй", "")
 
-    async def gpt_dialog(self):
+    async def gpt_dialog_with_user(self):
+        # Удаление прошлых файлов
+        self.play_number = 0
+        self.files_number = 0
+
+        for name, audio_path in self.dialog_play.items():
+            try:
+                logger.logging("removing:", audio_path, color=Color.GRAY)
+                os.remove(audio_path)
+            except Exception as e:
+                logger.logging("error in removing file:", e, color=Color.RED)
+
+        self.dialog_create = {}
+        self.dialog_play = {}
+
+        await self.save_dialog(f"{random.choice(self.names)}: О, кажется, к нам кто-то зашёл. Привет.")
+
+        not_speak = 0
+        while not_speak < 120:
+            spoken_text = self.recognizer.recognized
+            if spoken_text:
+                logger.logging("User says:", spoken_text, color=Color.CYAN)
+                self.recognizer.recognized = ""
+                not_speak = 0
+
+                infos = '.\n'.join(self.infos)
+                prompt = (
+                    f"# Задача\nСоздать диалог между {', '.join(self.names)}.\n"
+                    f"# Информация\n{infos}.\n"
+                    f"# {self.global_prompt}.\n\n"
+                    f"# Требования\n"
+                    f"##1. Персонажи должны быть правдоподобными и действовать согласно своему характеру.\n"
+                    f"##2. В последней фразе диалога ты должен задать мне какой-то вопрос, на который я отвечу в следующем диалоге\n"
+                    f"##3. Диалог должен быть в формате:\n[Говорящий]: [Произнесенный текст]."
+                )
+                result = await self.run_gpt(prompt, history_id=2)
+
+                await self.save_dialog(result)
+
+                while not self.dialog_play == 0:
+                    logger.logging("Ожидания окончания фраз", color=Color.GRAY)
+                    await asyncio.sleep(3)
+            else:
+                not_speak += 1
+                await asyncio.sleep(1)
+                await self.save_dialog(f"{random.choice(self.names)}: Похоже, здесь больше нет никого лишнего.")
+
+    async def gpt_dialog_lonely(self):
         logger.logging("Dialog (1/3): gpt working!")
         infos = '.\n'.join(self.infos)
         prompt = (
@@ -1394,8 +1442,7 @@ class Dialog_AI:
 
                 spoken_text = self.recognizer.recognized
                 if spoken_text:
-                    spoken_text = "\n0. Отвечай зрителям! Зрители за прошлый диалог написали:\"" + spoken_text + "\"\n"
-                    self.recognizer.recognized = ""
+                    await self.gpt_dialog_with_user()
 
                 # Тема добавляется в запрос, если она изменилась
                 new_theme = self.theme
@@ -1420,7 +1467,6 @@ class Dialog_AI:
                     f"# Информация\n{'.'.join(self.infos)}.\n"
                     f"# {self.global_prompt}.\n\n"
                     f"# Требования\n"
-                    f"{spoken_text}"
                     f"1. Персонажи должны действовать согласно своему характеру.\n"
                     f"2. Не используйте приветствия в начале диалога.\n"
                     f"3. Не повторяйте предыдущий диалог. Описание предыдущего диалога: \"{dialog_next}\".\n"
@@ -1435,14 +1481,14 @@ class Dialog_AI:
                 # Слишком большой разрыв
                 while self.files_number - self.play_number > 2:
                     # logger.logging(f"wait, difference > 4 ({self.files_number},{self.play_number})", color=Color.YELLOW)
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(3)
                     if not self.alive:
                         return
 
                 # Слишком много текста
                 while len(self.dialog_create) > 2:
                     # logger.logging("wait, too many text > 2", color=Color.YELLOW)
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(3)
                     if not self.alive:
                         return
 
