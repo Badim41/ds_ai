@@ -1397,7 +1397,7 @@ class Dialog_AI:
         self.dialog_create = {}
         self.dialog_play = {}
 
-        await self.save_dialog(f"{random.choice(self.names)}: О, кажется, к нам кто-то зашёл. Привет.")
+        await self.save_dialog(f"{random.choice(self.names)}: О, ребята, кажется, к нам кто-то зашёл. Привет.")
 
         not_speak = 0
         last_line = "Привет! Как дела?"
