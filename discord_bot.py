@@ -1394,6 +1394,7 @@ class Dialog_AI:
         await self.save_dialog(f"{random.choice(self.names)}: О, кажется, к нам кто-то зашёл. Привет.")
 
         not_speak = 0
+        last_line = "Привет! Как дела?"
         while not_speak < 120:
             print("Wait for user say")
             spoken_text = self.recognizer.recognized
@@ -1408,14 +1409,21 @@ class Dialog_AI:
                     f"# Информация\n{infos}.\n"
                     f"# {self.global_prompt}.\n\n"
                     f"# Требования\n"
-                    f"##1. Персонажи должны быть правдоподобными и действовать согласно своему характеру.\n"
-                    f"##2. В последней фразе диалога ты должен задать вопрос (от лица любого персонажа), "
+                    f"## 1. Персонажи должны быть правдоподобными и действовать согласно своему характеру.\n"
+                    f"## 2. В последней фразе диалога ты должен задать вопрос (от лица любого персонажа), "
                     f"обращаясь к \"Пользователям в войс чате\", который напрямую связан с темой диалога.\n"
-                    f"##3. Диалог должен быть в формате:\n[Говорящий]: [Произнесенный текст]."
+                    f"## 3. Откликнись на ответ в предыдущем диалоге:\n"
+                    f"### Вопрос от персонажа\n"
+                    f"{last_line}\n"
+                    f"### Ответ пользователей войс чата\n"
+                    f"{spoken_text}\n"
+                    f"## 4. Диалог должен быть в формате:\n[Говорящий]: [Произнесенный текст]."
                 )
                 result = await self.run_gpt(prompt, history_id=2)
 
                 await self.save_dialog(result)
+
+                last_line = result[:result.rfind("\n")+1]
 
                 while not len(self.dialog_play) == 0:
                     logger.logging("Ожидания окончания фраз", color=Color.GRAY)
@@ -1719,6 +1727,7 @@ async def command_restart(ctx):
             print("CANT LEAVE VOICE:", e)
     os.kill(os.getpid(), 9)
 
+
 @bot.command(aliases=['exit'], help="Выключиться")
 async def command_exit(ctx, *args):
     owner_ids = (await set_get_config_all("Default", SQL_Keys.owner_id)).split(";")
@@ -1826,7 +1835,8 @@ class Recognizer:
         self.stream_sink = StreamSink(ctx=ctx)
         self.google_recognizer = sr.Recognizer()
         self.not_speaking = 0
-        self.delay_record = float(asyncio.run(set_get_config_all("Default", SQL_Keys.delay_record)) if not None else delay_speaking) * 10
+        self.delay_record = float(
+            asyncio.run(set_get_config_all("Default", SQL_Keys.delay_record)) if not None else delay_speaking) * 10
         self.user = DiscordUser(ctx)
 
         self.with_gpt = with_gpt
