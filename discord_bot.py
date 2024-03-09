@@ -1355,19 +1355,23 @@ class Dialog_AI:
                     # Чэловек: привет
                     # Вопрос от человека: Привет?
                     if ":" not in line:
+                        print("No : in line", line)
                         continue
 
                     name = name[:-1]
                     line_with_speaker = line.split(":")[0]
+                    print("line_with_speaker", line_with_speaker)
                     if name in line_with_speaker or name.replace("э", "е") in line_with_speaker:
                         line = line[line.find(":") + 1:]
 
                         # пустая строка
                         if line.replace(" ", "").replace("\n", "").replace(".", "") == "":
+                            print("empty line", line)
                             continue
 
                         self.dialog_create[self.files_number] = (name, line)
                         self.files_number += 1
+                        print("Write line:", line)
                         writer.write(f"{name}:{line}\n")
                         found_max_line = i
                         break
