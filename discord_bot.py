@@ -1271,7 +1271,7 @@ class Dialog_AI:
         self.audio_player = AudioPlayerDiscord(ctx)
         asyncio.run(self.audio_player.join_channel())
 
-        self.recognizer = Recognizer(ctx=ctx, with_gpt=False)
+        self.recognizer = Recognizer(ctx=ctx, with_gpt=False, delay_speaking=1)
 
         self.play_number = 0
         self.files_number = 0
@@ -1819,7 +1819,7 @@ async def stop_recording(ctx):
 
 
 class Recognizer:
-    def __init__(self, ctx, with_gpt=True):
+    def __init__(self, ctx, with_gpt=True, delay_speaking=5):
         if ctx.author.id in recognizers:
             asyncio.run(ctx.send("Уже слушаю вас"))
             return
@@ -1829,8 +1829,7 @@ class Recognizer:
         self.stream_sink = StreamSink(ctx=ctx)
         self.google_recognizer = sr.Recognizer()
         self.not_speaking = 0
-        self.delay_record = float(
-            asyncio.run(set_get_config_all("Default", SQL_Keys.delay_record)) if not None else 5) * 10
+        self.delay_record = float(asyncio.run(set_get_config_all("Default", SQL_Keys.delay_record)) if not None else delay_speaking) * 10
         self.user = DiscordUser(ctx)
 
         self.with_gpt = with_gpt
