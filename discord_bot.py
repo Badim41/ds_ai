@@ -21,7 +21,7 @@ from discord.ext import commands
 from discord_tools.chat_gpt import ChatGPT
 from discord_tools.detect_mat import moderate_mat_in_sentence
 from discord_tools.logs import Logs, Color
-from discord_tools.sql_db import set_get_database_async as set_get_config_all
+from discord_tools.sql_db import set_get_database_async as set_get_config_all, get_database
 from discord_tools.timer import Time_Count
 from download_voice_model import download_online_model
 from function import Character, Voice_Changer, get_link_to_file, upscale_image, \
@@ -1275,7 +1275,7 @@ class Dialog_AI:
 
         self.play_number = 0
         self.files_number = 0
-        self.gpt = ChatGPT(warnings=True, save_history=False, testing=True)
+        self.gpt = ChatGPT(openAI_keys=get_database("secret", SQL_Keys.), warnings=True, save_history=False, testing=True)
         self.user_id = ctx.author.id * 10
 
         self.dialog_create = {}
@@ -1408,7 +1408,7 @@ class Dialog_AI:
 
                 await self.save_dialog(result)
 
-                while not self.dialog_play == 0:
+                while not len(self.dialog_play) == 0:
                     logger.logging("Ожидания окончания фраз", color=Color.GRAY)
                     await asyncio.sleep(3)
             else:
@@ -1453,10 +1453,19 @@ class Dialog_AI:
                     with open(f"caversAI/history-{self.ctx.guild.id}", "a", encoding="utf-8") as writer:
                         writer.write(f"\n==Новая тема==: {new_theme}\n\n")
                 elif theme_was_in_row > 1:
-                    self.theme = await self.run_gpt(
-                        f"Придумай новую тему для этого диалога:\n{result}\n\nВ ответе выведи 2-3 слова в качестве следующей темы для диалога")
-                    theme_last = self.theme
-                    theme_temp = self.theme
+                    change_theme_with_gpt = await self.run_gpt(
+                        f"Придумай новую тему для этого диалога:\n{result}\n\n"
+                        f"В ответе выведи 2-3 слова в качестве следующей темы для диалога.\n"
+                        f"Выведи тему в json формате, например:\n"
+                        '{\n"response":"Тема"\n}')
+
+                    try:
+                        change_theme_with_gpt = json.loads(result)["response"]
+                    except Exception as e:
+                        logger.logging("error in load theme in json", e, change_theme_with_gpt)
+
+                    theme_last = f"Тема диалога: \"{self.theme}\""
+                    theme_temp = f"Тема диалога: \"{self.theme}\""
                     theme_was_in_row = 0
                 else:
                     theme_was_in_row += 1
@@ -1484,6 +1493,9 @@ class Dialog_AI:
                     await asyncio.sleep(3)
                     if not self.alive:
                         return
+                    spoken_text = self.recognizer.recognized
+                    if spoken_text:
+                        await self.gpt_dialog_with_user()
 
                 # Слишком много текста
                 while len(self.dialog_create) > 2:
@@ -1491,6 +1503,9 @@ class Dialog_AI:
                     await asyncio.sleep(3)
                     if not self.alive:
                         return
+                    spoken_text = self.recognizer.recognized
+                    if spoken_text:
+                        await self.gpt_dialog_with_user()
 
             except Exception as e:
                 traceback_str = traceback.format_exc()

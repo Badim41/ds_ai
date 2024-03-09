@@ -3,7 +3,6 @@ import base64
 import gc
 import json
 import os
-import random
 import re
 import requests
 import subprocess
@@ -25,20 +24,29 @@ from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
 from gtts import gTTS
 
 from discord_tools.sql_db import set_get_database_async as set_get_config_all
+from discord_tools.logs import Color, Logs
+from voice_change import Voice_Changer
+from discord_tools.sql_db import set_get_database_async
 
 
 class SQL_Keys:
     kandinsky_api_key = "kandinsky_api_key"
     kandinsky_secret_key = "kandinsky_secret_key"
     owner_id = "owner_id"
+    voice_keys = "voice_keys"
+    gpt_keys = "gpt_keys"
+    gpt_auth = "gpt_auth"
 
 
 api_key = asyncio.run(set_get_config_all("secret", SQL_Keys.kandinsky_api_key))
 secret_key = asyncio.run(set_get_config_all("secret", SQL_Keys.kandinsky_secret_key))
 
-from discord_tools.logs import Color, Logs
-from discord_tools.secret import load_secret, SecretKey, create_secret
-from voice_change import Voice_Changer
+def create_secret(key:str, value:str):
+    asyncio.run(set_get_database_async("secret", str(key), str(value)))
+
+def load_secret(key:str):
+    return asyncio.run(set_get_database_async("secret", str(key)))
+
 
 try:
     import nest_asyncio
@@ -122,7 +130,7 @@ class TextToSpeechRVC:
         self.style = style
         self.max_simbols = max_simbols
         self.speaker_boost = speaker_boost
-        self.elevenlabs_voice_keys = str(load_secret(SecretKey.voice_keys)).split(";")
+        self.elevenlabs_voice_keys = str(load_secret(SQL_Keys.voice_keys)).split(";")
 
     async def text_to_speech(self, text, audio_path="1.mp3", output_name=None, ctx=None):
         if text is None or text.replace("\n", "").replace(" ", "") == "":
@@ -146,7 +154,7 @@ class TextToSpeechRVC:
         max_simbols = self.max_simbols
         pitch = self.pitch
 
-        self.elevenlabs_voice_keys = str(load_secret(SecretKey.voice_keys)).split(";")
+        self.elevenlabs_voice_keys = str(load_secret(SQL_Keys.voice_keys)).split(";")
 
         if len(text) > max_simbols or str(''.join(self.elevenlabs_voice_keys)) == "None":
             logger.logging("gtts", text, color=Color.YELLOW)
@@ -187,21 +195,21 @@ class TextToSpeechRVC:
 
                     logger.logging("(error) LAST KEY ELEVENLABS:", self.elevenlabs_voice_keys[0],
                                    color=Color.RED)
-                    create_secret(SecretKey.voice_keys, "None")
+                    create_secret(SQL_Keys.voice_keys, "None")
                 elif len(self.elevenlabs_voice_keys) > 1:
                     if ctx:
                         user = ctx.guild.get_member(ctx.author.id)
                         if ctx.guild.get_member(ctx.author.id):
                             await ctx.send("key unavailable." + self.elevenlabs_voice_keys[0][:-8] + f"*** ({len(self.elevenlabs_voice_keys)} left)" + user.mention)
 
-                    create_secret(SecretKey.voice_keys, ';'.join(self.elevenlabs_voice_keys[1:]))
+                    create_secret(SQL_Keys.voice_keys, ';'.join(self.elevenlabs_voice_keys[1:]))
                 else:
                     if ctx:
                         user = ctx.guild.get_member(ctx.author.id)
                         if ctx.guild.get_member(ctx.author.id):
                             await ctx.send("No keys unavailable." + user.mention)
 
-                    create_secret(SecretKey.voice_keys, "None")
+                    create_secret(SQL_Keys.voice_keys, "None")
                 pitch = await self.elevenlabs_text_to_speech(text, audio_file)
         return pitch
 
