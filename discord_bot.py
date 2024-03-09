@@ -404,6 +404,8 @@ async def __generate_video(ctx,
         finally:
             await cuda_manager.stop_use_cuda(cuda_number)
 
+    await ctx.defer()
+
     if not image and prompt and gpt:
         prompt = await image_prompt_with_gpt(prompt)
     elif image:
@@ -414,7 +416,6 @@ async def __generate_video(ctx,
         await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
         return
 
-    await ctx.defer()
     for i in range(repeats):
         asyncio.create_task(repeat_generate_videos(seed, i))
 
