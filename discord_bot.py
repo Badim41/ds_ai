@@ -1355,6 +1355,11 @@ class Dialog_AI:
                     # Чэловек: привет
                     if (line.startswith(name) or line.startswith(name.replace("э", "е"))) and ":" in line:
                         line = line[line.find(":") + 1:]
+
+                        # пустая строка
+                        if line.replace(" ", "").replace("\n", "").replace(".", "") == "":
+                            continue
+
                         self.dialog_create[self.files_number] = (name, line)
                         self.files_number += 1
                         writer.write(f"{name}:{line}\n")
