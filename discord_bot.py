@@ -1687,6 +1687,13 @@ async def command_restart(ctx):
         return
     await ctx.send("Перезагрузка")
     await set_get_config_all("Default", SQL_Keys.reload, ctx.author.id)
+
+    for id, audio_player in audio_players.items():
+        try:
+            await audio_player.disconnect()
+        except Exception as e:
+            print("CANT LEAVE VOICE:", e)
+
     exit(0)
 
 
@@ -1703,6 +1710,13 @@ async def command_exit(ctx, *args):
     else:
         await ctx.send(f"Выключение")
     await set_get_config_all("Default", SQL_Keys.reload, "False")
+
+    for id, audio_player in audio_players.items():
+        try:
+            await audio_player.disconnect()
+        except Exception as e:
+            print("CANT LEAVE VOICE:", e)
+
     exit(0)
     # asyncio.create_task(command_line(ctx=ctx, command="pkill -f python"))
 
