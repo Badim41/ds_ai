@@ -1353,7 +1353,13 @@ class Dialog_AI:
                 for name in self.names:
                     # Человек: привет
                     # Чэловек: привет
-                    if (line.startswith(name) or line.startswith(name.replace("э", "е"))) and ":" in line:
+                    # Вопрос от человека: Привет?
+                    if ":" not in line:
+                        continue
+
+                    name = name[:-1]
+                    line_with_speaker = line.split(":")[0]
+                    if name in line_with_speaker or name.replace("э", "е") in line_with_speaker:
                         line = line[line.find(":") + 1:]
 
                         # пустая строка
@@ -1423,7 +1429,7 @@ class Dialog_AI:
 
                 await self.save_dialog(result)
 
-                last_line = result[:result.rfind("\n")+1]
+                last_line = result[:result.rfind("\n") + 1]
 
                 while not len(self.dialog_play) == 0:
                     logger.logging("Ожидания окончания фраз", color=Color.GRAY)
