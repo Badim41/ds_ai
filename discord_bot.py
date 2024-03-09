@@ -1447,7 +1447,7 @@ class Dialog_AI:
                 except Exception as e:
                     logger.logging("error in load theme in json", e, theme_user)
                     theme_user = theme_user \
-                        .replce("\n", "").replce("json", "").replce("```", "").replce('"response"', "")
+                        .replаce("\n", "").replаce("json", "").replаce("```", "").replаce('"response"', "")
 
                 while not len(self.dialog_play) == 0:
                     logger.logging("Ожидания окончания фраз", color=Color.GRAY)
@@ -1505,7 +1505,7 @@ class Dialog_AI:
                     except Exception as e:
                         logger.logging("error in load theme in json", e, change_theme_with_gpt)
                         change_theme_with_gpt = change_theme_with_gpt \
-                            .replce("\n", "").replce("json", "").replce("```", "").replce('"response"', "")
+                            .replаce("\n", "").replаce("json", "").replаce("```", "").replаce('"response"', "")
 
                     self.theme = change_theme_with_gpt
                     theme_last = f"Тема диалога: \"{self.theme}\""
