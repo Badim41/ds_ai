@@ -1396,7 +1396,6 @@ class Dialog_AI:
         not_speak = 0
         last_line = "Привет! Как дела?"
         while not_speak < 120:
-            print("Wait for user say")
             spoken_text = self.recognizer.recognized
             if spoken_text:
                 logger.logging("User says:", spoken_text, color=Color.CYAN)
@@ -1405,7 +1404,7 @@ class Dialog_AI:
 
                 infos = '.\n'.join(self.infos)
                 prompt = (
-                    f"# Задача\nСоздать диалог между {', '.join(self.names)}.\n"
+                    f"# Задача\nСоздать диалог (до {len(self.names)} фраз) между {', '.join(self.names)}.\n"
                     f"# Информация\n{infos}.\n"
                     f"# {self.global_prompt}.\n\n"
                     f"# Требования\n"
