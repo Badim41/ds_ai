@@ -1408,7 +1408,8 @@ class Dialog_AI:
                     f"# {self.global_prompt}.\n\n"
                     f"# Требования\n"
                     f"##1. Персонажи должны быть правдоподобными и действовать согласно своему характеру.\n"
-                    f"##2. В последней фразе диалога ты должен задать мне какой-то вопрос, на который я отвечу в следующем диалоге\n"
+                    f"##2. В последней фразе диалога ты должен задать вопрос (от лица любого персонажа), "
+                    f"обращаясь к \"Пользователям в войс чате\", который напрямую связан с темой диалога.\n"
                     f"##3. Диалог должен быть в формате:\n[Говорящий]: [Произнесенный текст]."
                 )
                 result = await self.run_gpt(prompt, history_id=2)
@@ -1421,7 +1422,7 @@ class Dialog_AI:
             else:
                 not_speak += 1
                 await asyncio.sleep(1)
-                await self.save_dialog(f"{random.choice(self.names)}: Похоже, здесь больше нет никого лишнего.")
+        await self.save_dialog(f"{random.choice(self.names)}: Похоже, у нас в войс-чате больше никого нет.")
 
     async def gpt_dialog_lonely(self):
         logger.logging("Dialog (1/3): gpt working!")
