@@ -1485,7 +1485,7 @@ class Dialog_AI:
                         '{\n"response":"Тема"\n}')
 
                     try:
-                        change_theme_with_gpt = json.loads(result)["response"]
+                        change_theme_with_gpt = json.loads(result.replace("json", "").replace("```", ""))["response"]
                     except Exception as e:
                         logger.logging("error in load theme in json", e, change_theme_with_gpt)
 
