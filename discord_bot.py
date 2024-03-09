@@ -1277,7 +1277,7 @@ class Dialog_AI:
         self.files_number = 0
         self.gpt = ChatGPT(openAI_keys=str(get_database("secret", function.SQL_Keys.gpt_keys)).split(";"),
                            auth_keys=str(get_database("secret", function.SQL_Keys.gpt_auth)).split(";"),
-                           warnings=True, save_history=False, testing=True)
+                           warnings=True, save_history=True, testing=True)
         self.user_id = ctx.author.id * 10
 
         self.dialog_create = {}
