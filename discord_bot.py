@@ -1358,10 +1358,10 @@ class Dialog_AI:
                         print("No : in line", line)
                         continue
 
-                    name = name[:-1]
+                    sliced_name = name[:-1]
                     line_with_speaker = line.split(":")[0]
                     print("line_with_speaker", line_with_speaker)
-                    if name in line_with_speaker or name.replace("э", "е") in line_with_speaker:
+                    if sliced_name in line_with_speaker or sliced_name.replace("э", "е") in line_with_speaker:
                         line = line[line.find(":") + 1:]
 
                         # пустая строка
