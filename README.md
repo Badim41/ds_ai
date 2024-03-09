@@ -63,6 +63,7 @@ https://github.com/ai-forever/Kandinsky-3?tab=readme-ov-file
 
 ```sh
 git clone https://github.com/Badim41/ds_ai.git
+pip install git+https://github.com/Badim41/tools.git
 ```
 ```sh
 cd ds_ai
@@ -85,6 +86,7 @@ sudo apt-get install rubberband-cli
 
 ```sh
 git clone https://github.com/Badim41/ds_ai.git
+pip install git+https://github.com/Badim41/tools.git
 ```
 ```sh
 cd ds_ai
