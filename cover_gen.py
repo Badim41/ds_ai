@@ -385,13 +385,6 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
 #     except IOError as e:
 #         print(e)
 #     return False
-async def run_ai_cover_gen_async(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radius=3, rms_mix_rate=0.25,
-                                 pitch_detection_algo='rmvpe', crepe_hop_length=128, protect=0.33, main_vol=0,
-                                 backup_vol=0, inst_vol=0,
-                                 pitch_change_all=0, reverb_size=0.15, reverb_wetness=0.2, reverb_dryness=0.8,
-                                 reverb_damping=0.7,
-                                 output_format='mp3', cuda_number=0):
-    await run_ai_cover_gen(song_input, rvc_dirname, pitch, ...)
 
 
 async def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filter_radius=3, rms_mix_rate=0.25,

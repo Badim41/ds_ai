@@ -407,11 +407,11 @@ async def __generate_video(ctx,
     if not image and prompt and gpt:
         prompt = await image_prompt_with_gpt(prompt)
     elif image:
-        await ctx.send(f"Запрос:Изображение")
+        await ctx.respond(f"Запрос:Изображение")
     elif prompt:
         pass
     else:
-        await ctx.send("Загрузите изображение или напишите запрос (prompt)")
+        await ctx.respond("Загрузите изображение или напишите запрос (prompt)")
         return
 
     await ctx.defer()
@@ -1873,7 +1873,7 @@ async def send_file(ctx, file_path, delete_file=False, text=""):
         await ctx.send('Файл не найден.')
     except discord.HTTPException as e:
         traceback_str = traceback.format_exc()
-        logger.logging(str(traceback_str), color=Color.RED)
+        logger.logging("ERROR SEND FILE:", str(traceback_str), color=Color.RED)
         await ctx.send(f'Произошла ошибка при отправке файла: {e}.')
 
 
