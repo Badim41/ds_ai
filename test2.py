@@ -1,14 +1,3 @@
-import os
-import sys
-from IPython.display import display, FileLink
+url = "https://youtu.be/VSzKwkXea1g?si=he79AjWBwzHelYj6"
 
-file = sys.argv[1]
-if os.path.exists(file):
-    print("exists")
-else:
-    print("not exists")
-
-file_link = FileLink(file)
-display(file_link)
-
-print("done")
+video_id = url.split("/")[-1].split("?")[0]

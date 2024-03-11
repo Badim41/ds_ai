@@ -41,6 +41,7 @@ sentencepiece
 opencv-python
 compel
 characterai
+mtranslate==1.8
 --find-links https://download.pytorch.org/whl/torch_stable.html
 torch==2.0.1+cu118
 torchcrepe==0.0.20
