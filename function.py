@@ -20,7 +20,6 @@ from scipy.io.wavfile import write
 
 import torch
 from PIL import Image
-from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
 from gtts import gTTS
 
 from discord_tools.sql_db import set_get_database_async as set_get_config_all
@@ -168,6 +167,7 @@ class TextToSpeechRVC:
                 set_api_key(key)
 
             try:
+                from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
                 voice_id = await self.get_elevenlabs_voice_id_by_name()
                 logger.logging("VOICE_ID_ELEVENLABS:", voice_id, self.voice_model_eleven, color=Color.GRAY)
                 audio = generate(
