@@ -150,11 +150,14 @@ class TextToSpeechRVC:
         await self.voice_changer(audio_path, output_name, pitch)
 
     async def elevenlabs_text_to_speech(self, text, audio_file, ctx=None):
+        from elevenlabs.client import ElevenLabs
+        from elevenlabs import Voice, VoiceSettings
+        
         max_simbols = self.max_simbols
         pitch = self.pitch
-
+        
         self.elevenlabs_voice_keys = str(load_secret(SQL_Keys.voice_keys)).split(";")
-
+        
         if len(text) > max_simbols or str(''.join(self.elevenlabs_voice_keys)) == "None":
             logger.logging("gtts", text, color=Color.YELLOW)
             await self.gtts(text, audio_file, language="ru")
@@ -164,13 +167,14 @@ class TextToSpeechRVC:
             key = self.elevenlabs_voice_keys[0]
 
             if not key == "Free":
-                set_api_key(key)
+                client = ElevenLabs(api_key=key)
+            else:
+                client = ElevenLabs()
 
             try:
-                from elevenlabs import generate, save, set_api_key, VoiceSettings, Voice
                 voice_id = await self.get_elevenlabs_voice_id_by_name()
                 logger.logging("VOICE_ID_ELEVENLABS:", voice_id, self.voice_model_eleven, color=Color.GRAY)
-                audio = generate(
+                audio = client.generate(
                     text=text,
                     model='eleven_multilingual_v2',
                     voice=Voice(
