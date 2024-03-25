@@ -39,6 +39,7 @@ class SQL_Keys:
 
 api_key = asyncio.run(set_get_config_all("secret", SQL_Keys.kandinsky_api_key))
 secret_key = asyncio.run(set_get_config_all("secret", SQL_Keys.kandinsky_secret_key))
+CHUNK_SIZE = 1024 * 8
 
 def create_secret(key:str, value:str):
     asyncio.run(set_get_database_async("secret", str(key), str(value)))
@@ -150,9 +151,6 @@ class TextToSpeechRVC:
         await self.voice_changer(audio_path, output_name, pitch)
 
     async def elevenlabs_text_to_speech(self, text, audio_file, ctx=None):
-        from elevenlabs.client import ElevenLabs
-        from elevenlabs import Voice, VoiceSettings
-        
         max_simbols = self.max_simbols
         pitch = self.pitch
         
@@ -166,28 +164,42 @@ class TextToSpeechRVC:
             # получаем ключ для elevenlab
             key = self.elevenlabs_voice_keys[0]
 
-            if not key == "Free":
-                client = ElevenLabs(api_key=key)
-            else:
-                client = ElevenLabs()
-
             try:
                 voice_id = await self.get_elevenlabs_voice_id_by_name()
                 logger.logging("VOICE_ID_ELEVENLABS:", voice_id, self.voice_model_eleven, color=Color.GRAY)
-                audio = client.generate(
-                    text=text,
-                    model='eleven_multilingual_v2',
-                    voice=Voice(
-                        voice_id=voice_id,
-                        settings=VoiceSettings(stability=self.stability, similarity_boost=self.similarity_boost,
-                                               style=self.style,
-                                               use_speaker_boost=self.speaker_boost)
-                    ),
-                )
+                url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
 
-                save(audio, audio_file)
+                if not key == "Free":
+                    headers = {
+                        "Accept": "audio/mpeg",
+                        "Content-Type": "application/json",
+                        "xi-api-key": key
+                    }
+                else:
+                    headers = {
+                        "Accept": "audio/mpeg",
+                        "Content-Type": "application/json"
+                    }
+                
+                data = {
+                    "text": text,
+                    "model_id": self.voice_model_eleven,
+                    "voice_settings": {
+                        "stability": self.stability,
+                        "similarity_boost": self.similarity_boost,
+                        "style": self.style,
+                        "use_speaker_boost": self.speaker_boost
+                    }
+                }
+                response = requests.post(url, json=data, headers=headers)
+                
+                # Сохраняем полученный аудиофайл
+                with open(audio_file, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
+                        if chunk:
+                            f.write(chunk)
+                
             except Exception as e:
-                from discord_bot import send_lm
                 logger.logging(f"Ошибка при выполнении команды (ID:f16): {e}", color=Color.RED)
                 logger.logging("Remove key:", self.elevenlabs_voice_keys[0], color=Color.BLUE)
 
