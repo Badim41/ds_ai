@@ -193,6 +193,9 @@ class TextToSpeechRVC:
                 }
                 response = requests.post(url, json=data, headers=headers)
                 
+                if response.status_code != 200:
+                    raise Exception(f"Error: Received non-200 status code: {response}, {response.text}")
+                
                 # Сохраняем полученный аудиофайл
                 with open(audio_file, 'wb') as f:
                     for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
