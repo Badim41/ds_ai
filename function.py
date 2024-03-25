@@ -183,7 +183,7 @@ class TextToSpeechRVC:
                 
                 data = {
                     "text": text,
-                    "model_id": self.voice_model_eleven,
+                    "model_id": voice_id,
                     "voice_settings": {
                         "stability": self.stability,
                         "similarity_boost": self.similarity_boost,
