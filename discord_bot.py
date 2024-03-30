@@ -2131,7 +2131,7 @@ if __name__ == "__main__":
             exit(-1)
 
         # ==== load bot ====
-        logger.logging("====load bot====", color=Color.CYAN)
+        logger.logging("====load Bot 2====", color=Color.CYAN)
         loop = asyncio.get_event_loop()
         loop.run_until_complete(bot.start(discord_token))
     except Exception as e:
