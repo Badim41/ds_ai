@@ -93,6 +93,7 @@ class DiscordUser:
 
     async def set_user_config(self, key, value=None):
         await set_get_config_all(self.id, key, value)
+        print("Change config", key, value) 
         await self.update_values()
 
     async def update_values(self):
