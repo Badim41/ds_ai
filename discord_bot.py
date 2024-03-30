@@ -935,6 +935,7 @@ async def __tts(
                 await ctx.respond("Список голосов elevenlabs: \n" + ';'.join(ALL_VOICES.keys()))
                 return
             voice_models = [voice_model_eleven]
+        await user.set_user_config(SQL_Keys.AIname, voice_name)
         character = user.character
 
         try:
@@ -1148,6 +1149,8 @@ async def __cover(
                 await ctx.respond("Выберите голос для озвучки (или /add_voice):" + ', '.join(voices))
                 return
 
+            await user.set_user_config(SQL_Keys.AIname, voice_name)
+            
             if pitch is None:
                 pitch = user.character.pitch
 
