@@ -88,7 +88,7 @@ class DiscordUser:
         self.name = ctx.author.name
         character_name = asyncio.run(set_get_config_all(self.id, SQL_Keys.AIname))
         voice_names = asyncio.run(get_voice_list())
-        if character_name in voice_names:
+        if character_name in voice_names or True: #TODO FIX IT
             self.character = Character(character_name)
         else:
             self.character = Character(voice_names[0])
@@ -930,6 +930,10 @@ async def __tts(
         if str(voice_name) not in voices:
             return await ctx.respond("Выберите голос для озвучки (или /add_voice): " + ';'.join(voices))
 
+        if not user.character.name == voice_name:
+            await ctx.send("Обновлена базовая модель на:" + voice_name)
+            await user.set_user_config(SQL_Keys.AIname, voice_name)
+
         if voice_model_eleven == "All":
             voice_models = ALL_VOICES.keys()
         else:
@@ -942,7 +946,6 @@ async def __tts(
                 await ctx.respond("Список голосов elevenlabs: \n" + ';'.join(ALL_VOICES.keys()))
                 return
             voice_models = [voice_model_eleven]
-        await user.set_user_config(SQL_Keys.AIname, voice_name)
         character = user.character
 
         try:
@@ -980,12 +983,7 @@ async def __tts(
             logger.logging(str(traceback_str), color=Color.RED)
             await ctx.respond(f"Ошибка при озвучивании текста (с параметрами {text}): {e}")
             # перестаём использовать видеокарту
-            # await cuda_manager.stop_use_cuda(cuda_number)
-
-        if not user.character.name == voice_names[0]:
-            await ctx.send("Обновлена базовая модель на:" + voice_names[0])
-            await user.set_user_config(SQL_Keys.AIname, voice_names[0])
-
+            # await cuda_manager.stop_use_cuda(CUDA_NUMBER) 
 
 @bot.slash_command(name="bark", description='Тестовая генерация речи с помощью bark')
 async def __bark(
@@ -1156,7 +1154,10 @@ async def __cover(
                 await ctx.respond("Выберите голос для озвучки (или /add_voice):" + ', '.join(voices))
                 return
 
-            await user.set_user_config(SQL_Keys.AIname, voice_name)
+            
+            if not user.character.name == voice_name:
+                await ctx.send("Обновлена базовая модель на:" + voice_name)
+                await user.set_user_config(SQL_Keys.AIname, voice_name)
             
             if pitch is None:
                 pitch = user.character.pitch
