@@ -98,6 +98,7 @@ class DiscordUser:
     async def update_values(self):
         self.gpt_mode = await set_get_config_all(self.id, SQL_Keys.gpt_mode)
         character_name = await set_get_config_all(self.id, SQL_Keys.AIname)
+        print("New name", character name) 
         self.character = Character(character_name)
 
 
