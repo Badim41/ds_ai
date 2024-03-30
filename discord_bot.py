@@ -93,13 +93,13 @@ class DiscordUser:
 
     async def set_user_config(self, key, value=None):
         await set_get_config_all(self.id, key, value)
-        print("Change config", key, value) 
+        logger.logging("Change config", key, value) 
         await self.update_values()
 
     async def update_values(self):
         self.gpt_mode = await set_get_config_all(self.id, SQL_Keys.gpt_mode)
         character_name = await set_get_config_all(self.id, SQL_Keys.AIname)
-        print("New name", character_name) 
+        logger.logging("New name", character_name) 
         self.character = Character(character_name)
 
 
