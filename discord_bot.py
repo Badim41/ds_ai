@@ -88,7 +88,7 @@ class DiscordUser:
         self.name = ctx.author.name
         character_name = asyncio.run(set_get_config_all(self.id, SQL_Keys.AIname))
         voice_names = asyncio.run(get_voice_list())
-        if character name in voice_names:
+        if character_name in voice_names:
             self.character = Character(character_name)
         else:
             self.character = Character(voice_names[0])
