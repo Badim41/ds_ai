@@ -87,7 +87,12 @@ class DiscordUser:
         self.id = ctx.author.id
         self.name = ctx.author.name
         character_name = asyncio.run(set_get_config_all(self.id, SQL_Keys.AIname))
-        self.character = Character(character_name)
+        voice_names = asyncio.run(get_voice_list())
+        if character name in voice_names:
+            self.character = Character(character_name)
+        else:
+            self.character = Character(voice_names[0])
+        
         self.gpt_mode = asyncio.run(set_get_config_all(self.id, SQL_Keys.gpt_mode))
         self.owner = str(self.id) in asyncio.run(set_get_config_all("Default", SQL_Keys.owner_id)).split(";")
 
