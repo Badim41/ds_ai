@@ -921,7 +921,7 @@ async def __tts(
         voice_names = voice_names.split(";")
 
     mat_found, text = await moderate_mat_in_sentence(text)
-    if mat_found:
+    if mat_found and False:
         await ctx.respond("Такое точно нельзя произносить!")
         return
 
