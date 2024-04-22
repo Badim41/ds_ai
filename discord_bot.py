@@ -18,7 +18,7 @@ import discord
 from bark_tts import BarkTTS
 from discord import Option
 from discord.ext import commands
-from discord_tools.chat_gpt import ChatGPT
+# from discord_tools.chat_gpt import ChatGPT
 from discord_tools.detect_mat import moderate_mat_in_sentence
 from discord_tools.logs import Logs, Color
 from discord_tools.sql_db import set_get_database_async as set_get_config_all, get_database
