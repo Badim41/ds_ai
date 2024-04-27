@@ -1721,15 +1721,16 @@ async def download_voice(ctx, url, name, gender, info, speed, voice_model_eleven
 
 async def command_line(ctx, command):
     logger.logging("command line:", command)
+    text = "."
     try:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         stdout, stderr = process.communicate()
         for line in stdout.decode().split('\n'):
             if line.strip():
-                await ctx.author.send(line)
+                text += line + "\n"
         for line in stderr.decode().split('\n'):
             if line.strip():
-                await ctx.author.send(line)
+                text += line + "\n"
     except subprocess.CalledProcessError as e:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
@@ -1738,6 +1739,7 @@ async def command_line(ctx, command):
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
         await ctx.author.send(f"Произошла неизвестная ошибка: {e}")
+    await ctx.author.send(text[:3900])
 
 
 @bot.command(aliases=['cmd'], help="командная строка")
@@ -1748,7 +1750,8 @@ async def commands(ctx, *args):
         return
 
     # Получение объекта пользователя по ID
-    asyncio.create_task(command_line(ctx=ctx, command=command[:3900]))
+    command = " ".join(args)
+    asyncio.create_task(command_line(ctx=ctx, command=command))
 
 
 @bot.command(aliases=['send'], help="Отправить файл")
