@@ -7,6 +7,7 @@ import sys
 import traceback
 import zipfile
 from contextlib import asynccontextmanager
+from discord_tools.chat_gpt import ChatGPT
 from pathlib import Path
 from pydub import AudioSegment
 from pytube import Playlist
@@ -151,12 +152,24 @@ async def on_message(message):
 
         _, text = await moderate_mat_in_sentence(text)
 
-        user = text[:text.find(":")]
         if "[" in text and "]" in text:
             text = re.sub(r'[.*?]', '', text)
-        chatGPT = ChatGPT()
-        answer = await chatGPT.run_all_gpt(f"{user}:{text}", user_id=user)
-        await ctx.send(answer)
+
+        voice_names = asyncio.run(get_voice_list())
+        user = DiscordUser(ctx)
+        character = Character(voice_names[0])
+        audio_path_1 = f"{user.id}-{character.name}-record-row.mp3"
+        audio_path_2 = f"{user.id}-{character.name}-record.mp3"
+        await character.text_to_speech(text, audio_path=audio_path_1,
+                                                 output_name=audio_path_2)
+        audio_player = AudioPlayerDiscord(ctx)
+        await audio_player.play(audio_path_2)
+
+        os.remove(audio_path_1)
+        os.remove(audio_path_2)
+
+        await character.load_voice(0)
+
         return
 
     # other users
