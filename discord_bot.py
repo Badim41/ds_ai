@@ -1739,7 +1739,7 @@ async def command_line(ctx, command):
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
         await ctx.author.send(f"Произошла неизвестная ошибка: {e}")
-    await ctx.author.send(text[:3900])
+    await ctx.author.send(text[:1900])
 
 
 @bot.command(aliases=['cmd'], help="командная строка")
