@@ -1748,8 +1748,7 @@ async def commands(ctx, *args):
         return
 
     # Получение объекта пользователя по ID
-    command = " ".join(args)
-    asyncio.create_task(command_line(ctx=ctx, command=command))
+    asyncio.create_task(command_line(ctx=ctx, command=command[:3900]))
 
 
 @bot.command(aliases=['send'], help="Отправить файл")
