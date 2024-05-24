@@ -352,7 +352,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
 
         if not os.path.exists(ai_back_vocals_path) and change_back_vocal:
             display_progress('[~] Converting voice (2/2 - back) using RVC...')
-            voice_change(voice_model, main_vocals_dereverb_path, ai_back_vocals_path, pitch_change, f0_method,
+            voice_change(voice_model, backup_vocals_path, ai_back_vocals_path, pitch_change, f0_method,
                          index_rate,
                          filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui, cuda_number)
         if change_back_vocal:
