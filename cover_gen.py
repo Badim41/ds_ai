@@ -290,7 +290,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
                         is_webui=0, main_gain=0, backup_gain=0, inst_gain=0, index_rate=0.5, filter_radius=3,
                         rms_mix_rate=0.25, f0_method='rmvpe', crepe_hop_length=128, protect=0.33, pitch_change_all=0,
                         reverb_rm_size=0.15, reverb_wet=0.2, reverb_dry=0.8, reverb_damping=0.7, output_format='mp3',
-                        cuda_number=0):
+                        cuda_number=0, change_back_vocal=True):
     try:
         if not song_input or not voice_model:
             print('Ensure that the song input field and voice model field is filled.', is_webui)
@@ -339,14 +339,24 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
         pitch_change = pitch_change
         ai_vocals_path = os.path.join(song_dir,
                                       f'{os.path.splitext(os.path.basename(orig_song_path))[0]}_{voice_model}_p{pitch_change}_i{index_rate}_fr{filter_radius}_rms{rms_mix_rate}_pro{protect}_{f0_method}{"" if f0_method != "mangio-crepe" else f"_{crepe_hop_length}"}.wav')
+        ai_back_vocals_path = os.path.join(song_dir,
+                                      f'{os.path.splitext(os.path.basename(orig_song_path))[0]}_{voice_model}_p{pitch_change}_i{index_rate}_fr{filter_radius}_rms{rms_mix_rate}_pro{protect}_{f0_method}{"" if f0_method != "mangio-crepe" else f"_{crepe_hop_length}"}.wav')
         ai_cover_path = os.path.join(song_dir,
                                      f'{os.path.splitext(os.path.basename(orig_song_path))[0]} ({voice_model} Ver).{output_format}')
 
         if not os.path.exists(ai_vocals_path):
-            display_progress('[~] Converting voice using RVC...')
+            display_progress('[~] Converting voice (1/2 - main) using RVC...')
             voice_change(voice_model, main_vocals_dereverb_path, ai_vocals_path, pitch_change, f0_method,
                          index_rate,
                          filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui, cuda_number)
+
+        if not os.path.exists(ai_back_vocals_path) and change_back_vocal:
+            display_progress('[~] Converting voice (2/2 - back) using RVC...')
+            voice_change(voice_model, main_vocals_dereverb_path, ai_back_vocals_path, pitch_change, f0_method,
+                         index_rate,
+                         filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui, cuda_number)
+        if change_back_vocal:
+            backup_vocals_path = ai_back_vocals_path
 
         display_progress('[~] Applying audio effects to Vocals...')
         ai_vocals_mixed_path = add_audio_effects(ai_vocals_path, reverb_rm_size, reverb_wet, reverb_dry, reverb_damping)
@@ -355,7 +365,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
             display_progress('[~] Applying overall pitch change')
             instrumentals_path = pitch_shift(instrumentals_path, pitch_change_all)
             backup_vocals_path = pitch_shift(backup_vocals_path, pitch_change_all)
-        # BACK VOCAL CHANGE (quite bad idea)
+
         display_progress('[~] Combining AI Vocals and Instrumentals...')
         combine_audio([ai_vocals_mixed_path, backup_vocals_path, instrumentals_path], ai_cover_path, main_gain,
                       backup_gain, inst_gain, output_format)
