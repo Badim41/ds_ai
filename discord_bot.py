@@ -1086,11 +1086,12 @@ async def run_ai_cover_gen_several_cuda(song_input, rvc_dirname, pitch, index_ra
                                             reverb_damping=reverb_damping,
                                             output_format=output_format, cuda_number=cuda_number)
         await send_output(ctx=ctx, audio_path=audio_path, output=output, timer=timer)
-        await cuda_manager.stop_use_cuda(cuda_number)
     except Exception as e:
         traceback_str = traceback.format_exc()
         logger.logging(str(traceback_str), color=Color.RED)
         await ctx.respond(f"Ошибка при изменении голоса(ID:d5): {e}")
+
+    await cuda_manager.stop_use_cuda(cuda_number)
 
 
 @bot.slash_command(name="ai_cover", description='Заставить бота озвучить видео/спеть песню')
