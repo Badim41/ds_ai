@@ -1071,7 +1071,7 @@ async def run_ai_cover_gen_several_cuda(song_input, rvc_dirname, pitch, index_ra
                                         crepe_hop_length, main_vol, backup_vol,
                                         inst_vol, reverb_size, reverb_wetness, reverb_dryness,
                                         reverb_damping,
-                                        output_format, output, ctx):
+                                        output_format, output, ctx, change_back_vocal):
     try:
         from cover_gen import run_ai_cover_gen
         cuda_number = await cuda_manager.use_cuda()
@@ -1084,7 +1084,7 @@ async def run_ai_cover_gen_several_cuda(song_input, rvc_dirname, pitch, index_ra
                                             inst_vol=inst_vol, reverb_size=reverb_size, reverb_wetness=reverb_wetness,
                                             reverb_dryness=reverb_dryness,
                                             reverb_damping=reverb_damping,
-                                            output_format=output_format, cuda_number=cuda_number)
+                                            output_format=output_format, cuda_number=cuda_number, change_back_vocal=change_back_vocal)
         await send_output(ctx=ctx, audio_path=audio_path, output=output, timer=timer)
     except Exception as e:
         traceback_str = traceback.format_exc()
@@ -1132,6 +1132,9 @@ async def __cover(
                        required=False, default="только результат (1 файл)"),
         only_voice_change: Option(bool,
                                   description='Не извлекать инструментал и бэквокал, изменить голос. Не поддерживаются ссылки',
+                                  required=False, default=False),
+
+        change_back_vocal: Option(bool, description='Изменить голос в бэквакале (False)',
                                   required=False, default=False)
 ):
     async def get_links_from_playlist(playlist_url):
@@ -1214,7 +1217,7 @@ async def __cover(
                                                   inst_vol=music, reverb_size=roomsize, reverb_wetness=wetness,
                                                   reverb_dryness=dryness,
                                                   reverb_damping=0.7,
-                                                  output_format='mp3', output=output, ctx=ctx))
+                                                  output_format='mp3', output=output, ctx=ctx, change_back_vocal=change_back_vocal))
             if not urls:
                 await ctx.respond('Не указана ссылка или аудиофайл')
                 return

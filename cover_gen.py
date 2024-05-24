@@ -290,7 +290,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
                         is_webui=0, main_gain=0, backup_gain=0, inst_gain=0, index_rate=0.5, filter_radius=3,
                         rms_mix_rate=0.25, f0_method='rmvpe', crepe_hop_length=128, protect=0.33, pitch_change_all=0,
                         reverb_rm_size=0.15, reverb_wet=0.2, reverb_dry=0.8, reverb_damping=0.7, output_format='mp3',
-                        cuda_number=0, change_back_vocal=True):
+                        cuda_number=0, change_back_vocal=False):
     try:
         if not song_input or not voice_model:
             print('Ensure that the song input field and voice model field is filled.', is_webui)
@@ -402,7 +402,7 @@ async def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filte
                            inst_vol=0,
                            pitch_change_all=0, reverb_size=0.15, reverb_wetness=0.2, reverb_dryness=0.8,
                            reverb_damping=0.7,
-                           output_format='mp3', cuda_number=0):
+                           output_format='mp3', cuda_number=0, change_back_vocal=False):
     if not os.path.exists(os.path.join(rvc_models_dir, rvc_dirname)):
         raise Exception(f'The folder {os.path.join(rvc_models_dir, rvc_dirname)} does not exist.')
     loop = asyncio.get_running_loop()
@@ -422,7 +422,8 @@ async def run_ai_cover_gen(song_input, rvc_dirname, pitch, index_rate=0.5, filte
                                                                               reverb_dry=reverb_dryness,
                                                                               reverb_damping=reverb_damping,
                                                                               output_format=output_format,
-                                                                              cuda_number=cuda_number))
+                                                                              cuda_number=cuda_number,
+                                                                              change_back_vocal=change_back_vocal))
     print(f'[+] Cover generated at {cover_path}')
     # ошибка при генерации
     if cover_path is None:
