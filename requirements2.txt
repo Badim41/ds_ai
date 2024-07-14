@@ -5,19 +5,14 @@ pyaudio~=0.2.13
 cffi
 sounddevice~=0.4.6
 config
-SpeechRecognition
 requests
 imageio
 imageio[ffmpeg]
-moviepy
-elevenlabs
 gTTS
-g4f[all]
 websockets
 typing-extensions
 pytube
 pyrubberband
-openai
 scipy==1.11.1
 numpy==1.23.5
 ffmpeg-python>=0.2.0
@@ -26,7 +21,6 @@ google-auth
 google-auth-oauthlib
 google-auth-httplib2
 google-api-python-client
-nest_asyncio
 pillow
 nltk
 pydub==0.25.1
@@ -35,13 +29,9 @@ py-cord[voice]
 py-cord==2.3.3
 timm
 pytorch_lightning==1.7.5
-transformers
 accelerate
 sentencepiece
-opencv-python
 compel
-characterai==0.8.0
-mtranslate==1.8
 --find-links https://download.pytorch.org/whl/torch_stable.html
 torch==2.0.1+cu118
 torchcrepe==0.0.20
