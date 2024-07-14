@@ -102,7 +102,7 @@ class TextToSpeechRVC:
                  rms_mix_rate=0.3,
                  protect=0.33, algo="rmvpe", speed=1.0, voice_model_eleven="Adam", stability=0.4,
                  similarity_boost=0.25,
-                 style=0.4, max_simbols=300, speaker_boost=True):
+                 style=0.4, max_simbols=3000, speaker_boost=True):
         self.voice_RVC = Voice_Changer(cuda_number=cuda_number, voice_name=voice_name, index_rate=index_rate,
                                        pitch=pitch,
                                        filter_radius=filter_radius, rms_mix_rate=rms_mix_rate, protect=protect,
