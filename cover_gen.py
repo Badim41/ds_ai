@@ -389,6 +389,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
         song_dir = os.path.join(output_dir, song_id)
 
         if has_lalalai:
+            inst_gain += 4
             if not os.path.exists(song_dir):
                 os.makedirs(song_dir)
                 orig_song_path, vocals_path, instrumentals_path = preprocess_song_lalalai(
