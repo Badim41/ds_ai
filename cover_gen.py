@@ -335,7 +335,7 @@ def combine_audio_lalalai(audio_paths, output_path, main_gain, backup_gain, inst
     output_file = os.path.dirname(output_path) + "/combined.m4a"
     print("M4A FILE:", audio_paths[0], audio_paths[1], output_file, sep="|||")
     ffmpeg_command = (
-        f'ffmpeg -i \"{audio_paths[0]}\" -i \"{audio_paths[1]}\" -filter_complex "[0:a][1:a]amerge=inputs=3[aout]" -map "[aout]" -c:a aac -strict experimental -q:a 1 \"{output_file}\" -y'
+        f'ffmpeg -i \"{audio_paths[0]}\" -i \"{audio_paths[1]}\" -filter_complex "[0:a][1:a]amerge=inputs=2[aout]" -map "[aout]" -c:a aac -strict experimental -q:a 1 \"{output_file}\" -y'
     )
 
     subprocess.run(ffmpeg_command, shell=True)
