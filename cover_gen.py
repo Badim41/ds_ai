@@ -292,6 +292,7 @@ def download_video_or_use_file(song_input, input_type):
 
 def voice_change(voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
                  rms_mix_rate, protect, crepe_hop_length, is_webui, cuda_number):
+    print("voice_change:", vocals_path, "->", output_path)
     rvc_model_path, rvc_index_path = get_rvc_model(voice_model, is_webui)
     device = f'cuda:{cuda_number}'
     config2 = Config(device, True)
