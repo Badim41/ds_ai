@@ -21,6 +21,13 @@ from mdx import run_mdx
 from rvc import Config, load_hubert, get_vc, rvc_infer
 from discord_tools.logs import Logs, Color
 
+has_lalalai = True
+try:
+    from discord_tools.lalalai import LalalAIModes, process_file_pipeline
+except ImportError as e:
+    has_lalalai = False
+    print("No model LalalAI:", e)
+
 logger = Logs(warnings=True)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -96,6 +103,20 @@ def get_rvc_model(voice_model, is_webui):
     return os.path.join(model_dir, rvc_model_filename), os.path.join(model_dir,
                                                                      rvc_index_filename) if rvc_index_filename else ''
 
+def get_audio_paths_lalalai(song_dir):
+    orig_song_path = None
+    instrumentals_path = None
+    vocals_path = None
+
+    for file in os.listdir(song_dir):
+        if file.endswith('_Instrumental.wav'):
+            instrumentals_path = os.path.join(song_dir, file)
+            orig_song_path = instrumentals_path.replace('_Instrumental', '')
+
+        elif file.endswith('_Vocal.wav'):
+            vocals_path = os.path.join(song_dir, file)
+
+    return orig_song_path, vocals_path, instrumentals_path
 
 def get_audio_paths(song_dir):
     orig_song_path = None
@@ -154,6 +175,37 @@ def get_hash(filepath):
 def display_progress(message):
     print(message)
 
+def preprocess_song_lalalai(cuda_number, song_input, mdx_model_params, song_id, input_type=None):
+    try:
+
+        keep_orig = False
+        if input_type == 'yt':
+            display_progress('[~] Downloading song...')
+            song_link = song_input.split('&')[0]
+            orig_song_path = yt_download(song_link)
+            print("downloaded")
+        elif input_type == 'local':
+            orig_song_path = song_input
+            # keep_orig = True
+        else:
+            orig_song_path = None
+        song_output_dir = os.path.join(output_dir, song_id)
+        # orig_song_path = convert_to_stereo(orig_song_path)
+        display_progress(f'[~] Separating Vocals from Instrumental... GPU:{cuda_number}')
+        orig_song_name = os.path.basename(orig_song_path)[:-4]
+        vocals_path_name = os.path.join(song_output_dir, orig_song_name) + "_Vocal.mp3"
+        instrumentals_path_name = os.path.join(song_output_dir, orig_song_name) + "_Instrumental.mp3"
+
+        vocals_path, instrumentals_path = process_file_pipeline(large_file_name=orig_song_path,
+                                                   mode=LalalAIModes.Vocal_and_Instrumental, cookie='',
+                                                   random_factor=os.path.basename(orig_song_path)[:-4])
+
+        os.rename(vocals_path,vocals_path_name)
+        os.rename(instrumentals_path,instrumentals_path_name)
+
+        return orig_song_path, vocals_path, instrumentals_path
+    except Exception as e:
+        raise Exception(e)
 
 def preprocess_song(cuda_number, song_input, mdx_model_params, song_id, input_type=None):
     try:
@@ -270,7 +322,19 @@ def add_audio_effects(audio_path, reverb_rm_size, reverb_wet, reverb_dry, reverb
 
     return output_path
 
+def combine_audio_lalalai(audio_paths, output_path, main_gain, backup_gain, inst_gain, output_format):
+    main_vocal_audio = AudioSegment.from_wav(audio_paths[0]) - 4 + main_gain
+    instrumental_audio = AudioSegment.from_wav(audio_paths[1]) - 7 + inst_gain
+    combined_audio = main_vocal_audio.overlay(instrumental_audio)
+    combined_audio.export(output_path, format=output_format)
 
+    output_file = os.path.dirname(output_path) + "/combined.m4a"
+    print("M4A FILE:", audio_paths[0], audio_paths[1], audio_paths[2], output_file, sep="|||")
+    ffmpeg_command = (
+        f'ffmpeg -i \"{audio_paths[0]}\" -i \"{audio_paths[1]}\" -filter_complex "[0:a][1:a]amerge=inputs=3[aout]" -map "[aout]" -c:a aac -strict experimental -q:a 1 \"{output_file}\" -y'
+    )
+
+    subprocess.run(ffmpeg_command, shell=True)
 def combine_audio(audio_paths, output_path, main_gain, backup_gain, inst_gain, output_format):
     main_vocal_audio = AudioSegment.from_wav(audio_paths[0]) - 4 + main_gain
     backup_vocal_audio = AudioSegment.from_wav(audio_paths[1]) - 6 + backup_gain
@@ -320,55 +384,93 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
                 print(error_msg, is_webui)
         song_dir = os.path.join(output_dir, song_id)
 
-        if not os.path.exists(song_dir):
-            os.makedirs(song_dir)
-            orig_song_path, vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path = preprocess_song(
-                cuda_number, song_input, mdx_model_params, song_id, input_type)
+        if has_lalalai:
+            if not os.path.exists(song_dir):
+                os.makedirs(song_dir)
+                orig_song_path, vocals_path, instrumentals_path = preprocess_song_lalalai(
+                    "WEB", song_input, mdx_model_params, song_id, input_type)
 
+            else:
+                paths = get_audio_paths_lalalai(song_dir)
+
+                # if any of the audio files aren't available or keep intermediate files, rerun preprocess
+                if any(path is None for path in paths) or keep_files:
+                    orig_song_path, vocals_path, instrumentals_path = preprocess_song_lalalai(
+                        "WEB", song_input, mdx_model_params, song_id, input_type)
+                else:
+                    orig_song_path, vocals_path, instrumentals_path = paths
+
+            ai_vocals_path = os.path.join(song_dir,
+                                          f'{os.path.splitext(os.path.basename(orig_song_path))[0]}_{voice_model}_p{pitch_change}_i{index_rate}_fr{filter_radius}_rms{rms_mix_rate}_pro{protect}_{f0_method}{"" if f0_method != "mangio-crepe" else f"_{crepe_hop_length}"}.wav')
+            ai_cover_path = os.path.join(song_dir,
+                                         f'{os.path.splitext(os.path.basename(orig_song_path))[0]} ({voice_model} Ver).{output_format}')
+
+            if not os.path.exists(ai_vocals_path):
+                display_progress('[~] Converting voice using RVC...')
+                voice_change(voice_model, vocals_path, ai_vocals_path, pitch_change, f0_method,
+                             index_rate,
+                             filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui, cuda_number)
+
+            display_progress('[~] Applying audio effects to Vocals...')
+            ai_vocals_mixed_path = add_audio_effects(ai_vocals_path, reverb_rm_size, reverb_wet, reverb_dry,
+                                                     reverb_damping)
+
+            if pitch_change_all != 0:
+                display_progress('[~] Applying overall pitch change')
+                instrumentals_path = pitch_shift(instrumentals_path, pitch_change_all)
+
+            display_progress('[~] Combining AI Vocals and Instrumentals...')
+            combine_audio_lalalai([ai_vocals_mixed_path, instrumentals_path], ai_cover_path, main_gain,
+                          backup_gain, inst_gain, output_format)
         else:
-            vocals_path, main_vocals_path = None, None
-            paths = get_audio_paths(song_dir)
 
-            # if any of the audio files aren't available or keep intermediate files, rerun preprocess
-            if any(path is None for path in paths) or keep_files:
+            if not os.path.exists(song_dir):
+                os.makedirs(song_dir)
                 orig_song_path, vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path = preprocess_song(
                     cuda_number, song_input, mdx_model_params, song_id, input_type)
+
             else:
-                orig_song_path, instrumentals_path, main_vocals_dereverb_path, backup_vocals_path = paths
+                paths = get_audio_paths(song_dir)
 
-        pitch_change = pitch_change
-        ai_vocals_path = os.path.join(song_dir,
-                                      f'{os.path.splitext(os.path.basename(orig_song_path))[0]}_{voice_model}_p{pitch_change}_i{index_rate}_fr{filter_radius}_rms{rms_mix_rate}_pro{protect}_{f0_method}{"" if f0_method != "mangio-crepe" else f"_{crepe_hop_length}"}.wav')
-        ai_back_vocals_path = os.path.join(song_dir,
-                                      f'{os.path.splitext(os.path.basename(orig_song_path))[0]}_{voice_model}_p{pitch_change}_i{index_rate}_fr{filter_radius}_rms{rms_mix_rate}_pro{protect}_{f0_method}{"" if f0_method != "mangio-crepe" else f"_{crepe_hop_length}"}_Back_Vocal.wav')
-        ai_cover_path = os.path.join(song_dir,
-                                     f'{os.path.splitext(os.path.basename(orig_song_path))[0]} ({voice_model} Ver).{output_format}')
+                # if any of the audio files aren't available or keep intermediate files, rerun preprocess
+                if any(path is None for path in paths) or keep_files:
+                    orig_song_path, vocals_path, instrumentals_path, main_vocals_path, backup_vocals_path, main_vocals_dereverb_path = preprocess_song(
+                        cuda_number, song_input, mdx_model_params, song_id, input_type)
+                else:
+                    orig_song_path, instrumentals_path, main_vocals_dereverb_path, backup_vocals_path = paths
 
-        if not os.path.exists(ai_vocals_path):
-            display_progress('[~] Converting voice (1/2 - main) using RVC...')
-            voice_change(voice_model, main_vocals_dereverb_path, ai_vocals_path, pitch_change, f0_method,
-                         index_rate,
-                         filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui, cuda_number)
+            ai_vocals_path = os.path.join(song_dir,
+                                          f'{os.path.splitext(os.path.basename(orig_song_path))[0]}_{voice_model}_p{pitch_change}_i{index_rate}_fr{filter_radius}_rms{rms_mix_rate}_pro{protect}_{f0_method}{"" if f0_method != "mangio-crepe" else f"_{crepe_hop_length}"}.wav')
+            ai_back_vocals_path = os.path.join(song_dir,
+                                          f'{os.path.splitext(os.path.basename(orig_song_path))[0]}_{voice_model}_p{pitch_change}_i{index_rate}_fr{filter_radius}_rms{rms_mix_rate}_pro{protect}_{f0_method}{"" if f0_method != "mangio-crepe" else f"_{crepe_hop_length}"}_Back_Vocal.wav')
+            ai_cover_path = os.path.join(song_dir,
+                                         f'{os.path.splitext(os.path.basename(orig_song_path))[0]} ({voice_model} Ver).{output_format}')
 
-        if not os.path.exists(ai_back_vocals_path) and change_back_vocal:
-            display_progress('[~] Converting voice (2/2 - back) using RVC...')
-            voice_change(voice_model, backup_vocals_path, ai_back_vocals_path, pitch_change, f0_method,
-                         index_rate,
-                         filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui, cuda_number)
-        if change_back_vocal:
-            backup_vocals_path = ai_back_vocals_path
+            if not os.path.exists(ai_vocals_path):
+                display_progress('[~] Converting voice (1/2 - main) using RVC...')
+                voice_change(voice_model, main_vocals_dereverb_path, ai_vocals_path, pitch_change, f0_method,
+                             index_rate,
+                             filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui, cuda_number)
 
-        display_progress('[~] Applying audio effects to Vocals...')
-        ai_vocals_mixed_path = add_audio_effects(ai_vocals_path, reverb_rm_size, reverb_wet, reverb_dry, reverb_damping)
+            if not os.path.exists(ai_back_vocals_path) and change_back_vocal:
+                display_progress('[~] Converting voice (2/2 - back) using RVC...')
+                voice_change(voice_model, backup_vocals_path, ai_back_vocals_path, pitch_change, f0_method,
+                             index_rate,
+                             filter_radius, rms_mix_rate, protect, crepe_hop_length, is_webui, cuda_number)
+            if change_back_vocal:
+                backup_vocals_path = ai_back_vocals_path
 
-        if pitch_change_all != 0:
-            display_progress('[~] Applying overall pitch change')
-            instrumentals_path = pitch_shift(instrumentals_path, pitch_change_all)
-            backup_vocals_path = pitch_shift(backup_vocals_path, pitch_change_all)
+            display_progress('[~] Applying audio effects to Vocals...')
+            ai_vocals_mixed_path = add_audio_effects(ai_vocals_path, reverb_rm_size, reverb_wet, reverb_dry, reverb_damping)
 
-        display_progress('[~] Combining AI Vocals and Instrumentals...')
-        combine_audio([ai_vocals_mixed_path, backup_vocals_path, instrumentals_path], ai_cover_path, main_gain,
-                      backup_gain, inst_gain, output_format)
+            if pitch_change_all != 0:
+                display_progress('[~] Applying overall pitch change')
+                instrumentals_path = pitch_shift(instrumentals_path, pitch_change_all)
+                backup_vocals_path = pitch_shift(backup_vocals_path, pitch_change_all)
+
+            display_progress('[~] Combining AI Vocals and Instrumentals...')
+            combine_audio([ai_vocals_mixed_path, backup_vocals_path, instrumentals_path], ai_cover_path, main_gain,
+                          backup_gain, inst_gain, output_format)
 
         # if not keep_files:
         #     display_progress('[~] Removing intermediate audio files...')
