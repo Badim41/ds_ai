@@ -291,7 +291,7 @@ def download_video_or_use_file(song_input, input_type):
 
 def voice_change(voice_model, vocals_path, output_path, pitch_change, f0_method, index_rate, filter_radius,
                  rms_mix_rate, protect, crepe_hop_length, is_webui, cuda_number):
-    print("voice_change:", vocals_path, "->", output_path)
+    # print("voice_change:", vocals_path, "->", output_path)
     rvc_model_path, rvc_index_path = get_rvc_model(voice_model, is_webui)
     device = f'cuda:{cuda_number}'
     config2 = Config(device, True)
@@ -333,7 +333,7 @@ def combine_audio_lalalai(audio_paths, output_path, main_gain, backup_gain, inst
     combined_audio.export(output_path, format=output_format)
 
     output_file = os.path.dirname(output_path) + "/combined.m4a"
-    print("M4A FILE:", audio_paths[0], audio_paths[1], audio_paths[2], output_file, sep="|||")
+    print("M4A FILE:", audio_paths[0], audio_paths[1], output_file, sep="|||")
     ffmpeg_command = (
         f'ffmpeg -i \"{audio_paths[0]}\" -i \"{audio_paths[1]}\" -filter_complex "[0:a][1:a]amerge=inputs=3[aout]" -map "[aout]" -c:a aac -strict experimental -q:a 1 \"{output_file}\" -y'
     )
@@ -396,7 +396,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
 
             else:
                 paths = get_audio_paths_lalalai(song_dir)
-                print("Got path (get_audio_paths_lalalai)", paths)
+                # print("Got path (get_audio_paths_lalalai)", paths)
 
                 # if any of the audio files aren't available or keep intermediate files, rerun preprocess
                 if any(path is None for path in paths) or keep_files:
