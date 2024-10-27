@@ -396,6 +396,7 @@ def song_cover_pipeline(song_input, voice_model, pitch_change, keep_files,
 
             else:
                 paths = get_audio_paths_lalalai(song_dir)
+                print("Got path (get_audio_paths_lalalai)", paths)
 
                 # if any of the audio files aren't available or keep intermediate files, rerun preprocess
                 if any(path is None for path in paths) or keep_files:
