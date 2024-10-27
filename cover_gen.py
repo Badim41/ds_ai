@@ -190,7 +190,7 @@ def preprocess_song_lalalai(cuda_number, song_input, mdx_model_params, song_id, 
         else:
             orig_song_path = None
         song_output_dir = os.path.join(output_dir, song_id)
-        orig_song_path_need = os.path.join(output_dir, os.path.basename(orig_song_path))
+        orig_song_path_need = os.path.join(song_output_dir, os.path.basename(orig_song_path))
         os.rename(orig_song_path, orig_song_path_need)
         orig_song_path = orig_song_path_need
         print("orig_song_path_need", orig_song_path_need)
