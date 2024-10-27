@@ -193,7 +193,6 @@ def preprocess_song_lalalai(cuda_number, song_input, mdx_model_params, song_id, 
         orig_song_path_need = os.path.join(song_output_dir, os.path.basename(orig_song_path))
         os.rename(orig_song_path, orig_song_path_need)
         orig_song_path = orig_song_path_need
-        print("orig_song_path_need", orig_song_path_need)
         # orig_song_path = convert_to_stereo(orig_song_path)
         display_progress(f'[~] Separating Vocals from Instrumental... GPU:{cuda_number}')
         orig_song_name = os.path.basename(orig_song_path)[:-4]
@@ -207,7 +206,7 @@ def preprocess_song_lalalai(cuda_number, song_input, mdx_model_params, song_id, 
         os.rename(vocals_path,vocals_path_name)
         os.rename(instrumentals_path,instrumentals_path_name)
 
-        return orig_song_path, vocals_path, instrumentals_path
+        return orig_song_path, vocals_path_name, instrumentals_path_name
     except Exception as e:
         raise Exception(e)
 
