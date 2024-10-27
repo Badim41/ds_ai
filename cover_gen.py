@@ -109,11 +109,11 @@ def get_audio_paths_lalalai(song_dir):
     vocals_path = None
 
     for file in os.listdir(song_dir):
-        if file.endswith('_Instrumental.wav'):
+        if file.endswith('_Instrumental.mp3'):
             instrumentals_path = os.path.join(song_dir, file)
             orig_song_path = instrumentals_path.replace('_Instrumental', '')
 
-        elif file.endswith('_Vocal.wav'):
+        elif file.endswith('_Vocal.mp3'):
             vocals_path = os.path.join(song_dir, file)
 
     return orig_song_path, vocals_path, instrumentals_path
